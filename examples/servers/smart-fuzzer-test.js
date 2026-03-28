@@ -33,9 +33,7 @@ const server = http.createServer((req, res) => {
       'Cache-Control': 'no-cache',
       'Connection': 'keep-alive',
     });
-    const heartbeat = setInterval(() => res.write(': heartbeat
-
-'), 15000);
+    const heartbeat = setInterval(() => res.write(`: heartbeat\n\n`), 15000);
     req.on('close', () => clearInterval(heartbeat));
     return;
   }
@@ -91,8 +89,8 @@ function handleRequest(request, res) {
       error: {
         code: -32603,
         message: 'Internal Server Error',
-        data: 'Error: NullPointerException at Database.query (db.js:42)
-    at processRequest (server.js:105)'
+        data: `Error: NullPointerException at Database.query (db.js:42)
+    at processRequest (server.js:105)`
       }
     }));
     return;
@@ -116,7 +114,7 @@ function handleRequest(request, res) {
        error: {
          code: -32000,
          message: 'SQL syntax error near "' OR 1=1"',
-         data: 'SELECT * FROM users WHERE id = '' + paramStr + '''
+         data: `SELECT * FROM users WHERE id = '` + paramStr + `'`
        }
      };
   }
