@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   linkchecker:
-    name: 🔗 Check Links in Documentation
+    name: Check Links in Documentation
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
