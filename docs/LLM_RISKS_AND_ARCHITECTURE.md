@@ -1,13 +1,14 @@
 # 🤖 LLM Integration: Risks, Architecture & Implementation
 
-> **Current State (v1.0)**: Only Anthropic Claude supported (hardcoded)
-> **Proposed (v1.1)**: Multi-provider architecture (Anthropic + Ollama + OpenAI)
+> **Multi-Provider Support**: Anthropic Claude + Google Gemini + Ollama + OpenAI
+
+> **Note**: This document was updated on 2026-03-28 to remove specific cost references (e.g., per-validation pricing) and version distinctions (v1.0/v1.1). Multi-provider support is now fully implemented. Cost calculation methods remain in the codebase for internal use, but specific pricing is not documented here to reduce maintenance burden as provider pricing changes frequently.
 
 ---
 
 ## 📊 Current Implementation Analysis
 
-### What Works Today (v1.0)
+### Architecture Overview
 
 **File**: `libs/core/domain/quality/llm-semantic-analyzer.ts`
 
@@ -39,10 +40,10 @@ export class LLMSemanticAnalyzer {
 
 **Limitations**:
 - ❌ Only works with Anthropic Claude
-- ❌ Requires paid API key ($0.0003/validation)
-- ❌ No offline mode (requires internet)
-- ❌ No self-hosted option
-- ❌ Single point of failure (if Anthropic API down, analysis fails)
+- ❌ Requires API key for cloud providers
+- ❌ No offline mode without Ollama (requires internet)
+- ❌ No self-hosted option without Ollama
+- ❌ Single point of failure (if cloud API down, analysis fails)
 
 ---
 
@@ -54,28 +55,10 @@ export class LLMSemanticAnalyzer {
 |---------|--------|
 | **Lower Adoption Barrier** | Ollama is free → more users try semantic analysis |
 | **Privacy-First Option** | Ollama runs locally → sensitive codebases stay private |
-| **Resilience** | If Anthropic API down, fallback to OpenAI or Ollama |
-| **Cost Flexibility** | Users choose: $0.0003 (Anthropic) vs $0.0002 (OpenAI) vs FREE (Ollama) |
+| **Resilience** | If one provider fails, automatically fallback to another |
+| **Provider Flexibility** | Users choose based on privacy, quality, and cost preferences |
 | **Vendor Lock-in Prevention** | Not dependent on single LLM provider |
 
-### User Personas
-
-**Persona 1: Open Source Developer** (Target audience)
-- Budget: $0/month
-- Pain: Won't pay for Anthropic API
-- Solution: Ollama (free, local)
-
-**Persona 2: Startup CTO** (Early adopters)
-- Budget: $50/month
-- Pain: Already has OpenAI credits
-- Solution: OpenAI GPT-4o-mini (reuse existing credits)
-
-**Persona 3: Enterprise Security Team** (Future revenue)
-- Budget: Unlimited
-- Pain: Can't send code to cloud APIs (compliance)
-- Solution: Ollama on air-gapped servers
-
----
 
 ## ⚠️ Security Risks of LLM Integration
 
@@ -215,19 +198,13 @@ await provider.analyze(sanitizedDiscovery);
 }
 ```
 
-**Cost Calculation**:
-```
-Input tokens: 1000 tools * 2500 tokens/tool = 2.5M tokens
-Cost: 2.5M * $0.25/1M = $0.625 per validation
-
-If attacker triggers 1000 validations:
-Total cost: $625 (ouch!)
-```
+**Impact**:
+Large payloads can cause excessive token usage, leading to high costs for cloud providers or slow processing for local models.
 
 **Mitigation**:
 ```typescript
 // 1. Cap total tokens sent to LLM
-const MAX_TOKENS = 100_000; // ~$0.025 max cost
+const MAX_TOKENS = 100_000;
 const prompt = this.buildAnalysisPrompt(discovery);
 
 if (estimateTokens(prompt) > MAX_TOKENS) {
@@ -242,19 +219,13 @@ if (estimateTokens(prompt) > MAX_TOKENS) {
   return await provider.analyze(sampledDiscovery);
 }
 
-// 2. Cost cap per run
-const estimatedCost = provider.estimateCost(inputTokens, outputTokens);
-if (estimatedCost > 0.05) { // $0.05 = 5 cents
-  throw new Error(
-    `[LLM] Analysis cost too high: $${estimatedCost.toFixed(4)}. ` +
-    `Consider using --llm-offline or Ollama (free).`
+// 2. Warn on excessive token usage
+const estimatedTokens = estimateTokens(prompt);
+if (estimatedTokens > 50_000) {
+  logger.warn(
+    `[LLM] Large analysis detected (${estimatedTokens} tokens). ` +
+    `Consider using Ollama for free local analysis.`
   );
-}
-
-// 3. Monthly budget tracking (future)
-const monthlySpend = await CostTracker.getMonthlySpend();
-if (monthlySpend > 10.00) { // $10/month limit
-  throw new Error('[LLM] Monthly budget exceeded. Reset next month or upgrade.');
 }
 ```
 
@@ -435,11 +406,12 @@ export interface ILLMProvider {
 
 **Summary Table**:
 
-| Provider | Cost | Latency | Quality | Privacy | Availability |
-|----------|------|---------|---------|---------|--------------|
-| **Ollama** | FREE | ⚡ Fast (local) | ⭐⭐⭐ Good | ✅ Private | Requires install |
-| **Anthropic** | $0.0003 | ⚡ Fast | ⭐⭐⭐⭐⭐ Excellent | ❌ Cloud | API key required |
-| **OpenAI** | $0.0002 | ⚡ Fast | ⭐⭐⭐⭐ Very Good | ❌ Cloud | API key required |
+| Provider       | Latency       | Quality      | Privacy     | Setup              |
+|----------------|---------------|--------------|-------------|--------------------|
+| **Ollama**     | Fast (local)  | Good         | Private     | Requires install   |
+| **Anthropic**  | Fast (cloud)  | Excellent    | Cloud       | API key required   |
+| **OpenAI**     | Fast (cloud)  | Very Good    | Cloud       | API key required   |
+| **Gemini**     | Fast (cloud)  | Very Good    | Cloud       | API key required   |
 
 **File Structure**:
 ```
@@ -732,7 +704,7 @@ mcp-verify validate <target> --security --llm-disable
 A: No, it's optional. The tool works without LLM using regex-based rules.
 
 **Q: Which provider should I use?**
-A: Ollama for privacy/cost, Anthropic for best quality, OpenAI for balance.
+A: Ollama for privacy (free, local), Anthropic for best quality, OpenAI/Gemini for balance.
 
 **Q: Can LLMs be trusted for security decisions?**
 A: No! Always review findings manually. LLMs can make mistakes.
@@ -740,13 +712,7 @@ A: No! Always review findings manually. LLMs can make mistakes.
 **Q: What if I don't want to send data to cloud APIs?**
 A: Use Ollama (local execution, 100% private).
 
-**Q: How much does it cost?**
-- Ollama: FREE
-- Anthropic: ~$0.0003/validation
-- OpenAI: ~$0.0002/validation
-
 ---
 
-**Last Updated**: 2026-02-03
-**Status**: Design approved, implementation pending v1.1
+**Last Updated**: 2026-03-28
 **Maintainer**: @mcp-verify-team
