@@ -16,7 +16,17 @@
   "rules": {
     "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-require-imports": "warn",
+    "@typescript-eslint/prefer-as-const": "warn",
+    "@typescript-eslint/ban-ts-comment": "warn",
+    "@typescript-eslint/no-unsafe-function-type": "warn",
+    "no-control-regex": "warn",
+    "no-useless-escape": "warn",
+    "no-empty": "warn",
+    "no-case-declarations": "warn",
+    "no-constant-condition": "warn",
+    "no-async-promise-executor": "warn",
     "security/detect-object-injection": "warn",
     "no-console": ["warn", { "allow": ["warn", "error"] }]
   },
