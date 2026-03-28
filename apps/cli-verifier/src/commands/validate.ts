@@ -378,7 +378,7 @@ export async function runValidationAction(target: string, options: Record<string
     const outputDirStr = String(options.output || './reportes');
     const outputToStdout = outputDirStr === '-' || outputDirStr === 'stdout' || Boolean(options.jsonStdout);
     const formatStr = String(options.format || 'json');
-    const isFormatOnly = (formatStr === 'json' || formatStr === 'sarif') && !Boolean(options.html);
+    const isFormatOnly = (formatStr === 'json' || formatStr === 'sarif') && !options.html;
 
     if (outputToStdout || (isFormatOnly && !process.stdout.isTTY)) {
       // Output to stdout for piping (CI/CD friendly)

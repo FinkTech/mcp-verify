@@ -20,6 +20,14 @@
     "security/detect-object-injection": "warn",
     "no-console": ["warn", { "allow": ["warn", "error"] }]
   },
+  "overrides": [
+    {
+      "files": ["apps/cli-verifier/**/*.ts", "apps/cli-verifier/**/*.js"],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ],
   "ignorePatterns": ["dist/", "node_modules/", "coverage/", "*.js", "*.config.js"]
 }
 

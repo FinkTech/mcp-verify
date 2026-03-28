@@ -272,7 +272,7 @@ export class SmartFuzzer {
   ): Promise<FuzzingResult> {
     const start = Date.now();
     let response: unknown = null;
-    let statusCode: number | undefined = undefined;
+    const statusCode: number | undefined = undefined;
 
     try {
       // Send the fuzz test

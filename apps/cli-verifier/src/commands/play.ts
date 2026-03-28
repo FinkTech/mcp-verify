@@ -140,7 +140,7 @@ export async function runPlaygroundAction(target: string, options: PlayCommandOp
         rl.pause();
         console.log(chalk.blue(t('opening_editor')));
         try {
-          let templateObj: Record<string, string> = {};
+          const templateObj: Record<string, string> = {};
           // Basic template gen
           if (isTool) {
             const toolData = item.data as McpTool;

@@ -1,0 +1,28 @@
+# Dependencies and build outputs
+node_modules/
+dist/
+build/
+coverage/
+
+# Test files not in tsconfig
+tests/
+
+# Experimental PoC code
+apps/deno-sandbox-poc/
+
+# TypeScript declaration files (auto-generated)
+**/*.d.ts
+**/*.d.ts.map
+
+# Reports and temporary files
+mcp-verify-test-final/
+temp/
+apps/cli-verifier/src/commands/temp/
+reports/
+*.tsbuildinfo
+
+# Mock servers
+tools/mocks/
+
+# Archived workflows
+.archived/

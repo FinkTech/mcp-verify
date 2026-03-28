@@ -251,7 +251,7 @@ describe('HttpsEnforcer', () => {
     test('should remove hosts from whitelist', () => {
       enforcer.allowHttpHost('temp.com');
 
-      let message = {
+      const message = {
         method: 'tools/call',
         params: { url: 'http://temp.com/api' }
       };

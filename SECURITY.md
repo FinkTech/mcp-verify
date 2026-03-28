@@ -140,21 +140,21 @@ When using mcp-verify as an MCP server within Claude Desktop:
 
 mcp-verify detects vulnerability patterns across 60 security rules organized in 6 threat category blocks (OWASP Top 10, MCP-specific, OWASP LLM Top 10, Multi-Agent Attacks, Enterprise Compliance, AI Weaponization). Below are the core OWASP and MCP-specific rules (first 21 of 60 total):
 
-| Code | Rule | Description |
-|------|------|-------------|
-| **SEC-001** | Authentication Bypass | Weak auth patterns, credential exposure |
-| **SEC-002** | Command Injection | `exec()`, `eval()`, shell commands |
-| **SEC-003** | SQL Injection | Dynamic SQL queries, unparameterized queries |
-| **SEC-004** | SSRF | Server-side request forgery patterns |
-| **SEC-005** | XXE Injection | XML external entity vulnerabilities |
-| **SEC-006** | Insecure Deserialization | Unsafe object deserialization |
-| **SEC-007** | Path Traversal | Directory traversal, file access |
-| **SEC-008** | Data Leakage | API keys, secrets in descriptions |
-| **SEC-009** | Sensitive Data Exposure | PII, credentials in parameters |
-| **SEC-010** | Rate Limiting | Missing rate limit protection |
-| **SEC-011** | ReDoS | Regular expression denial of service |
-| **SEC-012** | Weak Cryptography | MD5, SHA1, weak algorithms |
-| **SEC-013** | Prompt Injection | Indirect injection vectors, missing limits |
+| Code         | Rule                       | Description                                  |
+|--------------|----------------------------|----------------------------------------------|
+| **SEC-001**  | Authentication Bypass      | Weak auth patterns, credential exposure      |
+| **SEC-002**  | Command Injection          | `exec()`, `eval()`, shell commands           |
+| **SEC-003**  | SQL Injection              | Dynamic SQL queries, unparameterized queries |
+| **SEC-004**  | SSRF                       | Server-side request forgery patterns         |
+| **SEC-005**  | XXE Injection              | XML external entity vulnerabilities          |
+| **SEC-006**  | Insecure Deserialization   | Unsafe object deserialization                |
+| **SEC-007**  | Path Traversal             | Directory traversal, file access             |
+| **SEC-008**  | Data Leakage               | API keys, secrets in descriptions            |
+| **SEC-009**  | Sensitive Data Exposure    | PII, credentials in parameters               |
+| **SEC-010**  | Rate Limiting              | Missing rate limit protection                |
+| **SEC-011**  | ReDoS                      | Regular expression denial of service         |
+| **SEC-012**  | Weak Cryptography          | MD5, SHA1, weak algorithms                   |
+| **SEC-013**  | Prompt Injection           | Indirect injection vectors, missing limits   |
 
 ### Protocol Compliance (JSON-RPC 2.0)
 
@@ -168,22 +168,22 @@ mcp-verify includes a **Security Gateway v1.0** (`mcp-verify proxy`) - a product
 
 ```
 ┌──────────────┐        ┌─────────────────────────────────────────┐        ┌─────────────┐
-│ Claude       │   →    │ mcp-verify Security Gateway v1.0       │   →    │ MCP Server  │
-│ Desktop      │        │ ┌─────────────────────────────────────┐│        │ (Your Code) │
-│              │        │ │ 3-Layer Defense System              ││        │             │
-│              │        │ │ • Layer 1: Fast Rules (<10ms)       ││        │             │
-│              │        │ │ • Layer 2: Suspicious (<50ms)       ││        │             │
-│              │        │ │ • Layer 3: LLM (opt-in, 500-2000ms) ││        │             │
-│              │        │ └─────────────────────────────────────┘│        │             │
-│              │        │ ┌─────────────────────────────────────┐│        │             │
-│              │        │ │ Client-Aware Panic Stop             ││        │             │
-│              │        │ │ • Map<clientId, state>              ││        │             │
-│              │        │ │ • Progressive backoff (30s/60s/∞)   ││        │             │
-│              │        │ └─────────────────────────────────────┘│        │             │
-│              │        │ ┌─────────────────────────────────────┐│        │             │
-│              │        │ │ 5 Classic Guardrails                ││        │             │
-│              │        │ │ (run after Gateway passes request)  ││        │             │
-│              │        │ └─────────────────────────────────────┘│        │             │
+│ Claude       │   →    │ mcp-verify Security Gateway v1.0        │   →    │ MCP Server  │
+│ Desktop      │        │ ┌─────────────────────────────────────┐ │        │ (Your Code) │
+│              │        │ │ 3-Layer Defense System              │ │        │             │
+│              │        │ │ • Layer 1: Fast Rules (<10ms)       │ │        │             │
+│              │        │ │ • Layer 2: Suspicious (<50ms)       │ │        │             │
+│              │        │ │ • Layer 3: LLM (opt-in, 500-2000ms) │ │        │             │
+│              │        │ └─────────────────────────────────────┘ │        │             │
+│              │        │ ┌─────────────────────────────────────┐ │        │             │
+│              │        │ │ Client-Aware Panic Stop             │ │        │             │
+│              │        │ │ • Map<clientId, state>              │ │        │             │
+│              │        │ │ • Progressive backoff (30s/60s/∞)   │ │        │             │
+│              │        │ └─────────────────────────────────────┘ │        │             │
+│              │        │ ┌─────────────────────────────────────┐ │        │             │
+│              │        │ │ 5 Classic Guardrails                │ │        │             │
+│              │        │ │ (run after Gateway passes request)  │ │        │             │
+│              │        │ └─────────────────────────────────────┘ │        │             │
 └──────────────┘        └─────────────────────────────────────────┘        └─────────────┘
                                           ↓ Security Events
                                   ┌─────────────────┐
@@ -354,11 +354,11 @@ Each client has **isolated strike tracking** using `Map<clientId, RateLimitState
 
 ##### Progressive Backoff (3 Strikes)
 
-| Strike | Trigger | Backoff Duration | Behavior | Recovery |
-|--------|---------|------------------|----------|----------|
-| **Strike 1** | First HTTP 429 | 30 seconds | Client blocked temporarily | Auto-resume after 30s |
-| **Strike 2** | Second HTTP 429 | 60 seconds | Extended block with warning | Auto-resume after 60s |
-| **Strike 3** | Third HTTP 429 | **Permanent** | **PANIC MODE** - client permanently blocked | Only proxy restart clears |
+| Strike       | Trigger          | Backoff Duration | Behavior                                   | Recovery                 |
+|--------------|------------------|------------------|--------------------------------------------|--------------------------|
+| **Strike 1** | First HTTP 429   | 30 seconds       | Client blocked temporarily                 | Auto-resume after 30s    |
+| **Strike 2** | Second HTTP 429  | 60 seconds       | Extended block with warning                | Auto-resume after 60s    |
+| **Strike 3** | Third HTTP 429   | **Permanent**    | **PANIC MODE** - client permanently blocked| Only proxy restart clears|
 
 **Example Flow**:
 ```bash

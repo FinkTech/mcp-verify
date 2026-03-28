@@ -403,7 +403,7 @@ export async function runFuzzCommand(
             ];
 
             let vulnerabilitiesFound = 0;
-            let currentTool = selectedTool || 'all tools';
+            const currentTool = selectedTool || 'all tools';
 
             // Create FuzzerEngine
             const engine = new FuzzerEngine({

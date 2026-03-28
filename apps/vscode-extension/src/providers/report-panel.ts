@@ -80,7 +80,7 @@ export class McpReportPanel {
 
         // Use the core HtmlReportGenerator
         // This ensures consistency with the CLI report
-        let html = HtmlReportGenerator.generate(report, finalLang);
+        const html = HtmlReportGenerator.generate(report, finalLang);
 
         // Adjust Content Security Policy (CSP) if needed
         // For now, the raw HTML generation embeds styles/scripts, so it should work out of the box

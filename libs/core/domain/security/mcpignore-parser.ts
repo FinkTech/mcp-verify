@@ -105,7 +105,7 @@ export class McpIgnoreParser {
    */
   private static globToRegex(glob: string): RegExp {
     // Escape special regex characters except * and ?
-    let pattern = glob
+    const pattern = glob
       .replace(/[.+^${}()|[\]\\]/g, '\\$&')
       .replace(/\*\*/g, '___DOUBLE_STAR___')
       .replace(/\*/g, '[^/]*')

@@ -1,5 +1,7 @@
 # VHS Demo Scripts
 
+> **Note:** VHS tape files (`.tape`) are excluded from the repository to keep it lightweight. Animated GIF demonstrations will be generated and added to the documentation soon.
+
 VHS (Video Home System) scripts for generating animated GIFs/MP4s showcasing mcp-verify features.
 
 ## Prerequisites
@@ -32,10 +34,12 @@ scoop install vhs
    mkdir -p reports
    ```
 
-## Generate Demos
+## Generate Demos (Future)
+
+> **Coming Soon:** VHS tape scripts will be created to generate these demos. The `.tape` files are not currently in the repository.
 
 ```bash
-# From project root
+# From project root (when tape files are available)
 cd demo-vhs
 
 # Generate individual demos
@@ -50,18 +54,18 @@ vhs 06-reports-formats.tape
 for tape in *.tape; do vhs "$tape"; done
 ```
 
-**Output**: GIFs will be in `demo-vhs/*.gif`
+**Output**: GIFs will be generated in `demo-vhs/*.gif`
 
-## Demos Overview
+## Planned Demos
 
-| Demo | Description | Output |
-|------|-------------|--------|
-| `01-quickstart.tape` | Basic validation with HTML report | `demo-vhs/01-quickstart.gif` |
-| `02-interactive-shell.tape` | Multi-context workspace, profiles, persistence | `demo-vhs/02-interactive-shell.gif` |
-| `03-schema-aware-fuzzing.tape` | Advanced fuzzing with schema parsing | `demo-vhs/03-schema-aware-fuzzing.gif` |
-| `04-security-gateway.tape` | Real-time threat detection proxy | `demo-vhs/04-security-gateway.gif` |
-| `05-doctor-diagnostics.tape` | Environment checks and troubleshooting | `demo-vhs/05-doctor-diagnostics.gif` |
-| `06-reports-formats.tape` | Multiple report formats (HTML, JSON, SARIF, MD) | `demo-vhs/06-reports-formats.gif` |
+| Demo | Description | Planned Output |
+|------|-------------|----------------|
+| `01-quickstart.tape` | Basic validation with HTML report | `01-quickstart.gif` |
+| `02-interactive-shell.tape` | Multi-context workspace, profiles, persistence | `02-interactive-shell.gif` |
+| `03-schema-aware-fuzzing.tape` | Advanced fuzzing with schema parsing | `03-schema-aware-fuzzing.gif` |
+| `04-security-gateway.tape` | Real-time threat detection proxy | `04-security-gateway.gif` |
+| `05-doctor-diagnostics.tape` | Environment checks and troubleshooting | `05-doctor-diagnostics.gif` |
+| `06-reports-formats.tape` | Multiple report formats (HTML, JSON, SARIF, MD) | `06-reports-formats.gif` |
 
 ## Customization
 

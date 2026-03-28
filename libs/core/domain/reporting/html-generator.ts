@@ -1921,7 +1921,7 @@ function generateHeatmapCells(heatmapData: number[][]): string {
             const severity = getCellSeverity(row, col);
             const sevColor = getSeverityTailwindColor(severity);
 
-            let cellClass = 'heatmap-cell rounded-lg flex items-center justify-center group relative cursor-pointer';
+            const cellClass = 'heatmap-cell rounded-lg flex items-center justify-center group relative cursor-pointer';
             let bgClass = '';
             let textClass = '';
             let extraClass = '';

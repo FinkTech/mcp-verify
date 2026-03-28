@@ -84,31 +84,34 @@ HTML: ./reports/html/mcp-report-2026-02-03.html
 ## 🎁 What You Get
 
 ### 🔍 Security Analysis
+
 | Feature | Description |
 |---------|-------------|
-| 💯 **Technical Vulnerability Score (0-100)** | Enterprise-grade **Unified Scoring Engine** combining 60 security rules across 6 threat categories, **Smart Fuzzer v1.0** (1.75x weight), and LLM analysis |
-| 🛡️ **60 Security Rules (6 Blocks)** | **OWASP** (13): SQL/CMD injection, SSRF, XXE, etc. • **MCP** (8): Tool chaining, exposed endpoints • **Block A** (9): OWASP LLM Top 10 • **Block B** (11): Multi-agent attacks • **Block C** (9): Enterprise compliance • **Block D** (10): AI weaponization & supply chain |
-| 🧬 **Smart Fuzzer v1.0** | Intelligent payload generation with feedback loop, 12 mutation strategies, automatic fingerprinting, timing anomaly detection |
-| 📜 **Protocol Compliance** | JSON-RPC 2.0 and MCP 2024-11-05 specification validation |
-| 👤 **Security Profiles** | `light` (fast CI/CD), `balanced` (default), `aggressive` (deep audits) + custom profiles |
+| **💯 Technical Vulnerability Score** | Enterprise-grade scoring engine (0-100) combining 60 security rules, Smart Fuzzer v1.0, and LLM analysis |
+| **🛡️ 60 Security Rules** | OWASP Top 10 (13 rules) + MCP-specific (8) + OWASP LLM Top 10 (9) + Multi-agent (11) + Compliance (9) + AI weaponization (10) |
+| **🧬 Smart Fuzzer v1.0** | Intelligent payload generation with feedback loop, 12 mutation strategies, fingerprinting, timing detection |
+| **📜 Protocol Compliance** | JSON-RPC 2.0 and MCP 2024-11-05 specification validation |
+| **👤 Security Profiles** | `light` (fast CI/CD), `balanced` (default), `aggressive` (deep audits) + custom profiles |
 
 ### 🛠️ Tools & Interfaces
+
 | Feature | Description |
 |---------|-------------|
-| 🎮 **Interactive Shell** | Full REPL with autocomplete, history, multi-context workspaces, output redirection |
-| 💻 **CLI Commands** | 11 security tools (validate, fuzz, stress, doctor, **proxy** with 3-layer Security Gateway, play, dashboard, mock, init, examples, fingerprint) |
-| 🤖 **MCP Server** | 7 MCP tools for AI agents (validateServer, scanSecurity, analyzeQuality, generateReport, listInstalledServers, selfAudit, compareServers) |
-| **VSCode Extension** | Real-time scanning, 4 tree views, diagnostics, code actions, report panel |
-| **Web Dashboard** | Real-time monitoring with live updates ([see docs](./apps/web-dashboard/README.md)) |
+| **🎮 Interactive Shell** | Full REPL with autocomplete, history, multi-context workspaces, output redirection |
+| **💻 CLI Commands** | 11 security tools (validate, fuzz, stress, doctor, proxy, play, dashboard, mock, init, examples, fingerprint) |
+| **🤖 MCP Server** | 7 MCP tools for AI agents (validateServer, scanSecurity, analyzeQuality, generateReport, listInstalledServers, selfAudit, compareServers) |
+| **📦 VSCode Extension** | Real-time scanning, 4 tree views, diagnostics, code actions, report panel |
+| **📊 Web Dashboard** | Real-time monitoring with live updates ([see docs](./apps/web-dashboard/README.md)) |
 
 ### 📊 Analysis & Reporting
+
 | Feature | Description |
 |---------|-------------|
-| 🧠 **LLM Semantic Analysis** | Optional AI-powered deep checks (Gemini FREE tier, Anthropic, Ollama, OpenAI) |
-| 📄 **Multiple Report Formats** | JSON (CI/CD), HTML (human), SARIF (GitHub), Markdown, SVG badges |
-| **Baseline Comparison** | Regression detection with customizable score drop thresholds |
-| **Multi-Language** | English + Spanish (i18n system) |
-| 🚀 **CI/CD Ready** | Exit codes (`0`=pass, `1`=warnings, `2`=critical) + GitHub Actions integration |
+| **🧠 LLM Semantic Analysis** | Optional AI-powered deep checks (Gemini FREE tier, Anthropic, Ollama, OpenAI) |
+| **📄 Multiple Report Formats** | JSON (CI/CD), HTML (human), SARIF (GitHub), Markdown, SVG badges |
+| **📈 Baseline Comparison** | Regression detection with customizable score drop thresholds |
+| **🌍 Multi-Language** | English + Spanish (i18n system) |
+| **🚀 CI/CD Ready** | Exit codes (`0`=pass, `1`=warnings, `2`=critical) + GitHub Actions integration |
 
 ---
 
@@ -291,11 +294,11 @@ Control fuzzing intensity and validation strictness with built-in or custom prof
 
 ### Built-in Profiles
 
-| Profile | Use Case | Payloads | Mutations | Score Threshold | Fail On |
-|---------|----------|----------|-----------|-----------------|---------|
-| **light** | Quick checks, CI/CD | 25 | 0 | 60 | Critical |
-| **balanced** | Regular testing (default) | 50 | 3 | 70 | Critical |
-| **aggressive** | Pre-production audits | 100 | 5 | 90 | Critical + High |
+| Profile       | Use Case                  | Payloads | Mutations | Score Threshold | Fail On          |
+|---------------|---------------------------|----------|-----------|-----------------|------------------|
+| **light**     | Quick checks, CI/CD       | 25       | 0         | 60              | Critical         |
+| **balanced**  | Regular testing (default) | 50       | 3         | 70              | Critical         |
+| **aggressive**| Pre-production audits     | 100      | 5         | 90              | Critical + High  |
 
 ### Profile Comparison
 
@@ -1474,6 +1477,16 @@ As MCP Verify grows, we're exploring AI-powered code review automation inspired 
 **Current State:** All code review is done manually by maintainers through GitHub's standard PR process. We run periodic quality audits using internal tooling on scheduled intervals.
 
 This approach ensures we maintain high quality standards while keeping the contribution process accessible for developers today, with room to scale intelligently as the project grows.
+
+---
+
+## 📹 Visual Demos
+
+> **Note:** Animated GIF demonstrations of MCP Verify features are currently being produced and will be available soon in the documentation. These demos will showcase the Interactive Shell, security scanning workflows, and HTML report visualization.
+>
+> VHS tape files (`.tape`) for demo recording are excluded from the repository to keep it lightweight, but the generated GIFs will be included in the documentation once finalized.
+
+Stay tuned for visual walkthroughs!
 
 ---
 
