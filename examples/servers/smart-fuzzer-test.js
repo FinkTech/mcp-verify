@@ -113,7 +113,7 @@ function handleRequest(request, res) {
        id,
        error: {
          code: -32000,
-         message: 'SQL syntax error near "' OR 1=1"',
+         message: `SQL syntax error near "' OR 1=1"`,
          data: `SELECT * FROM users WHERE id = '` + paramStr + `'`
        }
      };
