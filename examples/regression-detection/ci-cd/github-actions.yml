@@ -1,0 +1,143 @@
+# GitHub Actions Workflow for MCP Security Regression Detection
+#
+# This workflow runs on every pull request and detects security
+# degradation compared to the baseline.
+#
+# Copy this file to: .github/workflows/mcp-security.yml
+
+name: MCP Security Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'src/**'
+      - 'mcp-server/**'
+      - 'package.json'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  security-regression:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history for trend analysis
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install mcp-verify
+        run: npm install -g mcp-verify
+
+      - name: Build project (if needed)
+        run: npm run build
+        continue-on-error: true
+
+      - name: Run Security Regression Check
+        id: security_check
+        run: |
+          # Run validation and compare with baseline
+          mcp-verify validate ./mcp-server \
+            --compare-baseline \
+            --output ./reports \
+            --format json
+        continue-on-error: true
+
+      - name: Upload scan report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-report
+          path: ./reports/*.json
+          retention-days: 30
+
+      - name: Generate SARIF for GitHub Code Scanning
+        if: always()
+        run: |
+          mcp-verify validate ./mcp-server \
+            --format sarif \
+            --output ./reports
+        continue-on-error: true
+
+      - name: Upload SARIF to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: ./reports/*.sarif
+        continue-on-error: true
+
+      - name: Check exit code and comment
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const exitCode = ${{ steps.security_check.outcome === 'failure' ? 1 : 0 }};
+
+            let message = '';
+            let emoji = '';
+
+            if (exitCode === 2) {
+              emoji = '⛔';
+              message = '**BLOCKING ISSUES DETECTED**\n\nCritical security vulnerabilities found. Review required before merging.';
+            } else if (exitCode === 1) {
+              emoji = '⚠️';
+              message = '**WARNING: Security Degradation**\n\nSecurity score decreased. Please review findings.';
+            } else {
+              emoji = '✅';
+              message = '**No Security Degradation**\n\nAll security checks passed!';
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `${emoji} MCP Security Check\n\n${message}\n\n📊 [View full report](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`
+            });
+
+      - name: Fail if blocking issues
+        if: steps.security_check.outcome == 'failure'
+        run: |
+          echo "::error::Blocking security issues detected"
+          exit 1
+
+  # Optional: Create baseline on main branch
+  update-baseline:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install mcp-verify
+        run: npm install -g mcp-verify
+
+      - name: Create new baseline
+        run: |
+          mcp-verify validate ./mcp-server \
+            --set-baseline \
+            --output ./reports
+
+      - name: Commit baseline to history
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .mcp-verify/history/
+          git commit -m "chore: update security baseline [skip ci]" || echo "No changes"
+          git push

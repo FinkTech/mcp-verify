@@ -1,0 +1,17 @@
+{
+  "name": "@mcp-verify/shared",
+  "version": "1.0.0",
+  "description": "Shared utilities, logger, and types for mcp-verify",
+  "main": "index.ts",
+  "types": "index.ts",
+  "private": true,
+  "license": "Apache-2.0",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "ora": "^7.0.0"
+  },
+  "peerDependencies": {
+    "@anthropic-ai/sdk": "^0.71.0",
+    "typescript": "^5.0.0"
+  }
+}

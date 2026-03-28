@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "commonjs",
+    "rootDir": ".",
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@mcp-verify/core": ["libs/core"],
+      "@mcp-verify/core/*": ["libs/core/*"],
+      "@mcp-verify/shared": ["libs/shared"],
+      "@mcp-verify/shared/*": ["libs/shared/*"],
+      "@mcp-verify/transport": ["libs/transport"],
+      "@mcp-verify/transport/*": ["libs/transport/*"],
+      "@mcp-verify/protocol": ["libs/protocol"],
+      "@mcp-verify/protocol/*": ["libs/protocol/*"],
+      "@mcp-verify/fuzzer": ["libs/fuzzer"],
+      "@mcp-verify/fuzzer/*": ["libs/fuzzer/*"]
+    },
+    "esModuleInterop": true,
+    "downlevelIteration": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "include": ["apps/**/*", "libs/**/*", "tools/**/*"],
+  "exclude": ["node_modules", "dist", "apps/deno-sandbox-poc/**/*", "tests/**/*", "apps/cli-verifier/src/commands/temp/**/*"]
+}

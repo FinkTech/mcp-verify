@@ -1,0 +1,86 @@
+# Dependencies
+node_modules/
+dist/
+build/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Output reports & artifacts
+reportes/
+reports/
+mcp-verify-report.json
+example-report.json
+*.tsbuildinfo
+
+# IDE & System
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Temporary/Junk
+*.tmp
+dev-artifacts/
+
+# Internal backups (not for public release)
+.backup-docs-internal/
+.internal/
+.archived
+
+# Temp session files
+*.txt
+repro.ts
+
+# Temp reports (keep structure with .gitkeep)
+reports/audit-results/
+reports/expense-audit/
+reports/expense-test/
+reports/legacy-test/
+
+# Temp folders
+temp/
+.gemini/
+.gemini-clipboard/
+.mcp-verify/
+
+# VHS generated demos (large files)
+demo-vhs/
+*.tape
+
+# Backup files
+*.backup
+.i18n-cache.json
+
+# Mock servers (development only)
+tools/mocks/servers/expense-approval/
+
+# Claude Code local configuration
+.claude/
+.audit-workspace/
+
+# Test directories and artifacts
+mcp-verify-test-final/
+tests/__test-reports__/
+
+# Local configuration files (only .example should be committed)
+mcp-verify.config.json
+
+# Lock files (use npm, not pnpm)
+pnpm-lock.yaml
+
+# Backup and binary files
+*.old
+*.vsix 

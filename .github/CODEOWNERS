@@ -1,0 +1,41 @@
+# CODEOWNERS for mcp-verify
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo
+* @FinkTech
+
+# Security rules require specialized review
+/libs/core/domain/security/rules/ @FinkTech
+/libs/core/domain/security/*.ts @FinkTech
+
+# Core validation logic
+/libs/core/use-cases/validator/ @FinkTech
+/libs/core/domain/validation/ @FinkTech
+
+# Fuzzer engine (critical for security)
+/libs/fuzzer/ @FinkTech
+/libs/core/use-cases/fuzzer/ @FinkTech
+
+# CI/CD configurations
+/.github/workflows/ @FinkTech
+
+# Documentation
+/docs/ @FinkTech
+/*.md @FinkTech
+/CONTRIBUTING.md @FinkTech
+/SECURITY.md @FinkTech
+
+# Package manifests (dependency changes)
+/package.json @FinkTech
+/package-lock.json @FinkTech
+/apps/*/package.json @FinkTech
+/libs/*/package.json @FinkTech
+
+# TypeScript configuration
+/tsconfig*.json @FinkTech
+
+# Architecture documentation (requires deep review)
+/ARCHITECTURE.md @FinkTech
+/AGENTS.md @FinkTech
+/apps/*/AGENTS.md @FinkTech
+/libs/*/AGENTS.md @FinkTech

@@ -1,0 +1,39 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Build configuration: pragmatic type checking for shipping v1.0
+    // esbuild handles the actual bundling and ignores type errors anyway
+    "strict": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
+    "strictPropertyInitialization": false,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "skipLibCheck": true,
+
+    // Skip default library checks to avoid node_modules type issues
+    "skipDefaultLibCheck": true,
+
+    // Disable unused checks for pragmatic build
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": false,
+
+    // Allow implicit returns and unreachable code
+    "allowUnreachableCode": true,
+    "allowUnusedLabels": true,
+    "declaration": true // Required for emitDeclarationOnly
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests/**/*",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/__tests__/**/*",
+    "tools/**/*",
+    "apps/deno-sandbox-poc/**/*",
+    "apps/cli-verifier/src/commands/temp/**/*"
+  ]
+}

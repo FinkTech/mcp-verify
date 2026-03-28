@@ -1,0 +1,8 @@
+node_modules
+dist
+reportes
+coverage
+.git
+.vscode
+.gemini
+*.log

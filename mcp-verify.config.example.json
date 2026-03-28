@@ -1,0 +1,211 @@
+{
+  "$schema": "https://mcp-verify.dev/schema/config.json",
+  "output": {
+    "directory": "./reports",
+    "formats": ["json", "html"],
+    "html": true,
+    "language": "en",
+    "organizeByFormat": true
+  },
+  "security": {
+    "minScore": 70,
+    "failOnCritical": true,
+    "failOnHigh": false,
+    "enabledBlocks": ["OWASP", "MCP", "A", "B", "C"],
+    "disabledRules": [],
+    "rules": {
+      "SEC-002": { "enabled": true, "severity": "critical" }
+    },
+    "_comments": {
+      "enabledBlocks": "Security rule blocks: OWASP (SEC-001-013), MCP (SEC-014-021), A=OWASP LLM (SEC-022-030), B=Multi-Agent (SEC-031-041), C=Operational (SEC-042-050), D=AI Weaponization (SEC-051-060)",
+      "disabledRules": "Explicitly disable specific rules by ID: ['SEC-029', 'SEC-037']",
+      "rules": "Per-rule overrides for enabled/severity"
+    }
+  },
+  "quality": {
+    "minScore": 50,
+    "enableSemanticAnalysis": false
+  },
+  "fuzzing": {
+    "timeout": 5000,
+    "concurrency": 5,
+    "stopOnFirstVulnerability": false,
+    "enableFingerprinting": false
+  },
+  "network": {
+    "connectionTimeout": 10000,
+    "requestTimeout": 30000,
+    "allowInsecure": false,
+    "headers": {}
+  },
+  "sandbox": {
+    "enabled": false,
+    "allowRead": ["."],
+    "allowEnv": true,
+    "allowNet": []
+  },
+  "proxy": {
+    "blockedCommands": ["rm -rf", "mkfs"],
+    "piiMasking": false,
+    "rateLimiting": true,
+    "rateLimit": 60
+  },
+  "integrity": {
+    "enabled": true,
+    "historyLimit": 20,
+    "autoCleanup": true,
+    "cleanupStrategy": "keep-last-n",
+    "cleanupAgeThreshold": 90,
+    "verifyOnStartup": false,
+    "failOnMismatch": false,
+    "trackBinaries": ["cli", "server"],
+    "manifestPath": ".mcp-verify/integrity-history.json",
+    "_comments": {
+      "enabled": "Enable binary integrity verification",
+      "historyLimit": "Number of builds to keep in history (default: 20)",
+      "cleanupStrategy": "Options: 'keep-last-n', 'keep-by-age', 'manual'",
+      "trackBinaries": "Which binaries to track: 'cli', 'server', or both"
+    }
+  },
+  "workspace": {
+    "directory": ".mcp-verify",
+    "historyLimit": 100,
+    "persistenceEnabled": true,
+    "sessionFile": "session.json",
+    "autoSaveInterval": 30000,
+    "backup": {
+      "enabled": true,
+      "interval": 86400000,
+      "maxBackups": 5
+    },
+    "_comments": {
+      "directory": "Workspace directory for state, logs, and history",
+      "autoSaveInterval": "Auto-save interval in milliseconds (30s default)",
+      "backup.interval": "Backup interval in milliseconds (24h default)"
+    }
+  },
+  "baseline": {
+    "enabled": false,
+    "path": "./baseline.json",
+    "failOnDegradation": false,
+    "allowedScoreDrop": 5,
+    "autoUpdate": false,
+    "trackMetrics": ["security", "quality", "performance"],
+    "_comments": {
+      "enabled": "Enable baseline comparison for regression detection",
+      "allowedScoreDrop": "Maximum allowed score drop before failing (percentage)",
+      "trackMetrics": "Metrics to track: 'security', 'quality', 'performance'"
+    }
+  },
+  "logging": {
+    "level": "info",
+    "enableConsole": true,
+    "enableFile": true,
+    "fileDirectory": ".mcp-verify/logs",
+    "maxFileSize": 10485760,
+    "maxFiles": 5,
+    "redactSecrets": true,
+    "includeTimestamps": true,
+    "colorize": true,
+    "_comments": {
+      "level": "Options: 'trace', 'debug', 'info', 'warn', 'error'",
+      "maxFileSize": "Maximum log file size in bytes (10 MB default)",
+      "maxFiles": "Number of rotated log files to keep (5 default)",
+      "redactSecrets": "Automatically redact API keys, tokens, passwords"
+    }
+  },
+  "performance": {
+    "enableProfiling": false,
+    "trackMemory": false,
+    "trackCpu": false,
+    "slowOperationThreshold": 1000,
+    "logSlowOperations": false,
+    "_comments": {
+      "slowOperationThreshold": "Threshold in milliseconds to consider operation slow",
+      "enableProfiling": "Enable performance profiling (development only)"
+    }
+  },
+  "disclaimers": {
+    "enabled": true,
+    "suppressAll": false,
+    "accepted": {
+      "fuzz": false,
+      "stress": false,
+      "proxy": false,
+      "scan-config": false
+    },
+    "requireAcceptance": true,
+    "_comments": {
+      "enabled": "Show disclaimers for aggressive operations",
+      "suppressAll": "Suppress all disclaimers (not recommended)",
+      "accepted": "Track which disclaimers user has accepted"
+    }
+  },
+  "notifications": {
+    "enabled": false,
+    "email": {
+      "enabled": false,
+      "recipients": [],
+      "onCriticalFinding": true,
+      "onScanComplete": false
+    },
+    "slack": {
+      "enabled": false,
+      "webhookUrl": "",
+      "channel": "#security"
+    },
+    "webhook": {
+      "enabled": false,
+      "url": "",
+      "method": "POST",
+      "headers": {}
+    },
+    "_comments": {
+      "status": "🚧 Coming Soon - v1.1",
+      "description": "Notification system for critical findings and scan completion"
+    }
+  },
+  "ci": {
+    "enabled": false,
+    "provider": "github",
+    "failPipeline": true,
+    "uploadArtifacts": true,
+    "createIssues": false,
+    "commentPR": false,
+    "statusChecks": true,
+    "_comments": {
+      "status": "🚧 Coming Soon - v1.1",
+      "provider": "Options: 'github', 'gitlab', 'circleci', 'jenkins'",
+      "description": "CI/CD integration for automated security checks"
+    }
+  },
+  "plugins": {
+    "enabled": false,
+    "directory": ".mcp-verify/plugins",
+    "autoLoad": true,
+    "allowRemote": false,
+    "registry": [],
+    "_comments": {
+      "status": "🚧 Coming Soon - v1.2",
+      "description": "Plugin system for custom rules and integrations",
+      "allowRemote": "Allow loading plugins from remote URLs (security risk)"
+    }
+  },
+  "telemetry": {
+    "enabled": false,
+    "anonymize": true,
+    "endpoint": "https://telemetry.mcp-verify.dev",
+    "interval": 86400000,
+    "_comments": {
+      "status": "🚧 Coming Soon - Opt-in Only",
+      "description": "Anonymous usage telemetry to improve mcp-verify",
+      "anonymize": "Strip all identifying information before sending",
+      "interval": "Telemetry report interval in milliseconds (24h default)"
+    }
+  },
+  "exitCodes": {
+    "success": 0,
+    "validationFailed": 1,
+    "criticalSecurity": 2
+  }
+}

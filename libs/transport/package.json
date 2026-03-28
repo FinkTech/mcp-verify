@@ -1,0 +1,15 @@
+{
+  "name": "@mcp-verify/transport",
+  "version": "1.0.0",
+  "description": "Transport layer implementations (stdio, SSE, HTTP) for MCP communication",
+  "main": "index.ts",
+  "types": "index.ts",
+  "private": true,
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@mcp-verify/shared": "1.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

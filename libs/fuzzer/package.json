@@ -1,0 +1,23 @@
+{
+  "name": "@mcp-verify/fuzzer",
+  "version": "1.0.0",
+  "description": "Advanced security fuzzer for MCP servers with prompt injection, schema confusion, and protocol attacks",
+  "main": "index.ts",
+  "types": "index.ts",
+  "private": true,
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@mcp-verify/core": "1.0.0",
+    "@mcp-verify/shared": "1.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "fuzzer",
+    "security",
+    "mcp",
+    "prompt-injection",
+    "llm-security"
+  ]
+}

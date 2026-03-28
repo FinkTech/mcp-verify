@@ -1,0 +1,109 @@
+{
+  "name": "@finktech/mcp-verify",
+  "version": "1.0.0",
+  "private": false,
+  "description": "Enterprise-grade security validation and testing tool for MCP servers (Model Context Protocol)",
+  "workspaces": [
+    "libs/*",
+    "apps/*"
+  ],
+  "main": "dist/mcp-verify.js",
+  "types": "dist/apps/cli-verifier/src/bin/index.d.ts",
+  "bin": {
+    "mcp-verify": "dist/mcp-verify.js",
+    "mcp-verify-server": "dist/mcp-server.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "dev": "ts-node apps/cli-verifier/src/bin/index.ts",
+    "start": "node dist/mcp-verify.js",
+    "build": "tsc --emitDeclarationOnly --outDir dist --project tsconfig.build.json && node tools/scripts/bundle.js",
+    "compile": "pkg dist/mcp-verify.js --targets node18-win-x64,node18-linux-x64,node18-macos-x64 --out-path dist/bin",
+    "type-check": "tsc --noEmit --project tsconfig.build.json",
+    "type-check:strict": "tsc --noEmit",
+    "lint": "eslint . --ext .ts,.js --max-warnings 0",
+    "lint:fix": "eslint . --ext .ts,.js --fix",
+    "format": "prettier --write \"**/*.{ts,js,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,js,json,md}\"",
+    "test": "jest",
+    "test:unit": "jest --testPathPattern=\\.unit\\.test\\.ts$",
+    "test:integration": "jest --testPathPattern=\\.integration\\.test\\.ts$",
+    "test:e2e": "jest --testPathPattern=\\.e2e\\.test\\.ts$",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --maxWorkers=2",
+    "preview:report": "ts-node tools/scripts/generate-report-preview.ts",
+    "prepublishOnly": "npm run build",
+    "prepare": "husky install || true"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "validation",
+    "testing",
+    "security",
+    "json-rpc",
+    "cli",
+    "fuzzing",
+    "enterprise",
+    "owasp",
+    "security-audit",
+    "vulnerability-scanner"
+  ],
+  "author": {
+    "name": "Ariel Fink",
+    "email": "hello.finksystems@gmail.com",
+    "url": "https://github.com/FinkTech"
+  },
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FinkTech/mcp-verify.git"
+  },
+  "bugs": {
+    "url": "https://github.com/FinkTech/mcp-verify/issues"
+  },
+  "homepage": "https://github.com/FinkTech/mcp-verify#readme",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.0.0",
+    "@types/update-notifier": "^6.0.8",
+    "@typescript-eslint/eslint-plugin": "^8.57.2",
+    "@typescript-eslint/parser": "^8.57.2",
+    "esbuild": "^0.27.2",
+    "eslint": "^8.50.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-security": "^1.7.1",
+    "husky": "^8.0.3",
+    "jest": "^29.0.0",
+    "lint-staged": "^15.0.0",
+    "pkg": "^5.8.1",
+    "prettier": "^3.0.0",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,js}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "optionalDependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
+    "openai": "^6.17.0"
+  }
+}

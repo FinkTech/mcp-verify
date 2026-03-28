@@ -1,0 +1,69 @@
+# Claude Code Ignore Patterns
+# Files and directories that AI agents should skip when exploring the codebase
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Reports and generated files
+reports/
+coverage/
+.nyc_output/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Cache directories
+.cache/
+.tmp/
+.temp/
+tmp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+
+# Test artifacts
+__snapshots__/
+
+# Backup files
+*.backup
+*.bak
+*~
+
+# Lock files (large and not useful for context)
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# MCP Verify specific
+.mcp-verify/session.json
+.mcp-verify/session.json.backup
+.mcp-verify/history.json

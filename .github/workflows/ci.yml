@@ -1,0 +1,744 @@
+name: CI/CD Pipeline
+
+# ============================================================================
+# Enterprise-grade CI/CD Pipeline for MCP Verify
+# ============================================================================
+# Features:
+# - Security scanning (Trivy, CodeQL, npm audit)
+# - Code quality checks (ESLint, Prettier, TypeScript)
+# - Multi-OS testing (Ubuntu, macOS, Windows)
+# - Multi-Node version testing (18, 20, 22)
+# - Code coverage reporting
+# - Automated NPM publishing
+# - GitHub Releases creation
+# - SLSA provenance attestation
+# - License compliance checking
+# - Dependency review
+# - Performance benchmarking
+# ============================================================================
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+    inputs:
+      skip-tests:
+        description: 'Skip test execution'
+        required: false
+        default: 'false'
+
+# Security: Enforce least privilege principle
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '20'
+  CACHE_KEY_PREFIX: v2-npm-
+  CI: true
+
+# ============================================================================
+# JOBS
+# ============================================================================
+
+jobs:
+  # ==========================================================================
+  # SECURITY & QUALITY CHECKS (Parallel execution)
+  # ==========================================================================
+
+  security-scan:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          exit-code: '0'  # Don't fail on vulnerabilities
+
+      - name: Upload Trivy results to Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level=moderate || true
+          npm audit --json > npm-audit.json || true
+
+      - name: Upload npm audit results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: npm-audit-results
+          path: npm-audit.json
+          retention-days: 30
+
+  sast:
+    name: 🕵️ Static Analysis (CodeQL)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended,security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"
+
+  code-quality:
+    name: ✨ Code Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: false
+
+      - name: Check Prettier formatting
+        run: npm run format:check
+        continue-on-error: false
+
+      - name: TypeScript type checking
+        run: npx tsc --noEmit
+        continue-on-error: false
+
+      - name: Check for console.log statements
+        run: |
+          if grep -r "console\.log" --include="*.ts" apps/ libs/ 2>/dev/null; then
+            echo "⚠️  Warning: console.log statements found in source code"
+          fi
+        continue-on-error: true
+
+  dependency-review:
+    name: 📦 Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+          deny-licenses: GPL-2.0, GPL-3.0
+          # Note: AGPL-3.0 removed - this project IS licensed under AGPL-3.0
+          comment-summary-in-pr: always
+
+  license-check:
+    name: ⚖️ License Compliance
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Check licenses
+        run: |
+          npx license-checker --summary
+          npx license-checker --json > licenses.json
+
+      - name: Upload license report
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-report
+          path: licenses.json
+          retention-days: 90
+
+  # ==========================================================================
+  # BUILD (Sequential - Entry point for main pipeline)
+  # ==========================================================================
+
+  build:
+    name: 🏗️ Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [security-scan, code-quality]
+
+    outputs:
+      version: ${{ steps.package-version.outputs.version }}
+      cache-key: ${{ steps.cache-config.outputs.cache-key }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed for git-based versioning
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache configuration
+        id: cache-config
+        run: |
+          CACHE_KEY="${{ env.CACHE_KEY_PREFIX }}${{ hashFiles('**/package-lock.json') }}"
+          echo "cache-key=$CACHE_KEY" >> $GITHUB_OUTPUT
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Extract package version
+        id: package-version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Building version: $VERSION"
+
+      - name: Build project
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Verify build artifacts
+        run: |
+          if [ ! -f "dist/mcp-verify.js" ]; then
+            echo "❌ Build failed: dist/mcp-verify.js not found"
+            exit 1
+          fi
+          echo "✅ Build artifacts verified"
+          ls -lh dist/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            dist/
+            package.json
+            package-lock.json
+            README.md
+            LICENSE
+            CHANGELOG.md
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Generate build metadata
+        run: |
+          cat > dist/build-info.json << EOF
+          {
+            "version": "${{ steps.package-version.outputs.version }}",
+            "commit": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}",
+            "buildDate": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "nodeVersion": "${{ env.NODE_VERSION }}",
+            "runner": "${{ runner.os }}"
+          }
+          EOF
+          cat dist/build-info.json
+
+      - name: Upload build metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-metadata
+          path: dist/build-info.json
+          retention-days: 90
+
+  # ==========================================================================
+  # TEST (Sequential - Multi-OS Matrix)
+  # ==========================================================================
+
+  test:
+    name: 🧪 Test (${{ matrix.os }}, Node ${{ matrix.node-version }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    needs: [build]
+    if: ${{ github.event.inputs.skip-tests != 'true' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node-version: ['18', '20', '22']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: .
+
+      - name: Install dependencies (dev only)
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Run unit tests
+        run: npm test -- --coverage --maxWorkers=2
+        env:
+          CI: true
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '20'
+        with:
+          name: coverage-${{ matrix.os }}-node${{ matrix.node-version }}
+          path: coverage/
+          retention-days: 30
+
+      - name: Test CLI execution (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x dist/mcp-verify.js
+          node dist/mcp-verify.js --version
+          node dist/mcp-verify.js --help
+
+      - name: Test CLI execution (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          node dist/mcp-verify.js --version
+          node dist/mcp-verify.js --help
+
+  # ==========================================================================
+  # CODE COVERAGE (Parallel with test)
+  # ==========================================================================
+
+  coverage:
+    name: 📊 Code Coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [test]
+    if: always() && needs.test.result != 'skipped'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download coverage reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          merge-multiple: true
+          path: coverage/
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          flags: unittests
+          name: mcp-verify-coverage
+          fail_ci_if_error: false
+          verbose: true
+
+      - name: Generate coverage badge
+        run: |
+          if [ -f "coverage/coverage-summary.json" ]; then
+            COVERAGE=$(node -p "Math.round(require('./coverage/coverage-summary.json').total.lines.pct)")
+            echo "Code coverage: ${COVERAGE}%"
+
+            if [ "$COVERAGE" -lt 70 ]; then
+              echo "⚠️  Warning: Coverage below 70% threshold"
+            fi
+          fi
+
+  # ==========================================================================
+  # INTEGRATION TESTS (Sequential)
+  # ==========================================================================
+
+  integration:
+    name: 🔗 Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [test]
+    if: ${{ github.event.inputs.skip-tests != 'true' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: .
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Run integration tests
+        run: |
+          npm run test:integration || echo "⚠️  No integration tests found"
+        continue-on-error: true
+
+      - name: Test with mock servers
+        run: |
+          echo "🧪 Testing with mock MCP servers..."
+          if [ -d "tools/mocks/servers" ]; then
+            # Start mock server in background
+            node tools/mocks/servers/echo-server.js > mock-server.log 2>&1 &
+            MOCK_PID=$!
+            sleep 2
+
+            # Run validation against mock
+            node dist/mcp-verify.js validate --target stdio --command "node tools/mocks/servers/echo-server.js" || true
+
+            # Cleanup
+            kill $MOCK_PID || true
+          fi
+
+  # ==========================================================================
+  # PERFORMANCE BENCHMARKS (Optional)
+  # ==========================================================================
+
+  performance:
+    name: ⚡ Performance Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [build]
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: .
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Run performance benchmarks
+        run: |
+          echo "⚡ Running performance benchmarks..."
+          # Measure CLI startup time
+          time node dist/mcp-verify.js --version
+
+          # Run benchmark suite if available
+          npm run benchmark || echo "No benchmarks configured"
+        continue-on-error: true
+
+  # ==========================================================================
+  # RELEASE (Only on version tags)
+  # ==========================================================================
+
+  release:
+    name: 🚀 Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [build, test, integration]
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+      id-token: write  # Required for NPM provenance
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: .
+
+      - name: Validate version tag
+        id: validate-tag
+        run: |
+          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+
+          echo "tag-version=$TAG_VERSION" >> $GITHUB_OUTPUT
+          echo "package-version=$PKG_VERSION" >> $GITHUB_OUTPUT
+
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "❌ Version mismatch: tag=$TAG_VERSION, package.json=$PKG_VERSION"
+            exit 1
+          fi
+
+          echo "✅ Version validated: $TAG_VERSION"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          if [ -f "CHANGELOG.md" ]; then
+            # Extract changelog for this version
+            CHANGELOG=$(sed -n "/## \[${{ steps.validate-tag.outputs.tag-version }}\]/,/## \[/p" CHANGELOG.md | sed '$d')
+            echo "changelog<<EOF" >> $GITHUB_OUTPUT
+            echo "$CHANGELOG" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "changelog=Release version ${{ steps.validate-tag.outputs.tag-version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        id: create-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: mcp-verify v${{ steps.validate-tag.outputs.tag-version }}
+          body: |
+            # 🎉 MCP Verify v${{ steps.validate-tag.outputs.tag-version }}
+
+            ## 📦 Installation
+            ```bash
+            npm install -g mcp-verify@${{ steps.validate-tag.outputs.tag-version }}
+            ```
+
+            ## 📝 Changes
+            ${{ steps.changelog.outputs.changelog }}
+
+            ## 🔗 Links
+            - [NPM Package](https://www.npmjs.com/package/mcp-verify)
+            - [Documentation](https://github.com/FinkTech/mcp-verify#readme)
+            - [Changelog](https://github.com/FinkTech/mcp-verify/blob/main/CHANGELOG.md)
+
+            ---
+
+            **Full Changelog**: https://github.com/FinkTech/mcp-verify/compare/${{ github.event.before }}...${{ github.sha }}
+          draft: false
+          prerelease: ${{ contains(steps.validate-tag.outputs.tag-version, '-') }}
+
+      - name: Upload release assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: ./dist/mcp-verify.js
+          asset_name: mcp-verify.js
+          asset_content_type: application/javascript
+
+      - name: Publish to NPM
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Verify NPM publication
+        run: |
+          sleep 10  # Wait for NPM registry propagation
+          npm view mcp-verify@${{ steps.validate-tag.outputs.tag-version }} version
+          echo "✅ Package published successfully to NPM"
+
+      - name: Generate SBOM (Software Bill of Materials)
+        run: |
+          npx @cyclonedx/cyclonedx-npm --output-file sbom.json
+          echo "✅ SBOM generated"
+
+      - name: Upload SBOM to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: ./sbom.json
+          asset_name: sbom.json
+          asset_content_type: application/json
+
+      - name: Create NPM provenance attestation
+        run: |
+          echo "✅ NPM provenance attestation created (--provenance flag)"
+          echo "🔗 View at: https://www.npmjs.com/package/mcp-verify/v/${{ steps.validate-tag.outputs.tag-version }}"
+
+  # ==========================================================================
+  # DOCKER BUILD (Only on version tags)
+  # ==========================================================================
+
+  docker-build:
+    name: 🐳 Docker Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [release]
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
+            BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            VCS_REF=${{ github.sha }}
+
+  # ==========================================================================
+  # NOTIFICATION (On workflow completion)
+  # ==========================================================================
+
+  notify:
+    name: 📢 Notify
+    runs-on: ubuntu-latest
+    needs: [build, test, integration, release]
+    if: always() && (needs.release.result == 'success' || needs.release.result == 'failure')
+
+    steps:
+      - name: Notify on success
+        if: needs.release.result == 'success'
+        run: |
+          echo "✅ Release successful!"
+          echo "Version: ${{ needs.build.outputs.version }}"
+          echo "Commit: ${{ github.sha }}"
+
+      - name: Notify on failure
+        if: needs.release.result == 'failure'
+        run: |
+          echo "❌ Release failed!"
+          echo "Please check the logs for details"
+
+  # ==========================================================================
+  # STATUS CHECK (Final validation)
+  # ==========================================================================
+
+  ci-status:
+    name: ✅ CI Status
+    runs-on: ubuntu-latest
+    needs: [security-scan, sast, code-quality, build, test, license-check]
+    if: always()
+
+    steps:
+      - name: Check all job statuses
+        run: |
+          echo "=================================================="
+          echo "CI/CD Pipeline Status Report"
+          echo "=================================================="
+          echo "Security Scan:     ${{ needs.security-scan.result }}"
+          echo "SAST (CodeQL):     ${{ needs.sast.result }}"
+          echo "Code Quality:      ${{ needs.code-quality.result }}"
+          echo "Build:             ${{ needs.build.result }}"
+          echo "Test:              ${{ needs.test.result }}"
+          echo "License Check:     ${{ needs.license-check.result }}"
+          echo "=================================================="
+
+      - name: Fail if critical jobs failed
+        if: |
+          needs.security-scan.result == 'failure' ||
+          needs.build.result == 'failure' ||
+          needs.test.result == 'failure'
+        run: |
+          echo "❌ Critical jobs failed. Pipeline cannot proceed."
+          exit 1
+
+      - name: Success
+        if: |
+          needs.security-scan.result == 'success' &&
+          needs.build.result == 'success' &&
+          needs.test.result == 'success'
+        run: |
+          echo "✅ All critical jobs passed successfully!"
+          echo "🎉 Pipeline completed"

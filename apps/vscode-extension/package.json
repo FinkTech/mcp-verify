@@ -1,0 +1,407 @@
+{
+    "name": "mcp-verify-vscode",
+    "displayName": "MCP Verify",
+    "description": "Enterprise-grade security validation for MCP servers",
+    "version": "1.0.0",
+    "publisher": "FinkTech",
+    "license": "AGPL-3.0",
+    "icon": "media/yogui.png",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/FinkTech/mcp-verify"
+    },
+    "engines": {
+        "vscode": "^1.80.0"
+    },
+    "categories": [
+        "Testing",
+        "Linters",
+        "Other"
+    ],
+    "keywords": [
+        "mcp",
+        "model context protocol",
+        "security",
+        "validation",
+        "fuzzing",
+        "ai",
+        "llm"
+    ],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "mcp-verify.validate",
+                "title": "Validate MCP Server",
+                "category": "MCP Verify",
+                "icon": "$(shield)"
+            },
+            {
+                "command": "mcp-verify.fuzz",
+                "title": "Fuzz MCP Server",
+                "category": "MCP Verify",
+                "icon": "$(bug)"
+            },
+            {
+                "command": "mcp-verify.stress",
+                "title": "Stress Test MCP Server",
+                "category": "MCP Verify",
+                "icon": "$(pulse)"
+            },
+            {
+                "command": "mcp-verify.doctor",
+                "title": "Run Diagnostics",
+                "category": "MCP Verify",
+                "icon": "$(checklist)"
+            },
+            {
+                "command": "mcp-verify.showResults",
+                "title": "Show Results",
+                "category": "MCP Verify",
+                "icon": "$(list-tree)"
+            },
+            {
+                "command": "mcp-verify.clearHistory",
+                "title": "Clear Scan History",
+                "category": "MCP Verify",
+                "icon": "$(trash)"
+            },
+            {
+                "command": "mcp-verify.exportSarif",
+                "title": "Export SARIF Report",
+                "category": "MCP Verify",
+                "icon": "$(file-code)"
+            },
+            {
+                "command": "mcp-verify.generateBadge",
+                "title": "Generate Security Badge",
+                "category": "MCP Verify",
+                "icon": "$(verified)"
+            },
+            {
+                "command": "mcp-verify.compareBaseline",
+                "title": "Compare with Baseline",
+                "category": "MCP Verify",
+                "icon": "$(git-compare)"
+            },
+            {
+                "command": "mcp-verify.refreshResults",
+                "title": "Refresh Results",
+                "category": "MCP Verify",
+                "icon": "$(refresh)"
+            }
+        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "mcp-verify",
+                    "title": "MCP Verify",
+                    "icon": "media/shield.svg"
+                }
+            ]
+        },
+        "views": {
+            "mcp-verify": [
+                {
+                    "id": "mcp-verify.servers",
+                    "name": "Servers",
+                    "icon": "$(server)"
+                },
+                {
+                    "id": "mcp-verify.results",
+                    "name": "Security Findings",
+                    "icon": "$(shield)"
+                },
+                {
+                    "id": "mcp-verify.tools",
+                    "name": "Discovered Tools",
+                    "icon": "$(tools)"
+                },
+                {
+                    "id": "mcp-verify.history",
+                    "name": "Scan History",
+                    "icon": "$(history)"
+                }
+            ]
+        },
+        "viewsWelcome": [
+            {
+                "view": "mcp-verify.servers",
+                "contents": "No MCP servers configured.\n[Add Server](command:mcp-verify.validate)\n[Run Diagnostics](command:mcp-verify.doctor)"
+            },
+            {
+                "view": "mcp-verify.results",
+                "contents": "No security scan results yet.\n[Run Validation](command:mcp-verify.validate)\n[Run Fuzzing](command:mcp-verify.fuzz)"
+            }
+        ],
+        "menus": {
+            "view/title": [
+                {
+                    "command": "mcp-verify.refreshResults",
+                    "when": "view == mcp-verify.results",
+                    "group": "navigation"
+                },
+                {
+                    "command": "mcp-verify.clearHistory",
+                    "when": "view == mcp-verify.history",
+                    "group": "navigation"
+                }
+            ],
+            "commandPalette": [
+                {
+                    "command": "mcp-verify.validate",
+                    "when": "true"
+                },
+                {
+                    "command": "mcp-verify.fuzz",
+                    "when": "true"
+                },
+                {
+                    "command": "mcp-verify.stress",
+                    "when": "true"
+                },
+                {
+                    "command": "mcp-verify.doctor",
+                    "when": "true"
+                }
+            ]
+        },
+        "configuration": {
+            "title": "MCP Verify",
+            "properties": {
+                "mcpVerify.language": {
+                    "type": "string",
+                    "enum": [
+                        "en",
+                        "es",
+                        "auto"
+                    ],
+                    "default": "auto",
+                    "description": "Language for reports and messages (auto-detected if 'auto')"
+                },
+                "mcpVerify.recentCommands": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": [],
+                    "description": "Recent MCP server commands (managed automatically)"
+                },
+                "mcpVerify.validation.enableFuzzing": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable fuzzing during validation"
+                },
+                "mcpVerify.validation.enableSemanticCheck": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable LLM-powered semantic analysis"
+                },
+                "mcpVerify.validation.llmProvider": {
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "gemini:gemini-2.5-flash",
+                        "gemini:gemini-3.0-flash",
+                        "gemini:gemini-3.0-pro",
+                        "anthropic:claude-sonnet-4-20250514",
+                        "openai:gpt-4o",
+                        "ollama:llama3"
+                    ],
+                    "default": "none",
+                    "description": "LLM provider for semantic analysis. Gemini has a free tier!",
+                    "enumDescriptions": [
+                        "Disabled - No LLM analysis",
+                        "Google Gemini 2.5 Flash - FREE tier available! (requires GOOGLE_API_KEY)",
+                        "Google Gemini 3.0 Flash - FREE tier available! (requires GOOGLE_API_KEY)",
+                        "Google Gemini 3.0 Pro - Best quality (requires GOOGLE_API_KEY)",
+                        "Anthropic Claude Sonnet 4 (requires ANTHROPIC_API_KEY)",
+                        "OpenAI GPT-4o (requires OPENAI_API_KEY)",
+                        "Ollama local (requires Ollama running locally)"
+                    ]
+                },
+                "mcpVerify.validation.saveHistory": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Save scan results to history"
+                },
+                "mcpVerify.validation.outputFormat": {
+                    "type": "string",
+                    "enum": [
+                        "json",
+                        "html",
+                        "md",
+                        "sarif"
+                    ],
+                    "default": "html",
+                    "description": "Default report output format"
+                },
+                "mcpVerify.fuzzing.concurrency": {
+                    "type": "number",
+                    "default": 1,
+                    "minimum": 1,
+                    "maximum": 10,
+                    "description": "Number of concurrent fuzzing workers"
+                },
+                "mcpVerify.fuzzing.timeout": {
+                    "type": "number",
+                    "default": 5000,
+                    "minimum": 1000,
+                    "maximum": 60000,
+                    "description": "Fuzzing timeout per request (ms)"
+                },
+                "mcpVerify.fuzzing.generators": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "sql-injection",
+                            "command-injection",
+                            "path-traversal",
+                            "ssrf",
+                            "xss",
+                            "prompt-injection",
+                            "jailbreak",
+                            "all"
+                        ]
+                    },
+                    "default": [
+                        "all"
+                    ],
+                    "description": "Fuzzing payload generators to use"
+                },
+                "mcpVerify.fuzzing.stopOnFirst": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Stop fuzzing on first vulnerability found"
+                },
+                "mcpVerify.stress.concurrentUsers": {
+                    "type": "number",
+                    "default": 5,
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "Number of concurrent virtual users for stress testing"
+                },
+                "mcpVerify.stress.duration": {
+                    "type": "number",
+                    "default": 10,
+                    "minimum": 1,
+                    "maximum": 300,
+                    "description": "Stress test duration in seconds"
+                },
+                "mcpVerify.proxy.port": {
+                    "type": "number",
+                    "default": 8080,
+                    "description": "Port for security proxy server"
+                },
+                "mcpVerify.proxy.enableGuardrails": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable security guardrails in proxy mode"
+                },
+                "mcpVerify.proxy.guardrails": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "pii-redactor",
+                            "rate-limiter",
+                            "input-sanitizer",
+                            "https-enforcer",
+                            "sensitive-command-blocker"
+                        ]
+                    },
+                    "default": [
+                        "pii-redactor",
+                        "rate-limiter",
+                        "input-sanitizer"
+                    ],
+                    "description": "Active guardrails for proxy mode"
+                },
+                "mcpVerify.security.rules": {
+                    "type": "object",
+                    "default": {},
+                    "description": "Override default security rule configurations",
+                    "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                            "enabled": {
+                                "type": "boolean"
+                            },
+                            "severity": {
+                                "type": "string",
+                                "enum": [
+                                    "critical",
+                                    "high",
+                                    "medium",
+                                    "low",
+                                    "info"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "mcpVerify.baseline.path": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Path to baseline file for comparison"
+                },
+                "mcpVerify.baseline.failOnDegradation": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Fail if security score drops below baseline"
+                },
+                "mcpVerify.baseline.allowedScoreDrop": {
+                    "type": "number",
+                    "default": 5,
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Maximum allowed score drop from baseline"
+                },
+                "mcpVerify.output.directory": {
+                    "type": "string",
+                    "default": "./reports",
+                    "description": "Default directory for report output"
+                },
+                "mcpVerify.notifications.showOnComplete": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Show notification when scan completes"
+                },
+                "mcpVerify.notifications.showOnVulnerability": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Show notification when vulnerability is found"
+                }
+            }
+        },
+        "keybindings": []
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run bundle",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile && npm run lint",
+        "lint": "eslint src --ext ts",
+        "test": "node ./out/test/runTest.js",
+        "bundle": "esbuild src/extension.ts --bundle --platform=node --target=node18 --external:vscode --outfile=dist/extension.js --minify --sourcemap",
+        "package": "npm run bundle"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.80.0",
+        "@types/node": "^18.0.0",
+        "@types/shell-quote": "^1.7.0",
+        "@typescript-eslint/eslint-plugin": "^8.0.0",
+        "@typescript-eslint/parser": "^8.0.0",
+        "eslint": "^8.0.0",
+        "typescript": "^5.0.0",
+        "ts-loader": "^9.0.0",
+        "webpack": "^5.0.0",
+        "webpack-cli": "^5.0.0"
+    },
+    "dependencies": {
+        "@mcp-verify/core": "1.0.0",
+        "@mcp-verify/shared": "1.0.0",
+        "shell-quote": "^1.8.1"
+    }
+}

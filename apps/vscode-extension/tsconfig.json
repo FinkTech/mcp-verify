@@ -1,0 +1,28 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es2020",
+        "outDir": "dist",
+        "lib": [
+            "es2020",
+            "dom"
+        ],
+        "sourceMap": true,
+        // "rootDir": "src",
+        "strict": true,
+        "paths": {
+            "@mcp-verify/core": [
+                "../../libs/core/index.ts"
+            ]
+        }
+    },
+    "include": [
+        "src/**/*",
+        "../../libs/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        ".vscode-test"
+    ]
+}

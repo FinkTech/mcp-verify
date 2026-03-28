@@ -1,0 +1,40 @@
+name: 'MCP Verify'
+description: 'Validate, test, and secure Model Context Protocol (MCP) servers'
+author: 'Fink'
+branding:
+  icon: 'check-circle'
+  color: 'green'
+
+inputs:
+  url:
+    description: 'Target URL of the MCP server to validate'
+    required: true
+  transport:
+    description: 'Transport type (http or stdio)'
+    required: false
+    default: 'http'
+  fail-on-issue:
+    description: 'Fail the workflow if validation issues are found'
+    required: false
+    default: 'true'
+  format:
+    description: 'Output format (json, sarif)'
+    required: false
+    default: 'sarif'
+
+outputs:
+  report-path:
+    description: 'Path to the generated report file'
+
+runs:
+  using: 'node20'
+  main: 'dist/mcp-verify.js'
+  args:
+    - validate
+    - ${{ inputs.url }}
+    - --transport
+    - ${{ inputs.transport }}
+    - --format
+    - ${{ inputs.format }}
+    - --output
+    - 'mcp-reports'

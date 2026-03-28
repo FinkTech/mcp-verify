@@ -1,0 +1,28 @@
+# .mcpverifyignore - Suppress specific security rules or tools
+# Simple .gitignore-style syntax
+#
+# Supported formats:
+#   SEC-001                    - Ignore rule globally
+#   server.js                  - Ignore all findings in file/tool
+#   *.test.js                  - Ignore pattern (glob)
+#   server.js:45:SEC-001       - Ignore specific rule at specific location
+#   # Comment                  - Comments (ignored)
+#
+# Example use cases:
+#   - Intentional SQL tool: execute_sql or SEC-001
+#   - Test files: *.test.js or **/__tests__/**
+#   - False positive: server.js:45:SEC-001
+
+# Ignore SQL injection globally (intentional database tools)
+# SEC-001
+
+# Ignore all warnings in test files
+# *.test.js
+# **/__tests__/**
+
+# Ignore command injection for system administration tools
+# SEC-002
+
+# Ignore specific line in specific file
+# server.js:45:SEC-001
+# handlers/auth.js:23:SEC-002
