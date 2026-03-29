@@ -8,7 +8,7 @@
     "apps/*"
   ],
   "main": "dist/mcp-verify.js",
-  "types": "dist/apps/cli-verifier/src/bin/index.d.ts",
+  "types": "dist/index.d.ts",
   "bin": {
     "mcp-verify": "dist/mcp-verify.js",
     "mcp-verify-server": "dist/mcp-server.js"
@@ -17,8 +17,25 @@
     "dist",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "SECURITY.md"
   ],
+  "dependencies": {
+    "acorn": "^8.15.0",
+    "acorn-walk": "^8.3.4",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "ajv-i18n": "^4.2.0",
+    "chalk": "^5.3.0",
+    "commander": "^11.0.0",
+    "eventsource": "^2.0.2",
+    "i18next": "^25.8.0",
+    "inquirer": "^13.3.0",
+    "ora": "^7.0.0",
+    "shell-quote": "^1.8.3",
+    "update-notifier": "^7.3.1",
+    "zod": "^4.3.6"
+  },
   "scripts": {
     "dev": "ts-node apps/cli-verifier/src/bin/index.ts",
     "start": "node dist/mcp-verify.js",
@@ -44,16 +61,26 @@
   "keywords": [
     "mcp",
     "model-context-protocol",
+    "mcp-server",
+    "security",
+    "security-audit",
+    "security-testing",
+    "vulnerability-scanner",
     "validation",
     "testing",
-    "security",
+    "fuzzing",
+    "penetration-testing",
     "json-rpc",
     "cli",
-    "fuzzing",
-    "enterprise",
+    "ai",
+    "llm",
+    "claude",
+    "anthropic",
     "owasp",
-    "security-audit",
-    "vulnerability-scanner"
+    "owasp-top-10",
+    "enterprise",
+    "devsecops",
+    "appsec"
   ],
   "author": {
     "name": "Ariel Fink",
@@ -93,6 +120,18 @@
     "ts-node": "^10.9.0",
     "typescript": "^5.0.0"
   },
+  "peerDependencies": {
+    "@anthropic-ai/sdk": "^0.71.0",
+    "openai": "^6.17.0"
+  },
+  "peerDependenciesMeta": {
+    "@anthropic-ai/sdk": {
+      "optional": true
+    },
+    "openai": {
+      "optional": true
+    }
+  },
   "lint-staged": {
     "*.{ts,js}": [
       "eslint --fix",
@@ -101,9 +140,5 @@
     "*.{json,md}": [
       "prettier --write"
     ]
-  },
-  "optionalDependencies": {
-    "@anthropic-ai/sdk": "^0.71.2",
-    "openai": "^6.17.0"
   }
 }

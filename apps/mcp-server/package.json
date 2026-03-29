@@ -20,7 +20,7 @@
     "mcp-server"
   ],
   "author": "Fink",
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.3",
     "@mcp-verify/core": "1.0.0"

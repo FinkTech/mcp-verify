@@ -4,7 +4,7 @@
   "description": "CLI tool for mcp-verify security validation",
   "main": "src/bin/index.ts",
   "private": true,
-  "license": "Apache-2.0",
+  "license": "AGPL-3.0",
   "dependencies": {
     "@mcp-verify/core": "1.0.0",
     "@mcp-verify/fuzzer": "1.0.0",
