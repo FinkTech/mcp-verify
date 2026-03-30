@@ -1,7 +1,7 @@
 # 🛡️ MCP Verify v1.0.0 — The Birth of MCP Security
 
 **Release Date:** TBD  
-**License:** Apache 2.0  
+**License:** AGPL-3.0  
 **Author:** Ariel A. Fink — [FinkTech](https://github.com/FinkTech)
 
 ---
@@ -246,7 +246,7 @@ mcp-verify validate "node server.js"
 ---
 
 <p align="center">
-  <b>mcp-verify v1.0.0</b> — Built by <a href="https://github.com/FinkTech">FinkTech</a> · Apache 2.0
+  <b>mcp-verify v1.0.0</b> — Built by <a href="https://github.com/FinkTech">FinkTech</a> · AGPL-3.0
   <br/>
   <i>Because if you can't verify it, you can't trust it.</i>
 </p>

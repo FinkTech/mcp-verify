@@ -79,7 +79,7 @@ export function helpRow(cmd: string, args: string, desc: string): void {
 export function showAbout(): void {
   console.log(chalk.bold.white(`\n  ${t('interactive_about_title')}\n`));
   console.log(`  ${chalk.gray('Version:')}        ${chalk.cyan(packageJson.version)}`);
-  console.log(`  ${chalk.gray('License:')}        ${chalk.cyan('Apache 2.0')}`);
+  console.log(`  ${chalk.gray('License:')}        ${chalk.cyan('AGPL-3.0')}`);
   console.log(`  ${chalk.gray('Maintained by:')}  ${chalk.cyan('Fink')}`);
   console.log(chalk.bold.white(`\n  ${t('md_description')}:\n`));
   console.log(chalk.gray(`  ${t('interactive_about_desc')}`));

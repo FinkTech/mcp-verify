@@ -1,7 +1,7 @@
 # MCP Verify - Agent Context Index
 
 > Enterprise-grade security validation and fuzzing for MCP servers
-> Version: 1.0.0 | License: Apache 2.0 | Monorepo: pnpm workspaces
+> Version: 1.0.0 | License: AGPL-3.0 | Monorepo: pnpm workspaces
 
 ---
 

@@ -111,9 +111,9 @@ Resources:
 
 ---
 
-## Apache 2.0 License ≠ Permission to Scan
+## AGPL-3.0 License ≠ Permission to Scan
 
-**Important:** The Apache 2.0 license grants permission to **use, modify, and distribute the software**.
+**Important:** The AGPL-3.0 license grants permission to **use, modify, and distribute the software**.
 
 It does **NOT** grant permission to:
 - Scan systems you don't own
@@ -540,6 +540,6 @@ If you're looking to exploit others, **this is not for you.**
 
 ---
 
-**License:** Apache 2.0 (see [LICENSE](LICENSE))
+**License:** AGPL-3.0 (see [LICENSE](LICENSE))
 **Last Updated:** 2026-03-01
 **Maintained by:** Ariel Fink (@FinkTech)

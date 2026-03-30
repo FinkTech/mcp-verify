@@ -159,7 +159,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## License
 
-This project is licensed under Apache License 2.0.
+This project is licensed under AGPL-3.0.
 
 See [LICENSE](./LICENSE) file for details.
 

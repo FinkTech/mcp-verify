@@ -4,7 +4,7 @@ Enterprise-grade security validation for Model Context Protocol (MCP) servers di
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://github.com/FinkTech/mcp-verify)
 [![Status](https://img.shields.io/badge/status-stable-green)](https://github.com/FinkTech/mcp-verify)
-[![License](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-AGPL--3.0-yellow.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
 ---
 
@@ -491,7 +491,7 @@ npm run watch
 
 ## License
 
-Apache License 2.0 - See [LICENSE](https://github.com/FinkTech/mcp-verify/blob/main/LICENSE)
+AGPL-3.0 - See [LICENSE](https://github.com/FinkTech/mcp-verify/blob/main/LICENSE)
 
 ---
 
