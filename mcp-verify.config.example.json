@@ -8,6 +8,7 @@
     "organizeByFormat": true
   },
   "security": {
+    "enableSecurityScan": true,
     "minScore": 70,
     "failOnCritical": true,
     "failOnHigh": false,
@@ -24,16 +25,22 @@
   },
   "quality": {
     "minScore": 50,
-    "enableSemanticAnalysis": false
+    "enableSemanticAnalysis": false,
+    "llmProvider": "ollama",
+    "_comments": {
+      "llmProvider": "Options: 'anthropic', 'openai', 'ollama'"
+    }
   },
   "fuzzing": {
     "timeout": 5000,
+    "delayBetweenRequests": 100,
     "concurrency": 5,
     "stopOnFirstVulnerability": false,
-    "enableFingerprinting": false
+    "enableFingerprinting": false,
+    "maxPayloadsPerTool": 100
   },
   "network": {
-    "connectionTimeout": 10000,
+    "connectionTimeout": 30000,
     "requestTimeout": 30000,
     "allowInsecure": false,
     "headers": {}
@@ -45,7 +52,7 @@
     "allowNet": []
   },
   "proxy": {
-    "blockedCommands": ["rm -rf", "mkfs"],
+    "blockedCommands": ["rm -rf", "mkfs", "dd if=", "format", ":(){:|:&};:"],
     "piiMasking": false,
     "rateLimiting": true,
     "rateLimit": 60
@@ -69,7 +76,7 @@
   },
   "workspace": {
     "directory": ".mcp-verify",
-    "historyLimit": 100,
+    "historyLimit": 500,
     "persistenceEnabled": true,
     "sessionFile": "session.json",
     "autoSaveInterval": 30000,

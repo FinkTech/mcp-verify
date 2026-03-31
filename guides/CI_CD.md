@@ -1164,8 +1164,8 @@ jobs:
           scp production:/var/log/security-audit.jsonl ./audit.jsonl
 
           # Analyze attack patterns
-          jq -s 'group_by(.findings[0].ruleId) | map({
-            rule: .[0].findings[0].ruleId,
+          jq -s 'group_by(.findings[0].ruleCode) | map({
+            rule: .[0].findings[0].ruleCode,
             count: length,
             severity: .[0].findings[0].severity
           }) | sort_by(.count) | reverse' audit.jsonl > attack-summary.json

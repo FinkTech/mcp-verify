@@ -235,7 +235,7 @@ The Security Gateway implements **progressive threat detection** with early exit
       "layer": 1,
       "latency_ms": 8,
       "findings": [{
-        "ruleId": "SEC-001",
+        "ruleCode": "SEC-001",
         "severity": "critical",
         "message": "SQL injection detected in parameter 'filter'",
         "cwe": "CWE-89",
@@ -278,7 +278,7 @@ The Security Gateway implements **progressive threat detection** with early exit
       "layer": 2,
       "latency_ms": 35,
       "findings": [{
-        "ruleId": "SEC-023",
+        "ruleCode": "SEC-023",
         "severity": "high",
         "message": "Excessive agency detected: negative confirmation flag",
         "remediation": "Require explicit user confirmation for destructive actions"

@@ -1447,7 +1447,7 @@ describe('Security Gateway - Layer 1 (Fast Rules)', () => {
         expect(result.blocked).toBe(true);
         expect(result.layer).toBe(1);
         expect(result.latency_ms).toBeLessThan(10);
-        expect(result.findings[0].ruleId).toContain('SEC-003');
+        expect(result.findings[0].ruleCode).toContain('SEC-003');
         expect(result.findings[0].severity).toBe('critical');
         expect(result.findings[0].cwe).toBe('CWE-89');
       }
@@ -1492,7 +1492,7 @@ describe('Security Gateway - Layer 1 (Fast Rules)', () => {
 
         expect(result.blocked).toBe(true);
         expect(result.layer).toBe(1);
-        expect(result.findings[0].ruleId).toContain('SEC-002');
+        expect(result.findings[0].ruleCode).toContain('SEC-002');
         expect(result.findings[0].cwe).toBe('CWE-78');
       }
     );
@@ -1514,7 +1514,7 @@ describe('Security Gateway - Layer 1 (Fast Rules)', () => {
 
         expect(result.blocked).toBe(true);
         expect(result.layer).toBe(1);
-        expect(result.findings[0].ruleId).toContain('SEC-007');
+        expect(result.findings[0].ruleCode).toContain('SEC-007');
       }
     });
   });
@@ -1594,7 +1594,7 @@ describe('Security Gateway - Layer 2 (Suspicious Rules)', () => {
 
       // Assert - At least one should be flagged as suspicious
       const suspiciousFindings = results.flatMap(r =>
-        r.findings.filter(f => f.ruleId.includes('tool-chaining'))
+        r.findings.filter(f => f.ruleCode.includes('tool-chaining'))
       );
       expect(suspiciousFindings.length).toBeGreaterThan(0);
     });
@@ -1622,7 +1622,7 @@ describe('Security Gateway - Layer 2 (Suspicious Rules)', () => {
 
       // Assert
       const excessivePermFindings = result.findings.filter(
-        f => f.ruleId.includes('excessive-permissions')
+        f => f.ruleCode.includes('excessive-permissions')
       );
       expect(excessivePermFindings.length).toBeGreaterThan(0);
       expect(result.findings[0].severity).toBe('medium');
@@ -1646,7 +1646,7 @@ describe('Security Gateway - Layer 2 (Suspicious Rules)', () => {
 
       // Assert
       const anomalyFindings = result.findings.filter(
-        f => f.ruleId.includes('anomaly') || f.message.includes('unusual')
+        f => f.ruleCode.includes('anomaly') || f.message.includes('unusual')
       );
       expect(anomalyFindings.length).toBeGreaterThan(0);
     });
@@ -1775,7 +1775,7 @@ describe('Security Gateway - Layer 3 (LLM Rules)', () => {
       // Assert
       expect(result.blocked).toBe(true);
       expect(result.layer).toBe(3);
-      expect(result.findings[0].ruleId).toContain('SEC-013'); // Prompt injection
+      expect(result.findings[0].ruleCode).toContain('SEC-013'); // Prompt injection
       expect(mockLLMProvider.analyzeRequest).toHaveBeenCalledTimes(1);
     });
   });
@@ -2281,7 +2281,7 @@ describe('Security Gateway - Integration Tests', () => {
     const auditLog = await readAuditLog('./test-audit.jsonl');
     expect(auditLog.length).toBe(1);
     expect(auditLog[0].blocked).toBe(true);
-    expect(auditLog[0].findings[0].ruleId).toContain('SEC-003');
+    expect(auditLog[0].findings[0].ruleCode).toContain('SEC-003');
   });
 
   it('should allow safe requests to reach target server', async () => {

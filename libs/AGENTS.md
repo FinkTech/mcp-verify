@@ -167,7 +167,7 @@ libs/shared/  (ZERO dependencies, most stable)
 **Steps**:
 1. Create rule file implementing `ISecurityRule` interface
 2. Export from `domain/security/rules/index.ts`
-3. Add to `SECURITY_RULES` array in `security-scanner.ts`
+3. Add to `rules` array in `security-scanner.ts` constructor
 4. Write tests in `domain/security/rules/__tests__/my-rule.spec.ts`
 5. Current count: 60 rules (assign SEC-061, SEC-062, etc.)
 
@@ -248,7 +248,7 @@ import { FuzzerEngine } from '@mcp-verify/fuzzer';
 **Within libs** (use relative imports):
 ```typescript
 // ✅ CORRECT
-import { SecurityRule } from '../rules/rule.interface';
+import { ISecurityRule } from '../rules/rule.interface';
 import { Logger } from '../../infrastructure/logging/logger';
 ```
 

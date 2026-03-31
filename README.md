@@ -109,7 +109,7 @@ HTML: ./reports/html/mcp-report-2026-02-03.html
 |---------|-------------|
 | **🧠 LLM Semantic Analysis** | Optional AI-powered deep checks (Gemini FREE tier, Anthropic, Ollama, OpenAI) |
 | **📄 Multiple Report Formats** | JSON (CI/CD), HTML (human), SARIF (GitHub), Markdown, SVG badges |
-| **📈 Baseline Comparison** | Regression detection with customizable score drop thresholds |
+| **📈 Baseline Comparison** | [Regression detection](./REGRESSION-DETECTION.md) with customizable score drop thresholds |
 | **🌍 Multi-Language** | English + Spanish (i18n system) |
 | **🚀 CI/CD Ready** | Exit codes (`0`=pass, `1`=warnings, `2`=critical) + GitHub Actions integration |
 
@@ -197,7 +197,7 @@ mcp-verify interactive
 # Session management
 set target "node server.js"          # Set default target
 set lang es                           # Change language to Spanish
-config                                # Show current configuration
+status                                # Show session status
 history                               # Show command history
 history --clear                       # Clear all history
 
@@ -235,7 +235,7 @@ mcp-verify (balanced) >
 [my-project] mcp-verify (dev:aggressive) node server.js >
 ```
 
-📚 **Full Shell Guide**: [apps/cli-verifier/claude.md](./apps/cli-verifier/claude.md)
+📚 **Full Shell Guide**: [apps/cli-verifier/CLAUDE.md](./apps/cli-verifier/CLAUDE.md)
 
 ---
 
@@ -324,8 +324,8 @@ Save your current configuration as a reusable profile:
 # Interactive mode
 mcp-verify
 > profile set balanced              # Start from balanced
-> config fuzzing.maxPayloads 75     # Customize
-> config validation.minScore 85
+> set fuzz.maxPayloadsPerTool 75    # Customize
+> set validate.minScore 85
 > profile save my-audit             # Save as custom profile
 
 # Use custom profile
@@ -682,7 +682,7 @@ Structural drifts     : 4
 Server crashes        : 1
 ```
 
-📚 **Fuzzer Architecture**: [libs/fuzzer/claude.md](./libs/fuzzer/claude.md)
+📚 **Fuzzer Architecture**: [libs/fuzzer/CLAUDE.md](./libs/fuzzer/CLAUDE.md)
 
 ---
 
@@ -847,7 +847,7 @@ The server looks secure. The medium warning is about missing
 rate limiting on the expensive_operation tool.
 ```
 
-📚 **MCP Server Docs**: [apps/mcp-server/claude.md](./apps/mcp-server/claude.md)
+📚 **MCP Server Docs**: [apps/mcp-server/CLAUDE.md](./apps/mcp-server/CLAUDE.md)
 
 ---
 
@@ -889,7 +889,7 @@ mcp-verify/
 - **Shared Build**: Single `node_modules`, incremental builds
 
 📚 **Architecture Details**: [ARCHITECTURE.md](./ARCHITECTURE.md)
-📚 **Library Guide**: [libs/claude.md](./libs/claude.md)
+📚 **Library Guide**: [libs/CLAUDE.md](./libs/CLAUDE.md)
 
 ---
 
@@ -1079,7 +1079,7 @@ mcp-verify validate "node server.js"  # Works without Deno
 | Guide | Purpose |
 |-------|---------|
 | **[DEVELOPMENT.md](./DEVELOPMENT.md)** | Local setup, testing, debugging |
-| **[CODE_MAP.md](./CODE_MAP.md)** | Codebase navigation & "I want to..." guide |
+| **[CODE_MAP.md](CODE_MAP.md)** | Codebase navigation & "I want to..." guide |
 | **[ARCHITECTURE.md](./ARCHITECTURE.md)** | System design & architecture decisions |
 | **[Project Structure](#-project-structure-monorepo)** | Monorepo organization (apps/ + libs/) |
 | **[CONTRIBUTING.md](./CONTRIBUTING.md)** | Contribution guidelines |
@@ -1088,15 +1088,15 @@ mcp-verify validate "node server.js"  # Works without Deno
 
 | Module | Purpose | For |
 |--------|---------|-----|
-| **[claude.md](./claude.md)** | **Project overview** - Read this first! | AI Agents |
-| **[apps/claude.md](./apps/claude.md)** | Apps overview (CLI, MCP Server, VSCode, Web) | AI Agents |
-| **[apps/cli-verifier/claude.md](./apps/cli-verifier/claude.md)** | Interactive shell architecture, commands | AI Agents |
-| **[apps/mcp-server/claude.md](./apps/mcp-server/claude.md)** | 7 MCP tools, LLM formatting | AI Agents |
-| **[apps/vscode-extension/claude.md](./apps/vscode-extension/claude.md)** | Extension architecture, providers, views | AI Agents |
-| **[libs/claude.md](./libs/claude.md)** | Libraries overview | AI Agents |
-| **[libs/core/claude.md](./libs/core/claude.md)** | Domain logic, 60 security rules, reporting | AI Agents |
-| **[libs/fuzzer/claude.md](./libs/fuzzer/claude.md)** | Smart Fuzzer v1.0 internals | AI Agents |
-| **[libs/shared/claude.md](./libs/shared/claude.md)** | i18n, CLI helpers, utilities | AI Agents |
+| **[CLAUDE.md](./CLAUDE.md)** | **Project overview** - Read this first! | AI Agents |
+| **[apps/CLAUDE.md](apps/CLAUDE.md)** | Apps overview (CLI, MCP Server, VSCode, Web) | AI Agents |
+| **[apps/cli-verifier/CLAUDE.md](./apps/cli-verifier/CLAUDE.md)** | Interactive shell architecture, commands | AI Agents |
+| **[apps/mcp-server/CLAUDE.md](./apps/mcp-server/CLAUDE.md)** | 7 MCP tools, LLM formatting | AI Agents |
+| **[apps/vscode-extension/CLAUDE.md](./apps/vscode-extension/CLAUDE.md)** | Extension architecture, providers, views | AI Agents |
+| **[libs/CLAUDE.md](./libs/CLAUDE.md)** | Libraries overview | AI Agents |
+| **[libs/core/CLAUDE.md](./libs/core/CLAUDE.md)** | Domain logic, 60 security rules, reporting | AI Agents |
+| **[libs/fuzzer/CLAUDE.md](./libs/fuzzer/CLAUDE.md)** | Smart Fuzzer v1.0 internals | AI Agents |
+| **[libs/shared/CLAUDE.md](libs/shared/CLAUDE.md)** | i18n, CLI helpers, utilities | AI Agents |
 | **[libs/README.md](./libs/README.md)** | Library architecture & dependency rules | Developers |
 | **[tools/README.md](./tools/README.md)** | Mock servers & development scripts | Developers |
 | **[apps/web-dashboard/README.md](./apps/web-dashboard/README.md)** | Web dashboard setup & usage | Developers |
@@ -1460,7 +1460,7 @@ mcp-verify validate "node tools/mocks/servers/simple-server.js"
 
 📖 **Full Guide**: [CONTRIBUTING.md](./CONTRIBUTING.md)
 🌲 **Branching Strategy**: [docs/BRANCHING.md](./docs/BRANCHING.md)
-🗺️ **Codebase Navigation**: [CODE_MAP.md](./CODE_MAP.md)
+🗺️ **Codebase Navigation**: [CODE_MAP.md](CODE_MAP.md)
 🏗️ **Architecture**: [ARCHITECTURE.md](./ARCHITECTURE.md)
 
 ---
@@ -1526,7 +1526,7 @@ Similar to **Grafana**, **MongoDB**, and other successful open-source projects:
 
 All contributions are licensed under AGPL-3.0:
 
-- **DCO Required** - All commits must be signed-off ([Developer Certificate of Origin](./DCO.txt))
+- **DCO Required** - All commits must be signed-off ([Developer Certificate of Origin](DCO.txt))
 - **Contributor License Agreement (CLA)** - May be required for larger contributions
 
 ```bash
@@ -1562,3 +1562,4 @@ If mcp-verify helps secure your MCP servers, please:
 
 **Questions?** Open an issue or start a discussion on GitHub.
 **Need Help?** Run `mcp-verify doctor` or check [guides/](./guides/)
+**Troubleshooting**: [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)

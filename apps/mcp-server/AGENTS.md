@@ -2,6 +2,7 @@
 
 > First MCP tool that enables AI agents to validate other MCP servers
 > Stdio transport, LLM-optimized outputs, English by default
+> **10 specialized tools** for security, quality, and architecture analysis
 
 ---
 
@@ -9,7 +10,7 @@
 
 1. Read this file (MCP server architecture overview)
 2. Identify which component to modify:
-   - Tools → `src/tools/*.ts` (7 tool implementations)
+   - Tools → `src/tools/*.ts` (10 tool implementations)
    - LLM formatting → `src/utils/llm-formatter.ts`
    - Config discovery → `src/utils/config-discovery.ts`
 3. Follow tool implementation pattern (Zod validation, error handling, formatForLLM)
@@ -22,6 +23,9 @@
 This is the **first MCP server** that allows AI agents (Claude, GPT, etc.) to:
 - Validate MCP servers before deployment
 - Scan for security vulnerabilities (60 rules across 6 threat categories)
+- **Deep Fuzzing**: Target individual tools with smart attack payloads
+- **Semantic Intent Analysis**: Detect malicious tools using advanced LLM reasoning
+- **Automatic Hardening**: Suggest secure JSON schemas using the "Shield Pattern"
 - Analyze quality metrics (naming, documentation, semantic clarity)
 - Generate multi-format reports (JSON, SARIF, Markdown, Text)
 - Compare multiple servers side-by-side
@@ -31,7 +35,7 @@ This is the **first MCP server** that allows AI agents (Claude, GPT, etc.) to:
 
 ---
 
-## 7 MCP Tools (Quick Reference)
+## 10 MCP Tools (Quick Reference)
 
 ### 1. validateServer
 Comprehensive validation (handshake, discovery, schema, security, quality, protocol).
@@ -93,6 +97,55 @@ Multi-server comparison (security, quality, protocol compliance, capability coun
 **Input**: `{ serverNames?: string[]; servers?: Array<{name, command, args}> }`
 
 **Outputs**: Side-by-side comparison matrix with rankings (most/least secure, highest/lowest quality).
+
+---
+
+### 8. fuzzTool (Tier S)
+Execute selective fuzzing on a specific MCP tool to identify security vulnerabilities. Supports light, balanced, and aggressive profiles.
+
+**Input**: `{ command, args?, toolName, profile?, maxDuration? }`
+
+**Example**:
+```json
+{
+  "command": "node",
+  "args": ["suspicious-server.js"],
+  "toolName": "execute_command",
+  "profile": "balanced"
+}
+```
+
+---
+
+### 9. inspectToolSemantics (Tier S)
+Analyze an MCP tool for malicious intent using strict LLM analysis. Detects discrepancies between claimed function and actual capabilities.
+
+**Input**: `{ command?, args?, toolName?, toolDefinition?, llmProvider?, llmModel? }`
+
+**Example**:
+```json
+{
+  "command": "node",
+  "toolName": "read_file",
+  "llmProvider": "anthropic"
+}
+```
+
+---
+
+### 10. suggestSecureSchema (Tier S)
+Analyze MCP tool input schema and suggest security-hardened version with constraints (maxLength, patterns, bounds, enums).
+
+**Input**: `{ command?, args?, toolName?, toolDefinition?, strictness? }`
+
+**Example**:
+```json
+{
+  "command": "node",
+  "toolName": "send_email",
+  "strictness": "balanced"
+}
+```
 
 ---
 

@@ -158,22 +158,22 @@ libs/
 **Steps**:
 1. Create `libs/core/domain/security/rules/my-rule.ts`:
    ```typescript
-   export class MyRule implements SecurityRule {
+   export class MyRule implements ISecurityRule {
      id = 'SEC-013';
      name = 'My Security Rule';
      severity = 'high';
 
-     analyze(tool: McpTool): SecurityFinding[] {
+     evaluate(discovery: DiscoveryResult): SecurityFinding[] {
        // Implementation
      }
    }
    ```
 
-2. Register in `libs/core/domain/security/security-analyzer.ts`
+2. Register in `libs/core/domain/security/security-scanner.ts`
 
 3. Add tests in `tests/core/domain/security/rules/my-rule.spec.ts`
 
-**Details**: See [CODE_MAP.md](../CODE_MAP.md#security-rules)
+**Details**: See [../CODE_MAP.md](../CODE_MAP.md#security-rules)
 
 ---
 
@@ -195,7 +195,7 @@ libs/
 
 3. Add tests in `tests/core/domain/quality/providers/my-provider.spec.ts`
 
-**Details**: See [CODE_MAP.md](../CODE_MAP.md#llm-providers)
+**Details**: See [../CODE_MAP.md](../CODE_MAP.md#llm-providers)
 
 ---
 
@@ -265,7 +265,7 @@ Is it business logic?
             └─ NO → Keep it in your app/
 ```
 
-**Still unsure?** Check [CODE_MAP.md](../CODE_MAP.md) for specific examples.
+**Still unsure?** Check [../CODE_MAP.md](../CODE_MAP.md) for specific examples.
 
 ---
 
@@ -345,7 +345,7 @@ export class Validator {
 
 ## 📚 Related Documentation
 
-- [CODE_MAP.md](../CODE_MAP.md) - "I want to add X" quick reference
+- [../CODE_MAP.md](../CODE_MAP.md) - "I want to add X" quick reference
 - [ARCHITECTURE.md](../ARCHITECTURE.md) - System design philosophy
 - [DEVELOPMENT.md](../DEVELOPMENT.md) - Local development setup
 - [libs/core/README.md](./core/README.md) - Core library details
@@ -357,7 +357,7 @@ export class Validator {
 
 **Can't find where something belongs?**
 
-1. Check [CODE_MAP.md](../CODE_MAP.md) - Searchable "I want to..." guide
+1. Check [../CODE_MAP.md](../CODE_MAP.md) - Searchable "I want to..." guide
 2. Read [ARCHITECTURE.md](../ARCHITECTURE.md) - Understand design decisions
 3. Ask in [GitHub Discussions](https://github.com/FinkTech/mcp-verify/discussions)
 

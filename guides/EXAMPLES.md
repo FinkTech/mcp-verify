@@ -65,10 +65,10 @@ mcp-verify validate http://localhost:3000 --transport http
 
 ```bash
 # Basic security scan
-mcp-verify validate "node server.js" --security
+mcp-verify validate "node server.js" 
 
 # Security scan with detailed output
-mcp-verify validate "node server.js" --security --verbose
+mcp-verify validate \"node server.js\" --verbose
 ```
 
 ### Security with Baseline Comparison
@@ -76,26 +76,28 @@ mcp-verify validate "node server.js" --security --verbose
 ```bash
 # Create baseline
 mcp-verify validate "node server.js" \
-  --security \
+   \
   --save-baseline ./baselines/v1.0.0.json
 
 # Compare against baseline
 mcp-verify validate "node server.js" \
-  --security \
+   \
   --compare-baseline ./baselines/v1.0.0.json
 
 # Fail build on degradation
 mcp-verify validate "node server.js" \
-  --security \
+   \
   --compare-baseline ./baselines/v1.0.0.json \
   --fail-on-degradation
 ```
+
+📚 **Detailed Guide**: [Regression Detection Guide](../REGRESSION-DETECTION.md)
 
 ### Generate SARIF for GitHub Security
 
 ```bash
 mcp-verify validate "node server.js" \
-  --security \
+   \
   --format sarif \
   --output ./reports
 ```
@@ -108,17 +110,17 @@ mcp-verify validate "node server.js" \
 
 ```bash
 # Quality analysis only
-mcp-verify validate "node server.js" --quality
+mcp-verify validate "node server.js" 
 
 # Quality with detailed report
-mcp-verify validate "node server.js" --quality --verbose
+mcp-verify validate \"node server.js\" --verbose
 ```
 
 ### Quality with Score Threshold
 
 ```bash
 # Fail if quality score < 80
-mcp-verify validate "node server.js" --quality --min-score 80
+mcp-verify validate \"node server.js\" --min-score 80
 ```
 
 ---
@@ -170,13 +172,13 @@ mcp-verify validate "node server.js" --llm openai:gpt-4o
 ```bash
 # Full analysis with Ollama
 mcp-verify validate "node server.js" \
-  --security \
+   \
   --llm ollama:llama3.2 \
   --output ./reports
 
 # Full analysis with Anthropic
 mcp-verify validate "node server.js" \
-  --security \
+   \
   --llm anthropic:claude-haiku-4-5-20251001 \
   --format html
 ```
@@ -218,8 +220,8 @@ jobs:
         run: |
           cd mcp-verify
           node dist/mcp-verify.js validate \
-            --server "node ../your-server.js" \
-            --security \
+            "node ../your-server.js" \
+             \
             --format sarif \
             --output ../reports
 
@@ -242,8 +244,8 @@ mcp_validation:
     - npm install
     - npm run build
     - node dist/mcp-verify.js validate \
-        --server "node ../server.js" \
-        --security \
+        "node ../server.js" \
+         \
         --format json
   artifacts:
     reports:
@@ -275,8 +277,8 @@ jobs:
           command: |
             cd mcp-verify
             node dist/mcp-verify.js validate \
-              --server "node ../server.js" \
-              --security
+              "node ../server.js" \
+              
 ```
 
 ### With LLM in CI/CD
@@ -288,8 +290,8 @@ jobs:
     ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
   run: |
     mcp-verify validate \
-      --server "node server.js" \
-      --security \
+      "node server.js" \
+       \
       --llm anthropic:claude-haiku-4-5-20251001 \
       --fail-on-critical
 ```
@@ -418,14 +420,14 @@ mcp-verify validate "node server.js" \
 Test your server against real-world attack payloads (Jailbreaks, Prompt Injections, SQLi).
 
 ```bash
-# Enable full smart fuzzing
+# Enable full smart fuzzing on all tools during validation
 mcp-verify validate "node server.js" --fuzz
 
-# Target specific tool and parameter for deep fuzzing
-mcp-verify validate "node server.js" --fuzz --fuzz-tool ask_ai --fuzz-param user_input
+# Deep fuzzing on a specific tool and parameter
+mcp-verify fuzz "node server.js" --tool ask_ai --param user_input
 
 # Use specific generators (e.g., only Prompt Injection)
-mcp-verify validate "node server.js" --fuzz --fuzz-generators prompt
+mcp-verify fuzz "node server.js" --generators prompt
 ```
 
 ### Sandbox Mode
@@ -483,76 +485,68 @@ mcp-verify dashboard "node server.js" --port 8080
 # Open browser to: http://localhost:8080
 ```
 
----
-
 ## 🛡️ Security Gateway (Runtime Protection)
 
-Deploy a real-time security proxy between AI agents and your MCP server.
+Deploy a real-time security proxy between AI agents and your MCP server. Protection Layer 1 (Fast Patterns) and Layer 2 (Suspicious Heuristics) are active.
 
 ### Basic Proxy Setup
 
 ```bash
-# Start proxy with Layers 1+2 (production-safe, no external API calls)
-mcp-verify proxy \
-  --target "node my-server.js" \
-  --port 3000
+# Start proxy with default guardrails (Layer 1+2 ACTIVE)
+mcp-verify proxy --target "node my-server.js" --port 3000
+```
 
-# In another terminal, test it
-curl -X POST http://localhost:3000 \
+### Testing the Proxy
+
+In another terminal, you can test the protection by sending a manual JSON-RPC request:
+
+```bash
+curl -X POST http://localhost:3000/message \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_user","arguments":{"userId":"123"}}}'
 ```
 
-### With Audit Logging
+### With Audit Logging & Monitoring
+
+Enable the audit log to track every request, response, and block event.
 
 ```bash
-# Enable audit log to track all blocked requests
-mcp-verify proxy \
-  --target "node my-server.js" \
-  --port 3000 \
-  --audit-log ./logs/security-audit.jsonl
+# Start with logging enabled
+mcp-verify proxy --target "node server.js" --port 3000 --log-file ./logs/security-audit.jsonl
 
-# View blocked requests in real-time
-tail -f ./logs/security-audit.jsonl | jq 'select(.blocked == true)'
+# View blocked requests in real-time (using jq)
+tail -f ./logs/security-audit.jsonl | jq 'select(.type == "block")'
 ```
 
-### Enable Layer 3 (LLM Analysis)
+### Production Best Practices
+
+For production environments, ensure your logs are protected:
 
 ```bash
-# Development/high-security mode with AI-powered semantic analysis
-export ANTHROPIC_API_KEY="sk-ant-api03-..."
-
-mcp-verify proxy \
-  --target "node my-server.js" \
-  --port 3000 \
-  --enable-llm-layer \
-  --audit-log ./logs/security-audit.jsonl
-```
-
-### Custom Rate Limiting
-
-```bash
-# Limit to 50 requests per minute per tool
-mcp-verify proxy \
-  --target "node my-server.js" \
-  --port 3000 \
-  --rate-limit 50
-```
-
-### Production Deployment
-
-```bash
-# Secure production setup
+# Secure log directory
 mkdir -p ./logs
 chmod 700 ./logs
 
-mcp-verify proxy \
-  --target "node production-server.js" \
-  --port 3000 \
-  --rate-limit 100 \
-  --audit-log ./logs/security-audit.jsonl \
-  --no-llm-layer  # Explicitly disable Layer 3 for privacy
+# Run proxy with restricted logging
+mcp-verify proxy --target "node prod-server.js" --port 3000 --log-file ./logs/proxy.jsonl
 ```
+
+### 🚀 Future Capabilities (Coming Soon)
+
+The following advanced security features and CLI-based fine-tuning are planned for future updates:
+
+```bash
+# AI-powered semantic protection (Layer 3) - Planned
+# mcp-verify proxy --target "node server.js" --llm-layer
+
+# Fine-tune rate limiting via CLI - Planned (Currently defaults to 60 RPM)
+# mcp-verify proxy --target "node server.js" --rate-limit 100
+
+# Enable PII masking in proxy logs - Planned
+# mcp-verify proxy --target "node server.js" --mask-pii
+```
+
+---
 
 ### Connecting Claude Desktop Through Proxy
 
@@ -581,7 +575,7 @@ Update your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 jq -s 'map(select(.blocked == true)) | length' ./logs/security-audit.jsonl
 
 # Group by rule ID
-jq -s 'group_by(.findings[0].ruleId) | map({rule: .[0].findings[0].ruleId, count: length})' ./logs/security-audit.jsonl
+jq -s 'group_by(.findings[0].ruleCode) | map({rule: .[0].findings[0].ruleCode, count: length})' ./logs/security-audit.jsonl
 
 # Find clients approaching Strike 3 (Panic Mode)
 jq -s 'group_by(.clientId) | map({client: .[0].clientId, maxStrikes: ([.[].strikes] | max)}) | .[] | select(.maxStrikes >= 2)' ./logs/security-audit.jsonl
@@ -615,7 +609,7 @@ curl -X POST http://localhost:3000 \
 #       "blocked": true,
 #       "layer": 1,
 #       "findings": [{
-#         "ruleId": "SEC-003",
+#         "ruleCode": "SEC-003",
 #         "severity": "critical",
 #         "message": "SQL injection detected"
 #       }]
@@ -650,7 +644,7 @@ EXPOSE 3000
 CMD ["node", "dist/mcp-verify.js", "proxy", \
      "--target", "node production-server.js", \
      "--port", "3000", \
-     "--audit-log", "/var/log/security-audit.jsonl"]
+     "--log-file", "/var/log/security-audit.jsonl"]
 ```
 
 ```bash
@@ -689,7 +683,7 @@ jobs:
           node dist/mcp-verify.js proxy \
             --target "node ../server.js" \
             --port 3000 \
-            --audit-log ../logs/audit.jsonl &
+            --log-file ../logs/audit.jsonl &
           sleep 5
 
       - name: Test Attack Blocking
@@ -755,7 +749,7 @@ Reports saved to: ./reportes/
 ```bash
 # Full security audit with LLM analysis
 mcp-verify validate "node server.js" \
-  --security \
+   \
   --llm ollama:llama3.2 \
   --format html \
   --format sarif \
@@ -772,7 +766,7 @@ mcp-verify validate "node server.js" \
 ```bash
 # Automated validation in CI
 mcp-verify validate "node server.js" \
-  --security \
+   \
   --llm anthropic:claude-haiku-4-5-20251001 \
   --format sarif \
   --compare-baseline ./baseline.json \
@@ -789,7 +783,7 @@ mcp-verify validate "node server.js" \
 ```bash
 # Audit external MCP server before installing
 mcp-verify validate "npx @external/mcp-server" \
-  --security \
+   \
   --llm ollama:llama3.2 \
   --format html \
   --output ./audit-reports
@@ -853,8 +847,8 @@ mcp-verify validate "node server.js" --json-stdout | \
 mcp-verify validate "node server.js"
 
 # Then add features incrementally
-mcp-verify validate "node server.js" --security
-mcp-verify validate "node server.js" --security --llm ollama:llama3.2
+mcp-verify validate "node server.js" 
+mcp-verify validate \"node server.js\" --llm ollama:llama3.2
 ```
 
 ### Tip 2: Use Baselines in CI/CD
@@ -877,7 +871,7 @@ fi
 # TypeScript + ESLint + mcp-verify
 npm run type-check && \
 npm run lint && \
-mcp-verify validate "node server.js" --security
+mcp-verify validate "node server.js" 
 ```
 
 ### Tip 4: Cache LLM Results
@@ -896,8 +890,8 @@ mcp-verify validate "node server.js" --llm ollama:llama3.2
 
 ## ❓ FAQ
 
-**Q: What's the difference between `--security` and `--llm`?**
-A: `--security` runs 60 comprehensive security rules. `--llm` adds deep semantic analysis. Use both for maximum coverage.
+**Q: What's the difference between standard security and `--llm`?**
+A: mcp-verify runs 60 comprehensive security rules. `--llm` adds deep semantic analysis. Use both for maximum coverage.
 
 ---
 
@@ -907,7 +901,7 @@ Always run unknown or third-party servers in a sandbox to prevent them from acce
 
 ```bash
 # Isolated execution in Deno sandbox (Node.js/Deno only)
-mcp-verify validate "node server.js" --security --sandbox
+mcp-verify validate \"node server.js\" --sandbox
 
 # Static analysis only (no execution)
 mcp-verify validate "python server.py" --no-sandbox

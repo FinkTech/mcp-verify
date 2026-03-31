@@ -1065,14 +1065,15 @@ export class McpProxyServer extends EventEmitter {
    * Layer 3: LLM-based rules (opt-in, token-consuming).
    * Requires LLM API call for deep semantic intent analysis.
    *
-   * LLM Rule Set (15 rules): SEC-025, SEC-027, SEC-029, SEC-031, SEC-035, SEC-037, SEC-038, SEC-051, SEC-052, SEC-055, SEC-056, etc.
+   * STATUS: Layer 1 & 2 are ACTIVE. Layer 3 (AI Semantic Analysis) is planned for a future update.
+   * The architecture is ready to receive Layer 3, but the intent analysis engine is pending.
    */
   private async runLLMRules(message: JsonRpcMessage): Promise<SecurityFinding[]> {
     const findings: SecurityFinding[] = [];
 
-    // Note: LLM analysis is expensive and opt-in
-    // For now, return empty findings
-    // Future: Implement LLM-based intent analysis
+    // Note: LLM analysis is expensive and opt-in.
+    // For now, return empty findings as this layer is planned for a future release.
+    // Future: Implement LLM-based intent analysis engine.
 
     return findings;
   }

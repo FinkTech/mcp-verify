@@ -36,9 +36,9 @@ libs/core/
 │   ├── mcp-server/           # MCP protocol entities
 │   │   └── entities/         # Tool, Resource, Prompt types
 │   │
-│   ├── security/             # Security analysis
-│   │   ├── rules/            # 12 OWASP security rules
-│   │   └── security-analyzer.ts  # Rule orchestrator + scoring
+├── security/             # Security analysis
+│   ├── rules/            # 60 security rules (6 threat category blocks)
+│   └── security-scanner.ts  # Rule orchestrator + scoring
 │   │
 │   ├── quality/              # Quality analysis
 │   │   ├── providers/        # LLM providers (Anthropic, Ollama, OpenAI)
@@ -157,27 +157,34 @@ libs/core/
 1. **Create rule file**: `domain/security/rules/hardcoded-secrets.ts`
 
 ```typescript
-import { SecurityRule, SecurityFinding } from '../security-analyzer';
-import { McpTool } from '../../mcp-server/entities/validation.types';
+import { ISecurityRule, SecurityFinding } from '../security-scanner';
+import { DiscoveryResult } from '../../mcp-server/entities/validation.types';
 
-export class HardcodedSecretsRule implements SecurityRule {
-  id = 'SEC-013';
-  name = 'Hardcoded Secrets';
-  severity: 'critical' = 'critical';
+export class HardcodedSecretsRule implements ISecurityRule {
+  readonly code = 'SEC-013';
+  readonly name = 'Hardcoded Secrets';
+  readonly severity: 'critical' = 'critical';
 
-  analyze(tool: McpTool): SecurityFinding[] {
+  evaluate(discovery: DiscoveryResult): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
     const secretPatterns = /\b(password|secret|key|token)\s*=\s*['"][^'"]+['"]/gi;
 
-    // Check description
-    if (secretPatterns.test(tool.description)) {
-      findings.push({
-        ruleId: this.id,
-        severity: this.severity,
-        message: `Hardcoded secret detected in tool "${tool.name}"`,
-        component: `tool:${tool.name}`,
-        suggestion: 'Remove hardcoded secrets, use environment variables'
-      });
+    for (const tool of discovery.tools) {
+      // Check description
+      if (secretPatterns.test(tool.description)) {
+        findings.push({
+          ruleCode: this.code,
+          severity: this.severity,
+          message: `Hardcoded secret detected in tool "${tool.name}"`,
+          component: `tool:${tool.name}`,
+          suggestion: 'Remove hardcoded secrets, use environment variables'
+        });
+      }
+    }
+
+    return findings;
+  }
+}
     }
 
     // Check parameters
@@ -186,7 +193,7 @@ export class HardcodedSecretsRule implements SecurityRule {
         const desc = (paramConfig as any).description || '';
         if (secretPatterns.test(desc)) {
           findings.push({
-            ruleId: this.id,
+            ruleCode: this.id,
             severity: this.severity,
             message: `Hardcoded secret in parameter "${paramName}"`,
             component: `tool:${tool.name}.${paramName}`,
@@ -201,13 +208,13 @@ export class HardcodedSecretsRule implements SecurityRule {
 }
 ```
 
-2. **Register rule**: `domain/security/security-analyzer.ts`
+2. **Register rule**: `domain/security/security-scanner.ts`
 
 ```typescript
 import { HardcodedSecretsRule } from './rules/hardcoded-secrets';
 
-export class SecurityAnalyzer {
-  private rules: SecurityRule[] = [
+export class SecurityScanner {
+  private rules: ISecurityRule[] = [
     // ... existing rules
     new HardcodedSecretsRule(), // ← Add here
   ];
@@ -223,9 +230,14 @@ import { HardcodedSecretsRule } from '../../../../../libs/core/domain/security/r
 describe('HardcodedSecretsRule', () => {
   test('should detect hardcoded password in description', () => {
     const rule = new HardcodedSecretsRule();
-    const findings = rule.analyze({
-      name: 'login',
-      description: 'Login with password="admin123"'
+    const findings = rule.evaluate({
+      tools: [{
+        name: 'login',
+        description: 'Login with password="admin123"',
+        inputSchema: { type: 'object', properties: {} }
+      }],
+      resources: [],
+      prompts: []
     });
 
     expect(findings).toHaveLength(1);
@@ -234,9 +246,14 @@ describe('HardcodedSecretsRule', () => {
 
   test('should not flag normal description', () => {
     const rule = new HardcodedSecretsRule();
-    const findings = rule.analyze({
-      name: 'get_weather',
-      description: 'Get current weather'
+    const findings = rule.evaluate({
+      tools: [{
+        name: 'get_weather',
+        description: 'Get current weather',
+        inputSchema: { type: 'object', properties: {} }
+      }],
+      resources: [],
+      prompts: []
     });
 
     expect(findings).toHaveLength(0);
@@ -512,9 +529,9 @@ export class Logger {
 ### ❌ Anti-Pattern 2: I/O in Domain
 
 ```typescript
-// ❌ BAD: domain/security/security-analyzer.ts
-export class SecurityAnalyzer {
-  async analyze(discovery: DiscoveryResult) {
+// ❌ BAD: domain/security/security-scanner.ts
+export class SecurityScanner {
+  async scan(discovery: DiscoveryResult) {
     const config = await fs.readFile('./config.json'); // NO I/O in domain!
   }
 }
@@ -553,7 +570,7 @@ Apps (CLI)
     ↓ creates
 Use Cases (Validator)
     ↓ uses
-Domain (SecurityAnalyzer, SemanticAnalyzer)
+Domain (SecurityScanner, SemanticAnalyzer)
     ↓ uses
 Domain Entities (McpTool, SecurityFinding)
     ↓ uses
@@ -574,8 +591,8 @@ Shared Utilities (i18n, formatters)
 
 ```typescript
 // No mocks needed! Domain is pure.
-test('SecurityAnalyzer calculates score correctly', () => {
-  const analyzer = new SecurityAnalyzer();
+test('SecurityScanner calculates score correctly', () => {
+  const analyzer = new SecurityScanner();
   const result = analyzer.analyze({
     tools: [{
       name: 'dangerous',

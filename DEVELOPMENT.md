@@ -1,25 +1,25 @@
 # 🛠️ Development Guide
 
-**Last Updated**: 2026-02-24
+**Last Updated**: 2026-03-30
 **Target Audience**: Contributors (Persona 4)
 **Time to Setup**: 10-15 minutes
 
 ---
 
-## 📚 Navigation Aid: claude.md Files
+## 📚 Navigation Aid: CLAUDE.md Files
 
-**NEW**: The project includes `claude.md` files throughout the codebase to help AI agents and developers navigate efficiently.
+**NEW**: The project includes `CLAUDE.md` files throughout the codebase to help AI agents and developers navigate efficiently.
 
-### How to Use claude.md Files
+### How to Use CLAUDE.md Files
 
 | File | Purpose | When to Read |
 |------|---------|--------------|
-| [`/claude.md`](./claude.md) | **Project overview** | First stop for new contributors |
-| [`/apps/claude.md`](./apps/claude.md) | Apps overview (CLI, Web, MCP Server, VSCode) | Working on user-facing apps |
-| [`/libs/claude.md`](./libs/claude.md) | Libraries overview | Working on core business logic |
-| [`/libs/core/claude.md`](./libs/core/claude.md) | Domain logic, 13 security rules, reporting | Adding security rules or reports |
-| [`/libs/fuzzer/claude.md`](./libs/fuzzer/claude.md) | Smart Fuzzer v1.0 architecture | Working on fuzzing engine |
-| [`/apps/cli-verifier/claude.md`](./apps/cli-verifier/claude.md) | CLI structure, interactive shell | Working on CLI commands |
+| [`/CLAUDE.md`](./CLAUDE.md) | **Project overview** | First stop for new contributors |
+| [`/apps/CLAUDE.md`](./apps/CLAUDE.md) | Apps overview (CLI, Web, MCP Server, VSCode) | Working on user-facing apps |
+| [`/libs/CLAUDE.md`](./libs/CLAUDE.md) | Libraries overview | Working on core business logic |
+| [`/libs/core/CLAUDE.md`](./libs/core/CLAUDE.md) | Domain logic, 60 security rules, reporting | Adding security rules or reports |
+| [`/libs/fuzzer/CLAUDE.md`](./libs/fuzzer/CLAUDE.md) | Smart Fuzzer v1.0 architecture | Working on fuzzing engine |
+| [`/apps/cli-verifier/CLAUDE.md`](./apps/cli-verifier/CLAUDE.md) | CLI structure, interactive shell | Working on CLI commands |
 
 ### Benefits
 
@@ -31,21 +31,21 @@
 ### Example Workflow
 
 ```bash
-# 1. Start at root claude.md
-cat claude.md  # Get project overview
+# 1. Start at root CLAUDE.md
+cat CLAUDE.md  # Get project overview
 
 # 2. Navigate to specific module
-cat libs/core/claude.md  # Understand domain layer
+cat libs/core/CLAUDE.md  # Understand domain layer
 
 # 3. Find specific file
-# claude.md tells you: "Security rules → libs/core/domain/security/rules/"
+# CLAUDE.md tells you: "Security rules → libs/core/domain/security/rules/"
 vim libs/core/domain/security/rules/sql-injection.rule.ts
 
 # 4. Read module-specific patterns
-# Each claude.md includes "Common Patterns" section
+# Each CLAUDE.md includes "Common Patterns" section
 ```
 
-**Pro Tip**: Use [`CODE_MAP.md`](./CODE_MAP.md) for "I want to..." quick reference, then use `claude.md` files for detailed module navigation.
+**Pro Tip**: Use [`CODE_MAP.md`](./CODE_MAP.md) for "I want to..." quick reference, then use `CLAUDE.md` files for detailed module navigation.
 
 ---
 
@@ -130,7 +130,7 @@ mcp-verify/
 ├── libs/                          # Shared libraries
 │   ├── core/                     # Core business logic
 │   │   ├── domain/              # Domain models & business rules
-│   │   │   ├── security/        # 13 OWASP security rules
+│   │   │   ├── security/        # 60 OWASP security rules
 │   │   │   ├── quality/         # LLM semantic analysis
 │   │   │   ├── reporting/       # Report generation (JSON/HTML/SARIF)
 │   │   │   ├── validation/      # Protocol validation
@@ -469,12 +469,12 @@ export function a(x: any): any {
 
 | Type | Convention | Example |
 |------|------------|---------|
-| **Classes** | PascalCase | `SecurityAnalyzer` |
+| **Classes** | PascalCase | `SecurityScanner` |
 | **Functions** | camelCase | `analyzeTool` |
 | **Constants** | UPPER_SNAKE_CASE | `MAX_TIMEOUT` |
 | **Interfaces** | PascalCase with `I` prefix | `ITransport` |
 | **Types** | PascalCase | `SecurityFinding` |
-| **Files** | kebab-case | `security-analyzer.ts` |
+| **Files** | kebab-case | `security-scanner.ts` |
 
 ### File Organization
 
@@ -492,12 +492,12 @@ export interface AnalyzerConfig {
 const DEFAULT_TIMEOUT = 30000;
 
 // 4. Class/Functions
-export class SecurityAnalyzer {
+export class SecurityScanner {
   // ...
 }
 
 // 5. Exports (if needed)
-export { SecurityAnalyzer as default };
+export { SecurityScanner as default };
 ```
 
 ---
@@ -651,26 +651,28 @@ mcp-verify validate <target>
 `libs/core/domain/security/rules/my-new-rule.ts`:
 
 ```typescript
-import { SecurityRule, SecurityFinding } from '../security-analyzer';
-import { McpTool } from '../../mcp-server/entities/validation.types';
+import { ISecurityRule, SecurityFinding } from '../security-scanner';
+import { DiscoveryResult } from '../../mcp-server/entities/validation.types';
 
-export class MyNewRule implements SecurityRule {
-  id = 'SEC-013';
-  name = 'My New Security Rule';
+export class MyNewRule implements ISecurityRule {
+  readonly code = 'SEC-013';
+  readonly name = 'My New Security Rule';
   severity: 'critical' | 'high' | 'medium' | 'low' = 'high';
 
-  analyze(tool: McpTool): SecurityFinding[] {
+  evaluate(discovery: DiscoveryResult): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
 
-    // Check tool name/description
-    if (tool.description.includes('dangerous_pattern')) {
-      findings.push({
-        ruleId: this.id,
-        severity: this.severity,
-        message: 'Dangerous pattern detected',
-        component: `tool:${tool.name}`,
-        suggestion: 'Remove dangerous pattern or add safeguards'
-      });
+    for (const tool of discovery.tools) {
+      // Check tool name/description
+      if (tool.description.includes('dangerous_pattern')) {
+        findings.push({
+          ruleCode: this.code,
+          severity: this.severity,
+          message: 'Dangerous pattern detected',
+          component: `tool:${tool.name}`,
+          suggestion: 'Remove dangerous pattern or add safeguards'
+        });
+      }
     }
 
     return findings;
@@ -680,12 +682,12 @@ export class MyNewRule implements SecurityRule {
 
 ### 2. Register Rule
 
-`libs/core/domain/security/security-analyzer.ts`:
+`libs/core/domain/security/security-scanner.ts`:
 
 ```typescript
 import { MyNewRule } from './rules/my-new-rule';
 
-const rules: SecurityRule[] = [
+const rules: ISecurityRule[] = [
   // ...existing rules
   new MyNewRule(),
 ];
@@ -765,16 +767,16 @@ Layer 1 rules must be **extremely accurate** (zero false positives) and **fast**
 
 ```typescript
 // libs/core/domain/security/rules/custom-detection.rule.ts
-import { SecurityRule, SecurityFinding, DiscoveryResult } from '../types';
+import { ISecurityRule, SecurityFinding, DiscoveryResult } from '../types';
 
-export class CustomDetectionRule implements SecurityRule {
-  readonly id = 'SEC-014'; // Next available ID
+export class CustomDetectionRule implements ISecurityRule {
+  readonly readonly code = 'SEC-014'; // Next available ID
   readonly name = 'Custom Attack Detection';
   readonly severity = 'critical';
   readonly cwe = 'CWE-XXX';
   readonly owasp = 'A0X:2021 - Category';
 
-  check(discovery: DiscoveryResult): SecurityFinding[] {
+  evaluate(discovery: DiscoveryResult): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
 
     for (const tool of discovery.tools) {
@@ -810,7 +812,7 @@ export class CustomDetectionRule implements SecurityRule {
 import { CustomDetectionRule } from './rules/custom-detection.rule';
 
 export class SecurityScanner {
-  private readonly rules: SecurityRule[] = [
+  private readonly rules: ISecurityRule[] = [
     // ... existing rules
     new CustomDetectionRule() // Add your rule
   ];
@@ -883,8 +885,8 @@ Layer 2 rules use heuristics and may have false positives. They must run in <50m
 
 ```typescript
 // libs/core/domain/security/rules/suspicious-behavior.rule.ts
-export class SuspiciousBehaviorRule implements SecurityRule {
-  readonly id = 'SEC-015';
+export class SuspiciousBehaviorRule implements ISecurityRule {
+  readonly readonly code = 'SEC-015';
   readonly name = 'Suspicious Behavior Detection';
   readonly severity = 'medium'; // Layer 2 uses medium/low severity
 
@@ -1254,8 +1256,8 @@ const gateway = new SecurityGateway({
 
 ```typescript
 // BAD: Heuristic in Layer 1
-export class BadLayer1Rule implements SecurityRule {
-  check(discovery: DiscoveryResult): SecurityFinding[] {
+export class BadLayer1Rule implements ISecurityRule {
+  evaluate(discovery: DiscoveryResult): SecurityFinding[] {
     // ❌ WRONG: This will produce false positives
     if (discovery.tools.length > 10) {
       return [{ message: 'Too many tools!' }]; // False positive!
@@ -1264,8 +1266,8 @@ export class BadLayer1Rule implements SecurityRule {
 }
 
 // GOOD: Pattern-based only
-export class GoodLayer1Rule implements SecurityRule {
-  check(discovery: DiscoveryResult): SecurityFinding[] {
+export class GoodLayer1Rule implements ISecurityRule {
+  evaluate(discovery: DiscoveryResult): SecurityFinding[] {
     // ✅ CORRECT: Exact pattern matching
     const sqlPattern = /(SELECT|DELETE|UPDATE|INSERT)\s+.*FROM/i;
     // ... pattern-based detection only

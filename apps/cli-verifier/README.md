@@ -266,7 +266,7 @@ export class CsvGenerator {
     report.security.findings.forEach(finding => {
       const row = [
         finding.severity,
-        finding.ruleId,
+        finding.ruleCode,
         finding.toolName || 'N/A',
         `"${finding.message.replace(/"/g, '""')}"`
       ].join(',');

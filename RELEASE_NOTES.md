@@ -159,7 +159,7 @@ Every blocked request includes full forensic context:
       "layer": 1,
       "latency_ms": 8,
       "findings": [{
-        "ruleId": "SEC-003",
+        "ruleCode": "SEC-003",
         "severity": "critical",
         "message": "SQL injection detected in parameter 'filter'",
         "cwe": "CWE-89",

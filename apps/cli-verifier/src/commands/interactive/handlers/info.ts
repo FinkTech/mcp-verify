@@ -72,7 +72,7 @@ export function showHelp(): void {
 }
 
 export function helpRow(cmd: string, args: string, desc: string): void {
-  const C = 20, A = 26;
+  const C = 20, A = 40;
   console.log(`    ${chalk.cyan(cmd.padEnd(C))}${chalk.dim(args.padEnd(A))}${desc}`);
 }
 

@@ -331,7 +331,7 @@ mcp-verify proxy --target "node my-server.js" --port 3000
       "layer": 1,
       "latency_ms": 8,
       "findings": [{
-        "ruleId": "SEC-003",
+        "ruleCode": "SEC-003",
         "severity": "critical",
         "message": "SQL injection detected in parameter 'filter'",
         "cwe": "CWE-89",
@@ -471,7 +471,7 @@ mcp-verify proxy \
 tail -f ./logs/security-audit.jsonl | jq 'select(.blocked == true)'
 
 # Step 4: Analyze attack patterns
-jq -s 'group_by(.findings[].ruleId) | map({rule: .[0].findings[0].ruleId, count: length}) | sort_by(.count) | reverse' ./logs/security-audit.jsonl
+jq -s 'group_by(.findings[].ruleCode) | map({rule: .[0].findings[0].ruleCode, count: length}) | sort_by(.count) | reverse' ./logs/security-audit.jsonl
 ```
 
 **Real-world scenario**: A client sends 3 SQL injection attempts:

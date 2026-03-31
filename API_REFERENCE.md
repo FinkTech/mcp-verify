@@ -1350,9 +1350,3 @@ Before submitting code, ensure:
 - [JSDoc Cheat Sheet](https://devhints.io/jsdoc)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
 
----
-
-## 🤝 Contributing to Documentation
-
-See [QUICK_WINS.md - Task 5](./QUICK_WINS.md#task-5-add-code-comments-to-security-rules) for documentation improvement tasks.
-

@@ -10,35 +10,35 @@ This document provides a comprehensive reference for all commands, options, scri
 
 ## 📚 Documentation for AI Agents & Developers
 
-This project uses **enterprise-grade `claude.md` documentation files** throughout the codebase for optimal context and navigation:
+This project uses **enterprise-grade `CLAUDE.md` documentation files** throughout the codebase for optimal context and navigation:
 
 ### Main Documentation Files
 
 | File                                                  | Purpose                                                	 | Read First?  |
 |-------------------------------------------------------|----------------------------------------------------------------|--------------|
-| [`/claude.md`](./claude.md)                           | **Project overview** - Architecture, structure, critical rules | ✅ Start here|
-| [`/apps/claude.md`](./apps/claude.md)                 | Apps overview - CLI, MCP Server, VSCode extension     	 | -            |
-| [`/libs/claude.md`](./libs/claude.md)                 | Libraries overview - Core, Fuzzer, Shared, etc.       	 | -            |
-| [`/tests/claude.md`](./tests/claude.md)               | Testing strategy and patterns                         	 | -            |
+| [`/CLAUDE.md`](./CLAUDE.md)                           | **Project overview** - Architecture, structure, critical rules | ✅ Start here|
+| [`/apps/CLAUDE.md`](./apps/CLAUDE.md)                 | Apps overview - CLI, MCP Server, VSCode extension     	 | -            |
+| [`/libs/CLAUDE.md`](./libs/CLAUDE.md)                 | Libraries overview - Core, Fuzzer, Shared, etc.       	 | -            |
+| [`/tests/CLAUDE.md`](./tests/CLAUDE.md)               | Testing strategy and patterns                         	 | -            |
 
 ### Detailed Documentation by Component
 
 **Applications:**
-- [`/apps/cli-verifier/claude.md`](./apps/cli-verifier/claude.md) - Interactive shell, commands, multi-context system
-- [`/apps/mcp-server/claude.md`](./apps/mcp-server/claude.md) - 7 MCP tools, LLM formatting, self-audit
-- [`/apps/vscode-extension/claude.md`](./apps/vscode-extension/claude.md) - Extension architecture, providers, views
+- [`/apps/cli-verifier/CLAUDE.md`](./apps/cli-verifier/CLAUDE.md) - Interactive shell, commands, multi-context system
+- [`/apps/mcp-server/CLAUDE.md`](./apps/mcp-server/CLAUDE.md) - 7 MCP tools, LLM formatting, self-audit
+- [`/apps/vscode-extension/CLAUDE.md`](./apps/vscode-extension/CLAUDE.md) - Extension architecture, providers, views
 
 **Libraries:**
-- [`/libs/core/claude.md`](./libs/core/claude.md) - Domain logic, 13 security rules, validators, reporting
-- [`/libs/fuzzer/claude.md`](./libs/fuzzer/claude.md) - Smart Fuzzer v1.0, detectors, generators, mutations
-- [`/libs/shared/claude.md`](./libs/shared/claude.md) - i18n, CLI helpers, path validator, utilities
+- [`/libs/core/CLAUDE.md`](./libs/core/CLAUDE.md) - Domain logic, 60 security rules, validators, reporting
+- [`/libs/fuzzer/CLAUDE.md`](./libs/fuzzer/CLAUDE.md) - Smart Fuzzer v1.0, detectors, generators, mutations
+- [`/libs/shared/CLAUDE.md`](./libs/shared/CLAUDE.md) - i18n, CLI helpers, path validator, utilities
 
 ### Quick Navigation Pattern
 
 For AI agents working on this project:
 ```
-1. Read /claude.md for project overview
-2. Read specific component's claude.md (e.g., /apps/cli-verifier/claude.md)
+1. Read /CLAUDE.md for project overview
+2. Read specific component's CLAUDE.md (e.g., /apps/cli-verifier/CLAUDE.md)
 3. Use "Where to Find" sections to locate exact files
 4. Follow "Patterns" sections for implementation examples
 ```

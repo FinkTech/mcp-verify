@@ -17,7 +17,7 @@ The **Anti-Weaponization Engine** is a specialized detection system that identif
 
 **Attestation of Origin** is an integrity verification mechanism that records the SHA-256 hash of generated binaries (CLI and MCP Server) along with Git traceability information. It allows users to verify that artifacts have not been modified since their original build. The history of the last 20 builds is stored in `.mcp-verify/integrity-history.json`.
 
-* @see `ARCHITECTURE.md` section "Build Integrity v2" for technical implementation.
+* @see `ARCHITECTURE.md` section "Infrastructure Layer" for technical implementation.
 * @see `libs/core/infrastructure/integrity/` for source code.
 
 ### Audit Log
@@ -183,9 +183,9 @@ The **Interactive Shell** (also called REPL) is the interactive mode of `mcp-ver
 
 ### Integrity Lab
 
-The **Integrity Lab** is the Build Integrity v2 subsystem that implements SHA-256 binary verification, Git traceability (commit hash, branch, timestamp), and rotating history of the last 20 builds. Each build generates a unique hash stored in `.mcp-verify/integrity-history.json`. Users can verify that downloaded artifacts have not been altered.
+The **Integrity Lab** is the Build Integrity subsystem that implements SHA-256 binary verification, Git traceability (commit hash, branch, timestamp), and rotating history of the last 20 builds. Each build generates a unique hash stored in `.mcp-verify/integrity-history.json`. Users can verify that downloaded artifacts have not been altered.
 
-* @see `ARCHITECTURE.md` section "Infrastructure 2.0" for complete design.
+* @see `ARCHITECTURE.md` section "Infrastructure Layer" for complete design.
 * @see `libs/core/infrastructure/integrity/` for implementation.
 
 ### Layer 1: Fast Rules

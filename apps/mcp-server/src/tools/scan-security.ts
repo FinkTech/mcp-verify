@@ -9,7 +9,7 @@
  * scanSecurity Tool
  *
  * Security-focused scan of an MCP server:
- * - Runs 12 OWASP-aligned security rules
+ * - Runs 60 comprehensive security rules
  * - Detects vulnerabilities (SQL injection, XSS, SSRF, etc.)
  * - Returns security score and findings
  */

@@ -36,7 +36,7 @@ libs/core/domain/
 │   │   ├── sensitive-exposure.rule.ts # SEC-010
 │   │   ├── rate-limiting.rule.ts    # SEC-011
 │   │   └── redos-detection.rule.ts  # SEC-012
-│   ├── security-analyzer.ts         # Security rule orchestrator
+│   ├── security-scanner.ts         # Security rule orchestrator
 │   └── mcpignore-parser.ts          # .mcpignore file parser
 │
 ├── quality/                          # ⭐ Quality analysis
@@ -110,19 +110,20 @@ libs/core/domain/
 - Generate findings with severity levels
 
 **Key Files**:
-- `security-analyzer.ts` - Main orchestrator
+- `security-scanner.ts` - Main orchestrator
 - `rules/*.rule.ts` - Individual security rules
 - `mcpignore-parser.ts` - Exclusion rules
 
 **Example**:
 ```typescript
-import { SecurityAnalyzer } from './security/security-analyzer';
+import { SecurityScanner } from './security/security-analyzer';
 
-const analyzer = new SecurityAnalyzer();
-const findings = analyzer.analyze(tools);
+const scanner = new SecurityScanner();
+const securityReport = await scanner.scan(discovery);
+const findings = securityReport.findings;
 
 // findings: [
-//   { ruleId: 'SEC-001', severity: 'critical', message: 'SQL injection risk...' }
+//   { ruleCode: 'SEC-001', severity: 'critical', message: 'SQL injection risk...' }
 // ]
 ```
 
@@ -346,15 +347,23 @@ const config = ConfigLoader.load('.mcpverify.json');
 **Business Rules**:
 ```typescript
 // ✅ GOOD: Pure business logic
-export class SqlInjectionRule implements SecurityRule {
-  analyze(tool: McpTool): SecurityFinding[] {
-    if (this.hasSqlPatterns(tool.inputSchema)) {
-      return [{
-        severity: 'critical',
-        message: 'SQL injection risk detected'
-      }];
+export class SqlInjectionRule implements ISecurityRule {
+  readonly code = 'SEC-003';
+  readonly name = 'SQL Injection';
+
+  evaluate(discovery: DiscoveryResult): SecurityFinding[] {
+    const findings: SecurityFinding[] = [];
+    for (const tool of discovery.tools) {
+      if (this.hasSqlPatterns(tool.inputSchema)) {
+        findings.push({
+          ruleCode: this.code,
+          severity: 'critical',
+          message: 'SQL injection risk detected',
+          component: tool.name
+        });
+      }
     }
-    return [];
+    return findings;
   }
 
   private hasSqlPatterns(schema: any): boolean {
@@ -396,17 +405,17 @@ export class ProtocolValidator {
 **File I/O**:
 ```typescript
 // ❌ BAD: File system access
-export class SecurityAnalyzer {
-  analyze(toolsFile: string) {
+export class SecurityScanner {
+  scan(toolsFile: string) {
     const content = fs.readFileSync(toolsFile);  // NO! Use infrastructure
-    return this.analyzeTools(JSON.parse(content));
+    return this.scanTools(JSON.parse(content));
   }
 }
 
 // ✅ GOOD: Delegate I/O to caller
-export class SecurityAnalyzer {
-  analyze(tools: McpTool[]) {  // Accept parsed data
-    return this.analyzeTools(tools);
+export class SecurityScanner {
+  scan(discovery: DiscoveryResult) {  // Accept DiscoveryResult
+    return this.scanInternal(discovery);
   }
 }
 ```
@@ -479,8 +488,8 @@ See [libs/core/README.md - Task 1](../README.md#task-1-add-a-new-security-rule-3
 
 **Summary**:
 1. Create `security/rules/my-rule.rule.ts`
-2. Implement `SecurityRule` interface
-3. Register in `security-analyzer.ts`
+2. Implement `ISecurityRule` interface
+3. Register in `security-scanner.ts`
 4. Add tests
 
 ---
@@ -562,7 +571,18 @@ describe('SqlInjectionRule', () => {
       }
     };
 
-    const findings = rule.analyze(tool);
+    const findings = rule.evaluate({
+      tools: [{
+        name: 'execute_query',
+        inputSchema: {
+          properties: {
+            query: { type: 'string' }  // Dangerous!
+          }
+        }
+      }],
+      resources: [],
+      prompts: []
+    });
 
     expect(findings).toHaveLength(1);
     expect(findings[0].severity).toBe('critical');
@@ -619,7 +639,7 @@ export class ReportGenerator {
 // ❌ BAD
 import { Request, Response } from 'express';
 
-export class SecurityAnalyzer {
+export class SecurityScanner {
   analyze(req: Request, res: Response) {  // Coupled to Express!
     const tools = req.body.tools;
     // ...
@@ -627,8 +647,8 @@ export class SecurityAnalyzer {
 }
 
 // ✅ GOOD
-export class SecurityAnalyzer {
-  analyze(tools: McpTool[]): SecurityFinding[] {  // Pure domain types
+export class SecurityScanner {
+  scan(discovery: DiscoveryResult): SecurityFinding[] {  // Pure domain types
     // ...
   }
 }
@@ -640,8 +660,8 @@ export class SecurityAnalyzer {
 
 ```typescript
 // ❌ BAD
-export class SecurityAnalyzer {
-  analyze(tools: McpTool[]) {
+export class SecurityScanner {
+  scan(discovery: DiscoveryResult) {
     const findings = this.findIssues(tools);
 
     // NO! Reporting is separate concern
@@ -654,8 +674,8 @@ export class SecurityAnalyzer {
 }
 
 // ✅ GOOD
-export class SecurityAnalyzer {
-  analyze(tools: McpTool[]): SecurityFinding[] {
+export class SecurityScanner {
+  scan(discovery: DiscoveryResult): SecurityFinding[] {
     return this.findIssues(tools);  // Just return data
   }
 }
@@ -680,11 +700,12 @@ export class SecurityAnalyzer {
 
 ```typescript
 // ✅ GOOD: No dependencies
-const analyzer = new SecurityAnalyzer();
-const findings = analyzer.analyze(tools);
+const scanner = new SecurityScanner();
+const securityReport = await scanner.scan(discovery);
+const findings = securityReport.findings;
 
 // ❌ BAD: Needs database, config, etc.
-const analyzer = new SecurityAnalyzer(db, config, logger);
+const analyzer = new SecurityScanner(db, config, logger);
 ```
 
 ---

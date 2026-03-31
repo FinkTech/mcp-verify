@@ -390,8 +390,9 @@ export class MCPValidator {
 
   async generateReport(data: ValidationData): Promise<Report> {
     // Step 1: Domain - Security analysis
-    const securityAnalyzer = new SecurityAnalyzer();
-    const findings = securityAnalyzer.analyze(data.discovery.tools);
+    const securityScanner = new SecurityScanner();
+    const securityReport = await securityScanner.scan(data.discovery);
+    const findings = securityReport.findings;
 
     // Step 2: Domain + Infrastructure - Quality analysis
     let qualityIssues = [];
@@ -401,12 +402,12 @@ export class MCPValidator {
     }
 
     // Step 3: Domain - Calculate scores
-    const securityScore = this.calculateSecurityScore(findings);
+    const securityScore = securityReport.score;
     const qualityScore = this.calculateQualityScore(qualityIssues);
 
     // Step 4: Domain - Generate report
     return {
-      security: { score: securityScore, findings },
+      security: securityReport,
       quality: { score: qualityScore, issues: qualityIssues },
       // ...
     };
@@ -508,7 +509,8 @@ export class MCPValidator {
     const tools = await this.transport.sendRequest('tools/list');
 
     // 2. Domain - Analyze security
-    const findings = this.securityAnalyzer.analyze(tools);
+    const securityReport = await this.securityScanner.scan(discovery);
+    const findings = securityReport.findings;
 
     // 3. Domain - Generate report
     const report = this.reportGenerator.generate(findings);
@@ -750,5 +752,5 @@ describe('MCPValidator Integration', () => {
 - **[libs/core/README.md](../README.md)** - Core architecture overview
 - **[libs/core/domain/README.md](../domain/README.md)** - Domain layer
 - **[libs/core/infrastructure/README.md](../infrastructure/README.md)** - Infrastructure adapters
-- **[CODE_MAP.md](../../../CODE_MAP.md)** - Codebase navigation
+- **[../../../CODE_MAP.md](../../../CODE_MAP.md)** - Codebase navigation
 

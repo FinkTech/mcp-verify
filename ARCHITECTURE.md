@@ -105,7 +105,7 @@ sequenceDiagram
     participant CLI as CLI Command
     participant Validator as MCPValidator<br/>(Use Case)
     participant Transport as Transport<br/>(Infrastructure)
-    participant Security as SecurityAnalyzer<br/>(Domain)
+    participant Security as SecurityScanner<br/>(Domain)
     participant Quality as LLMAnalyzer<br/>(Domain)
     participant Report as ReportGenerator<br/>(Domain)
 
@@ -121,11 +121,11 @@ sequenceDiagram
     Transport-->>Validator: Tools[]
 
     Note over Validator: Step 3: Security Analysis
-    Validator->>Security: analyze(tools)
+    Validator->>Security: scan(discovery)
     Security-->>Validator: SecurityFindings[]
 
     Note over Validator: Step 4: Quality Analysis
-    Validator->>Quality: analyzeTools(tools)
+    Validator->>Quality: analyzeTools(discovery)
     Quality-->>Validator: QualityIssues[]
 
     Note over Validator: Step 5: Report Generation
@@ -181,7 +181,7 @@ flowchart LR
     B -->|Parse| C[Protocol Validator]
     C -->|Valid Messages| D[Discovery Result]
 
-    D --> E[Security Analyzer]
+    D --> E[Security Scanner]
     D --> F[Quality Analyzer]
     D --> G[Schema Validator]
 
@@ -502,7 +502,7 @@ libs/core/
 - **Infrastructure**: Implements interfaces defined by domain
 - **Use Cases**: Orchestrates domain + infrastructure
 
-📚 **Detailed Docs**: See [libs/core/claude.md](./libs/core/claude.md)
+📚 **Detailed Docs**: See [libs/core/CLAUDE.md](./libs/core/CLAUDE.md)
 
 ---
 
@@ -588,7 +588,7 @@ libs/fuzzer/
 - **Comprehensive Coverage**: Tests all parameter combinations (nested objects, arrays, edge cases)
 - **Fingerprinting**: Auto-disables irrelevant generators based on detected tech stack
 
-📚 **Detailed Docs**: See [libs/fuzzer/claude.md](./libs/fuzzer/claude.md)
+📚 **Detailed Docs**: See [libs/fuzzer/CLAUDE.md](./libs/fuzzer/CLAUDE.md)
 
 ---
 
@@ -689,7 +689,7 @@ sequenceDiagram
     participant U as User
     participant C as CLI (apps/cli-verifier)
     participant UC as Validator (use-cases)
-    participant D as Security Analyzer (domain)
+    participant D as Security Scanner (domain)
     participant I as Transport (infrastructure)
     participant S as MCP Server
 
@@ -709,7 +709,7 @@ sequenceDiagram
     I-->>UC: DiscoveryResult
 
     Note over UC: Security Analysis
-    UC->>D: analyze(tools)
+    UC->>D: scan(discovery)
     Note over D: Apply 60 security rules (6 blocks)
     D-->>UC: SecurityFindings[]
 
@@ -731,11 +731,11 @@ sequenceDiagram
 
 ```typescript
 // ❌ BAD: Domain depends on infrastructure
-// domain/security/analyzer.ts
+// domain/security/scanner.ts
 import { FileSystem } from '../../infrastructure/file-system';  // NO!
 
 // ✅ GOOD: Domain defines interface, infrastructure implements
-// domain/security/analyzer.ts
+// domain/security/scanner.ts
 export interface IReportStorage {
   save(report: Report): Promise<void>;
 }
@@ -1124,7 +1124,7 @@ private detectSQLInjection(toolName: string, args: any): SecurityFinding[] {
     if (typeof value === 'string') {
       for (const pattern of sqlPatterns) {
         if (pattern.test(value)) {
-          return [{ ruleId: 'SEC-001', severity: 'critical', ... }];
+          return [{ ruleCode: 'SEC-001', severity: 'critical', ... }];
         }
       }
     }
@@ -1185,7 +1185,7 @@ private detectExcessiveAgency(toolName: string, args: any): SecurityFinding[] {
   }
 
   if (score >= 10) {
-    return [{ ruleId: 'SEC-023', severity: 'high', ... }];
+    return [{ ruleCode: 'SEC-023', severity: 'high', ... }];
   }
 }
 ```
@@ -1222,7 +1222,7 @@ private async runLLMRules(
 
   if (analysis.threat) {
     return [{
-      ruleId: 'SEC-LLM-001',
+      ruleCode: 'SEC-LLM-001',
       severity: analysis.severity,
       message: analysis.reasoning,
       layer: 3,
@@ -1260,7 +1260,7 @@ Every rejection includes complete metadata for compliance and forensics:
       "layer": 1,
       "latency_ms": 8,
       "findings": [{
-        "ruleId": "SEC-001",
+        "ruleCode": "SEC-001",
         "severity": "critical",
         "message": "SQL injection detected in parameter 'query'",
         "component": "database_query",

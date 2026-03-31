@@ -133,7 +133,7 @@ mcp-verify:
 
 **What you'll learn**:
 - How scores are calculated (100 - penalties)
-- 12 OWASP security rules explained
+- 13 OWASP security rules explained
 - Acceptable risk levels by environment:
   - **Production**: Score ≥ 90 (Excellent)
   - **Staging**: Score ≥ 70 (Good)

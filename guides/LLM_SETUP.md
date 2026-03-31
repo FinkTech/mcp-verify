@@ -15,7 +15,7 @@ mcp-verify includes **optional** AI-powered semantic analysis that detects:
 - **Security concerns** - Tool descriptions that hide dangerous capabilities
 - **Ambiguous parameters** - Unclear what inputs do
 
-**Without LLM**: You get 12 OWASP security rules (SQL injection, command injection, etc.)
+**Without LLM**: You get 60 security rules (SQL injection, command injection, etc.)
 **With LLM**: You get those + deep semantic understanding
 
 ---
@@ -413,13 +413,13 @@ LLM Findings:
 
 ```bash
 # Test with Ollama (free)
-mcp-verify validate --server "node server.js" --llm ollama:llama3.2
+mcp-verify validate "node server.js" --llm ollama:llama3.2
 
 # Test with Anthropic (paid)
-mcp-verify validate --server "node server.js" --llm anthropic:claude-haiku-4-5-20251001
+mcp-verify validate "node server.js" --llm anthropic:claude-haiku-4-5-20251001
 
 # Test with OpenAI (paid)
-mcp-verify validate --server "node server.js" --llm openai:gpt-4o-mini
+mcp-verify validate "node server.js" --llm openai:gpt-4o-mini
 ```
 
 ---
@@ -456,11 +456,11 @@ LLM semantic analysis is **completely optional**. You can use mcp-verify without
 
 ```bash
 # Without LLM (still runs 12 OWASP security rules)
-mcp-verify validate --server "node server.js"
+mcp-verify validate "node server.js"
 ```
 
 **What you still get:**
-- ✅ 12 OWASP security rules (SQL injection, command injection, etc.)
+- ✅ 60 security rules (SQL injection, command injection, etc.)
 - ✅ Protocol compliance validation
 - ✅ Quality scoring
 - ✅ JSON/HTML/SARIF reports

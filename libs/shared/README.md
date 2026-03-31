@@ -807,7 +807,7 @@ import { t } from 'libs/shared/utils/cli/i18n-helper';
 
 ```typescript
 // ❌ BAD: libs/shared/utils/my-util.ts
-import { SecurityRule } from '../../core/domain/security';  // NO!
+import { ISecurityRule } from '../../core/domain/security';  // NO!
 
 // ✅ GOOD: Pass dependency as parameter
 export function process(input: string, validator: (s: string) => boolean) {

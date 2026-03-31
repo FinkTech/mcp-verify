@@ -25,23 +25,23 @@ Contributors who submit features that violate these principles will have their P
 
 | Document | Purpose | Read Time |
 |----------|---------|-----------|
-| **[CODE_MAP.md](./CODE_MAP.md)** | "I want to..." quick reference | 2 min |
-| **[claude.md](./claude.md)** | Project overview & architecture | 5 min |
+| **[CODE_MAP.md](CODE_MAP.md)** | "I want to..." quick reference | 2 min |
+| **[CLAUDE.md](./CLAUDE.md)** | Project overview & architecture | 5 min |
 | **[ARCHITECTURE.md](./ARCHITECTURE.md)** | System design & patterns | 10 min |
 | **[DEVELOPMENT.md](./DEVELOPMENT.md)** | Local setup & testing | 10 min |
 
-### 2. Use claude.md Files for Module Navigation
+### 2. Use CLAUDE.md Files for Module Navigation
 
-The project includes `claude.md` files in every major directory:
+The project includes `CLAUDE.md` files in every major directory:
 
 ```bash
 # Start at root
-cat claude.md  # Project overview
+cat CLAUDE.md  # Project overview
 
 # Navigate to specific modules
-cat apps/cli-verifier/claude.md  # CLI structure
-cat libs/core/claude.md          # Business logic
-cat libs/fuzzer/claude.md        # Fuzzer architecture
+cat apps/cli-verifier/CLAUDE.md  # CLI structure
+cat libs/core/CLAUDE.md          # Business logic
+cat libs/fuzzer/CLAUDE.md        # Fuzzer architecture
 ```
 
 **Why?** These files reduce context exploration by ~90% and provide:
@@ -122,7 +122,7 @@ We use **Git Flow** for branch management. See [docs/BRANCHING.md](./docs/BRANCH
 
 ## Developer Certificate of Origin (DCO)
 
-All contributions must be signed off according to the [DCO](./DCO.txt).
+All contributions must be signed off according to the [DCO](DCO.txt).
 
 **Sign your commits:**
 
@@ -234,7 +234,7 @@ mcp-verify/
 ```
 
 **Key Documentation Files:**
-- **claude.md files**: Navigation guides in every major directory
+- **CLAUDE.md files**: Navigation guides in every major directory
 - **CODE_MAP.md**: Quick "where to find X" reference
 - **ARCHITECTURE.md**: Hexagonal architecture deep dive
 - **DEVELOPMENT.md**: Local setup, testing, debugging
@@ -257,7 +257,13 @@ If you discover a security vulnerability, please report it privately to hello.fi
 
 1. **Find pattern**: Read existing rule (e.g., `libs/core/domain/security/rules/sql-injection.rule.ts`)
 2. **Create file**: `libs/core/domain/security/rules/my-rule.ts`
-3. **Implement**: Follow `SecurityRule` interface
+3. **Implement**: Follow `ISecurityRule` interface
+   ```typescript
+   export class MyRule implements ISecurityRule {
+     readonly code = 'SEC-XXX';
+     evaluate(discovery: DiscoveryResult) { ... }
+   }
+   ```
 4. **Register**: Add to `libs/core/domain/security/security-scanner.ts`
 5. **Test**: Create `tests/core/domain/security/rules/my-rule.spec.ts`
 6. **Document**: Add to `SECURITY_SCORING.md`
@@ -278,7 +284,7 @@ If you discover a security vulnerability, please report it privately to hello.fi
 3. **Implement**: Export `generatePayloads(toolSchema): Payload[]`
 4. **Register**: Add to `libs/fuzzer/engine/fuzzer-engine.ts`
 5. **Test**: Create `tests/fuzzer/generators/my-generator.spec.ts`
-6. **Document**: Add to `libs/fuzzer/claude.md`
+6. **Document**: Add to `libs/fuzzer/CLAUDE.md`
 
 ### Adding a New Report Format
 
@@ -331,7 +337,7 @@ See [docs/BRANCHING.md](./docs/BRANCHING.md) for more details on our development
 ## Questions?
 
 - **Branching strategy**: Read [docs/BRANCHING.md](./docs/BRANCHING.md)
-- **Codebase navigation**: Read [CODE_MAP.md](./CODE_MAP.md) and [claude.md](./claude.md)
+- **Codebase navigation**: Read [CODE_MAP.md](CODE_MAP.md) and [CLAUDE.md](./CLAUDE.md)
 - **Architecture questions**: See [ARCHITECTURE.md](./ARCHITECTURE.md)
 - **Development help**: Check [DEVELOPMENT.md](./DEVELOPMENT.md)
 - **Discussions**: Open a [Discussion](https://github.com/FinkTech/mcp-verify/discussions)

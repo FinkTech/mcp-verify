@@ -369,7 +369,7 @@ export const translations = {
     // End HTML Report Keys
     about_feature_i18n: 'Internationalization (EN/ES)',
     about_feature_llm: 'LLM semantic analysis (optional)',
-    about_feature_owasp: '12 OWASP security rules',
+    about_feature_owasp: '60 security rules (6 blocks)',
     about_feature_protocol: 'MCP protocol validation',
     about_feature_reports: 'Multiple report formats (JSON, HTML, SARIF, MD)',
     active_guardrails: '🛡️  Active Guardrails (v1.0):',
@@ -2383,7 +2383,7 @@ export const translations = {
     // End HTML Report Keys
     about_feature_i18n: 'Internacionalización (EN/ES)',
     about_feature_llm: 'Análisis semántico con LLM (opcional)',
-    about_feature_owasp: '12 reglas OWASP de seguridad',
+    about_feature_owasp: '60 reglas de seguridad (6 bloques)',
     about_feature_protocol: 'Validación de protocolo MCP',
     about_feature_reports: 'Múltiples formatos de reporte (JSON, HTML, SARIF, MD)',
     active_guardrails: '🛡️  Guardrails Activos (v1.0):',

@@ -720,24 +720,24 @@ export class ConfigValidator {
 ### ❌ Anti-Pattern 2: Domain Importing Infrastructure
 
 ```typescript
-// ❌ BAD: domain/security/analyzer.ts
+// ❌ BAD: domain/security/security-scanner.ts
 import { Logger } from '../../infrastructure/logging/logger';  // NO!
 
-export class SecurityAnalyzer {
+export class SecurityScanner {
   private logger = Logger.getInstance();
 
-  analyze(tools: McpTool[]) {
-    this.logger.info('Analyzing...');  // Domain coupled to infrastructure
+  scan(discovery: DiscoveryResult) {
+    this.logger.info('Scanning...');  // Domain coupled to infrastructure
     // ...
   }
 }
 
 // ✅ GOOD: Pass logger as dependency
-export class SecurityAnalyzer {
+export class SecurityScanner {
   constructor(private logger?: ILogger) {}
 
-  analyze(tools: McpTool[]) {
-    this.logger?.info('Analyzing...');
+  scan(discovery: DiscoveryResult) {
+    this.logger?.info('Scanning...');
     // ...
   }
 }
