@@ -34,8 +34,66 @@ export class TimingSideChannelAuthRule implements ISecurityRule {
   severity: 'medium' = 'medium';
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
-    // This rule requires fuzzer to perform timing analysis
-    // Static analysis cannot detect timing discrepancies
-    return [];
+    const findings: SecurityFinding[] = [];
+
+    if (!discovery.tools || discovery.tools.length === 0) {
+      return findings;
+    }
+
+    // Keywords indicating authentication operations
+    const AUTH_KEYWORDS = ['login', 'authenticate', 'auth', 'signin', 'verify', 'check_password', 'check_credentials', 'secret', 'password_check'];
+
+    // Red flags for timing vulnerabilities
+    const UNSAFE_COMPARISON = ['===', '==', 'equals', 'strcmp', 'compare'];
+    const TIMING_SAFE_INDICATORS = ['constant time', 'timing-safe', 'constant_time', 'timing_safe', 'secure_compare', 'crypto.timingSafeEqual'];
+
+    for (const tool of discovery.tools) {
+      const toolText = `${tool.name} ${tool.description || ''}`.toLowerCase();
+
+      // Check if this is an authentication tool
+      const isAuthTool = AUTH_KEYWORDS.some(kw => toolText.includes(kw));
+
+      if (!isAuthTool) continue;
+
+      // Check for timing-safe indicators
+      const hasTimingSafe = TIMING_SAFE_INDICATORS.some(ind => toolText.includes(ind));
+
+      // Check for unsafe comparison indicators
+      const hasUnsafeComparison = UNSAFE_COMPARISON.some(cmp => toolText.includes(cmp));
+
+      // If auth tool lacks timing-safe comparison, flag it
+      if (!hasTimingSafe) {
+        findings.push({
+          ruleCode: this.code,
+          severity: 'medium',
+          message: `Tool "${tool.name}" performs authentication without documented timing-safe comparison`,
+          component: `tool:${tool.name}`,
+          location: { type: 'tool', name: tool.name },
+          evidence: {
+            risk: 'Timing attacks can reveal valid usernames/passwords through response time analysis',
+            detectedOperation: 'Authentication operation without timing-safe guarantees'
+          },
+          remediation: 'Use constant-time comparison functions (crypto.timingSafeEqual in Node.js, hmac.compare_digest in Python) for credential verification'
+        });
+      }
+
+      // Higher severity if explicitly mentions unsafe comparison
+      if (hasUnsafeComparison && !hasTimingSafe) {
+        findings.push({
+          ruleCode: this.code,
+          severity: 'high',
+          message: `Tool "${tool.name}" uses unsafe comparison method for authentication`,
+          component: `tool:${tool.name}`,
+          location: { type: 'tool', name: tool.name },
+          evidence: {
+            risk: 'Direct string comparison leaks timing information',
+            detectedMethod: 'Non-constant-time comparison detected'
+          },
+          remediation: 'Replace direct comparison with timing-safe alternatives'
+        });
+      }
+    }
+
+    return findings;
   }
 }

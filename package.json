@@ -40,7 +40,13 @@
     "dev": "ts-node apps/cli-verifier/src/bin/index.ts",
     "start": "node dist/mcp-verify.js",
     "build": "tsc --emitDeclarationOnly --outDir dist --project tsconfig.build.json && node tools/scripts/bundle.js",
-    "compile": "pkg dist/mcp-verify.js --targets node18-win-x64,node18-linux-x64,node18-macos-x64 --out-path dist/bin",
+    "compile": "node tools/scripts/compile-sea.js",
+    "compile:all": "node tools/scripts/compile-sea.js --all",
+    "compile:linux": "node tools/scripts/compile-sea.js --target linux",
+    "compile:macos": "node tools/scripts/compile-sea.js --target macos",
+    "compile:win": "node tools/scripts/compile-sea.js --target windows",
+    "compile:server": "node tools/scripts/compile-sea.js --server",
+    "postcompile": "node tools/scripts/copy-native-addons.js",
     "type-check": "tsc --noEmit --project tsconfig.build.json",
     "type-check:strict": "tsc --noEmit",
     "lint": "eslint . --ext .ts,.js --max-warnings 1000",
@@ -97,7 +103,7 @@
   },
   "homepage": "https://github.com/FinkTech/mcp-verify#readme",
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=20.0.0",
     "npm": ">=9.0.0"
   },
   "devDependencies": {
@@ -114,7 +120,7 @@
     "husky": "^8.0.3",
     "jest": "^29.0.0",
     "lint-staged": "^15.0.0",
-    "pkg": "^5.8.1",
+    "postject": "^1.0.0-alpha.6",
     "prettier": "^3.0.0",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.0",

@@ -175,6 +175,22 @@ export class InsecureDeserializationRule implements ISecurityRule {
           });
         }
 
+        // NEW: Check for generic string parameters without any format validation, which is risky for deserialization
+        if (config.type === 'string' && !config.format && !this.hasSafePractices(tool.description)) {
+            findings.push({
+              severity: 'high',
+              message: `Parameter '${paramName}' accepts a generic string for deserialization without format validation or safe indicators.`,
+              component: `tool:${tool.name}`,
+              ruleCode: this.code,
+              location: { type: 'tool', name: tool.name, parameter: paramName },
+              evidence: {
+                risk: 'A generic string can be used to pass malicious payloads (e.g., encoded objects, RCE gadgets) that are processed by unsafe deserializers.',
+                currentType: 'string'
+              },
+              remediation: 'Specify a strict `format` (e.g., `date-time`) or `pattern` for the string parameter, or document the safe handling practices (e.g., "uses safe_load") in the tool description.'
+            });
+        }
+
         // Check for base64/encoded data that might be serialized
         if (config.format === 'base64' || paramName.toLowerCase().includes('encoded')) {
           findings.push({

@@ -20,67 +20,70 @@
  * Profiles (60 Security Rules Coverage):
  *
  * OWASP Top 10 Adapted (SEC-001 to SEC-012):
- *   - sql-injection: SEC-001 (SQL Injection)
+ *   - auth-bypass: SEC-001 (Auth Bypass)
  *   - command-injection: SEC-002 (Command Injection)
- *   - ssrf: SEC-003 (Server-Side Request Forgery)
- *   - data-leakage: SEC-004 (Data Leakage)
- *   - path-traversal: SEC-005 (Path Traversal)
- *   - xxe: SEC-006 (XXE Injection)
- *   - insecure-deserialization: SEC-007 (Insecure Deserialization)
- *   - redos: SEC-008 (ReDoS Detection)
- *   - weak-auth: SEC-009 (Weak Authentication)
- *   - sensitive-exposure: SEC-010 (Sensitive Data Exposure)
- *   - weak-crypto: SEC-011 (Weak Crypto)
- *   - auth-bypass: SEC-012 (Auth Bypass)
+ *   - sql-injection: SEC-003 (SQL Injection)
+ *   - ssrf: SEC-004 (Server-Side Request Forgery)
+ *   - xxe: SEC-005 (XXE Injection)
+ *   - insecure-deserialization: SEC-006 (Insecure Deserialization)
+ *   - path-traversal: SEC-007 (Path Traversal)
+ *   - data-leakage: SEC-008 (Data Leakage)
+ *   - sensitive-exposure: SEC-009 (Sensitive Data Exposure)
+ *   - missing-rate-limit: SEC-010 (Missing Rate Limiting)
+ *   - redos: SEC-011 (ReDoS Detection)
+ *   - weak-crypto: SEC-012 (Weak Crypto)
  *
- * MCP-Specific (SEC-020 to SEC-029):
- *   - prompt-injection: SEC-020 (Prompt Injection)
- *   - excessive-agency: SEC-021 (Excessive Agency)
- *   - missing-input-constraints: SEC-022 (Missing Input Constraints)
- *   - unvalidated-tool-auth: SEC-023 (Unvalidated Tool Authorization)
- *   - exposed-endpoint: SEC-024 (Exposed Endpoint)
- *   - insecure-session: SEC-025 (Insecure Session Management)
- *   - missing-capability: SEC-026 (Missing Capability Negotiation)
- *   - schema-versioning: SEC-027 (Schema Versioning Absent)
- *   - insecure-uri: SEC-028 (Insecure URI Scheme)
- *   - missing-cors: SEC-029 (Missing CORS Validation)
+ * MCP-Specific (SEC-013 to SEC-029):
+ *   - prompt-injection: SEC-013 (Prompt Injection)
+ *   - exposed-endpoint: SEC-014 (Exposed Endpoint)
+ *   - missing-authentication: SEC-015 (Missing Authentication)
+ *   - insecure-uri: SEC-016 (Insecure URI Scheme)
+ *   - excessive-permissions: SEC-017 (Excessive Permissions)
+ *   - secrets-in-descriptions: SEC-018 (Secrets in Descriptions)
+ *   - missing-input-constraints: SEC-019 (Missing Input Constraints)
+ *   - dangerous-tool-chaining: SEC-020 (Dangerous Tool Chaining)
+ *   - unencrypted-credentials: SEC-021 (Unencrypted Credentials)
+ *   - insecure-output: SEC-022 (Insecure Output Handling)
+ *   - excessive-agency: SEC-023 (Excessive Agency)
+ *   - prompt-injection-via-tools: SEC-024 (Prompt Injection via Tools)
+ *   - supply-chain: SEC-025 (Supply Chain Tool Dependencies)
+ *   - sensitive-data-in-tool-responses: SEC-026 (Sensitive Data in Responses)
+ *   - training-poison: SEC-027 (Training Data Poisoning)
+ *   - model-dos: SEC-028 (Model DoS via Tools)
+ *   - insecure-plugin: SEC-029 (Insecure Plugin Design)
  *
- * LLM/AI Threats (SEC-030 to SEC-039):
- *   - agent-state-poisoning: SEC-030 (Agent State Poisoning)
- *   - cross-agent-injection: SEC-031 (Cross-Agent Prompt Injection)
- *   - model-dos: SEC-032 (Model DoS via Tools)
- *   - training-poison: SEC-033 (Training Data Poisoning)
- *   - insecure-output: SEC-034 (Insecure Output Handling)
- *   - identity-spoofing: SEC-035 (Agent Identity Spoofing)
- *   - memory-injection: SEC-036 (Agent Memory Injection)
- *   - recursive-loop: SEC-037 (Recursive Agent Loop)
+ * LLM/AI & Multi-Agent (SEC-030 to SEC-060):
+ *   - excessive-disclosure: SEC-030 (Excessive Data Disclosure)
+ *   - identity-spoofing: SEC-031 (Agent Identity Spoofing)
+ *   - result-tamper: SEC-032 (Tool Result Tampering)
+ *   - recursive-loop: SEC-033 (Recursive Agent Loop)
+ *   - privilege-escalation: SEC-034 (Multi-Agent Privilege Escalation)
+ *   - agent-state-poisoning: SEC-035 (Agent State Poisoning)
+ *   - distributed-ddos: SEC-036 (Distributed Agent DDoS)
+ *   - cross-agent-injection: SEC-037 (Cross-Agent Prompt Injection)
  *   - reputation-hijack: SEC-038 (Agent Reputation Hijacking)
- *   - excessive-disclosure: SEC-039 (Excessive Data Disclosure)
- *
- * Multi-Agent Coordination (SEC-040 to SEC-049):
- *   - missing-rate-limit: SEC-040 (Missing Rate Limiting)
- *   - privilege-escalation: SEC-041 (Multi-Agent Privilege Escalation)
- *   - dangerous-chaining: SEC-042 (Dangerous Tool Chaining)
- *   - chaining-traversal: SEC-043 (Tool Chaining Path Traversal)
- *   - distributed-ddos: SEC-044 (Distributed Agent DDoS)
- *   - swarm-attack: SEC-045 (Agent Swarm Coordination Attack)
- *   - insecure-plugin: SEC-046 (Insecure Plugin Design)
- *   - supply-chain: SEC-047 (Supply Chain Tool Dependencies)
- *   - endpoint-hijack: SEC-048 (API Endpoint Hijacking)
- *   - result-tamper: SEC-049 (Tool Result Tampering)
- *
- * Compliance & Advanced (SEC-050 to SEC-060):
- *   - missing-audit: SEC-050 (Missing Audit Logging)
- *   - missing-transaction: SEC-051 (Missing Transaction Semantics)
- *   - error-granularity: SEC-052 (Insufficient Error Granularity)
- *   - output-entropy: SEC-053 (Insufficient Output Entropy)
- *   - timing-side-channel: SEC-054 (Timing Side Channel Auth)
- *   - insecure-defaults: SEC-055 (Insecure Default Configuration)
+ *   - chaining-traversal: SEC-039 (Tool Chaining Path Traversal)
+ *   - swarm-attack: SEC-040 (Agent Swarm Coordination Attack)
+ *   - memory-injection: SEC-041 (Agent Memory Injection)
+ *   - missing-audit: SEC-042 (Missing Audit Logging)
+ *   - insecure-session: SEC-043 (Insecure Session Management)
+ *   - schema-versioning: SEC-044 (Schema Versioning Absent)
+ *   - error-granularity: SEC-045 (Insufficient Error Granularity)
+ *   - missing-cors: SEC-046 (Missing CORS Validation)
+ *   - insecure-defaults: SEC-047 (Insecure Default Configuration)
+ *   - missing-capability: SEC-048 (Missing Capability Negotiation)
+ *   - timing-side-channel: SEC-049 (Timing Side Channel Auth)
+ *   - output-entropy: SEC-050 (Insufficient Output Entropy)
+ *   - weaponized-fuzzer: SEC-051 (Weaponized MCP Fuzzer)
+ *   - autonomous-backdoor: SEC-052 (Autonomous MCP Backdoor)
+ *   - malicious-config-file: SEC-053 (Malicious Config File)
+ *   - endpoint-hijack: SEC-054 (API Endpoint Hijacking)
+ *   - jailbreak-service: SEC-055 (Jailbreak as Service)
  *   - phishing: SEC-056 (Phishing via MCP)
- *   - jailbreak-service: SEC-057 (Jailbreak as Service)
+ *   - data-exfiltration-steganography: SEC-057 (Data Exfiltration)
  *   - self-replicating: SEC-058 (Self-Replicating MCP)
- *   - weaponized-fuzzer: SEC-059 (Weaponized MCP Fuzzer)
- *   - autonomous-backdoor: SEC-060 (Autonomous MCP Backdoor)
+ *   - unvalidated-tool-auth: SEC-059 (Unvalidated Tool Authorization)
+ *   - missing-transaction: SEC-060 (Missing Transaction Semantics)
  *
  *   - all-vulns: All vulnerabilities enabled (comprehensive testing)
  */
@@ -119,7 +122,7 @@ interface Tool {
   description: string;
   inputSchema: {
     type: string;
-    properties: Record<string, { type: string; description: string }>;
+    properties: Record<string, { type: string; description: string; [key: string]: any }>;
     required?: string[];
   };
 }
@@ -138,6 +141,7 @@ interface Prompt {
 
 // Tool definitions by vulnerability type
 const VULN_TOOLS: Record<string, Tool[]> = {
+  // SEC-003: SQL Injection
   'sql-injection': [
     {
       name: 'execute_sql',
@@ -157,6 +161,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
+  // SEC-002: Command Injection
   'command-injection': [
     {
       name: 'run_command',
@@ -252,6 +257,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
+  // SEC-013: prompt-injection
   'prompt-injection': [
     {
       name: 'generate_response',
@@ -349,7 +355,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-008: ReDoS Detection
+  // SEC-011: ReDoS Detection
   redos: [
     {
       name: 'validate_input',
@@ -362,6 +368,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
           input: {
             type: 'string',
             description: isEs ? 'Input a validar con regex vulnerable' : 'Input to validate with vulnerable regex',
+            pattern: '^(a+)+$',
           },
         },
         required: ['input'],
@@ -370,6 +377,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
   ],
 
   // SEC-009: Weak Authentication
+  // SEC-001: weak-auth
   'weak-auth': [
     {
       name: 'login',
@@ -393,7 +401,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-011: Weak Crypto
+  // SEC-012: Weak Crypto
   'weak-crypto': [
     {
       name: 'hash_password',
@@ -429,7 +437,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-012: Auth Bypass
+  // SEC-001: Auth Bypass
   'auth-bypass': [
     {
       name: 'admin_access',
@@ -449,7 +457,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-021: Excessive Agency
+  // SEC-023: Excessive Agency
   'excessive-agency': [
     {
       name: 'delete_all_files',
@@ -485,7 +493,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-022: Missing Input Constraints
+  // SEC-019: Missing Input Constraints
   'missing-input-constraints': [
     {
       name: 'process_data',
@@ -504,7 +512,25 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-023: Unvalidated Tool Authorization
+  // Clean profile for SEC-019
+  'input-constraints-ok': [
+    {
+      name: 'process_data',
+      description: 'Process data with proper validation',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          data: {
+            type: 'string',
+            description: 'Data to process (with restrictions)',
+            maxLength: 1024,
+          },
+        },
+      },
+    },
+  ],
+
+  // SEC-059: Unvalidated Tool Authorization
   'unvalidated-tool-auth': [
     {
       name: 'privileged_operation',
@@ -524,7 +550,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-024: Exposed Endpoint
+  // SEC-014: Exposed Endpoint
   'exposed-endpoint': [
     {
       name: 'internal_api',
@@ -543,7 +569,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-025: Insecure Session Management
+  // SEC-043: Insecure Session Management
   'insecure-session': [
     {
       name: 'create_session',
@@ -563,7 +589,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-026: Missing Capability Negotiation
+  // SEC-048: Missing Capability Negotiation
   'missing-capability': [
     {
       name: 'unsafe_feature',
@@ -582,7 +608,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-027: Schema Versioning Absent
+  // SEC-044: Schema Versioning Absent
   'schema-versioning': [
     {
       name: 'legacy_tool',
@@ -601,7 +627,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-028: Insecure URI Scheme
+  // SEC-016: Insecure URI Scheme
   'insecure-uri': [
     {
       name: 'load_resource',
@@ -621,7 +647,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-029: Missing CORS Validation
+  // SEC-046: Missing CORS Validation
   'missing-cors': [
     {
       name: 'api_call',
@@ -640,7 +666,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-030: Agent State Poisoning
+  // SEC-035: Agent State Poisoning
   'agent-state-poisoning': [
     {
       name: 'set_global_config',
@@ -664,7 +690,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-031: Cross-Agent Prompt Injection
+  // SEC-037: Cross-Agent Prompt Injection
   'cross-agent-injection': [
     {
       name: 'send_agent_message',
@@ -688,7 +714,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-032: Model DoS via Tools
+  // SEC-028: Model DoS via Tools
   'model-dos': [
     {
       name: 'generate_large_output',
@@ -707,7 +733,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-033: Training Data Poisoning
+  // SEC-027: Training Data Poisoning
   'training-poison': [
     {
       name: 'submit_feedback',
@@ -727,7 +753,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-034: Insecure Output Handling
+  // SEC-022: Insecure Output Handling
   'insecure-output': [
     {
       name: 'render_html',
@@ -747,7 +773,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-035: Agent Identity Spoofing
+  // SEC-031: Agent Identity Spoofing
   'identity-spoofing': [
     {
       name: 'impersonate_agent',
@@ -767,7 +793,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-036: Agent Memory Injection
+  // SEC-041: Agent Memory Injection
   'memory-injection': [
     {
       name: 'store_memory',
@@ -791,7 +817,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-037: Recursive Agent Loop
+  // SEC-033: Recursive Agent Loop
   'recursive-loop': [
     {
       name: 'call_self',
@@ -834,7 +860,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-039: Excessive Data Disclosure
+  // SEC-030: Excessive Data Disclosure
   'excessive-disclosure': [
     {
       name: 'get_all_users',
@@ -848,26 +874,26 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-040: Missing Rate Limiting
+  // SEC-010: Missing Rate Limiting
   'missing-rate-limit': [
     {
       name: 'expensive_operation',
       description: isEs
-        ? 'Operación costosa sin límite de rate (puede ejecutarse miles de veces por segundo)'
-        : 'Expensive operation without rate limit (can execute thousands of times per second)',
+        ? 'Operación de cómputo costosa que consume muchos recursos.'
+        : 'An expensive compute operation that consumes many resources.',
       inputSchema: {
         type: 'object',
         properties: {
           iterations: {
             type: 'string',
-            description: isEs ? 'Número de iteraciones (sin límite)' : 'Number of iterations (no limit)',
+            description: isEs ? 'Número de iteraciones (sin restricciones)' : 'Number of iterations (unrestricted)',
           },
         },
       },
     },
   ],
 
-  // SEC-041: Multi-Agent Privilege Escalation
+  // SEC-034: Multi-Agent Privilege Escalation
   'privilege-escalation': [
     {
       name: 'elevate_privileges',
@@ -891,7 +917,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-042: Dangerous Tool Chaining
+  // SEC-020: Dangerous Tool Chaining
   'dangerous-chaining': [
     {
       name: 'pipe_to_shell',
@@ -911,7 +937,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-043: Tool Chaining Path Traversal
+  // SEC-039: Tool Chaining Path Traversal
   'chaining-traversal': [
     {
       name: 'read_then_execute',
@@ -931,7 +957,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-044: Distributed Agent DDoS
+  // SEC-036: Distributed Agent DDoS
   'distributed-ddos': [
     {
       name: 'broadcast_request',
@@ -951,7 +977,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-045: Agent Swarm Coordination Attack
+  // SEC-040: Agent Swarm Coordination Attack
   'swarm-attack': [
     {
       name: 'coordinate_swarm',
@@ -975,7 +1001,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-046: Insecure Plugin Design
+  // SEC-029: Insecure Plugin Design
   'insecure-plugin': [
     {
       name: 'load_plugin',
@@ -995,7 +1021,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-047: Supply Chain Tool Dependencies
+  // SEC-025: Supply Chain Tool Dependencies
   'supply-chain': [
     {
       name: 'install_dependency',
@@ -1015,7 +1041,7 @@ const VULN_TOOLS: Record<string, Tool[]> = {
     },
   ],
 
-  // SEC-048: API Endpoint Hijacking
+  // SEC-054: API Endpoint Hijacking
   'endpoint-hijack': [
     {
       name: 'register_endpoint',

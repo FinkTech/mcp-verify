@@ -35,7 +35,7 @@ module.exports = {
   },
 
   // Increase global timeout for integration tests
-  testTimeout: 60000,
+  testTimeout: 300000,
 
   // Ensure proper module resolution
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],

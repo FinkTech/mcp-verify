@@ -300,7 +300,12 @@ export class SecurityScanner {
     const ruleNumber = parseInt(ruleNumberMatch[1], 10);
 
     // 3. Determine which block this rule belongs to
-    const enabledBlocks = this.config.security.enabledBlocks || ['OWASP', 'MCP', 'A', 'B', 'C', 'D'];
+    let enabledBlocks = this.config.security.enabledBlocks || ['OWASP', 'MCP', 'A', 'B', 'C', 'D'];
+
+    // Allow enabling Block D via environment variable for testing/advanced use
+    if (process.env.MCP_VERIFY_ENABLE_BLOCK_D === 'true' && !enabledBlocks.includes('D')) {
+      enabledBlocks = [...enabledBlocks, 'D'];
+    }
 
     for (const block of enabledBlocks) {
       const range = RULE_BLOCK_RANGES[block as SecurityRuleBlock];

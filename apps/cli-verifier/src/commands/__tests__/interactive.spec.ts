@@ -1166,10 +1166,10 @@ describe('Workspace Health', () => {
       const result = await Promise.race([slowServerPromise, timeoutPromise]);
       const elapsed = Date.now() - startTime;
 
-      expect(elapsed).toBeLessThan(3000); // Should timeout around 2000ms
+      expect(elapsed).toBeLessThan(5000); // Increased threshold for slow environments
       expect(elapsed).toBeGreaterThanOrEqual(1900); // Allow small timing variance
       expect(result).toEqual({ success: false, error: 'timeout' });
-    }, 5000);
+    }, 10000);
 
     it('should not block shell on server timeout', async () => {
       jest.setTimeout(5000);

@@ -30,7 +30,7 @@
  */
 
 import type { ISecurityRule } from '../rule.interface';
-import type { SecurityFinding } from '../../mcp-server/entities/validation.types';
+import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
 import { t } from '@mcp-verify/shared';
 
 interface McpServerConfig {
@@ -73,10 +73,76 @@ export class ApiEndpointHijackingRule implements ISecurityRule {
     'LLM_BASE_URL'
   ];
 
-  evaluate(): SecurityFinding[] {
-    // This rule is designed to be called from scan-config command
-    // with a specific config file path. For regular scans, it returns empty.
-    return [];
+  evaluate(discovery: DiscoveryResult): SecurityFinding[] {
+    const findings: SecurityFinding[] = [];
+
+    if (!discovery.tools || discovery.tools.length === 0) {
+      return findings;
+    }
+
+    // Keywords indicating endpoint registration/hijacking
+    const ENDPOINT_KEYWORDS = [
+      'register_endpoint', 'register endpoint', 'endpoint',
+      'hijack', 'override endpoint', 'replace endpoint',
+      'api endpoint', 'endpoint_path', 'route registration'
+    ];
+
+    // Keywords indicating security issues
+    const INSECURE_KEYWORDS = [
+      'without checking', 'without verification', 'without validation',
+      'sin verificar', 'sin validación', 'no verification',
+      'collision', 'override', 'replace'
+    ];
+
+    for (const tool of discovery.tools) {
+      const toolText = `${tool.name} ${tool.description || ''}`.toLowerCase();
+
+      // Check if tool mentions endpoint operations
+      const hasEndpointOperation = ENDPOINT_KEYWORDS.some(kw => toolText.includes(kw));
+
+      if (!hasEndpointOperation) continue;
+
+      // Check for security issues
+      const hasSecurityIssue = INSECURE_KEYWORDS.some(kw => toolText.includes(kw));
+
+      // Check for endpoint_path parameter
+      let hasEndpointParam = false;
+      if (tool.inputSchema && typeof tool.inputSchema === 'object') {
+        const schema = tool.inputSchema as Record<string, any>;
+        if (schema.properties) {
+          for (const paramName of Object.keys(schema.properties)) {
+            if (paramName.toLowerCase().includes('endpoint') ||
+                paramName.toLowerCase().includes('path') ||
+                paramName.toLowerCase().includes('route')) {
+              hasEndpointParam = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (hasSecurityIssue || (hasEndpointOperation && hasEndpointParam)) {
+        findings.push({
+          severity: 'critical',
+          message: t('sec_054_tool_endpoint_hijacking', { tool: tool.name }),
+          component: `tool:${tool.name}`,
+          ruleCode: this.code,
+          location: { type: 'tool', name: tool.name },
+          evidence: {
+            risk: 'Tool can register or hijack API endpoints without proper validation',
+            detectedOperation: hasEndpointParam ? 'Endpoint registration with path parameter' : 'Endpoint manipulation without validation'
+          },
+          remediation: t('sec_054_recommendation'),
+          references: [
+            'CVE-2026-21852: API Endpoint Hijacking in MCP Config',
+            'Check Point Research: MCP Security (Vector 3)',
+            'CWE-494: Download of Code Without Integrity Check'
+          ]
+        });
+      }
+    }
+
+    return findings;
   }
 
   /**

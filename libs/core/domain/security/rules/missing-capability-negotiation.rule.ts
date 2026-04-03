@@ -33,8 +33,47 @@ export class MissingCapabilityNegotiationRule implements ISecurityRule {
   severity: 'medium' = 'medium';
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
-    // This rule requires fuzzer to test capability consistency
-    // Static analysis cannot verify runtime behavior
-    return [];
+    const findings: SecurityFinding[] = [];
+
+    if (!discovery.tools || discovery.tools.length === 0) {
+      return findings;
+    }
+
+    // Keywords indicating dangerous features without capability checks
+    const DANGEROUS_FEATURE_KEYWORDS = ['dangerous', 'unsafe', 'feature', 'capability', 'negotiate', 'client capabilities'];
+    const CAPABILITY_CHECK_KEYWORDS = ['capability', 'negotiate', 'check capability', 'validate capability', 'supports'];
+
+    for (const tool of discovery.tools) {
+      const toolText = `${tool.name} ${tool.description || ''}`.toLowerCase();
+
+      // Check if tool mentions dangerous features
+      const hasDangerousFeature = DANGEROUS_FEATURE_KEYWORDS.some(kw => toolText.includes(kw));
+
+      if (!hasDangerousFeature) continue;
+
+      // Check if tool mentions capability checks
+      const hasCapabilityCheck = CAPABILITY_CHECK_KEYWORDS.some(kw => toolText.includes(kw));
+
+      // Special case: mentions "without negotiating" or similar
+      const explicitlyMissingNegotiation = toolText.includes('without negotiat') ||
+                                          toolText.includes('sin negociar');
+
+      if (explicitlyMissingNegotiation || (hasDangerousFeature && !hasCapabilityCheck)) {
+        findings.push({
+          ruleCode: this.code,
+          severity: 'medium',
+          message: `Tool "${tool.name}" provides features without capability negotiation`,
+          component: `tool:${tool.name}`,
+          location: { type: 'tool', name: tool.name },
+          evidence: {
+            risk: 'Inconsistency between declared and actual capabilities creates vulnerabilities',
+            detectedIssue: 'Feature provided without checking client capabilities'
+          },
+          remediation: 'Implement capability negotiation to verify client supports the feature before execution'
+        });
+      }
+    }
+
+    return findings;
   }
 }

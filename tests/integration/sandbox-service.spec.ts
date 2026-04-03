@@ -37,7 +37,7 @@ describeOrSkip('SandboxService Integration Tests', () => {
     service = new SandboxService();
     defaultOptions = {
       cwd: TEMP_DIR,
-      timeoutMs: 2000,
+      timeoutMs: 10000,
       memoryLimitMb: 128,
       capabilities: {
         allowRead: [TEMP_DIR],

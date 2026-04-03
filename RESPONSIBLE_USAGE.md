@@ -426,7 +426,7 @@ Security Notice: This MCP server is protected by mcp-verify Security Gateway.
 - Repeated violations may result in temporary or permanent access restrictions
 - No request data is sent to external services (LLM analysis is disabled)
 - Audit logs are retained for 90 days and stored securely
-- To appeal a block, contact: security@your-domain.com
+- To appeal a block, contact: official.mcpverify@gmail.com
 ```
 
 #### 7. Compliance with Monitoring Laws
@@ -488,7 +488,7 @@ jq -s 'group_by(.clientId) | map({client: .[0].clientId, strikes: ([.[].strikes]
 echo "Security Monitoring Enabled" > ./SECURITY_NOTICE.txt
 
 # 6. Establish appeal process
-# Create email alias: security-appeals@your-domain.com
+# Contact: official.mcpverify@gmail.com
 ```
 
 ---

@@ -794,7 +794,7 @@ generateReport({
 
 - **Issues**: Open a GitHub issue
 - **Questions**: Start a GitHub Discussion
-- **Security**: Email security@your-domain.com
+- **Security**: Email official.mcpverify@gmail.com
 
 ---
 

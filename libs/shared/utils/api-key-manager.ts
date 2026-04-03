@@ -24,8 +24,12 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
+import { loadNativeAddon } from './native-loader';
+import { t } from './cli/i18n-helper';
 
 const ENV_VAR_NAME = 'ANTHROPIC_API_KEY';
+const KEYCHAIN_SERVICE = 'mcp-verify';
+const KEYCHAIN_ACCOUNT = 'anthropic_api_key';
 
 export interface ApiKeyValidationResult {
   valid: boolean;
@@ -35,14 +39,63 @@ export interface ApiKeyValidationResult {
 
 export class ApiKeyManager {
   /**
-   * Retrieve API key from environment variable
+   * Retrieve API key from:
+   * 1. Environment variable (high priority, for CI/CD)
+   * 2. System Keychain (local persistence)
    */
   async getApiKey(): Promise<string | null> {
+    // 1. Check environment variable
     const envKey = process.env[ENV_VAR_NAME];
     if (envKey && envKey.length > 0) {
       return envKey;
     }
+
+    // 2. Check System Keychain
+    try {
+      const keyring = loadNativeAddon<any>('@napi-rs/keyring');
+      if (keyring) {
+        // This is a purely local call to the OS Credential Manager
+        return await keyring.getPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT);
+      }
+    } catch (error) {
+      // Keychain entry might not exist or module failed to load
+    }
+
     return null;
+  }
+
+  /**
+   * Save API key to the System Keychain (Local only)
+   * This is a transparent process that never sends data to external servers.
+   */
+  async saveApiKey(apiKey: string): Promise<boolean> {
+    try {
+      const keyring = loadNativeAddon<any>('@napi-rs/keyring');
+      if (!keyring) {
+        throw new Error(t('mcp_error_native_addon_not_available', { addon: '@napi-rs/keyring' }));
+      }
+
+      await keyring.setPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT, apiKey);
+      return true;
+    } catch (error) {
+      console.error(t('mcp_error_keychain_save_failed', { error: error instanceof Error ? error.message : String(error) }));
+      return false;
+    }
+  }
+
+  /**
+   * Delete API key from the System Keychain
+   */
+  async deleteApiKey(): Promise<boolean> {
+    try {
+      const keyring = loadNativeAddon<any>('@napi-rs/keyring');
+      if (!keyring) return false;
+
+      await keyring.deletePassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT);
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 
   /**
@@ -77,7 +130,7 @@ export class ApiKeyManager {
       if (error.status === 401 || error.message?.includes('authentication')) {
         return {
           valid: false,
-          error: 'API key is invalid or expired',
+          error: t('llm_api_key_invalid', { provider: 'Anthropic' }),
           provider: 'anthropic'
         };
       }
@@ -92,7 +145,7 @@ export class ApiKeyManager {
 
       return {
         valid: false,
-        error: `Validation failed: ${error.message}`,
+        error: t('llm_validation_failed', { provider: 'Anthropic', error: error.message }),
         provider: 'anthropic'
       };
     }

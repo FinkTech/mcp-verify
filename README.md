@@ -8,7 +8,7 @@
   <a href="https://github.com/FinkTech/mcp-verify/releases/latest"><img src="https://img.shields.io/badge/version-1.0.0-blue" alt="Version"></a>
   <a href="https://www.gnu.org/licenses/agpl-3.0"><img src="https://img.shields.io/badge/License-AGPL%203.0-blue.svg" alt="License"></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.x-blue" alt="TypeScript"></a>
-  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-%3E%3D18.0.0-green" alt="Node.js"></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-%3E%3D20.0.0-green" alt="Node.js"></a>
   <a href="./TESTING.md"><img src="https://img.shields.io/badge/coverage-80%25+-brightgreen" alt="Test Coverage"></a>
   <a href="https://github.com/FinkTech"><img src="https://img.shields.io/badge/Maintained%20by-Fink-blue" alt="Maintained by Fink"></a>
 </p>
@@ -20,6 +20,8 @@
 > **⚠️ Disclaimer:** This project is an independent open-source tool developed by **Ariel A. Fink**. It is **NOT** affiliated with, endorsed by, or connected to Anthropic, the Model Context Protocol organization, or any other entity.
 
 > **⚖️ Responsible Usage:** MCP Verify is designed for **defensive security auditing**. Only scan systems you own or have explicit authorization to test. See [RESPONSIBLE_USAGE.md](RESPONSIBLE_USAGE.md) for ethical guidelines.
+
+> **🚀 v1.0.0 Early Release Status:** This is a **community-driven early release** with stable core functionality. While production-ready for CLI operations, fuzzing, and validation, security rule test coverage is actively being improved (**~45% passing**, ongoing keyword alignment work). We welcome feedback and contributions. See [SECURITY_TESTING.md](./SECURITY_TESTING.md) for detailed test status and [Known Limitations](#️-known-limitations) for transparency on current boundaries.
 
 ---
 
@@ -117,7 +119,7 @@ HTML: ./reports/html/mcp-report-2026-02-03.html
 
 ## ⚠️ Security Advisory
 
-**Current Status (v1.0.0)**: This project uses `pkg` for standalone binary compilation. `pkg` has a known **moderate severity** vulnerability ([GHSA-22r3-9w55-cj54](https://github.com/advisories/GHSA-22r3-9w55-cj54)) with no fix available as the project is no longer maintained.
+**Current Status (v1.0.0)**: This project is distributed as a secure, standalone **Single Executable Application (SEA)** using Node.js 20+ native APIs. This ensures high performance, small binary size, and maximum security by avoiding third-party bundlers like `pkg`.
 
 **Impact Assessment**:
 - Affects **local privilege escalation** during binary execution
@@ -156,13 +158,13 @@ npm install -g mcp-verify
 mcp-verify validate "node server.js"
 ```
 
-### Method 3: Standalone Binary ⚠️ NOT RECOMMENDED
+### Method 3: Standalone Binary ✅
 
 ```bash
-# Has known moderate vulnerability - avoid until v1.1.0
-npm run compile  # Creates binaries in dist/bin/
+# High-performance native binary using Node SEA
+npm run compile  # Creates secure binaries in dist/bin/
 
-# Only use in trusted environments
+# Use the binary directly
 ./dist/bin/mcp-verify-linux validate "node server.js"
 ```
 
@@ -1228,7 +1230,7 @@ Despite built-in safety mechanisms (blacklist filtering, static analysis), mcp-v
 docker run -it --rm \
   --network none \                    # No network access
   -v $(pwd):/workspace:ro \           # Read-only filesystem
-  node:18-alpine sh
+  node:20-alpine sh
 
 # Inside container
 cd /workspace

@@ -487,7 +487,7 @@ export const DEFAULT_CONFIG: McpVerifyConfig = {
     minScore: 70,
     failOnCritical: true,
     failOnHigh: false,
-    enabledBlocks: ['OWASP', 'MCP', 'A', 'B', 'C'],  // All blocks except D (AI Weaponization) by default
+    enabledBlocks: ['OWASP', 'MCP', 'A', 'B', 'C'],  // All blocks except D (AI Weaponization) by default - users must explicitly enable
     disabledRules: [],  // No rules explicitly disabled
     rules: {
       // Block OWASP: OWASP Top 10 Aligned Rules (SEC-001 to SEC-013)

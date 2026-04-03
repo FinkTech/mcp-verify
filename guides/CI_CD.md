@@ -179,7 +179,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install dependencies
         run: npm install
@@ -235,7 +235,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install mcp-verify
         run: |
@@ -287,7 +287,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install mcp-verify
         run: |
@@ -371,7 +371,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install mcp-verify
         run: |
@@ -434,7 +434,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install mcp-verify
         run: |
@@ -477,7 +477,7 @@ stages:
 
 mcp_validation:
   stage: test
-  image: node:18
+  image: node:20
   script:
     - git clone https://github.com/FinkTech/mcp-verify.git
     - cd mcp-verify
@@ -505,7 +505,7 @@ stages:
 
 mcp_security:
   stage: security
-  image: node:18
+  image: node:20
   script:
     - git clone https://github.com/FinkTech/mcp-verify.git
     - cd mcp-verify
@@ -531,7 +531,7 @@ mcp_security:
 # .gitlab-ci.yml
 mcp_llm_analysis:
   stage: security
-  image: node:18
+  image: node:20
   variables:
     ANTHROPIC_API_KEY: $ANTHROPIC_API_KEY  # Set in GitLab CI/CD Variables
   script:
@@ -922,7 +922,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install mcp-verify
         run: |
@@ -1239,7 +1239,7 @@ stages:
 
 mcp_enterprise_scan:
   stage: security
-  image: node:18
+  image: node:20
   variables:
     ANTHROPIC_API_KEY: $ANTHROPIC_API_KEY
   script:

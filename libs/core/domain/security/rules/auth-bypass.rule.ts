@@ -41,7 +41,8 @@ export class AuthenticationBypassRule implements ISecurityRule {
     'check_password', 'verify_password', 'check_credentials', 'validate_user',
     'session', 'token', 'jwt', 'oauth', 'sso',
     'register', 'signup', 'sign_up', 'create_user', 'user_creation',
-    'password', 'credential', 'update_password', 'change_password', 'reset_password'
+    'password', 'credential', 'update_password', 'change_password', 'reset_password',
+    'admin_access', 'admin', 'access'
   ];
 
   /**

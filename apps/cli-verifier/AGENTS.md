@@ -305,7 +305,7 @@ Start interactive shell with multi-context workspace.
 ## Troubleshooting
 
 ### Interactive shell not starting
-- **Check**: Is Node.js 18+ installed? (`node --version`)
+- **Check**: Is Node.js 20+ installed? (`node --version`)
 - **Check**: Are dependencies installed? (`npm install`)
 - **Check**: Is `.mcp-verify/` directory writable? (permissions issue)
 - **Fix**: Delete `.mcp-verify/session.json` if corrupted

@@ -1556,7 +1556,7 @@ These servers are **INTENTIONALLY INSECURE** for testing purposes:
 If you find a security vulnerability in mcp-verify:
 
 1. **Do NOT open a public GitHub issue**
-2. Email: security@your-domain.com (replace with actual email)
+2. Email: official.mcpverify@gmail.com
 3. Include:
    - Description of vulnerability
    - Steps to reproduce

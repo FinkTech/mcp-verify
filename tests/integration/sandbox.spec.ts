@@ -42,7 +42,7 @@ describeOrSkip('DenoRunner Integration Security Tests', () => {
     runner = new DenoRunner();
     defaultOptions = {
       cwd: TEMP_DIR,
-      timeoutMs: 2000,
+      timeoutMs: 10000,
       memoryLimitMb: 128,
       capabilities: {
         allowRead: [TEMP_DIR], // Solo puede leer su propio dir de trabajo

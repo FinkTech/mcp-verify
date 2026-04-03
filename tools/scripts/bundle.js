@@ -231,16 +231,26 @@ const buildCLI = esbuild.build({
     outfile: bundleOutfile,
     bundle: true,
     platform: 'node',
-    target:   'node18',
+    target:   'node20',
     minify: false,
     define: { 'import.meta.url': '__import_meta_url__' },
     banner: {
+        // __filename behaviour by context:
+        //   node dist/mcp-verify.js  → path to the .js file on disk
+        //   SEA binary               → process.execPath (the compiled binary)
+        // native-loader.ts uses path.dirname(process.execPath), not __dirname,
+        // so it is unaffected by this difference.
         js: `#!/usr/bin/env node\nconst __import_meta_url__ = require("url").pathToFileURL(__filename).href;\n// Build ID: ${new Date().getTime()}`,
     },
     sourcemap: true,
     external: [
+        // Native addons: excluded from bundle, resolved at runtime by
+        // libs/core/src/native-loader.ts (works in dev, npm install, and SEA).
         'fsevents',
         '@napi-rs/keyring',
+        // Peer dependencies: optional LLM SDKs — only loaded when the user
+        // configures --llm. Must stay external: they are not in dependencies,
+        // only in peerDependencies, so they may not be installed at build time.
         '@anthropic-ai/sdk',
         '@modelcontextprotocol/sdk',
     ],
@@ -258,7 +268,7 @@ const buildServer = esbuild.build({
     outfile: serverOutfile,
     bundle: true,
     platform: 'node',
-    target: 'node18',
+    target: 'node20',
     minify: true,
     define: { 'import.meta.url': '__import_meta_url__' },
     banner: {

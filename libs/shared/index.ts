@@ -30,6 +30,7 @@ export * from './utils/api-key-manager';
 export * from './utils/user-agent';
 export * from './utils/git-info';
 export * from './utils/json';
+export * from './utils/native-loader';
 
 // CLI Utilities
 export * from './utils/cli/error-formatter';
