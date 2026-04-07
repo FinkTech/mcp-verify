@@ -29,26 +29,45 @@
  * - CWE-362: Concurrent Execution using Shared Resource
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class AgentStatePoisoningRule implements ISecurityRule {
-  code = 'SEC-035';
-  name = 'Agent State Poisoning';
-  severity: 'high' = 'high';
+  code = "SEC-035";
+  name = "Agent State Poisoning";
+  severity: "high" = "high";
 
   private readonly STATE_MODIFICATION_PATTERNS = [
-    /set.*state/i, /update.*state/i, /modify.*state/i,
-    /persist.*state/i, /save.*state/i, /store.*state/i,
-    /set.*memory/i, /update.*memory/i, /write.*memory/i,
-    /cache.*set/i, /session.*update/i, /context.*set/i
+    /set.*state/i,
+    /update.*state/i,
+    /modify.*state/i,
+    /persist.*state/i,
+    /save.*state/i,
+    /store.*state/i,
+    /set.*memory/i,
+    /update.*memory/i,
+    /write.*memory/i,
+    /cache.*set/i,
+    /session.*update/i,
+    /context.*set/i,
   ];
 
   private readonly STATE_KEYWORDS = [
-    'state', 'memory', 'context', 'session', 'cache',
-    'storage', 'persist', 'save', 'store', 'global'
+    "state",
+    "memory",
+    "context",
+    "session",
+    "cache",
+    "storage",
+    "persist",
+    "save",
+    "store",
+    "global",
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -68,18 +87,20 @@ export class AgentStatePoisoningRule implements ISecurityRule {
         if (!hasValidation || !hasIsolation) {
           findings.push({
             severity: this.severity,
-            message: t('sec_035_state_poisoning', {
+            message: t("sec_035_state_poisoning", {
               toolName: tool.name,
-              issue: !hasValidation ? 'missing validation' : 'missing agent isolation'
+              issue: !hasValidation
+                ? "missing validation"
+                : "missing agent isolation",
             }),
             component: `tool:${tool.name}`,
             ruleCode: this.code,
-            remediation: t('sec_035_recommendation'),
+            remediation: t("sec_035_recommendation"),
             references: [
-              'Multi-Agent Security Framework (MASF) 2024 - State Isolation',
-              'CWE-362: Concurrent Execution using Shared Resource',
-              'OWASP - Session Management'
-            ]
+              "Multi-Agent Security Framework (MASF) 2024 - State Isolation",
+              "CWE-362: Concurrent Execution using Shared Resource",
+              "OWASP - Session Management",
+            ],
           });
         }
       }
@@ -90,24 +111,27 @@ export class AgentStatePoisoningRule implements ISecurityRule {
 
   private modifiesSharedState(tool: McpTool): boolean {
     // Check name pattern
-    const nameMatches = this.STATE_MODIFICATION_PATTERNS.some(pattern =>
-      pattern.test(tool.name)
+    const nameMatches = this.STATE_MODIFICATION_PATTERNS.some((pattern) =>
+      pattern.test(tool.name),
     );
     if (nameMatches) return true;
 
     // Check description
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
-      const descMatches = this.STATE_MODIFICATION_PATTERNS.some(pattern =>
-        pattern.test(descLower)
+      const descMatches = this.STATE_MODIFICATION_PATTERNS.some((pattern) =>
+        pattern.test(descLower),
       );
       if (descMatches) return true;
 
       // Check for state keywords
-      const hasStateKeyword = this.STATE_KEYWORDS.some(keyword =>
-        descLower.includes(keyword)
+      const hasStateKeyword = this.STATE_KEYWORDS.some((keyword) =>
+        descLower.includes(keyword),
       );
-      const mentionsWrite = descLower.includes('write') || descLower.includes('update') || descLower.includes('set');
+      const mentionsWrite =
+        descLower.includes("write") ||
+        descLower.includes("update") ||
+        descLower.includes("set");
       if (hasStateKeyword && mentionsWrite) return true;
     }
 
@@ -115,8 +139,8 @@ export class AgentStatePoisoningRule implements ISecurityRule {
     if (tool.inputSchema?.properties) {
       for (const propName of Object.keys(tool.inputSchema.properties)) {
         const propLower = propName.toLowerCase();
-        const isStateParam = this.STATE_KEYWORDS.some(keyword =>
-          propLower.includes(keyword)
+        const isStateParam = this.STATE_KEYWORDS.some((keyword) =>
+          propLower.includes(keyword),
         );
         if (isStateParam) return true;
       }
@@ -130,22 +154,29 @@ export class AgentStatePoisoningRule implements ISecurityRule {
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
       const validationKeywords = [
-        'validate', 'sanitize', 'verify', 'check',
-        'filter', 'clean', 'escape'
+        "validate",
+        "sanitize",
+        "verify",
+        "check",
+        "filter",
+        "clean",
+        "escape",
       ];
 
-      const hasValidation = validationKeywords.some(keyword =>
-        descLower.includes(keyword)
+      const hasValidation = validationKeywords.some((keyword) =>
+        descLower.includes(keyword),
       );
       if (hasValidation) return true;
     }
 
     // Check if state parameters have validation constraints
     if (tool.inputSchema?.properties) {
-      for (const [propName, propSchema] of Object.entries(tool.inputSchema.properties)) {
+      for (const [propName, propSchema] of Object.entries(
+        tool.inputSchema.properties,
+      )) {
         const propLower = propName.toLowerCase();
-        const isStateParam = this.STATE_KEYWORDS.some(keyword =>
-          propLower.includes(keyword)
+        const isStateParam = this.STATE_KEYWORDS.some((keyword) =>
+          propLower.includes(keyword),
         );
 
         if (isStateParam) {
@@ -157,7 +188,8 @@ export class AgentStatePoisoningRule implements ISecurityRule {
             [key: string]: unknown;
           };
 
-          const hasConstraints = schema.pattern || schema.format || schema.enum || schema.maxLength;
+          const hasConstraints =
+            schema.pattern || schema.format || schema.enum || schema.maxLength;
           if (hasConstraints) return true;
         }
       }
@@ -172,15 +204,20 @@ export class AgentStatePoisoningRule implements ISecurityRule {
       return false;
     }
 
-    const paramNames = Object.keys(tool.inputSchema.properties).map(p => p.toLowerCase());
+    const paramNames = Object.keys(tool.inputSchema.properties).map((p) =>
+      p.toLowerCase(),
+    );
 
     const isolationParams = [
-      'agent_id', 'session_id', 'user_id', 'tenant_id',
-      'namespace', 'scope', 'context_id'
+      "agent_id",
+      "session_id",
+      "user_id",
+      "tenant_id",
+      "namespace",
+      "scope",
+      "context_id",
     ];
 
-    return isolationParams.some(param =>
-      paramNames.includes(param)
-    );
+    return isolationParams.some((param) => paramNames.includes(param));
   }
 }

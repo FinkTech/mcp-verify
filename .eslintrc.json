@@ -16,7 +16,10 @@
   "rules": {
     "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      { "argsIgnorePattern": "^_" }
+    ],
     "@typescript-eslint/no-require-imports": "warn",
     "@typescript-eslint/prefer-as-const": "warn",
     "@typescript-eslint/ban-ts-comment": "warn",
@@ -38,7 +41,11 @@
       }
     }
   ],
-  "ignorePatterns": ["dist/", "node_modules/", "coverage/", "*.js", "*.config.js"]
+  "ignorePatterns": [
+    "dist/",
+    "node_modules/",
+    "coverage/",
+    "*.js",
+    "*.config.js"
+  ]
 }
-
-

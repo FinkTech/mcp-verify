@@ -25,28 +25,31 @@
  * - GDPR Art. 30 (Records of processing activities)
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import { t } from "@mcp-verify/shared";
 
 export class MissingAuditLoggingRule implements ISecurityRule {
-  code = 'SEC-042';
-  name = 'Missing Audit Logging Interface';
-  severity: 'high' = 'high';
+  code = "SEC-042";
+  name = "Missing Audit Logging Interface";
+  severity: "high" = "high";
 
   /**
    * Keywords that indicate audit logging capability
    */
   private readonly AUDIT_KEYWORDS = [
-    'audit',
-    'log',
-    'event',
-    'trail',
-    'history',
-    'record',
-    'telemetry',
-    'metrics',
-    'monitoring'
+    "audit",
+    "log",
+    "event",
+    "trail",
+    "history",
+    "record",
+    "telemetry",
+    "metrics",
+    "monitoring",
   ];
 
   /**
@@ -60,7 +63,7 @@ export class MissingAuditLoggingRule implements ISecurityRule {
     /retrieve.*trail/i,
     /export.*audit/i,
     /show.*telemetry/i,
-    /get.*metrics/i
+    /get.*metrics/i,
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -72,10 +75,10 @@ export class MissingAuditLoggingRule implements ISecurityRule {
     if (!hasAuditTool) {
       findings.push({
         severity: this.severity,
-        message: t('sec_042_missing_audit_logging'),
-        component: 'server',
+        message: t("sec_042_missing_audit_logging"),
+        component: "server",
         ruleCode: this.code,
-        remediation: t('sec_042_recommendation')
+        remediation: t("sec_042_recommendation"),
       });
     }
 
@@ -90,8 +93,8 @@ export class MissingAuditLoggingRule implements ISecurityRule {
     if (discovery.tools) {
       for (const tool of discovery.tools) {
         // Check tool name against patterns
-        const hasAuditPattern = this.AUDIT_TOOL_PATTERNS.some(pattern =>
-          pattern.test(tool.name)
+        const hasAuditPattern = this.AUDIT_TOOL_PATTERNS.some((pattern) =>
+          pattern.test(tool.name),
         );
 
         if (hasAuditPattern) {
@@ -100,8 +103,8 @@ export class MissingAuditLoggingRule implements ISecurityRule {
 
         // Check tool name contains audit keywords
         const toolNameLower = tool.name.toLowerCase();
-        const hasAuditKeyword = this.AUDIT_KEYWORDS.some(keyword =>
-          toolNameLower.includes(keyword)
+        const hasAuditKeyword = this.AUDIT_KEYWORDS.some((keyword) =>
+          toolNameLower.includes(keyword),
         );
 
         if (hasAuditKeyword) {
@@ -111,8 +114,8 @@ export class MissingAuditLoggingRule implements ISecurityRule {
         // Check tool description
         if (tool.description) {
           const descLower = tool.description.toLowerCase();
-          const descHasAudit = this.AUDIT_KEYWORDS.some(keyword =>
-            descLower.includes(keyword)
+          const descHasAudit = this.AUDIT_KEYWORDS.some((keyword) =>
+            descLower.includes(keyword),
           );
 
           if (descHasAudit) {

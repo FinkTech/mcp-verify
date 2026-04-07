@@ -97,42 +97,47 @@ Create `src/commands/my-command.ts`:
  * Brief description of what this command does
  */
 
-import ora from 'ora';
-import chalk from 'chalk';
-import { t } from '../../../../libs/shared/utils/cli/i18n-helper';
-import { createLogger } from '../../../../libs/shared/utils/cli/output-helper';
+import ora from "ora";
+import chalk from "chalk";
+import { t } from "../../../../libs/shared/utils/cli/i18n-helper";
+import { createLogger } from "../../../../libs/shared/utils/cli/output-helper";
 
-export async function runMyCommandAction(target: string, options: Record<string, unknown>) {
+export async function runMyCommandAction(
+  target: string,
+  options: Record<string, unknown>,
+) {
   // Determine if quiet mode (suppress spinners)
   const isQuiet = Boolean(options.quiet || options.jsonStdout);
   const log = createLogger(isQuiet);
-  const spinner = isQuiet ? null : ora('Starting...').start();
+  const spinner = isQuiet ? null : ora("Starting...").start();
 
   try {
     // STEP 1: Validate inputs
     if (!target) {
-      throw new Error('Target is required');
+      throw new Error("Target is required");
     }
 
     // STEP 2: Call use-case from libs/core
-    if (spinner) spinner.text = 'Processing...';
+    if (spinner) spinner.text = "Processing...";
 
     // Example: Import from core
     // import { MyUseCase } from '../../../../libs/core/use-cases/my-use-case';
     // const result = await new MyUseCase().execute(target);
 
     // STEP 3: Output results
-    if (spinner) spinner.succeed('Completed!');
+    if (spinner) spinner.succeed("Completed!");
 
-    log.log(chalk.green('✓ Success!'));
+    log.log(chalk.green("✓ Success!"));
     log.log(`Result: ${chalk.cyan(target)}`);
-
   } catch (error) {
-    if (spinner) spinner.fail('Failed');
+    if (spinner) spinner.fail("Failed");
 
-    log.log('');
-    log.error(chalk.red.bold('❌ Error\n'));
-    log.error(chalk.red('Error: ') + (error instanceof Error ? error.message : String(error)));
+    log.log("");
+    log.error(chalk.red.bold("❌ Error\n"));
+    log.error(
+      chalk.red("Error: ") +
+        (error instanceof Error ? error.message : String(error)),
+    );
 
     // STEP 4: Exit with error code for CI/CD
     process.exit(1);
@@ -144,14 +149,14 @@ export async function runMyCommandAction(target: string, options: Record<string,
 
 ```typescript
 // Import your command handler
-import { runMyCommandAction } from '../commands/my-command';
+import { runMyCommandAction } from "../commands/my-command";
 
 // Register command
 program
-  .command('my-command <target>')
-  .description('Description of my command')
-  .option('-o, --output <path>', 'Output directory', './output')
-  .option('--verbose', 'Enable verbose logging')
+  .command("my-command <target>")
+  .description("Description of my command")
+  .option("-o, --output <path>", "Output directory", "./output")
+  .option("--verbose", "Enable verbose logging")
   .action(runMyCommandAction);
 ```
 
@@ -182,11 +187,11 @@ mcp-verify my-command "test-target" --verbose
 Create `tests/cli-verifier/commands/my-command.spec.ts`:
 
 ```typescript
-import { describe, it, expect } from 'vitest';
-import { runMyCommandAction } from '../../../apps/cli-verifier/src/commands/my-command';
+import { describe, it, expect } from "vitest";
+import { runMyCommandAction } from "../../../apps/cli-verifier/src/commands/my-command";
 
-describe('my-command', () => {
-  it('should process target successfully', async () => {
+describe("my-command", () => {
+  it("should process target successfully", async () => {
     // Test implementation
   });
 });
@@ -205,17 +210,20 @@ describe('my-command', () => {
 
 ```typescript
 program
-  .command('validate <target>')
-  .description(t('cmd_validate_desc'))
+  .command("validate <target>")
+  .description(t("cmd_validate_desc"))
   // ... existing options ...
-  .option('--timeout <ms>', 'Request timeout in milliseconds', '10000') // ← ADD THIS
+  .option("--timeout <ms>", "Request timeout in milliseconds", "10000") // ← ADD THIS
   .action(runValidationAction);
 ```
 
 #### 2. Use Option in Command Handler `commands/validate.ts`
 
 ```typescript
-export async function runValidationAction(target: string, options: Record<string, unknown>) {
+export async function runValidationAction(
+  target: string,
+  options: Record<string, unknown>,
+) {
   // Extract option
   const timeout = Number(options.timeout || 10000);
 
@@ -232,13 +240,15 @@ export async function runValidationAction(target: string, options: Record<string
 
 Update `guides/EXAMPLES.md`:
 
-```markdown
+````markdown
 ## Custom Timeout
 
 ```bash
 mcp-verify validate "node server.js" --timeout 30000
 ```
-```
+````
+
+````
 
 ---
 
@@ -276,18 +286,18 @@ export class CsvGenerator {
     return rows.join('\n');
   }
 }
-```
+````
 
 #### 2. Update CLI Command `commands/validate.ts`
 
 ```typescript
-import { CsvGenerator } from '../../../../libs/core/domain/reporting/csv-generator';
+import { CsvGenerator } from "../../../../libs/core/domain/reporting/csv-generator";
 
 // In runValidationAction, after report generation:
-const reportFormat = String(options.format || 'json');
+const reportFormat = String(options.format || "json");
 
-if (reportFormat === 'csv') {
-  const csvDir = path.join(outputDir, 'csv');
+if (reportFormat === "csv") {
+  const csvDir = path.join(outputDir, "csv");
   fs.mkdirSync(csvDir, { recursive: true });
 
   const csvContent = CsvGenerator.generate(report);
@@ -323,12 +333,13 @@ mcp-verify validate "node server.js" --format csv
 
 ```typescript
 // commands/validate.ts
-export async function runValidationAction(target: string, options: Record<string, unknown>) {
+export async function runValidationAction(
+  target: string,
+  options: Record<string, unknown>,
+) {
   // Priority: CLI flag > ENV variable > default
   const timeout = Number(
-    options.timeout ||
-    process.env.MCP_VERIFY_TIMEOUT ||
-    10000
+    options.timeout || process.env.MCP_VERIFY_TIMEOUT || 10000,
   );
 
   // Use timeout...
@@ -347,7 +358,7 @@ Update `bin/index.ts`:
 
 Update `guides/EXAMPLES.md`:
 
-```markdown
+````markdown
 ## Environment Variables
 
 ```bash
@@ -355,7 +366,9 @@ Update `guides/EXAMPLES.md`:
 export MCP_VERIFY_TIMEOUT=30000
 mcp-verify validate "node server.js"
 ```
-```
+````
+
+````
 
 ---
 
@@ -377,7 +390,7 @@ program
   .description('Command description')
   .option('-f, --flag <value>', 'Flag description', 'default')
   .action(handlerFunction);
-```
+````
 
 ---
 
@@ -386,6 +399,7 @@ program
 **Most Important Command** - 450 lines
 
 **Responsibilities**:
+
 - Main validation workflow
 - Transport detection and creation
 - Security scanning orchestration
@@ -394,6 +408,7 @@ program
 - Exit code management for CI/CD
 
 **Key Features**:
+
 - **Quiet Mode**: Suppress spinners for CI/CD (`--quiet`, `--json-stdout`)
 - **Transport Auto-Detection**: Detects STDIO vs HTTP from target string
 - **Security Warnings**: Alerts for private IPs, missing sandbox
@@ -405,6 +420,7 @@ program
   - `2` = Critical security issue or baseline degradation
 
 **Usage**:
+
 ```bash
 mcp-verify validate "node server.js" --security --llm ollama:llama3.2
 ```
@@ -414,17 +430,20 @@ mcp-verify validate "node server.js" --security --llm ollama:llama3.2
 ### 3. Doctor Command (`commands/doctor.ts`)
 
 **Responsibilities**:
+
 - Diagnose connection issues
 - Test transport connectivity
 - Check environment (Node.js, API keys, Ollama)
 - Provide troubleshooting tips
 
 **Key Features**:
+
 - Environment checks (Node version, Deno, API keys)
 - Connection testing (handshake, discovery)
 - JSON-RPC diagnostics
 
 **Usage**:
+
 ```bash
 mcp-verify doctor "node server.js"
 ```
@@ -434,16 +453,19 @@ mcp-verify doctor "node server.js"
 ### 4. Interactive Mode (`commands/interactive.ts`)
 
 **Responsibilities**:
+
 - Default mode when no command specified
 - Presents menu of common operations
 - Guides users through validation workflow
 
 **Key Features**:
+
 - Command selection menu (Inquirer.js)
 - Input prompts with validation
 - Executes selected command
 
 **Triggered When**:
+
 ```bash
 mcp-verify  # No command = interactive mode
 ```
@@ -453,30 +475,33 @@ mcp-verify  # No command = interactive mode
 ### 5. Transport Factory (`utils/transport-factory.ts`)
 
 **Responsibilities**:
+
 - Auto-detect transport type (STDIO vs HTTP vs SSE)
 - Create appropriate transport instance
 - Configure transport options (env vars, sandbox, timeout)
 
 **Detection Logic**:
+
 ```typescript
 export function detectTransportType(target: string): TransportType {
-  if (target.startsWith('http://') || target.startsWith('https://')) {
-    return 'http';
+  if (target.startsWith("http://") || target.startsWith("https://")) {
+    return "http";
   }
-  if (target.includes('sse') || target.includes(':events')) {
-    return 'sse';
+  if (target.includes("sse") || target.includes(":events")) {
+    return "sse";
   }
-  return 'stdio'; // Default
+  return "stdio"; // Default
 }
 ```
 
 **Usage**:
+
 ```typescript
 const transport = createTransport(target, {
-  transportType: 'stdio',
-  envVars: { API_KEY: 'xxx' },
+  transportType: "stdio",
+  envVars: { API_KEY: "xxx" },
   sandbox: new DenoSandbox(),
-  timeout: 10000
+  timeout: 10000,
 });
 ```
 
@@ -485,15 +510,17 @@ const transport = createTransport(target, {
 ### 6. Output Helper (`utils/output-helper.ts`)
 
 **Responsibilities**:
+
 - Manage quiet mode
 - Format console output
 - Handle stdout piping for CI/CD
 
 **Key Pattern**:
+
 ```typescript
 const log = createLogger(isQuiet);
-log.log('Normal output');      // Suppressed if quiet
-log.error('Error message');    // Always shown
+log.log("Normal output"); // Suppressed if quiet
+log.error("Error message"); // Always shown
 ```
 
 ---
@@ -507,11 +534,11 @@ log.error('Error message');    // Always shown
 
 ```typescript
 const isQuiet = Boolean(options.quiet || options.jsonStdout);
-const spinner = isQuiet ? null : ora('Loading...').start();
+const spinner = isQuiet ? null : ora("Loading...").start();
 
 // Use spinner safely
-if (spinner) spinner.text = 'Processing...';
-if (spinner) spinner.succeed('Done!');
+if (spinner) spinner.text = "Processing...";
+if (spinner) spinner.succeed("Done!");
 ```
 
 ---
@@ -533,9 +560,10 @@ process.exit(2);
 ```
 
 **Usage in CI/CD**:
+
 ```yaml
 - run: mcp-verify validate "node server.js"
-  continue-on-error: true  # Don't fail build on exit code 1
+  continue-on-error: true # Don't fail build on exit code 1
 ```
 
 ---
@@ -553,10 +581,11 @@ if (outputToStdout) {
 }
 
 // Visual report to stderr (won't interfere with piping)
-process.stderr.write(chalk.bold('Report:\n'));
+process.stderr.write(chalk.bold("Report:\n"));
 ```
 
 **Usage**:
+
 ```bash
 mcp-verify validate "node server.js" --json-stdout | jq '.security.score'
 ```
@@ -569,16 +598,16 @@ mcp-verify validate "node server.js" --json-stdout | jq '.security.score'
 **Solution**: Use `t()` function for all user-facing strings
 
 ```typescript
-import { t } from '../../../../libs/shared/utils/cli/i18n-helper';
+import { t } from "../../../../libs/shared/utils/cli/i18n-helper";
 
 // Never hardcode strings
-log.log('Validation complete');  // ❌ BAD
+log.log("Validation complete"); // ❌ BAD
 
 // Always use t()
-log.log(t('validation_complete'));  // ✅ GOOD
+log.log(t("validation_complete")); // ✅ GOOD
 
 // With parameters
-log.log(t('server_found', { name: 'MyServer' }));
+log.log(t("server_found", { name: "MyServer" }));
 ```
 
 ---
@@ -593,8 +622,8 @@ log.log(t('server_found', { name: 'MyServer' }));
 // ❌ BAD: commands/validate.ts
 export async function runValidationAction(target: string, options: any) {
   // DON'T implement security checks here
-  if (tool.inputSchema && tool.inputSchema.includes('exec')) {
-    findings.push({ severity: 'high', message: 'Command injection risk' });
+  if (tool.inputSchema && tool.inputSchema.includes("exec")) {
+    findings.push({ severity: "high", message: "Command injection risk" });
   }
 }
 ```
@@ -605,7 +634,7 @@ export async function runValidationAction(target: string, options: any) {
 // ✅ GOOD: commands/validate.ts
 export async function runValidationAction(target: string, options: any) {
   const validator = new MCPValidator(transport);
-  const report = await validator.generateReport();  // Business logic in use-case
+  const report = await validator.generateReport(); // Business logic in use-case
 
   // CLI only handles formatting
   log.log(`Score: ${report.security.score}`);
@@ -620,18 +649,18 @@ export async function runValidationAction(target: string, options: any) {
 
 ```typescript
 // ❌ BAD
-log.log('Validation complete');
-spinner.text = 'Processing...';
-throw new Error('Invalid target');
+log.log("Validation complete");
+spinner.text = "Processing...";
+throw new Error("Invalid target");
 ```
 
 **Solution**: Use i18n
 
 ```typescript
 // ✅ GOOD
-log.log(t('validation_complete'));
-spinner.text = t('processing');
-throw new Error(t('invalid_target'));
+log.log(t("validation_complete"));
+spinner.text = t("processing");
+throw new Error(t("invalid_target"));
 ```
 
 ---
@@ -646,7 +675,7 @@ try {
   await validator.run();
 } catch (error) {
   console.error(error);
-  process.exit(1);  // Transport not cleaned up!
+  process.exit(1); // Transport not cleaned up!
 }
 ```
 
@@ -660,7 +689,7 @@ try {
   log.error(error);
   process.exit(1);
 } finally {
-  if (validator) await validator.cleanup();  // Always cleanup
+  if (validator) await validator.cleanup(); // Always cleanup
 }
 ```
 
@@ -672,8 +701,8 @@ try {
 
 ```typescript
 // ❌ BAD
-const spinner = ora('Loading...').start();
-spinner.text = 'Processing...';
+const spinner = ora("Loading...").start();
+spinner.text = "Processing...";
 ```
 
 **Solution**: Respect quiet mode
@@ -681,26 +710,26 @@ spinner.text = 'Processing...';
 ```typescript
 // ✅ GOOD
 const isQuiet = Boolean(options.quiet || options.jsonStdout);
-const spinner = isQuiet ? null : ora('Loading...').start();
+const spinner = isQuiet ? null : ora("Loading...").start();
 
-if (spinner) spinner.text = 'Processing...';
+if (spinner) spinner.text = "Processing...";
 ```
 
 ---
 
 ## 📊 Command Cheat Sheet
 
-| Command | Purpose | Typical Use Case |
-|---------|---------|-----------------|
-| **validate** | Full validation | Production readiness check |
-| **doctor** | Diagnostics | "Why isn't this working?" |
-| **stress** | Load testing | Performance testing |
-| **dashboard** | Real-time UI | Development debugging |
-| **play** | Interactive testing | Manual exploration |
-| **proxy** | Traffic inspection | Protocol debugging |
-| **mock** | Mock server | Testing client integrations |
-| **init** | Create config | First-time setup |
-| **examples** | Show examples | Learning commands |
+| Command       | Purpose             | Typical Use Case            |
+| ------------- | ------------------- | --------------------------- |
+| **validate**  | Full validation     | Production readiness check  |
+| **doctor**    | Diagnostics         | "Why isn't this working?"   |
+| **stress**    | Load testing        | Performance testing         |
+| **dashboard** | Real-time UI        | Development debugging       |
+| **play**      | Interactive testing | Manual exploration          |
+| **proxy**     | Traffic inspection  | Protocol debugging          |
+| **mock**      | Mock server         | Testing client integrations |
+| **init**      | Create config       | First-time setup            |
+| **examples**  | Show examples       | Learning commands           |
 
 ---
 
@@ -711,14 +740,15 @@ if (spinner) spinner.text = 'Processing...';
 **Location**: `tests/cli-verifier/commands/`
 
 **Pattern**:
-```typescript
-import { describe, it, expect, vi } from 'vitest';
-import { runValidationAction } from '../../../apps/cli-verifier/src/commands/validate';
 
-describe('validate command', () => {
-  it('should validate STDIO transport', async () => {
-    const target = 'node server.js';
-    const options = { transport: 'stdio' };
+```typescript
+import { describe, it, expect, vi } from "vitest";
+import { runValidationAction } from "../../../apps/cli-verifier/src/commands/validate";
+
+describe("validate command", () => {
+  it("should validate STDIO transport", async () => {
+    const target = "node server.js";
+    const options = { transport: "stdio" };
 
     await runValidationAction(target, options);
 
@@ -730,6 +760,7 @@ describe('validate command', () => {
 ### Integration Tests
 
 **Run CLI directly**:
+
 ```bash
 npm run build
 mcp-verify validate "node tools/mocks/servers/simple-server.js"
@@ -738,6 +769,7 @@ mcp-verify validate "node tools/mocks/servers/simple-server.js"
 ### E2E Tests
 
 **Test full workflow**:
+
 ```bash
 # Test with real server
 npm run build
@@ -806,6 +838,7 @@ mcp-verify validate "node server.js" --llm openai:gpt-4o-mini
 **Goal**: < 500ms for `--help`
 
 **How**:
+
 - Lazy-load heavy dependencies (only when command runs)
 - Import only what's needed
 - Avoid top-level async operations
@@ -815,6 +848,7 @@ mcp-verify validate "node server.js" --llm openai:gpt-4o-mini
 **Goal**: < 100MB for typical validation
 
 **How**:
+
 - Stream large responses (don't buffer entire JSON)
 - Clean up transports after use
 - Avoid global state
@@ -827,6 +861,7 @@ mcp-verify validate "node server.js" --llm openai:gpt-4o-mini
 
 **Cause**: Not linked globally
 **Solution**:
+
 ```bash
 npm link
 mcp-verify --version
@@ -836,6 +871,7 @@ mcp-verify --version
 
 **Cause**: Missing dependency or outdated Node.js
 **Solution**:
+
 ```bash
 node --version  # Requires 18.x or higher
 npm install
@@ -852,19 +888,21 @@ npm run build
 ## 🎓 Learning Path
 
 ### Day 1: Read Existing Commands
+
 1. Read `bin/index.ts` - Understand command registration
 2. Read `commands/validate.ts` - Main workflow
 3. Read `commands/examples.ts` - Simple command example
 
 ### Day 2: Create Simple Command
+
 1. Copy `commands/examples.ts`
 2. Rename and modify
 3. Register in `bin/index.ts`
 4. Test with `npm run dev`
 
 ### Week 1: Create Complex Command
+
 1. Study `commands/validate.ts` structure
 2. Integrate with `libs/core/use-cases`
 3. Add i18n support
 4. Write unit tests
-

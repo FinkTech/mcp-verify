@@ -16,14 +16,14 @@
  * - validateTargetWithFeedback: Intelligent target validation
  */
 
-import fs from 'fs';
-import path from 'path';
-import readline from 'readline';
-import chalk from 'chalk';
-import { spawnSync } from 'child_process';
-import { t } from '@mcp-verify/shared';
-import { ShellParser } from '../parser';
-import type { ShellSession } from '../session';
+import fs from "fs";
+import path from "path";
+import readline from "readline";
+import chalk from "chalk";
+import { spawnSync } from "child_process";
+import { t } from "@mcp-verify/shared";
+import { ShellParser } from "../parser";
+import type { ShellSession } from "../session";
 
 /**
  * Merges session defaults with CLI flags.
@@ -37,7 +37,7 @@ import type { ShellSession } from '../session';
 export function mergeOptions(
   commandPrefix: string,
   session: ShellSession,
-  flags: Record<string, string | true>
+  flags: Record<string, string | true>,
 ): Record<string, unknown> {
   const defaults: Record<string, unknown> = {};
 
@@ -62,30 +62,37 @@ export function mergeOptions(
  * @returns Resolved target or undefined if cancelled
  */
 export async function resolveTarget(
-  args:    string[],
+  args: string[],
   session: ShellSession,
-  rl:      readline.Interface,
+  rl: readline.Interface,
   example: string,
 ): Promise<string | undefined> {
   const positionals = ShellParser.extractPositionals(args);
-  const target      = positionals[0] ?? session.state.target;
+  const target = positionals[0] ?? session.state.target;
 
   if (target) return target;
 
   // Interactive Prompt Mode
   return new Promise((resolve) => {
-    rl.question(chalk.yellow(`  ? ${t('interactive_target_not_set')} `), (answer) => {
-      const input = answer.trim();
-      if (!input) {
-        console.log(chalk.red(`  ✗ ${t('interactive_operation_cancelled')}`));
-        console.log(chalk.dim(`  ${t('interactive_example')}: ${example}\n`));
-        resolve(undefined);
-      } else {
-        session.setTarget(input); // Auto-save for next time
-        console.log(chalk.green(`  ✓ ${t('interactive_target_set_success')} ${chalk.white(input)}\n`));
-        resolve(input);
-      }
-    });
+    rl.question(
+      chalk.yellow(`  ? ${t("interactive_target_not_set")} `),
+      (answer) => {
+        const input = answer.trim();
+        if (!input) {
+          console.log(chalk.red(`  ✗ ${t("interactive_operation_cancelled")}`));
+          console.log(chalk.dim(`  ${t("interactive_example")}: ${example}\n`));
+          resolve(undefined);
+        } else {
+          session.setTarget(input); // Auto-save for next time
+          console.log(
+            chalk.green(
+              `  ✓ ${t("interactive_target_set_success")} ${chalk.white(input)}\n`,
+            ),
+          );
+          resolve(input);
+        }
+      },
+    );
   });
 }
 
@@ -95,27 +102,33 @@ export async function resolveTarget(
  * @param target - Target string to validate
  * @returns Validation result with validity flag and detection message
  */
-export function validateTargetWithFeedback(target: string): { valid: boolean; message: string } {
+export function validateTargetWithFeedback(target: string): {
+  valid: boolean;
+  message: string;
+} {
   // 1. Empty check
   if (!target || target.trim().length === 0) {
-    return { valid: false, message: t('target_validation_empty') };
+    return { valid: false, message: t("target_validation_empty") };
   }
 
   const trimmed = target.trim();
 
   // 2. HTTP/HTTPS URL detection
-  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
     try {
       new URL(trimmed);
-      const isSSE = trimmed.toLowerCase().includes('/sse') ||
-                    trimmed.toLowerCase().includes('/events') ||
-                    trimmed.toLowerCase().includes('/stream');
+      const isSSE =
+        trimmed.toLowerCase().includes("/sse") ||
+        trimmed.toLowerCase().includes("/events") ||
+        trimmed.toLowerCase().includes("/stream");
       return {
         valid: true,
-        message: isSSE ? t('target_validation_detected_sse') : t('target_validation_detected_http')
+        message: isSSE
+          ? t("target_validation_detected_sse")
+          : t("target_validation_detected_http"),
       };
     } catch {
-      return { valid: false, message: t('target_validation_invalid_url') };
+      return { valid: false, message: t("target_validation_invalid_url") };
     }
   }
 
@@ -124,51 +137,66 @@ export function validateTargetWithFeedback(target: string): { valid: boolean; me
   if (fs.existsSync(firstToken)) {
     const ext = path.extname(firstToken).toLowerCase();
     const runtimeMap: Record<string, string> = {
-      '.js': t('target_validation_detected_nodejs'),
-      '.mjs': t('target_validation_detected_nodejs_esm'),
-      '.cjs': t('target_validation_detected_nodejs_cjs'),
-      '.ts': t('target_validation_detected_typescript'),
-      '.py': t('target_validation_detected_python'),
-      '.sh': t('target_validation_detected_bash'),
-      '.bat': t('target_validation_detected_batch'),
-      '.cmd': t('target_validation_detected_cmd'),
-      '.exe': t('target_validation_detected_executable'),
+      ".js": t("target_validation_detected_nodejs"),
+      ".mjs": t("target_validation_detected_nodejs_esm"),
+      ".cjs": t("target_validation_detected_nodejs_cjs"),
+      ".ts": t("target_validation_detected_typescript"),
+      ".py": t("target_validation_detected_python"),
+      ".sh": t("target_validation_detected_bash"),
+      ".bat": t("target_validation_detected_batch"),
+      ".cmd": t("target_validation_detected_cmd"),
+      ".exe": t("target_validation_detected_executable"),
     };
-    const detected = runtimeMap[ext] || t('target_validation_detected_executable');
+    const detected =
+      runtimeMap[ext] || t("target_validation_detected_executable");
     return { valid: true, message: detected };
   }
 
   // 4. npx command detection
-  if (trimmed.startsWith('npx ')) {
+  if (trimmed.startsWith("npx ")) {
     const packageName = trimmed.split(/\s+/)[1];
     const message = packageName
-      ? `${t('target_validation_detected_npx')} (${packageName})`
-      : t('target_validation_detected_npx');
+      ? `${t("target_validation_detected_npx")} (${packageName})`
+      : t("target_validation_detected_npx");
     return { valid: true, message };
   }
 
   // 5. Known runtime command detection (node, python, deno, etc.)
-  const knownRuntimes = ['node', 'python', 'python3', 'deno', 'bun', 'docker', 'uvx'];
+  const knownRuntimes = [
+    "node",
+    "python",
+    "python3",
+    "deno",
+    "bun",
+    "docker",
+    "uvx",
+  ];
   if (knownRuntimes.includes(firstToken)) {
     return {
       valid: true,
-      message: t('target_validation_detected_runtime').replace('{runtime}', firstToken)
+      message: t("target_validation_detected_runtime").replace(
+        "{runtime}",
+        firstToken,
+      ),
     };
   }
 
   // 6. Check if command exists in PATH (Unix: which, Windows: where)
   try {
-    const checkCmd = process.platform === 'win32' ? 'where' : 'which';
+    const checkCmd = process.platform === "win32" ? "where" : "which";
     const result = spawnSync(checkCmd, [firstToken], {
-      encoding: 'utf8',
+      encoding: "utf8",
       shell: false,
-      timeout: 1000 // 1 second max
+      timeout: 1000, // 1 second max
     });
 
     if (result.status === 0) {
       return {
         valid: true,
-        message: t('target_validation_detected_shell').replace('{command}', firstToken)
+        message: t("target_validation_detected_shell").replace(
+          "{command}",
+          firstToken,
+        ),
       };
     }
   } catch {
@@ -178,6 +206,9 @@ export function validateTargetWithFeedback(target: string): { valid: boolean; me
   // 7. Unknown command - give warning but allow it
   return {
     valid: false,
-    message: t('target_validation_warning_not_found').replace('{command}', firstToken)
+    message: t("target_validation_warning_not_found").replace(
+      "{command}",
+      firstToken,
+    ),
   };
 }

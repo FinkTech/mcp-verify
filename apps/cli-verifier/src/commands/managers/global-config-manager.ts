@@ -12,11 +12,11 @@
  * Handles configuration hierarchy: CLI flags > Context config > Global config > System defaults
  */
 
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
-import { GlobalConfig } from '../types/global-config';
-import { SecurityProfile } from '../types/workspace-context';
+import fs from "fs";
+import path from "path";
+import os from "os";
+import { GlobalConfig } from "../types/global-config";
+import { SecurityProfile } from "../types/workspace-context";
 
 /**
  * Global configuration manager
@@ -24,7 +24,11 @@ import { SecurityProfile } from '../types/workspace-context';
  */
 export class GlobalConfigManager {
   /** Path to global config file: ~/.mcp-verify/config.json */
-  private static readonly CONFIG_PATH = path.join(os.homedir(), '.mcp-verify', 'config.json');
+  private static readonly CONFIG_PATH = path.join(
+    os.homedir(),
+    ".mcp-verify",
+    "config.json",
+  );
 
   /**
    * Load global configuration from disk
@@ -41,12 +45,14 @@ export class GlobalConfigManager {
         return defaultConfig;
       }
 
-      const content = fs.readFileSync(GlobalConfigManager.CONFIG_PATH, 'utf-8');
+      const content = fs.readFileSync(GlobalConfigManager.CONFIG_PATH, "utf-8");
       const data = JSON.parse(content) as unknown;
 
       // Validate and merge with defaults
-      if (typeof data === 'object' && data !== null) {
-        return GlobalConfigManager.mergeWithDefaults(data as Partial<GlobalConfig>);
+      if (typeof data === "object" && data !== null) {
+        return GlobalConfigManager.mergeWithDefaults(
+          data as Partial<GlobalConfig>,
+        );
       }
 
       // Invalid format - return defaults
@@ -77,7 +83,7 @@ export class GlobalConfigManager {
       fs.writeFileSync(
         GlobalConfigManager.CONFIG_PATH,
         JSON.stringify(payload, null, 2),
-        'utf-8'
+        "utf-8",
       );
     } catch {
       // Silent failure - global config is nice-to-have but not critical
@@ -101,7 +107,7 @@ export class GlobalConfigManager {
   static resolveConfigValue(
     key: string,
     contextConfig: Record<string, unknown>,
-    globalConfig: GlobalConfig
+    globalConfig: GlobalConfig,
   ): unknown {
     // Check context config first
     if (key in contextConfig) {
@@ -161,9 +167,9 @@ export class GlobalConfigManager {
    */
   private static getDefaultConfig(): GlobalConfig {
     return {
-      version: '1.0',
-      defaultLanguage: 'en',
-      defaultProfile: 'balanced',
+      version: "1.0",
+      defaultLanguage: "en",
+      defaultProfile: "balanced",
       customProfiles: {},
       defaults: {},
       updatedAt: new Date().toISOString(),
@@ -177,7 +183,9 @@ export class GlobalConfigManager {
    * @param partial - Partial configuration from disk
    * @returns Complete GlobalConfig object
    */
-  private static mergeWithDefaults(partial: Partial<GlobalConfig>): GlobalConfig {
+  private static mergeWithDefaults(
+    partial: Partial<GlobalConfig>,
+  ): GlobalConfig {
     const defaults = GlobalConfigManager.getDefaultConfig();
 
     return {

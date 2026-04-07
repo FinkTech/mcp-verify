@@ -21,7 +21,7 @@
  */
 
 export interface LLMMessage {
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   content: string;
 }
 
@@ -98,7 +98,7 @@ export interface ILLMProvider {
       maxTokens?: number;
       temperature?: number;
       timeout?: number;
-    }
+    },
   ): Promise<LLMResponse>;
 
   /**
@@ -108,7 +108,7 @@ export interface ILLMProvider {
    */
   getModelInfo(): {
     name: string;
-    provider: 'anthropic' | 'gemini' | 'ollama' | 'openai' | 'custom';
+    provider: "anthropic" | "gemini" | "ollama" | "openai" | "custom";
     contextWindow: number;
   };
 }

@@ -26,6 +26,7 @@
 ## 🛠️ Extension Guide
 
 When adding a new MCP version or message type:
+
 1. Define the interface in `types/`.
 2. Add the corresponding JSON Schema in `schemas/`.
 3. Export from `v1/index.ts` and then the root `index.ts`.

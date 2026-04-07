@@ -5,13 +5,13 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import { IDetector } from '../interfaces';
+import { IDetector } from "../interfaces";
 
 const MIN_ENTROPY_LENGTH = 20;
 const ENTROPY_THRESHOLD = 4.5;
 
 export class EntropyDetector implements IDetector {
-  readonly name = 'entropy';
+  readonly name = "entropy";
 
   public detect(token: string): boolean {
     // Pre-condition 1: length guard
@@ -29,7 +29,7 @@ export class EntropyDetector implements IDetector {
 
     // Pre-condition 3: skip obvious non-secrets
     if (
-      token.startsWith('/') ||
+      token.startsWith("/") ||
       /^https?:\/\//i.test(token) ||
       /^\d+\.\d+\.\d+/.test(token) ||
       /^[A-Z][A-Z0-9_]{2,}$/.test(token)

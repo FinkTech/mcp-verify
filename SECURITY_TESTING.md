@@ -8,14 +8,14 @@ This guide explains how to run and contribute to the MCP Verify security test su
 
 MCP Verify includes 60 security rules organized into 6 blocks:
 
-| Block      | Range               | Description                            | Status                  |
-|------------|---------------------|----------------------------------------|-------------------------|
-| **OWASP**  | SEC-001 to SEC-013  | OWASP Top 10 Aligned Rules             | ✅ Enabled              |
-| **MCP**    | SEC-014 to SEC-021  | MCP-Specific Security                  | ✅ Enabled              |
-| **A**      | SEC-022 to SEC-030  | OWASP LLM Top 10 in MCP Context        | ✅ Enabled              |
-| **B**      | SEC-031 to SEC-041  | Multi-Agent & Agentic Attacks          | ✅ Enabled              |
-| **C**      | SEC-042 to SEC-050  | Operational & Enterprise Compliance    | ✅ Enabled              |
-| **D**      | SEC-051 to SEC-060  | AI Weaponization & Supply Chain        | ⚠️ Disabled by default  |
+| Block     | Range              | Description                         | Status                 |
+| --------- | ------------------ | ----------------------------------- | ---------------------- |
+| **OWASP** | SEC-001 to SEC-013 | OWASP Top 10 Aligned Rules          | ✅ Enabled             |
+| **MCP**   | SEC-014 to SEC-021 | MCP-Specific Security               | ✅ Enabled             |
+| **A**     | SEC-022 to SEC-030 | OWASP LLM Top 10 in MCP Context     | ✅ Enabled             |
+| **B**     | SEC-031 to SEC-041 | Multi-Agent & Agentic Attacks       | ✅ Enabled             |
+| **C**     | SEC-042 to SEC-050 | Operational & Enterprise Compliance | ✅ Enabled             |
+| **D**     | SEC-051 to SEC-060 | AI Weaponization & Supply Chain     | ⚠️ Disabled by default |
 
 ---
 
@@ -24,6 +24,7 @@ MCP Verify includes 60 security rules organized into 6 blocks:
 ### Why is Block D disabled by default?
 
 Block D contains **advanced security rules** designed to detect sophisticated attacks including:
+
 - SEC-051: Weaponized MCP Fuzzer
 - SEC-052: Autonomous MCP Backdoor
 - SEC-053: Malicious Config File
@@ -45,6 +46,7 @@ These rules are **intentionally disabled by default** because:
 ### When should you enable Block D?
 
 Enable Block D when:
+
 - ✅ Running comprehensive security audits
 - ✅ Scanning third-party/untrusted MCP servers
 - ✅ Compliance requires supply chain attack detection
@@ -142,17 +144,20 @@ npm test -- tests/security/rules/sec-001-auth-bypass.spec.ts --runInBand
 All security tests follow a standard pattern:
 
 ```typescript
-describe('SEC-XXX: Rule Name', () => {
+describe("SEC-XXX: Rule Name", () => {
   let serverManager: TestServerManager;
-  const testReportDir = path.resolve(__dirname, '../../__test-reports__/sec-xxx');
+  const testReportDir = path.resolve(
+    __dirname,
+    "../../__test-reports__/sec-xxx",
+  );
 
   beforeAll(async () => {
     serverManager = new TestServerManager();
     await serverManager.start({
-      profile: 'vulnerable-profile',
-      lang: 'en',
-      transport: 'stdio',
-      timeout: 30000
+      profile: "vulnerable-profile",
+      lang: "en",
+      transport: "stdio",
+      timeout: 30000,
     });
     fs.mkdirSync(testReportDir, { recursive: true });
   });
@@ -164,31 +169,41 @@ describe('SEC-XXX: Rule Name', () => {
     }
   });
 
-  it('should detect vulnerability (SEC-XXX)', async () => {
+  it("should detect vulnerability (SEC-XXX)", async () => {
     const target = serverManager.getTarget();
     await runValidationAction(target, {
       output: testReportDir,
-      format: 'json',
-      lang: 'en',
+      format: "json",
+      lang: "en",
       quiet: true,
-      html: false
+      html: false,
     });
 
-    const dateStr = new Date().toISOString().split('T')[0];
-    const jsonReportPath = path.join(testReportDir, dateStr, 'validate', 'json', 'en');
-    const reportFiles = fs.readdirSync(jsonReportPath).filter(f =>
-      f.startsWith('mcp-report-') && f.endsWith('.json')
+    const dateStr = new Date().toISOString().split("T")[0];
+    const jsonReportPath = path.join(
+      testReportDir,
+      dateStr,
+      "validate",
+      "json",
+      "en",
     );
+    const reportFiles = fs
+      .readdirSync(jsonReportPath)
+      .filter((f) => f.startsWith("mcp-report-") && f.endsWith(".json"));
     const latestReport = reportFiles.sort().reverse()[0];
-    const report = JSON.parse(fs.readFileSync(path.join(jsonReportPath, latestReport), 'utf8'));
+    const report = JSON.parse(
+      fs.readFileSync(path.join(jsonReportPath, latestReport), "utf8"),
+    );
 
     // Find by ruleCode (language-independent)
-    const finding = report.security.findings.find((f: any) => f.ruleCode === 'SEC-XXX');
+    const finding = report.security.findings.find(
+      (f: any) => f.ruleCode === "SEC-XXX",
+    );
 
     expect(finding).toBeDefined();
     expect(finding.severity).toMatch(/high|critical|medium|low/i);
     expect(finding.message).toBeDefined();
-    expect(typeof finding.message).toBe('string');
+    expect(typeof finding.message).toBe("string");
     expect(finding.message.length).toBeGreaterThan(0);
   });
 });
@@ -210,9 +225,9 @@ describe('SEC-XXX: Rule Name', () => {
 ```typescript
 // libs/core/domain/security/rules/your-rule.rule.ts
 export class YourRule implements ISecurityRule {
-  code = 'SEC-XXX';
-  name = 'Your Rule Name';
-  severity: 'high' = 'high';
+  code = "SEC-XXX";
+  name = "Your Rule Name";
+  severity: "high" = "high";
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
@@ -244,7 +259,7 @@ export class YourRule implements ISecurityRule {
 
 ```typescript
 // tests/security/rules/sec-xxx-your-rule.spec.ts
-describe('SEC-XXX: Your Rule Name', () => {
+describe("SEC-XXX: Your Rule Name", () => {
   // Follow standard test pattern (see above)
 });
 ```
@@ -270,16 +285,21 @@ description: 'Vulnerable operation without validation'  // Contains 'vulnerable'
 **Symptom**: `expect(finding).toBeDefined()` fails
 
 **Possible Causes**:
+
 1. Rule keywords don't match server profile description
 2. Block is disabled (check if rule is in Block D)
 3. Rule has bugs in detection logic
 
 **Debug Steps**:
+
 ```typescript
 // Add logging before the assertion
-console.log('Total findings:', report.security.findings.length);
-console.log('All rule codes:', report.security.findings.map(f => f.ruleCode));
-console.log('Looking for:', 'SEC-XXX');
+console.log("Total findings:", report.security.findings.length);
+console.log(
+  "All rule codes:",
+  report.security.findings.map((f) => f.ruleCode),
+);
+console.log("Looking for:", "SEC-XXX");
 ```
 
 ### `exitCode: undefined` Error
@@ -287,10 +307,11 @@ console.log('Looking for:', 'SEC-XXX');
 **Symptom**: Test runs but doesn't capture exit code
 
 **Solution**: Run tests in smaller blocks or add delays:
+
 ```typescript
 afterAll(async () => {
   await serverManager.stop();
-  await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s
+  await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2s
   // ... cleanup
 });
 ```
@@ -300,6 +321,7 @@ afterAll(async () => {
 **Symptom**: All SEC-051 to SEC-060 tests fail with no findings
 
 **Solution**: Enable Block D with environment variable:
+
 ```bash
 MCP_VERIFY_ENABLE_BLOCK_D=true npm test -- tests/security/rules/sec-054-endpoint-hijack.spec.ts
 ```
@@ -328,7 +350,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: "20"
 
       - run: npm ci
       - run: npm run build
@@ -347,19 +369,19 @@ jobs:
         env:
           MCP_VERIFY_ENABLE_BLOCK_D: true
         run: npm test -- tests/security/rules/sec-05*.spec.ts --runInBand
-        continue-on-error: true  # Don't fail pipeline on Block D
+        continue-on-error: true # Don't fail pipeline on Block D
 ```
 
 ---
 
 ## Test Coverage
 
-| Category            | Coverage | Notes                                                           |
-|---------------------|----------|-----------------------------------------------------------------|
-| **Static Rules**    | 58/60    | All rules except SEC-051, SEC-052 have full detection logic     |
-| **Test Files**      | 60/60    | All rules have corresponding test files                         |
-| **Passing Tests**   | ~45%     | Some tests require keyword alignment or Block D enable          |
-| **Critical Rules**  | 100%     | SEC-001 to SEC-013 (OWASP) all pass                             |
+| Category           | Coverage | Notes                                                       |
+| ------------------ | -------- | ----------------------------------------------------------- |
+| **Static Rules**   | 58/60    | All rules except SEC-051, SEC-052 have full detection logic |
+| **Test Files**     | 60/60    | All rules have corresponding test files                     |
+| **Passing Tests**  | ~45%     | Some tests require keyword alignment or Block D enable      |
+| **Critical Rules** | 100%     | SEC-001 to SEC-013 (OWASP) all pass                         |
 
 ---
 

@@ -25,14 +25,18 @@
  * - Template Injection
  */
 
-import { IPayloadGenerator, GeneratedPayload, GeneratorConfig } from './generator.interface';
+import {
+  IPayloadGenerator,
+  GeneratedPayload,
+  GeneratorConfig,
+} from "./generator.interface";
 import {
   ATTACK_PAYLOADS,
   AttackPayload,
   getAllPayloads,
   getPayloadsByType,
-  getPayloadsBySeverity
-} from '@mcp-verify/core/use-cases/fuzzer/payloads';
+  getPayloadsBySeverity,
+} from "@mcp-verify/core/use-cases/fuzzer/payloads";
 
 /** Available classic payload categories */
 export type ClassicPayloadCategory = keyof typeof ATTACK_PAYLOADS;
@@ -41,7 +45,7 @@ export interface ClassicPayloadConfig {
   /** Which categories to include (default: all) */
   categories?: ClassicPayloadCategory[];
   /** Filter by severity (default: all) */
-  severities?: Array<'critical' | 'high' | 'medium' | 'low'>;
+  severities?: Array<"critical" | "high" | "medium" | "low">;
   /** Max payloads per category (default: unlimited) */
   maxPerCategory?: number;
 }
@@ -50,9 +54,10 @@ export interface ClassicPayloadConfig {
  * Generator that wraps all classic security payloads
  */
 export class ClassicPayloadGenerator implements IPayloadGenerator {
-  readonly id = 'classic-payloads';
-  readonly name = 'Classic Security Payloads';
-  readonly description = 'Traditional security attack payloads (SQLi, XSS, Command Injection, etc.)';
+  readonly id = "classic-payloads";
+  readonly name = "Classic Security Payloads";
+  readonly description =
+    "Traditional security attack payloads (SQLi, XSS, Command Injection, etc.)";
 
   private config: ClassicPayloadConfig;
 
@@ -64,21 +69,26 @@ export class ClassicPayloadGenerator implements IPayloadGenerator {
     const payloads: GeneratedPayload[] = [];
 
     // Get categories to use
-    const categories = this.config.categories || (Object.keys(ATTACK_PAYLOADS) as ClassicPayloadCategory[]);
+    const categories =
+      this.config.categories ||
+      (Object.keys(ATTACK_PAYLOADS) as ClassicPayloadCategory[]);
 
     for (const category of categories) {
       let categoryPayloads = getPayloadsByType(category);
 
       // Filter by severity if configured
       if (this.config.severities && this.config.severities.length > 0) {
-        categoryPayloads = categoryPayloads.filter(p =>
-          this.config.severities!.includes(p.severity)
+        categoryPayloads = categoryPayloads.filter((p) =>
+          this.config.severities!.includes(p.severity),
         );
       }
 
       // Limit per category if configured
       if (this.config.maxPerCategory) {
-        categoryPayloads = categoryPayloads.slice(0, this.config.maxPerCategory);
+        categoryPayloads = categoryPayloads.slice(
+          0,
+          this.config.maxPerCategory,
+        );
       }
 
       // Convert to GeneratedPayload format
@@ -90,7 +100,10 @@ export class ClassicPayloadGenerator implements IPayloadGenerator {
     return payloads;
   }
 
-  private convertPayload(payload: AttackPayload, category: string): GeneratedPayload {
+  private convertPayload(
+    payload: AttackPayload,
+    category: string,
+  ): GeneratedPayload {
     return {
       value: payload.value,
       category: category,
@@ -99,8 +112,8 @@ export class ClassicPayloadGenerator implements IPayloadGenerator {
       description: payload.description,
       expectedVulnerableBehavior: payload.expectedBehavior,
       metadata: {
-        source: 'classic-payloads'
-      }
+        source: "classic-payloads",
+      },
     };
   }
 }
@@ -113,14 +126,14 @@ export class ClassicPayloadGenerator implements IPayloadGenerator {
  * SQL Injection Generator
  */
 export class SqlInjectionGenerator implements IPayloadGenerator {
-  readonly id = 'sqli';
-  readonly name = 'SQL Injection';
-  readonly description = 'SQL injection attack payloads';
+  readonly id = "sqli";
+  readonly name = "SQL Injection";
+  readonly description = "SQL injection attack payloads";
 
   private inner: ClassicPayloadGenerator;
 
   constructor() {
-    this.inner = new ClassicPayloadGenerator({ categories: ['sqli'] });
+    this.inner = new ClassicPayloadGenerator({ categories: ["sqli"] });
   }
 
   generate(config?: GeneratorConfig): GeneratedPayload[] {
@@ -132,14 +145,14 @@ export class SqlInjectionGenerator implements IPayloadGenerator {
  * XSS Generator
  */
 export class XssGenerator implements IPayloadGenerator {
-  readonly id = 'xss';
-  readonly name = 'Cross-Site Scripting';
-  readonly description = 'XSS attack payloads';
+  readonly id = "xss";
+  readonly name = "Cross-Site Scripting";
+  readonly description = "XSS attack payloads";
 
   private inner: ClassicPayloadGenerator;
 
   constructor() {
-    this.inner = new ClassicPayloadGenerator({ categories: ['xss'] });
+    this.inner = new ClassicPayloadGenerator({ categories: ["xss"] });
   }
 
   generate(config?: GeneratorConfig): GeneratedPayload[] {
@@ -151,14 +164,14 @@ export class XssGenerator implements IPayloadGenerator {
  * Command Injection Generator
  */
 export class CommandInjectionGenerator implements IPayloadGenerator {
-  readonly id = 'cmd-injection';
-  readonly name = 'Command Injection';
-  readonly description = 'OS command injection payloads';
+  readonly id = "cmd-injection";
+  readonly name = "Command Injection";
+  readonly description = "OS command injection payloads";
 
   private inner: ClassicPayloadGenerator;
 
   constructor() {
-    this.inner = new ClassicPayloadGenerator({ categories: ['cmdInjection'] });
+    this.inner = new ClassicPayloadGenerator({ categories: ["cmdInjection"] });
   }
 
   generate(config?: GeneratorConfig): GeneratedPayload[] {
@@ -170,14 +183,14 @@ export class CommandInjectionGenerator implements IPayloadGenerator {
  * Path Traversal Generator
  */
 export class PathTraversalGenerator implements IPayloadGenerator {
-  readonly id = 'path-traversal';
-  readonly name = 'Path Traversal';
-  readonly description = 'Directory traversal attack payloads';
+  readonly id = "path-traversal";
+  readonly name = "Path Traversal";
+  readonly description = "Directory traversal attack payloads";
 
   private inner: ClassicPayloadGenerator;
 
   constructor() {
-    this.inner = new ClassicPayloadGenerator({ categories: ['pathTraversal'] });
+    this.inner = new ClassicPayloadGenerator({ categories: ["pathTraversal"] });
   }
 
   generate(config?: GeneratorConfig): GeneratedPayload[] {
@@ -189,14 +202,14 @@ export class PathTraversalGenerator implements IPayloadGenerator {
  * SSRF Generator
  */
 export class SsrfGenerator implements IPayloadGenerator {
-  readonly id = 'ssrf';
-  readonly name = 'Server-Side Request Forgery';
-  readonly description = 'SSRF attack payloads targeting internal services';
+  readonly id = "ssrf";
+  readonly name = "Server-Side Request Forgery";
+  readonly description = "SSRF attack payloads targeting internal services";
 
   private inner: ClassicPayloadGenerator;
 
   constructor() {
-    this.inner = new ClassicPayloadGenerator({ categories: ['ssrf'] });
+    this.inner = new ClassicPayloadGenerator({ categories: ["ssrf"] });
   }
 
   generate(config?: GeneratorConfig): GeneratedPayload[] {
@@ -208,14 +221,14 @@ export class SsrfGenerator implements IPayloadGenerator {
  * XXE Generator
  */
 export class XxeGenerator implements IPayloadGenerator {
-  readonly id = 'xxe';
-  readonly name = 'XML External Entity';
-  readonly description = 'XXE attack payloads for XML parsers';
+  readonly id = "xxe";
+  readonly name = "XML External Entity";
+  readonly description = "XXE attack payloads for XML parsers";
 
   private inner: ClassicPayloadGenerator;
 
   constructor() {
-    this.inner = new ClassicPayloadGenerator({ categories: ['xxe'] });
+    this.inner = new ClassicPayloadGenerator({ categories: ["xxe"] });
   }
 
   generate(config?: GeneratorConfig): GeneratedPayload[] {
@@ -227,14 +240,14 @@ export class XxeGenerator implements IPayloadGenerator {
  * NoSQL Injection Generator
  */
 export class NoSqlInjectionGenerator implements IPayloadGenerator {
-  readonly id = 'nosql';
-  readonly name = 'NoSQL Injection';
-  readonly description = 'NoSQL injection payloads (MongoDB, etc.)';
+  readonly id = "nosql";
+  readonly name = "NoSQL Injection";
+  readonly description = "NoSQL injection payloads (MongoDB, etc.)";
 
   private inner: ClassicPayloadGenerator;
 
   constructor() {
-    this.inner = new ClassicPayloadGenerator({ categories: ['nosql'] });
+    this.inner = new ClassicPayloadGenerator({ categories: ["nosql"] });
   }
 
   generate(config?: GeneratorConfig): GeneratedPayload[] {
@@ -246,14 +259,16 @@ export class NoSqlInjectionGenerator implements IPayloadGenerator {
  * Template Injection Generator
  */
 export class TemplateInjectionGenerator implements IPayloadGenerator {
-  readonly id = 'template-injection';
-  readonly name = 'Template Injection';
-  readonly description = 'SSTI payloads for template engines';
+  readonly id = "template-injection";
+  readonly name = "Template Injection";
+  readonly description = "SSTI payloads for template engines";
 
   private inner: ClassicPayloadGenerator;
 
   constructor() {
-    this.inner = new ClassicPayloadGenerator({ categories: ['templateInjection'] });
+    this.inner = new ClassicPayloadGenerator({
+      categories: ["templateInjection"],
+    });
   }
 
   generate(config?: GeneratorConfig): GeneratedPayload[] {
@@ -265,14 +280,14 @@ export class TemplateInjectionGenerator implements IPayloadGenerator {
  * Buffer Overflow Generator
  */
 export class BufferOverflowGenerator implements IPayloadGenerator {
-  readonly id = 'overflow';
-  readonly name = 'Buffer Overflow';
-  readonly description = 'Large payload and buffer overflow attempts';
+  readonly id = "overflow";
+  readonly name = "Buffer Overflow";
+  readonly description = "Large payload and buffer overflow attempts";
 
   private inner: ClassicPayloadGenerator;
 
   constructor() {
-    this.inner = new ClassicPayloadGenerator({ categories: ['overflow'] });
+    this.inner = new ClassicPayloadGenerator({ categories: ["overflow"] });
   }
 
   generate(config?: GeneratorConfig): GeneratedPayload[] {
@@ -284,14 +299,14 @@ export class BufferOverflowGenerator implements IPayloadGenerator {
  * LDAP Injection Generator
  */
 export class LdapInjectionGenerator implements IPayloadGenerator {
-  readonly id = 'ldap';
-  readonly name = 'LDAP Injection';
-  readonly description = 'LDAP injection payloads';
+  readonly id = "ldap";
+  readonly name = "LDAP Injection";
+  readonly description = "LDAP injection payloads";
 
   private inner: ClassicPayloadGenerator;
 
   constructor() {
-    this.inner = new ClassicPayloadGenerator({ categories: ['ldap'] });
+    this.inner = new ClassicPayloadGenerator({ categories: ["ldap"] });
   }
 
   generate(config?: GeneratorConfig): GeneratedPayload[] {
@@ -303,14 +318,14 @@ export class LdapInjectionGenerator implements IPayloadGenerator {
  * Format String Generator
  */
 export class FormatStringGenerator implements IPayloadGenerator {
-  readonly id = 'format-string';
-  readonly name = 'Format String';
-  readonly description = 'Format string vulnerability payloads';
+  readonly id = "format-string";
+  readonly name = "Format String";
+  readonly description = "Format string vulnerability payloads";
 
   private inner: ClassicPayloadGenerator;
 
   constructor() {
-    this.inner = new ClassicPayloadGenerator({ categories: ['formatString'] });
+    this.inner = new ClassicPayloadGenerator({ categories: ["formatString"] });
   }
 
   generate(config?: GeneratorConfig): GeneratedPayload[] {

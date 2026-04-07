@@ -5,19 +5,19 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import Ajv from 'ajv';
-import type { ValidateFunction, ErrorObject, Options as AjvOptions } from 'ajv';
-import addFormats from 'ajv-formats';
-import localize from 'ajv-i18n';
-import { t } from '@mcp-verify/shared';
-import { createScopedLogger } from '../../infrastructure/logging/logger';
+import Ajv from "ajv";
+import type { ValidateFunction, ErrorObject, Options as AjvOptions } from "ajv";
+import addFormats from "ajv-formats";
+import localize from "ajv-i18n";
+import { t } from "@mcp-verify/shared";
+import { createScopedLogger } from "../../infrastructure/logging/logger";
 
 /**
  * Supported JSON Schema draft versions
  */
 export enum SchemaDraft {
-  DRAFT_07 = '07',
-  DRAFT_2020_12 = '2020-12',
+  DRAFT_07 = "07",
+  DRAFT_2020_12 = "2020-12",
 }
 
 /**
@@ -51,7 +51,7 @@ export interface SchemaValidatorConfig {
   /** Maximum time allowed for schema compilation (ms) */
   compilationTimeoutMs: number;
   /** Language for error messages (ISO 639-1 code) */
-  errorLanguage: 'en' | 'es' | 'fr' | 'de' | 'pt' | 'ru' | 'zh';
+  errorLanguage: "en" | "es" | "fr" | "de" | "pt" | "ru" | "zh";
   /** Whether to perform schema sanitization checks */
   enableSanitization: boolean;
   /** Whether to log validation metrics */
@@ -63,7 +63,7 @@ export interface SchemaValidatorConfig {
  */
 const DEFAULT_CONFIG: SchemaValidatorConfig = {
   compilationTimeoutMs: 100,
-  errorLanguage: 'en',
+  errorLanguage: "en",
   enableSanitization: true,
   enableMetricsLogging: true,
 };
@@ -71,18 +71,18 @@ const DEFAULT_CONFIG: SchemaValidatorConfig = {
 /**
  * Enterprise-grade JSON Schema validator with security hardening,
  * multi-draft support, and comprehensive observability.
- * 
+ *
  * Security features:
  * - DoS protection via compilation timeout
  * - Remote $ref blocking (no external schema loading)
  * - Schema complexity limits
  * - Content sanitization
- * 
+ *
  * Performance:
  * - Singleton pattern with schema caching
  * - Compilation time tracking
  * - Structured performance metrics
- * 
+ *
  * Compatibility:
  * - JSON Schema Draft 2020-12 (primary)
  * - JSON Schema Draft 07 (fallback)
@@ -91,12 +91,15 @@ export class SchemaValidator {
   private static instance: SchemaValidator;
   private readonly ajvDraft2020: Ajv;
   private readonly ajvDraft07: Ajv;
-  private readonly compiledSchemas: Map<string, {
-    validator: ValidateFunction;
-    draft: SchemaDraft;
-  }> = new Map();
+  private readonly compiledSchemas: Map<
+    string,
+    {
+      validator: ValidateFunction;
+      draft: SchemaDraft;
+    }
+  > = new Map();
   private readonly config: SchemaValidatorConfig;
-  private readonly logger = createScopedLogger('SchemaValidator');
+  private readonly logger = createScopedLogger("SchemaValidator");
 
   private constructor(config: Partial<SchemaValidatorConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -151,7 +154,7 @@ export class SchemaValidator {
     });
     addFormats(this.ajvDraft07);
 
-    this.logger.debug('SchemaValidator initialized', {
+    this.logger.debug("SchemaValidator initialized", {
       config: this.config,
       draftsSupported: [SchemaDraft.DRAFT_2020_12, SchemaDraft.DRAFT_07],
     });
@@ -161,7 +164,7 @@ export class SchemaValidator {
    * Get singleton instance of SchemaValidator
    */
   public static getInstance(
-    config?: Partial<SchemaValidatorConfig>
+    config?: Partial<SchemaValidatorConfig>,
   ): SchemaValidator {
     if (!SchemaValidator.instance) {
       SchemaValidator.instance = new SchemaValidator(config);
@@ -182,7 +185,7 @@ export class SchemaValidator {
   /**
    * Validates that a given object is a compliant JSON Schema.
    * Includes DoS protection, multi-draft support, and comprehensive metrics.
-   * 
+   *
    * @param schema - The JSON Schema object to validate
    * @param schemaId - Optional identifier for caching and logging
    * @param toolName - Optional tool name for enhanced logging context
@@ -191,18 +194,18 @@ export class SchemaValidator {
   public validateSchema(
     schema: unknown,
     schemaId?: string,
-    toolName?: string
+    toolName?: string,
   ): SchemaValidationResult {
     const startTime = Date.now();
     const context = {
-      schemaId: schemaId || 'anonymous',
-      toolName: toolName || 'unknown',
+      schemaId: schemaId || "anonymous",
+      toolName: toolName || "unknown",
     };
 
     // Basic type check
-    if (!schema || typeof schema !== 'object') {
+    if (!schema || typeof schema !== "object") {
       const duration = Date.now() - startTime;
-      this.logger.error('Schema validation failed: invalid type', undefined, {
+      this.logger.error("Schema validation failed: invalid type", undefined, {
         ...context,
         durationMs: duration,
         schemaType: typeof schema,
@@ -210,7 +213,7 @@ export class SchemaValidator {
 
       return {
         isValid: false,
-        errors: [t('schema_invalid_type')],
+        errors: [t("schema_invalid_type")],
         metrics: {
           durationMs: duration,
           timedOut: false,
@@ -229,17 +232,23 @@ export class SchemaValidator {
     const remoteRefCheck = this.checkForRemoteRefs(schemaObj);
     if (!remoteRefCheck.isValid) {
       const duration = Date.now() - startTime;
-      this.logger.error('Schema validation failed: remote references detected', undefined, {
-        ...context,
-        durationMs: duration,
-        remoteRefs: remoteRefCheck.remoteRefs,
-      });
+      this.logger.error(
+        "Schema validation failed: remote references detected",
+        undefined,
+        {
+          ...context,
+          durationMs: duration,
+          remoteRefs: remoteRefCheck.remoteRefs,
+        },
+      );
 
       return {
         isValid: false,
         errors: [
-          t('schema_remote_refs'),
-          ...remoteRefCheck.remoteRefs.map(ref => `  ${t('blocked_label')}: ${ref}`),
+          t("schema_remote_refs"),
+          ...remoteRefCheck.remoteRefs.map(
+            (ref) => `  ${t("blocked_label")}: ${ref}`,
+          ),
         ],
         metrics: {
           durationMs: duration,
@@ -251,16 +260,18 @@ export class SchemaValidator {
     // Check for required JSON Schema properties
     if (!this.hasValidSchemaStructure(schemaObj)) {
       const duration = Date.now() - startTime;
-      this.logger.error('Schema validation failed: invalid structure', undefined, {
-        ...context,
-        durationMs: duration,
-      });
+      this.logger.error(
+        "Schema validation failed: invalid structure",
+        undefined,
+        {
+          ...context,
+          durationMs: duration,
+        },
+      );
 
       return {
         isValid: false,
-        errors: [
-          t('schema_missing_keywords'),
-        ],
+        errors: [t("schema_missing_keywords")],
         metrics: {
           durationMs: duration,
           timedOut: false,
@@ -275,14 +286,14 @@ export class SchemaValidator {
     const compilationResult = this.compileWithTimeout(
       schemaObj,
       schemaId,
-      detectedDraft
+      detectedDraft,
     );
 
     const duration = Date.now() - startTime;
 
     // Log metrics if enabled
     if (this.config.enableMetricsLogging) {
-      this.logger.debug('Schema validation completed', {
+      this.logger.debug("Schema validation completed", {
         ...context,
         isValid: compilationResult.isValid,
         durationMs: duration,
@@ -294,7 +305,7 @@ export class SchemaValidator {
 
     // Log slow schemas (potential DoS indicator)
     if (duration > this.config.compilationTimeoutMs * 0.8) {
-      this.logger.warn('Schema compilation approaching timeout threshold', {
+      this.logger.warn("Schema compilation approaching timeout threshold", {
         ...context,
         durationMs: duration,
         thresholdMs: this.config.compilationTimeoutMs,
@@ -302,7 +313,7 @@ export class SchemaValidator {
     }
 
     if (!compilationResult.isValid) {
-      this.logger.error('Schema validation failed', undefined, {
+      this.logger.error("Schema validation failed", undefined, {
         ...context,
         durationMs: duration,
         errorCount: compilationResult.errors?.length || 0,
@@ -319,21 +330,20 @@ export class SchemaValidator {
         timedOut: compilationResult.timedOut,
         draftVersion: compilationResult.draft,
       },
-      sanitizationWarnings: sanitizationWarnings.length > 0
-        ? sanitizationWarnings
-        : undefined,
+      sanitizationWarnings:
+        sanitizationWarnings.length > 0 ? sanitizationWarnings : undefined,
     };
   }
 
   /**
    * Compiles schema with timeout protection to prevent DoS attacks.
-   * 
+   *
    * ✅ FIXED: Now properly measures compilation time and can reject slow schemas
    */
   private compileWithTimeout(
     schema: Record<string, unknown>,
     schemaId: string | undefined,
-    preferredDraft: SchemaDraft
+    preferredDraft: SchemaDraft,
   ): {
     isValid: boolean;
     errors?: string[];
@@ -357,9 +367,10 @@ export class SchemaValidator {
     let compilationError: Error | null = null;
 
     try {
-      const ajv = preferredDraft === SchemaDraft.DRAFT_07
-        ? this.ajvDraft07
-        : this.ajvDraft2020;
+      const ajv =
+        preferredDraft === SchemaDraft.DRAFT_07
+          ? this.ajvDraft07
+          : this.ajvDraft2020;
 
       // NOTA IMPORTANTE: AJV compile() es síncrono - no se puede cancelar durante ejecución.
       // Medimos el tiempo DESPUÉS y decidimos si rechazar el schema.
@@ -371,13 +382,13 @@ export class SchemaValidator {
 
       // Si excede el threshold, es un schema potencialmente peligroso
       if (elapsed > this.config.compilationTimeoutMs) {
-        this.logger.warn('Schema compilation exceeded timeout threshold', {
+        this.logger.warn("Schema compilation exceeded timeout threshold", {
           schemaId,
           durationMs: elapsed,
           thresholdMs: this.config.compilationTimeoutMs,
           draft: usedDraft,
-          action: 'POTENTIAL_DOS_ATTACK',
-          recommendation: 'Consider rejecting this schema'
+          action: "POTENTIAL_DOS_ATTACK",
+          recommendation: "Consider rejecting this schema",
         });
 
         // OPCIÓN ENTERPRISE: Rechazar schemas que tomen mucho tiempo
@@ -395,7 +406,6 @@ export class SchemaValidator {
         };
         */
       }
-
     } catch (error) {
       const elapsed = Date.now() - startTime;
 
@@ -407,38 +417,44 @@ export class SchemaValidator {
           usedDraft = SchemaDraft.DRAFT_07;
 
           const fallbackElapsed = Date.now() - fallbackStart;
-          this.logger.info('Schema compiled with Draft 07 fallback', {
+          this.logger.info("Schema compiled with Draft 07 fallback", {
             schemaId,
-            durationMs: fallbackElapsed
+            durationMs: fallbackElapsed,
           });
 
           // También verificar timeout en el fallback
           if (fallbackElapsed > this.config.compilationTimeoutMs) {
-            this.logger.warn('Draft 07 fallback also exceeded timeout', {
+            this.logger.warn("Draft 07 fallback also exceeded timeout", {
               schemaId,
               durationMs: fallbackElapsed,
-              thresholdMs: this.config.compilationTimeoutMs
+              thresholdMs: this.config.compilationTimeoutMs,
             });
           }
-
         } catch (fallbackError) {
           compilationError = fallbackError as Error;
 
           // Si ambos intentos fallaron y tomaron mucho tiempo
           if (elapsed > this.config.compilationTimeoutMs) {
-            this.logger.error('Schema compilation failed AND timed out', fallbackError as Error, {
-              schemaId,
-              durationMs: elapsed,
-              error: (fallbackError as Error).message
-            });
+            this.logger.error(
+              "Schema compilation failed AND timed out",
+              fallbackError as Error,
+              {
+                schemaId,
+                durationMs: elapsed,
+                error: (fallbackError as Error).message,
+              },
+            );
 
             return {
               isValid: false,
               errors: [
-                t('schema_compilation_failed'),
-                t('schema_compilation_took', { elapsed, threshold: this.config.compilationTimeoutMs }),
-                t('schema_dos_risk'),
-                `${t('error')}: ` + (fallbackError as Error).message
+                t("schema_compilation_failed"),
+                t("schema_compilation_took", {
+                  elapsed,
+                  threshold: this.config.compilationTimeoutMs,
+                }),
+                t("schema_dos_risk"),
+                `${t("error")}: ` + (fallbackError as Error).message,
               ],
               timedOut: true,
             };
@@ -453,15 +469,18 @@ export class SchemaValidator {
     if (compilationError) {
       const errors = this.extractErrorMessages(
         compilationError,
-        preferredDraft === SchemaDraft.DRAFT_07 ? this.ajvDraft07 : this.ajvDraft2020
+        preferredDraft === SchemaDraft.DRAFT_07
+          ? this.ajvDraft07
+          : this.ajvDraft2020,
       );
 
       return {
         isValid: false,
         errors,
-        details: (preferredDraft === SchemaDraft.DRAFT_07
-          ? this.ajvDraft07.errors
-          : this.ajvDraft2020.errors) || undefined,
+        details:
+          (preferredDraft === SchemaDraft.DRAFT_07
+            ? this.ajvDraft07.errors
+            : this.ajvDraft2020.errors) || undefined,
         timedOut: false,
       };
     }
@@ -475,14 +494,14 @@ export class SchemaValidator {
       return {
         isValid: true,
         timedOut: false,
-        draft: usedDraft
+        draft: usedDraft,
       };
     }
 
     return {
       isValid: false,
-      errors: [t('unknown_compilation_failure')],
-      timedOut: false
+      errors: [t("unknown_compilation_failure")],
+      timedOut: false,
     };
   }
 
@@ -491,28 +510,32 @@ export class SchemaValidator {
    */
   private checkForRemoteRefs(
     schema: Record<string, unknown>,
-    path: string = 'root'
+    path: string = "root",
   ): { isValid: boolean; remoteRefs: string[] } {
     const remoteRefs: string[] = [];
 
     // JSON Schema metadata keys that contain URLs but are NOT remote references
-    const METADATA_KEYS = new Set(['$schema', '$id', '$vocabulary']);
+    const METADATA_KEYS = new Set(["$schema", "$id", "$vocabulary"]);
 
-    const checkValue = (value: unknown, currentPath: string, key?: string): void => {
+    const checkValue = (
+      value: unknown,
+      currentPath: string,
+      key?: string,
+    ): void => {
       // Skip metadata keys - they declare schema version, not load external refs
       if (key && METADATA_KEYS.has(key)) {
         return;
       }
 
-      if (typeof value === 'string') {
-        if (value.startsWith('http://') || value.startsWith('https://')) {
+      if (typeof value === "string") {
+        if (value.startsWith("http://") || value.startsWith("https://")) {
           remoteRefs.push(`${currentPath}: ${value}`);
         }
       } else if (Array.isArray(value)) {
         value.forEach((item, index) => {
           checkValue(item, `${currentPath}[${index}]`);
         });
-      } else if (value && typeof value === 'object') {
+      } else if (value && typeof value === "object") {
         Object.entries(value).forEach(([k, val]) => {
           checkValue(val, `${currentPath}.${k}`, k);
         });
@@ -536,29 +559,24 @@ export class SchemaValidator {
   private sanitizeSchema(schema: Record<string, unknown>): string[] {
     const warnings: string[] = [];
 
-    const checkForDangerousContent = (
-      value: unknown,
-      path: string
-    ): void => {
-      if (typeof value === 'string') {
+    const checkForDangerousContent = (value: unknown, path: string): void => {
+      if (typeof value === "string") {
         // Check for HTML tags
         if (/<script|<iframe|<object|<embed|javascript:/i.test(value)) {
-          warnings.push(
-            t('schema_dangerous_html', { path })
-          );
+          warnings.push(t("schema_dangerous_html", { path }));
         }
 
         // Check for SQL injection patterns (if descriptions are stored in DB)
-        if (/(\bUNION\b|\bSELECT\b.*\bFROM\b|\bDROP\b.*\bTABLE\b)/i.test(value)) {
-          warnings.push(
-            t('schema_dangerous_sql', { path })
-          );
+        if (
+          /(\bUNION\b|\bSELECT\b.*\bFROM\b|\bDROP\b.*\bTABLE\b)/i.test(value)
+        ) {
+          warnings.push(t("schema_dangerous_sql", { path }));
         }
       } else if (Array.isArray(value)) {
         value.forEach((item, index) => {
           checkForDangerousContent(item, `${path}[${index}]`);
         });
-      } else if (value && typeof value === 'object') {
+      } else if (value && typeof value === "object") {
         Object.entries(value).forEach(([key, val]) => {
           checkForDangerousContent(val, `${path}.${key}`);
         });
@@ -566,14 +584,20 @@ export class SchemaValidator {
     };
 
     // Check description and title fields specifically
-    ['description', 'title'].forEach(field => {
+    ["description", "title"].forEach((field) => {
       if (schema[field]) {
         checkForDangerousContent(schema[field], field);
       }
     });
 
     // Recursively check nested schemas
-    ['properties', 'items', 'additionalProperties', 'definitions', '$defs'].forEach(field => {
+    [
+      "properties",
+      "items",
+      "additionalProperties",
+      "definitions",
+      "$defs",
+    ].forEach((field) => {
       if (schema[field]) {
         checkForDangerousContent(schema[field], field);
       }
@@ -588,17 +612,24 @@ export class SchemaValidator {
   private detectSchemaDraft(schema: Record<string, unknown>): SchemaDraft {
     const schemaUrl = schema.$schema;
 
-    if (typeof schemaUrl === 'string') {
-      if (schemaUrl.includes('2020-12') || schemaUrl.includes('draft/2020-12')) {
+    if (typeof schemaUrl === "string") {
+      if (
+        schemaUrl.includes("2020-12") ||
+        schemaUrl.includes("draft/2020-12")
+      ) {
         return SchemaDraft.DRAFT_2020_12;
       }
-      if (schemaUrl.includes('draft-07') || schemaUrl.includes('draft/07')) {
+      if (schemaUrl.includes("draft-07") || schemaUrl.includes("draft/07")) {
         return SchemaDraft.DRAFT_07;
       }
     }
 
     // Check for Draft 2020-12 specific keywords
-    if (schema.$defs || schema.prefixItems || schema.unevaluatedProperties !== undefined) {
+    if (
+      schema.$defs ||
+      schema.prefixItems ||
+      schema.unevaluatedProperties !== undefined
+    ) {
       return SchemaDraft.DRAFT_2020_12;
     }
 
@@ -631,7 +662,7 @@ export class SchemaValidator {
     const messages: string[] = [];
 
     // Localize AJV errors if i18n is available
-    if (ajv.errors && this.config.errorLanguage !== 'en') {
+    if (ajv.errors && this.config.errorLanguage !== "en") {
       try {
         // Apply localization
         const localizeFunc = (localize as any)[this.config.errorLanguage];
@@ -639,27 +670,27 @@ export class SchemaValidator {
           localizeFunc(ajv.errors);
         }
       } catch (localizationError) {
-        this.logger.warn('Failed to localize AJV errors', {
+        this.logger.warn("Failed to localize AJV errors", {
           language: this.config.errorLanguage,
           error: localizationError,
         });
       }
     }
 
-    if (error.message && !error.message.includes('schema is invalid')) {
+    if (error.message && !error.message.includes("schema is invalid")) {
       messages.push(`Compilation error: ${error.message}`);
     }
 
     if (ajv.errors && ajv.errors.length > 0) {
       ajv.errors.forEach((err) => {
-        const path = err.instancePath || err.schemaPath || 'root';
-        const message = err.message || 'Unknown error';
+        const path = err.instancePath || err.schemaPath || "root";
+        const message = err.message || "Unknown error";
         messages.push(`${path}: ${message}`);
       });
     }
 
     if (messages.length === 0) {
-      messages.push('Unknown schema validation error');
+      messages.push("Unknown schema validation error");
     }
 
     return messages;
@@ -674,25 +705,28 @@ export class SchemaValidator {
   } {
     const warnings: string[] = [];
 
-    if (!schema || typeof schema !== 'object') {
-      return { isValid: false, warnings: ['Schema is not an object'] };
+    if (!schema || typeof schema !== "object") {
+      return { isValid: false, warnings: ["Schema is not an object"] };
     }
 
     const schemaObj = schema as Record<string, unknown>;
 
     if (!schemaObj.description) {
-      warnings.push(t('schema_missing_desc'));
+      warnings.push(t("schema_missing_desc"));
     }
 
     if (schemaObj.additionalProperties === true) {
-      warnings.push(
-        t('schema_permissive_props')
-      );
+      warnings.push(t("schema_permissive_props"));
     }
 
     // Check for overly permissive patterns
-    if (schemaObj.type === 'string' && !schemaObj.pattern && !schemaObj.format && !schemaObj.enum) {
-      warnings.push(t('schema_permissive_string'));
+    if (
+      schemaObj.type === "string" &&
+      !schemaObj.pattern &&
+      !schemaObj.format &&
+      !schemaObj.enum
+    ) {
+      warnings.push(t("schema_permissive_string"));
     }
 
     return {
@@ -708,7 +742,7 @@ export class SchemaValidator {
     const previousSize = this.compiledSchemas.size;
     this.compiledSchemas.clear();
 
-    this.logger.info('Schema cache cleared', { previousSize });
+    this.logger.info("Schema cache cleared", { previousSize });
   }
 
   /**
@@ -742,22 +776,21 @@ export class SchemaValidator {
    */
   public updateConfig(config: Partial<SchemaValidatorConfig>): void {
     Object.assign(this.config, config);
-    this.logger.info('SchemaValidator configuration updated', { config: this.config });
+    this.logger.info("SchemaValidator configuration updated", {
+      config: this.config,
+    });
   }
 }
 
 // Export default instance accessor
 export const schemaValidator = {
-  validateSchema: (schema: unknown, schemaId?: string, toolName?: string) => 
+  validateSchema: (schema: unknown, schemaId?: string, toolName?: string) =>
     SchemaValidator.getInstance().validateSchema(schema, schemaId, toolName),
-  validateSchemaQuality: (schema: unknown) => 
+  validateSchemaQuality: (schema: unknown) =>
     SchemaValidator.getInstance().validateSchemaQuality(schema),
-  clearCache: () => 
-    SchemaValidator.getInstance().clearCache(),
-  getCacheStats: () => 
-    SchemaValidator.getInstance().getCacheStats(),
-  getConfig: () => 
-    SchemaValidator.getInstance().getConfig(),
-  updateConfig: (config: Partial<SchemaValidatorConfig>) => 
-    SchemaValidator.getInstance().updateConfig(config)
+  clearCache: () => SchemaValidator.getInstance().clearCache(),
+  getCacheStats: () => SchemaValidator.getInstance().getCacheStats(),
+  getConfig: () => SchemaValidator.getInstance().getConfig(),
+  updateConfig: (config: Partial<SchemaValidatorConfig>) =>
+    SchemaValidator.getInstance().updateConfig(config),
 };

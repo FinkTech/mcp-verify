@@ -49,28 +49,35 @@ libs/shared/
 **Purpose**: Translate user-facing strings (English ↔ Spanish)
 
 **Usage**:
+
 ```typescript
-import { t, initLanguage, getCurrentLanguage } from 'libs/shared/utils/cli/i18n-helper';
+import {
+  t,
+  initLanguage,
+  getCurrentLanguage,
+} from "libs/shared/utils/cli/i18n-helper";
 
 // Initialize language detection
 initLanguage(); // Detects from env, config, or system locale
 
 // Translate keys
-console.log(t('validation_complete'));  // → "Validation complete" or "Validación completa"
+console.log(t("validation_complete")); // → "Validation complete" or "Validación completa"
 
 // With parameters
-console.log(t('server_found', { name: 'MyServer' }));  // → "Server found: MyServer"
+console.log(t("server_found", { name: "MyServer" })); // → "Server found: MyServer"
 
 // Get current language
-const lang = getCurrentLanguage();  // → 'en' | 'es'
+const lang = getCurrentLanguage(); // → 'en' | 'es'
 ```
 
 **Key Features**:
+
 - Auto-detects language (env → config → system locale → default)
 - Parameter substitution: `{name}`, `{count}`, etc.
 - Falls back to English if key missing
 
 **When to use**:
+
 - Any user-facing message (CLI output, errors, warnings)
 - ✅ DO: `log(t('validation_complete'))`
 - ❌ DON'T: `log('Validation complete')`
@@ -82,31 +89,34 @@ const lang = getCurrentLanguage();  // → 'en' | 'es'
 **Purpose**: Console output with quiet mode support (for CI/CD)
 
 **Usage**:
+
 ```typescript
-import { createLogger } from 'libs/shared/utils/cli/output-helper';
+import { createLogger } from "libs/shared/utils/cli/output-helper";
 
 const isQuiet = Boolean(options.quiet);
 const log = createLogger(isQuiet);
 
 // Informational (suppressed if quiet)
-log.info('Processing...');
-log.success('Done!');
-log.warn('Warning message');
-log.log('Normal output');
+log.info("Processing...");
+log.success("Done!");
+log.warn("Warning message");
+log.log("Normal output");
 
 // Errors (always shown, even in quiet mode)
-log.error('Error occurred');
+log.error("Error occurred");
 
 // Debug (only if DEBUG env set)
-log.debug('Debug info');
+log.debug("Debug info");
 ```
 
 **Key Features**:
+
 - Quiet mode respects `--quiet` flag
 - Errors always shown (critical info)
 - Debug mode controlled by `DEBUG=1` env variable
 
 **When to use**:
+
 - Any CLI command that might run in CI/CD
 - Commands with `--quiet` or `--json-stdout` flags
 
@@ -119,18 +129,19 @@ log.debug('Debug info');
 **Security**: ⚠️ CRITICAL - Prevents arbitrary file writes
 
 **Usage**:
+
 ```typescript
-import { PathValidator } from 'libs/shared/utils/path-validator';
+import { PathValidator } from "libs/shared/utils/path-validator";
 
 // Validate output paths (reports, logs)
 try {
   const safePath = PathValidator.validateOutputPath(
-    options.output,     // User input: './reportes/custom.json'
-    './reportes'        // Base directory
+    options.output, // User input: './reportes/custom.json'
+    "./reportes", // Base directory
   );
   fs.writeFileSync(safePath, content);
 } catch (error) {
-  console.error('Invalid path:', error.message);
+  console.error("Invalid path:", error.message);
 }
 
 // Validate baseline paths
@@ -143,16 +154,19 @@ if (PathValidator.isSafeOutputPath(userPath)) {
 ```
 
 **What it blocks**:
+
 - ❌ `../../../etc/passwd` - Escapes base directory
 - ❌ `/absolute/path/outside` - Absolute paths
 - ❌ `../../outside/reportes/file.json` - Relative escapes
 
 **What it allows**:
+
 - ✅ `./reportes/custom.json` - Within base directory
 - ✅ `reports/test.html` - Relative within base
 - ✅ `./reportes/subdir/file.json` - Subdirectories
 
 **When to use**:
+
 - **ALWAYS** when writing files to user-specified paths
 - Any `--output`, `--save`, `--baseline` flag
 - Before `fs.writeFileSync()`, `fs.createWriteStream()`
@@ -166,10 +180,11 @@ if (PathValidator.isSafeOutputPath(userPath)) {
 **Security**: ⚠️ Warns users about SSRF risks
 
 **Usage**:
-```typescript
-import { URLValidator } from 'libs/shared/utils/url-validator';
 
-const target = 'http://192.168.1.1:3000';
+```typescript
+import { URLValidator } from "libs/shared/utils/url-validator";
+
+const target = "http://192.168.1.1:3000";
 
 // Check if URL points to private IP
 if (URLValidator.isPrivateOrLocalhost(target)) {
@@ -185,6 +200,7 @@ if (URLValidator.isURL(target)) {
 ```
 
 **What it detects**:
+
 - `10.x.x.x` - Private network (10.0.0.0/8)
 - `172.16.x.x - 172.31.x.x` - Private network (172.16.0.0/12)
 - `192.168.x.x` - Private network (192.168.0.0/16)
@@ -195,6 +211,7 @@ if (URLValidator.isURL(target)) {
 - `[fe80:...]` - IPv6 link-local
 
 **When to use**:
+
 - Before connecting to user-provided HTTP/HTTPS URLs
 - To warn about potential SSRF risks (not blocking, just warning)
 
@@ -205,22 +222,27 @@ if (URLValidator.isURL(target)) {
 **Purpose**: Convert errors to user-friendly messages with troubleshooting tips
 
 **Usage**:
+
 ```typescript
-import { formatError } from 'libs/shared/utils/cli/error-formatter';
+import { formatError } from "libs/shared/utils/cli/error-formatter";
 
 try {
   await validator.run();
 } catch (error) {
-  const formatted = formatError(error, {
-    command: 'mcp-verify validate',
-    target: 'http://localhost:3000'
-  }, verbose);
+  const formatted = formatError(
+    error,
+    {
+      command: "mcp-verify validate",
+      target: "http://localhost:3000",
+    },
+    verbose,
+  );
 
-  console.error(formatted.title);        // → "Connection Failed"
-  console.error(formatted.message);      // → "The MCP server could not be reached at http://localhost:3000"
+  console.error(formatted.title); // → "Connection Failed"
+  console.error(formatted.message); // → "The MCP server could not be reached at http://localhost:3000"
 
   // Show tips
-  formatted.tips.forEach(tip => console.log(`  • ${tip}`));
+  formatted.tips.forEach((tip) => console.log(`  • ${tip}`));
   // → "Check if the server is running: ps aux | grep node"
   // → "Verify the port number is correct"
   // → "Try: mcp-verify doctor http://localhost:3000"
@@ -233,6 +255,7 @@ try {
 ```
 
 **Error Categories**:
+
 - `connection` - ECONNREFUSED, server not reachable
 - `dns` - ENOTFOUND, hostname not resolved
 - `timeout` - ETIMEDOUT, server slow
@@ -241,6 +264,7 @@ try {
 - `unknown` - Other errors
 
 **When to use**:
+
 - In CLI command catch blocks
 - When displaying errors to users (not logs)
 
@@ -251,26 +275,28 @@ try {
 **Purpose**: Securely store and retrieve API keys (Anthropic, OpenAI, etc.)
 
 **Usage**:
+
 ```typescript
-import { APIKeyManager } from 'libs/shared/utils/api-key-manager';
+import { APIKeyManager } from "libs/shared/utils/api-key-manager";
 
 // Store API key (encrypted in ~/.mcp-verify/keys.json)
-APIKeyManager.saveKey('anthropic', 'sk-ant-...');
+APIKeyManager.saveKey("anthropic", "sk-ant-...");
 
 // Retrieve API key
-const key = APIKeyManager.getKey('anthropic');
+const key = APIKeyManager.getKey("anthropic");
 if (!key) {
-  console.error('No API key found for anthropic');
+  console.error("No API key found for anthropic");
 }
 
 // List all stored providers
-const providers = APIKeyManager.listKeys();  // → ['anthropic', 'openai']
+const providers = APIKeyManager.listKeys(); // → ['anthropic', 'openai']
 
 // Delete key
-APIKeyManager.deleteKey('anthropic');
+APIKeyManager.deleteKey("anthropic");
 ```
 
 **When to use**:
+
 - CLI commands that need API keys (--llm anthropic)
 - Interactive prompts for API key input
 
@@ -281,15 +307,17 @@ APIKeyManager.deleteKey('anthropic');
 **Purpose**: Normalize command strings for consistent handling
 
 **Usage**:
+
 ```typescript
-import { normalizeCommand } from 'libs/shared/utils/command-normalizer';
+import { normalizeCommand } from "libs/shared/utils/command-normalizer";
 
 // Normalize various command formats
-const cmd1 = normalizeCommand('  node  server.js  ');  // → 'node server.js'
-const cmd2 = normalizeCommand('npx\t\ttsx\tserver.ts'); // → 'npx tsx server.ts'
+const cmd1 = normalizeCommand("  node  server.js  "); // → 'node server.js'
+const cmd2 = normalizeCommand("npx\t\ttsx\tserver.ts"); // → 'npx tsx server.ts'
 ```
 
 **When to use**:
+
 - Before executing STDIO commands
 - When comparing commands for equality
 
@@ -300,23 +328,24 @@ const cmd2 = normalizeCommand('npx\t\ttsx\tserver.ts'); // → 'npx tsx server.t
 **Purpose**: Deep merge objects (config merging, option overrides)
 
 **Usage**:
+
 ```typescript
-import { deepMerge } from 'libs/shared/utils/deep-merge';
+import { deepMerge } from "libs/shared/utils/deep-merge";
 
 const defaults = {
   timeout: 10000,
-  transport: 'stdio',
+  transport: "stdio",
   options: {
     verbose: false,
-    quiet: false
-  }
+    quiet: false,
+  },
 };
 
 const userOptions = {
   timeout: 30000,
   options: {
-    verbose: true
-  }
+    verbose: true,
+  },
 };
 
 const merged = deepMerge(defaults, userOptions);
@@ -331,6 +360,7 @@ const merged = deepMerge(defaults, userOptions);
 ```
 
 **When to use**:
+
 - Merging configuration objects
 - Overriding default options with user options
 
@@ -341,20 +371,22 @@ const merged = deepMerge(defaults, userOptions);
 **Purpose**: Execute regex with timeout (prevent ReDoS attacks)
 
 **Usage**:
+
 ```typescript
-import { regexTest, regexMatch } from 'libs/shared/utils/regex-safe';
+import { regexTest, regexMatch } from "libs/shared/utils/regex-safe";
 
 // Safe regex test (with timeout)
-const isMatch = regexTest(/^[a-z]+$/, input, 1000);  // timeout: 1000ms
+const isMatch = regexTest(/^[a-z]+$/, input, 1000); // timeout: 1000ms
 
 // Safe regex match (with timeout)
 const matches = regexMatch(/\d+/g, input, 1000);
 if (matches) {
-  console.log('Found numbers:', matches);
+  console.log("Found numbers:", matches);
 }
 ```
 
 **When to use**:
+
 - Testing regex on user input
 - Preventing ReDoS (Regular Expression Denial of Service)
 
@@ -365,28 +397,30 @@ if (matches) {
 **Purpose**: Launch processes with automatic retries and error handling
 
 **Usage**:
+
 ```typescript
-import { SmartLauncher } from 'libs/shared/utils/smart-launcher';
+import { SmartLauncher } from "libs/shared/utils/smart-launcher";
 
 const launcher = new SmartLauncher({
   retries: 3,
-  retryDelay: 1000,  // ms
-  timeout: 10000     // ms
+  retryDelay: 1000, // ms
+  timeout: 10000, // ms
 });
 
-const result = await launcher.launch('node', ['server.js'], {
-  cwd: '/path/to/project',
-  env: { PORT: '3000' }
+const result = await launcher.launch("node", ["server.js"], {
+  cwd: "/path/to/project",
+  env: { PORT: "3000" },
 });
 
 if (result.success) {
-  console.log('Process started:', result.pid);
+  console.log("Process started:", result.pid);
 } else {
-  console.error('Failed to start:', result.error);
+  console.error("Failed to start:", result.error);
 }
 ```
 
 **When to use**:
+
 - Launching STDIO transports
 - Starting servers for testing
 - Any process that might fail transiently
@@ -398,13 +432,14 @@ if (result.success) {
 **Purpose**: Save reports to disk with timestamp and organization
 
 **Usage**:
+
 ```typescript
-import { ReportSaver } from 'libs/shared/utils/reporting/report-saver';
+import { ReportSaver } from "libs/shared/utils/reporting/report-saver";
 
 const saver = new ReportSaver({
-  outputDir: './reportes',
-  format: 'json',        // 'json' | 'html' | 'md' | 'sarif'
-  timestamp: true        // Add timestamp to filename
+  outputDir: "./reportes",
+  format: "json", // 'json' | 'html' | 'md' | 'sarif'
+  timestamp: true, // Add timestamp to filename
 });
 
 const paths = await saver.save(report);
@@ -416,6 +451,7 @@ const paths = await saver.save(report);
 ```
 
 **When to use**:
+
 - Saving validation reports
 - Organizing output files by type
 
@@ -426,27 +462,29 @@ const paths = await saver.save(report);
 **Purpose**: Structured logging with levels (INFO, WARN, ERROR, DEBUG)
 
 **Usage**:
+
 ```typescript
-import { Logger } from 'libs/shared/logger/logger';
+import { Logger } from "libs/shared/logger/logger";
 
 const logger = Logger.getInstance();
 
 // Configure
 logger.configure({
-  level: 'INFO',           // 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'
+  level: "INFO", // 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'
   enableConsole: true,
   enableFile: false,
-  filePath: './logs/app.log'
+  filePath: "./logs/app.log",
 });
 
 // Log messages
-logger.info('Starting validation', { target: 'http://localhost:3000' });
-logger.warn('Slow response', { duration: 5000 });
-logger.error('Connection failed', { error: err });
-logger.debug('Raw response', { data: response });
+logger.info("Starting validation", { target: "http://localhost:3000" });
+logger.warn("Slow response", { duration: 5000 });
+logger.error("Connection failed", { error: err });
+logger.debug("Raw response", { data: response });
 ```
 
 **When to use**:
+
 - Internal logging (not user-facing messages)
 - Debugging production issues
 - Structured logs for monitoring
@@ -476,7 +514,7 @@ export function checkSQLInjection(tool: McpTool): SecurityFinding[] {
 
 ```typescript
 // ❌ BAD: libs/shared/utils/server-helper.ts
-import express from 'express';
+import express from "express";
 
 export function createServer() {
   return express();
@@ -561,18 +599,18 @@ export class MyUtil {
 ```typescript
 // libs/shared/utils/__tests__/my-util.spec.ts
 
-import { describe, it, expect } from 'vitest';
-import { MyUtil } from '../my-util';
+import { describe, it, expect } from "vitest";
+import { MyUtil } from "../my-util";
 
-describe('MyUtil', () => {
-  it('should process input correctly', () => {
-    const result = MyUtil.process('  INPUT  ');
-    expect(result).toBe('input');
+describe("MyUtil", () => {
+  it("should process input correctly", () => {
+    const result = MyUtil.process("  INPUT  ");
+    expect(result).toBe("input");
   });
 
-  it('should handle empty input', () => {
-    const result = MyUtil.process('');
-    expect(result).toBe('');
+  it("should handle empty input", () => {
+    const result = MyUtil.process("");
+    expect(result).toBe("");
   });
 });
 ```
@@ -582,7 +620,7 @@ describe('MyUtil', () => {
 ```typescript
 // apps/cli-verifier/src/commands/my-command.ts
 
-import { MyUtil } from '../../../../libs/shared/utils/my-util';
+import { MyUtil } from "../../../../libs/shared/utils/my-util";
 
 const processed = MyUtil.process(userInput);
 ```
@@ -608,6 +646,7 @@ export class MyValidator {
 ```
 
 **Examples**:
+
 - `PathValidator` - Path validation
 - `URLValidator` - URL validation
 
@@ -625,6 +664,7 @@ export function myHelper(input: string, options?: Options): Result {
 ```
 
 **Examples**:
+
 - `deepMerge` - Object merging
 - `formatError` - Error formatting
 - `normalizeCommand` - Command normalization
@@ -657,6 +697,7 @@ export class MyManager {
 ```
 
 **Examples**:
+
 - `APIKeyManager` - API key storage
 - `Logger` - Structured logging
 
@@ -669,6 +710,7 @@ export class MyManager {
 **Pattern**: `libs/shared/utils/__tests__/[utility-name].spec.ts`
 
 **Example**:
+
 ```
 libs/shared/
 ├── utils/
@@ -710,6 +752,7 @@ npm test -- libs/shared --watch
 ### Tip 1: Keep Utilities Pure
 
 **Good**:
+
 ```typescript
 export function formatDate(date: Date): string {
   return date.toISOString();
@@ -717,10 +760,11 @@ export function formatDate(date: Date): string {
 ```
 
 **Bad**:
+
 ```typescript
-let globalState = '';
+let globalState = "";
 export function formatDate(date: Date): string {
-  globalState = date.toISOString();  // Side effect!
+  globalState = date.toISOString(); // Side effect!
   return globalState;
 }
 ```
@@ -730,6 +774,7 @@ export function formatDate(date: Date): string {
 ### Tip 2: Use Type Safety
 
 **Good**:
+
 ```typescript
 export function process(input: string, options: Options): Result {
   // Type-safe implementation
@@ -737,6 +782,7 @@ export function process(input: string, options: Options): Result {
 ```
 
 **Bad**:
+
 ```typescript
 export function process(input: any, options: any): any {
   // No type safety
@@ -748,6 +794,7 @@ export function process(input: any, options: any): any {
 ### Tip 3: Document with Examples
 
 **Good**:
+
 ```typescript
 /**
  * Process input string
@@ -765,19 +812,21 @@ export function process(input: string): string {
 ### Tip 4: Handle Edge Cases
 
 **Good**:
+
 ```typescript
 export function divide(a: number, b: number): number {
   if (b === 0) {
-    throw new Error('Division by zero');
+    throw new Error("Division by zero");
   }
   return a / b;
 }
 ```
 
 **Bad**:
+
 ```typescript
 export function divide(a: number, b: number): number {
-  return a / b;  // Crashes on b=0
+  return a / b; // Crashes on b=0
 }
 ```
 
@@ -792,10 +841,10 @@ export function divide(a: number, b: number): number {
 
 ```typescript
 // ❌ BAD
-import { t } from '../../../shared/utils/cli/i18n-helper';
+import { t } from "../../../shared/utils/cli/i18n-helper";
 
 // ✅ GOOD
-import { t } from 'libs/shared/utils/cli/i18n-helper';
+import { t } from "libs/shared/utils/cli/i18n-helper";
 ```
 
 ---
@@ -807,7 +856,7 @@ import { t } from 'libs/shared/utils/cli/i18n-helper';
 
 ```typescript
 // ❌ BAD: libs/shared/utils/my-util.ts
-import { ISecurityRule } from '../../core/domain/security';  // NO!
+import { ISecurityRule } from "../../core/domain/security"; // NO!
 
 // ✅ GOOD: Pass dependency as parameter
 export function process(input: string, validator: (s: string) => boolean) {
@@ -819,12 +868,11 @@ export function process(input: string, validator: (s: string) => boolean) {
 
 ## 📊 Utility Usage Matrix
 
-| Utility | Used By | Imports |
-|---------|---------|---------|
-| `i18n-helper` | CLI commands, reports | `libs/core/domain/reporting/i18n` |
-| `output-helper` | CLI commands | `chalk`, `ora` |
-| `error-formatter` | CLI commands | None (pure) |
-| `path-validator` | CLI commands, report saver | `path`, `fs` |
-| `url-validator` | CLI commands, transports | None (pure) |
-| `api-key-manager` | CLI commands, LLM providers | `fs`, `path` |
-
+| Utility           | Used By                     | Imports                           |
+| ----------------- | --------------------------- | --------------------------------- |
+| `i18n-helper`     | CLI commands, reports       | `libs/core/domain/reporting/i18n` |
+| `output-helper`   | CLI commands                | `chalk`, `ora`                    |
+| `error-formatter` | CLI commands                | None (pure)                       |
+| `path-validator`  | CLI commands, report saver  | `path`, `fs`                      |
+| `url-validator`   | CLI commands, transports    | None (pure)                       |
+| `api-key-manager` | CLI commands, LLM providers | `fs`, `path`                      |

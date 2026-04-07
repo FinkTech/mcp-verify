@@ -14,28 +14,48 @@
 const createChalkMock = (str) => String(str);
 
 // Add color methods as chainable properties
-const colors = ['red', 'green', 'yellow', 'blue', 'cyan', 'magenta', 'white', 'gray', 'grey'];
-const modifiers = ['bold', 'dim', 'italic', 'underline', 'inverse', 'strikethrough'];
+const colors = [
+  "red",
+  "green",
+  "yellow",
+  "blue",
+  "cyan",
+  "magenta",
+  "white",
+  "gray",
+  "grey",
+];
+const modifiers = [
+  "bold",
+  "dim",
+  "italic",
+  "underline",
+  "inverse",
+  "strikethrough",
+];
 
-colors.forEach(color => {
+colors.forEach((color) => {
   createChalkMock[color] = createChalkMock;
 });
 
-modifiers.forEach(modifier => {
+modifiers.forEach((modifier) => {
   createChalkMock[modifier] = createChalkMock;
 });
 
 // Support chaining: chalk.red.bold('text')
 const handler = {
   get(target, prop) {
-    if (typeof prop === 'string' && (colors.includes(prop) || modifiers.includes(prop))) {
+    if (
+      typeof prop === "string" &&
+      (colors.includes(prop) || modifiers.includes(prop))
+    ) {
       return new Proxy(createChalkMock, handler);
     }
     return target[prop];
   },
   apply(target, thisArg, args) {
-    return String(args[0] || '');
-  }
+    return String(args[0] || "");
+  },
 };
 
 const chalk = new Proxy(createChalkMock, handler);

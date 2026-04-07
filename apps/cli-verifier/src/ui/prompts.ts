@@ -11,8 +11,8 @@
  * Helpers for interactive user input using readline
  */
 
-import readline from 'readline';
-import { t } from '@mcp-verify/shared';
+import readline from "readline";
+import { t } from "@mcp-verify/shared";
 
 /**
  * Ask a question and get user input
@@ -22,7 +22,7 @@ import { t } from '@mcp-verify/shared';
 export function askQuestion(question: string): Promise<string> {
   const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   });
 
   return new Promise((resolve) => {
@@ -40,7 +40,7 @@ export function askQuestion(question: string): Promise<string> {
  */
 export async function askYesNo(question: string): Promise<boolean> {
   const answer = await askQuestion(`${question} (y/n): `);
-  return answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes';
+  return answer.toLowerCase() === "y" || answer.toLowerCase() === "yes";
 }
 
 /**
@@ -49,17 +49,20 @@ export async function askYesNo(question: string): Promise<boolean> {
  * @param options Array of options
  * @returns Promise resolving to selected option (1-indexed)
  */
-export async function selectOption(question: string, options: string[]): Promise<number> {
+export async function selectOption(
+  question: string,
+  options: string[],
+): Promise<number> {
   console.log(question);
   options.forEach((option, index) => {
     console.log(`  ${index + 1}. ${option}`);
   });
 
-  const answer = await askQuestion(t('select_option'));
+  const answer = await askQuestion(t("select_option"));
   const selection = parseInt(answer, 10);
 
   if (isNaN(selection) || selection < 1 || selection > options.length) {
-    throw new Error(t('invalid_selection'));
+    throw new Error(t("invalid_selection"));
   }
 
   return selection;

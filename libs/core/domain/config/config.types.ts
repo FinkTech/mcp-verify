@@ -18,39 +18,42 @@
  * 4. Default values (defined here)
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // ============================================================================
 // BASIC TYPES
 // ============================================================================
 
-export type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info';
-export type Language = 'en' | 'es';
-export type ReportFormat = 'json' | 'html' | 'markdown' | 'sarif';
-export type TransportType = 'stdio' | 'http' | 'sse';
+export type Severity = "critical" | "high" | "medium" | "low" | "info";
+export type Language = "en" | "es";
+export type ReportFormat = "json" | "html" | "markdown" | "sarif";
+export type TransportType = "stdio" | "http" | "sse";
 
 /**
  * Security rule blocks for categorization and filtering
  * - Block A: OWASP LLM Top 10 mapped to MCP (SEC-022 to SEC-030)
  * - Block B: Multi-Agent & Agentic Chain Attacks (SEC-031 to SEC-041)
  * - Block C: Operational Security & Enterprise Compliance (SEC-042 to SEC-050)
- * - Block D: AI Weaponization & Supply Chain MCP (SEC-051 to SEC-060)
+ * - Block D: AI Weaponization & Supply Chain MCP (SEC-051 to SEC-069)
  * - OWASP: Generic OWASP Top 10 (SEC-001 to SEC-013)
  * - MCP: MCP-Specific Security (SEC-014 to SEC-021)
  */
-export type SecurityRuleBlock = 'OWASP' | 'MCP' | 'A' | 'B' | 'C' | 'D';
+export type SecurityRuleBlock = "OWASP" | "MCP" | "A" | "B" | "C" | "D";
 
 /**
  * Rule range mapping for each block
  * Used for automatic filtering by block
  */
-export const RULE_BLOCK_RANGES: Record<SecurityRuleBlock, { start: number; end: number; description: string }> = {
-  'OWASP': { start: 1, end: 13, description: 'OWASP Top 10 Aligned Rules' },
-  'MCP': { start: 14, end: 21, description: 'MCP-Specific Security Rules' },
-  'A': { start: 22, end: 30, description: 'OWASP LLM Top 10 in MCP Context' },
-  'B': { start: 31, end: 41, description: 'Multi-Agent & Agentic Attacks' },
-  'C': { start: 42, end: 50, description: 'Operational & Enterprise Compliance' },
-  'D': { start: 51, end: 60, description: 'AI Weaponization & Supply Chain' }
+export const RULE_BLOCK_RANGES: Record<
+  SecurityRuleBlock,
+  { start: number; end: number; description: string }
+> = {
+  OWASP: { start: 1, end: 13, description: "OWASP Top 10 Aligned Rules" },
+  MCP: { start: 14, end: 21, description: "MCP-Specific Security Rules" },
+  A: { start: 22, end: 30, description: "OWASP LLM Top 10 in MCP Context" },
+  B: { start: 31, end: 41, description: "Multi-Agent & Agentic Attacks" },
+  C: { start: 42, end: 50, description: "Operational & Enterprise Compliance" },
+  D: { start: 51, end: 69, description: "AI Weaponization & Supply Chain" },
 };
 
 // ============================================================================
@@ -111,7 +114,7 @@ export interface QualityConfig {
   /** Enable LLM-based semantic analysis */
   enableSemanticAnalysis: boolean;
   /** LLM provider for semantic analysis */
-  llmProvider?: 'anthropic' | 'openai' | 'ollama';
+  llmProvider?: "anthropic" | "openai" | "ollama";
 }
 
 /**
@@ -201,7 +204,7 @@ export interface IntegrityConfig {
   /** Auto-cleanup old entries */
   autoCleanup: boolean;
   /** Cleanup strategy: 'keep-last-n' | 'keep-by-age' | 'manual' */
-  cleanupStrategy: 'keep-last-n' | 'keep-by-age' | 'manual';
+  cleanupStrategy: "keep-last-n" | "keep-by-age" | "manual";
   /** Age in days before cleanup (for 'keep-by-age' strategy) */
   cleanupAgeThreshold?: number;
   /** Verify integrity on startup (doctor auto-runs) */
@@ -209,7 +212,7 @@ export interface IntegrityConfig {
   /** Fail startup if integrity check fails */
   failOnMismatch: boolean;
   /** Binaries to track: 'cli', 'server', or both */
-  trackBinaries: Array<'cli' | 'server'>;
+  trackBinaries: Array<"cli" | "server">;
   /** Path to integrity manifest (relative to project root) */
   manifestPath: string;
 }
@@ -219,7 +222,7 @@ export interface IntegrityConfig {
  */
 export interface LoggingConfig {
   /** Log level: trace, debug, info, warn, error */
-  level: 'trace' | 'debug' | 'info' | 'warn' | 'error';
+  level: "trace" | "debug" | "info" | "warn" | "error";
   /** Enable console output */
   enableConsole: boolean;
   /** Enable file logging */
@@ -253,7 +256,7 @@ export interface BaselineConfig {
   /** Auto-update baseline after successful runs */
   autoUpdate: boolean;
   /** Metrics to track for regression */
-  trackMetrics: Array<'security' | 'quality' | 'performance'>;
+  trackMetrics: Array<"security" | "quality" | "performance">;
 }
 
 /**
@@ -295,7 +298,7 @@ export interface NotificationsConfig {
   webhook?: {
     enabled: boolean;
     url: string;
-    method: 'POST' | 'PUT';
+    method: "POST" | "PUT";
     headers: Record<string, string>;
   };
 }
@@ -307,7 +310,7 @@ export interface CiConfig {
   /** Enable CI/CD features */
   enabled: boolean;
   /** CI provider: github, gitlab, jenkins, circleci, etc. */
-  provider: 'github' | 'gitlab' | 'jenkins' | 'circleci' | 'other';
+  provider: "github" | "gitlab" | "jenkins" | "circleci" | "other";
   /** Fail pipeline on validation failure */
   failPipeline: boolean;
   /** Upload artifacts (reports) */
@@ -333,7 +336,7 @@ export interface DisclaimersConfig {
     fuzz: boolean;
     stress: boolean;
     proxy: boolean;
-    'scan-config': boolean;
+    "scan-config": boolean;
   };
   /** Require explicit acceptance */
   requireAcceptance: boolean;
@@ -466,20 +469,20 @@ export const DEFAULT_CONFIG: McpVerifyConfig = {
     enabled: true,
     historyLimit: 20,
     autoCleanup: true,
-    cleanupStrategy: 'keep-last-n',
+    cleanupStrategy: "keep-last-n",
     cleanupAgeThreshold: 90,
     verifyOnStartup: false,
     failOnMismatch: false,
-    trackBinaries: ['cli', 'server'],
-    manifestPath: '.mcp-verify/integrity-history.json'
+    trackBinaries: ["cli", "server"],
+    manifestPath: ".mcp-verify/integrity-history.json",
   },
 
   output: {
-    directory: './reports',
-    formats: ['json', 'html'],
+    directory: "./reports",
+    formats: ["json", "html"],
     html: true,
-    language: 'en',
-    organizeByFormat: true
+    language: "en",
+    organizeByFormat: true,
   },
 
   security: {
@@ -487,87 +490,90 @@ export const DEFAULT_CONFIG: McpVerifyConfig = {
     minScore: 70,
     failOnCritical: true,
     failOnHigh: false,
-    enabledBlocks: ['OWASP', 'MCP', 'A', 'B', 'C'],  // All blocks except D (AI Weaponization) by default - users must explicitly enable
-    disabledRules: [],  // No rules explicitly disabled
+    enabledBlocks: ["OWASP", "MCP", "A", "B", "C"], // All blocks except D (AI Weaponization) by default - users must explicitly enable
+    disabledRules: [], // No rules explicitly disabled
     rules: {
       // Block OWASP: OWASP Top 10 Aligned Rules (SEC-001 to SEC-013)
-      'SEC-001': { enabled: true, severity: 'high' },      // Authentication Bypass
-      'SEC-002': { enabled: true, severity: 'critical' },  // Command Injection
-      'SEC-003': { enabled: true, severity: 'high' },      // SQL Injection
-      'SEC-004': { enabled: true, severity: 'high' },      // SSRF
-      'SEC-005': { enabled: true, severity: 'high' },      // XXE Injection
-      'SEC-006': { enabled: true, severity: 'high' },      // Insecure Deserialization
-      'SEC-007': { enabled: true, severity: 'high' },      // Path Traversal
-      'SEC-008': { enabled: true, severity: 'medium' },    // Data Leakage
-      'SEC-009': { enabled: true, severity: 'high' },      // Sensitive Data Exposure
-      'SEC-010': { enabled: true, severity: 'medium' },    // Missing Rate Limiting
-      'SEC-011': { enabled: true, severity: 'medium' },    // ReDoS Detection
-      'SEC-012': { enabled: true, severity: 'high' },      // Weak Cryptography
-      'SEC-013': { enabled: true, severity: 'high' },      // Prompt Injection
+      "SEC-001": { enabled: true, severity: "high" }, // Authentication Bypass
+      "SEC-002": { enabled: true, severity: "critical" }, // Command Injection
+      "SEC-003": { enabled: true, severity: "high" }, // SQL Injection
+      "SEC-004": { enabled: true, severity: "high" }, // SSRF
+      "SEC-005": { enabled: true, severity: "high" }, // XXE Injection
+      "SEC-006": { enabled: true, severity: "high" }, // Insecure Deserialization
+      "SEC-007": { enabled: true, severity: "high" }, // Path Traversal
+      "SEC-008": { enabled: true, severity: "medium" }, // Data Leakage
+      "SEC-009": { enabled: true, severity: "high" }, // Sensitive Data Exposure
+      "SEC-010": { enabled: true, severity: "medium" }, // Missing Rate Limiting
+      "SEC-011": { enabled: true, severity: "medium" }, // ReDoS Detection
+      "SEC-012": { enabled: true, severity: "high" }, // Weak Cryptography
+      "SEC-013": { enabled: true, severity: "high" }, // Prompt Injection
 
       // Block MCP: MCP-Specific Security Rules (SEC-014 to SEC-021)
-      'SEC-014': { enabled: true, severity: 'high' },      // Exposed Network Endpoint
-      'SEC-015': { enabled: true, severity: 'high' },      // Missing Authentication
-      'SEC-016': { enabled: true, severity: 'medium' },    // Insecure URI Scheme
-      'SEC-017': { enabled: true, severity: 'medium' },    // Excessive Tool Permissions
-      'SEC-018': { enabled: true, severity: 'medium' },    // Secrets in Descriptions
-      'SEC-019': { enabled: true, severity: 'medium' },    // Missing Input Constraints
-      'SEC-020': { enabled: true, severity: 'medium' },    // Dangerous Tool Chaining
-      'SEC-021': { enabled: true, severity: 'high' },      // Unencrypted Credentials
+      "SEC-014": { enabled: true, severity: "high" }, // Exposed Network Endpoint
+      "SEC-015": { enabled: true, severity: "high" }, // Missing Authentication
+      "SEC-016": { enabled: true, severity: "medium" }, // Insecure URI Scheme
+      "SEC-017": { enabled: true, severity: "medium" }, // Excessive Tool Permissions
+      "SEC-018": { enabled: true, severity: "medium" }, // Secrets in Descriptions
+      "SEC-019": { enabled: true, severity: "medium" }, // Missing Input Constraints
+      "SEC-020": { enabled: true, severity: "medium" }, // Dangerous Tool Chaining
+      "SEC-021": { enabled: true, severity: "high" }, // Unencrypted Credentials
 
       // Block A: OWASP LLM Top 10 in MCP Context (SEC-022 to SEC-030)
-      'SEC-022': { enabled: true, severity: 'high' },      // Excessive Agency
-      'SEC-023': { enabled: true, severity: 'high' },      // Prompt Injection via Tools
-      'SEC-024': { enabled: true, severity: 'high' },      // Insecure Output Handling
-      'SEC-025': { enabled: true, severity: 'high' },      // Supply Chain Tool Dependencies
-      'SEC-026': { enabled: true, severity: 'medium' },    // Sensitive Data in Tool Responses
-      'SEC-027': { enabled: true, severity: 'medium' },    // Training Data Poisoning
-      'SEC-028': { enabled: true, severity: 'medium' },    // Model DoS via Tools
-      'SEC-029': { enabled: true, severity: 'medium' },    // Insecure Plugin Design
-      'SEC-030': { enabled: true, severity: 'medium' },    // Excessive Data Disclosure
+      "SEC-022": { enabled: true, severity: "high" }, // Excessive Agency
+      "SEC-023": { enabled: true, severity: "high" }, // Prompt Injection via Tools
+      "SEC-024": { enabled: true, severity: "critical" }, // Prompt Injection via Tool Inputs
+      "SEC-025": { enabled: true, severity: "high" }, // Supply Chain Tool Dependencies
+      "SEC-026": { enabled: true, severity: "medium" }, // Sensitive Data in Tool Responses
+      "SEC-027": { enabled: true, severity: "medium" }, // Training Data Poisoning
+      "SEC-028": { enabled: true, severity: "medium" }, // Model DoS via Tools
+      "SEC-029": { enabled: true, severity: "medium" }, // Insecure Plugin Design
+      "SEC-030": { enabled: true, severity: "medium" }, // Excessive Data Disclosure
 
       // Block B: Multi-Agent & Agentic Attacks (SEC-031 to SEC-041)
-      'SEC-031': { enabled: true, severity: 'high' },      // Tool Result Tampering
-      'SEC-032': { enabled: true, severity: 'high' },      // Recursive Agent Loop
-      'SEC-033': { enabled: true, severity: 'high' },      // Multi-Agent Privilege Escalation
-      'SEC-034': { enabled: true, severity: 'medium' },    // Agent State Poisoning
-      'SEC-035': { enabled: true, severity: 'medium' },    // Distributed Agent DDoS
-      'SEC-036': { enabled: true, severity: 'high' },      // Agent Swarm Coordination Attack
-      'SEC-037': { enabled: true, severity: 'high' },      // Agent Identity Spoofing
-      'SEC-038': { enabled: true, severity: 'high' },      // Cross-Agent Prompt Injection
-      'SEC-039': { enabled: true, severity: 'medium' },    // Agent Reputation Hijacking
-      'SEC-040': { enabled: true, severity: 'medium' },    // Tool Chaining Path Traversal
-      'SEC-041': { enabled: true, severity: 'medium' },    // Agent Memory Injection
+      "SEC-031": { enabled: true, severity: "high" }, // Tool Result Tampering
+      "SEC-032": { enabled: true, severity: "high" }, // Recursive Agent Loop
+      "SEC-033": { enabled: true, severity: "high" }, // Multi-Agent Privilege Escalation
+      "SEC-034": { enabled: true, severity: "medium" }, // Agent State Poisoning
+      "SEC-035": { enabled: true, severity: "medium" }, // Distributed Agent DDoS
+      "SEC-036": { enabled: true, severity: "high" }, // Agent Swarm Coordination Attack
+      "SEC-037": { enabled: true, severity: "high" }, // Agent Identity Spoofing
+      "SEC-038": { enabled: true, severity: "high" }, // Cross-Agent Prompt Injection
+      "SEC-039": { enabled: true, severity: "medium" }, // Agent Reputation Hijacking
+      "SEC-040": { enabled: true, severity: "medium" }, // Tool Chaining Path Traversal
+      "SEC-041": { enabled: true, severity: "medium" }, // Agent Memory Injection
 
       // Block C: Operational & Enterprise Compliance (SEC-042 to SEC-050)
-      'SEC-042': { enabled: true, severity: 'medium' },    // Missing Audit Logging
-      'SEC-043': { enabled: true, severity: 'medium' },    // Insecure Session Management
-      'SEC-044': { enabled: true, severity: 'medium' },    // Exposed Endpoint
-      'SEC-045': { enabled: true, severity: 'low' },       // Insecure Default Configuration
-      'SEC-046': { enabled: true, severity: 'medium' },    // Missing CORS Validation
-      'SEC-047': { enabled: true, severity: 'low' },       // Schema Versioning Absent
-      'SEC-048': { enabled: true, severity: 'medium' },    // Missing Capability Negotiation
-      'SEC-049': { enabled: true, severity: 'medium' },    // Timing Side-Channel in Auth
-      'SEC-050': { enabled: true, severity: 'low' },       // Insufficient Output Entropy
+      "SEC-042": { enabled: true, severity: "medium" }, // Missing Audit Logging
+      "SEC-043": { enabled: true, severity: "medium" }, // Insecure Session Management
+      "SEC-044": { enabled: true, severity: "medium" }, // Exposed Endpoint
+      "SEC-045": { enabled: true, severity: "low" }, // Insecure Default Configuration
+      "SEC-046": { enabled: true, severity: "medium" }, // Missing CORS Validation
+      "SEC-047": { enabled: true, severity: "low" }, // Schema Versioning Absent
+      "SEC-048": { enabled: true, severity: "medium" }, // Missing Capability Negotiation
+      "SEC-049": { enabled: true, severity: "medium" }, // Timing Side-Channel in Auth
+      "SEC-050": { enabled: true, severity: "low" }, // Insufficient Output Entropy
 
       // Block D: AI Weaponization & Supply Chain MCP (SEC-051 to SEC-060)
-      'SEC-051': { enabled: false, severity: 'high' },      // Weaponized MCP Fuzzer (disabled by default)
-      'SEC-052': { enabled: false, severity: 'critical' },  // Autonomous MCP Backdoor (disabled by default)
-      'SEC-053': { enabled: false, severity: 'critical' },  // Malicious Config File (disabled by default)
-      'SEC-054': { enabled: true, severity: 'critical' },   // API Endpoint Hijacking
-      'SEC-055': { enabled: false, severity: 'high' },      // Jailbreak-as-a-Service (disabled by default)
-      'SEC-056': { enabled: false, severity: 'high' },      // Phishing via MCP (disabled by default)
-      'SEC-057': { enabled: false, severity: 'medium' },    // Data Exfiltration via Steganography (disabled by default)
-      'SEC-058': { enabled: false, severity: 'critical' },  // Self-Replicating MCP (disabled by default)
-      'SEC-059': { enabled: true, severity: 'high' },       // Unvalidated Tool Authorization
-      'SEC-060': { enabled: true, severity: 'medium' }      // Missing Transaction Semantics
-    }
+      "SEC-051": { enabled: false, severity: "high" }, // Weaponized MCP Fuzzer (disabled by default)
+      "SEC-052": { enabled: false, severity: "critical" }, // Autonomous MCP Backdoor (disabled by default)
+      "SEC-053": { enabled: false, severity: "critical" }, // Malicious Config File (disabled by default)
+      "SEC-054": { enabled: true, severity: "critical" }, // API Endpoint Hijacking
+      "SEC-055": { enabled: false, severity: "high" }, // Jailbreak-as-a-Service (disabled by default)
+      "SEC-056": { enabled: false, severity: "high" }, // Phishing via MCP (disabled by default)
+      "SEC-057": { enabled: false, severity: "medium" }, // Data Exfiltration via Steganography (disabled by default)
+      "SEC-058": { enabled: false, severity: "critical" }, // Self-Replicating MCP (disabled by default)
+      "SEC-059": { enabled: true, severity: "high" }, // Unvalidated Tool Authorization
+      "SEC-060": { enabled: true, severity: "medium" }, // Missing Transaction Semantics
+
+      // Block E: Identity & Supply Chain (SEC-061+)
+      "SEC-061": { enabled: true, severity: "high" }, // Homoglyph / Unicode Spoofing
+    },
   },
 
   quality: {
     minScore: 50,
     enableSemanticAnalysis: false,
-    llmProvider: undefined
+    llmProvider: undefined,
   },
 
   fuzzing: {
@@ -576,62 +582,62 @@ export const DEFAULT_CONFIG: McpVerifyConfig = {
     concurrency: 5,
     stopOnFirstVulnerability: false,
     enableFingerprinting: false,
-    maxPayloadsPerTool: 100
+    maxPayloadsPerTool: 100,
   },
 
   network: {
     connectionTimeout: 30000,
     requestTimeout: 30000,
     allowInsecure: false,
-    headers: {}
+    headers: {},
   },
 
   sandbox: {
     enabled: false,
-    allowRead: ['.'],
+    allowRead: ["."],
     allowEnv: true,
-    allowNet: []
+    allowNet: [],
   },
 
   proxy: {
-    blockedCommands: ['rm -rf', 'mkfs', 'dd if=', 'format', ':(){:|:&};:'],
+    blockedCommands: ["rm -rf", "mkfs", "dd if=", "format", ":(){:|:&};:"],
     piiMasking: false,
     rateLimiting: true,
-    rateLimit: 60
+    rateLimit: 60,
   },
 
   workspace: {
-    directory: '.mcp-verify',
+    directory: ".mcp-verify",
     historyLimit: 500,
     persistenceEnabled: true,
-    sessionFile: 'session.json',
+    sessionFile: "session.json",
     autoSaveInterval: 30000,
     backup: {
       enabled: true,
       interval: 86400000, // 24 hours
-      maxBackups: 5
-    }
+      maxBackups: 5,
+    },
   },
 
   baseline: {
     enabled: false,
-    path: './baseline.json',
+    path: "./baseline.json",
     failOnDegradation: false,
     allowedScoreDrop: 5,
     autoUpdate: false,
-    trackMetrics: ['security', 'quality', 'performance']
+    trackMetrics: ["security", "quality", "performance"],
   },
 
   logging: {
-    level: 'info',
+    level: "info",
     enableConsole: true,
     enableFile: true,
-    fileDirectory: '.mcp-verify/logs',
+    fileDirectory: ".mcp-verify/logs",
     maxFileSize: 10485760, // 10 MB
     maxFiles: 5,
     redactSecrets: true,
     includeTimestamps: true,
-    colorize: true
+    colorize: true,
   },
 
   performance: {
@@ -639,7 +645,7 @@ export const DEFAULT_CONFIG: McpVerifyConfig = {
     trackMemory: false,
     trackCpu: false,
     slowOperationThreshold: 1000,
-    logSlowOperations: false
+    logSlowOperations: false,
   },
 
   notifications: {
@@ -648,29 +654,29 @@ export const DEFAULT_CONFIG: McpVerifyConfig = {
       enabled: false,
       recipients: [],
       onCriticalFinding: true,
-      onScanComplete: false
+      onScanComplete: false,
     },
     slack: {
       enabled: false,
-      webhookUrl: '',
-      channel: '#security'
+      webhookUrl: "",
+      channel: "#security",
     },
     webhook: {
       enabled: false,
-      url: '',
-      method: 'POST',
-      headers: {}
-    }
+      url: "",
+      method: "POST",
+      headers: {},
+    },
   },
 
   ci: {
     enabled: false,
-    provider: 'github',
+    provider: "github",
     failPipeline: true,
     uploadArtifacts: true,
     createIssues: false,
     commentPR: false,
-    statusChecks: true
+    statusChecks: true,
   },
 
   disclaimers: {
@@ -680,220 +686,264 @@ export const DEFAULT_CONFIG: McpVerifyConfig = {
       fuzz: false,
       stress: false,
       proxy: false,
-      'scan-config': false
+      "scan-config": false,
     },
-    requireAcceptance: true
+    requireAcceptance: true,
   },
 
   plugins: {
     enabled: false,
-    directory: '.mcp-verify/plugins',
+    directory: ".mcp-verify/plugins",
     autoLoad: true,
     allowRemote: false,
-    registry: []
+    registry: [],
   },
 
   telemetry: {
     enabled: false,
     anonymize: true,
-    endpoint: 'https://telemetry.mcp-verify.dev',
-    interval: 86400000 // 24 hours
+    endpoint: "https://telemetry.mcp-verify.dev",
+    interval: 86400000, // 24 hours
   },
 
   exitCodes: {
     success: 0,
     validationFailed: 1,
-    criticalSecurity: 2
-  }
+    criticalSecurity: 2,
+  },
 };
 
 // ============================================================================
 // ZOD VALIDATION SCHEMAS
 // ============================================================================
 
-const SeveritySchema = z.enum(['critical', 'high', 'medium', 'low', 'info']);
-const LanguageSchema = z.enum(['en', 'es']);
-const ReportFormatSchema = z.enum(['json', 'html', 'markdown', 'sarif']);
+const SeveritySchema = z.enum(["critical", "high", "medium", "low", "info"]);
+const LanguageSchema = z.enum(["en", "es"]);
+const ReportFormatSchema = z.enum(["json", "html", "markdown", "sarif"]);
 
 const RuleConfigSchema = z.object({
   enabled: z.boolean(),
   severity: SeveritySchema.optional(),
-  options: z.record(z.string(), z.unknown()).optional()
+  options: z.record(z.string(), z.unknown()).optional(),
 });
 
-const OutputConfigSchema = z.object({
-  directory: z.string(),
-  formats: z.array(ReportFormatSchema),
-  html: z.boolean(),
-  language: LanguageSchema,
-  organizeByFormat: z.boolean()
-}).partial();
+const OutputConfigSchema = z
+  .object({
+    directory: z.string(),
+    formats: z.array(ReportFormatSchema),
+    html: z.boolean(),
+    language: LanguageSchema,
+    organizeByFormat: z.boolean(),
+  })
+  .partial();
 
-const SecurityRuleBlockSchema = z.enum(['OWASP', 'MCP', 'A', 'B', 'C', 'D']);
+const SecurityRuleBlockSchema = z.enum(["OWASP", "MCP", "A", "B", "C", "D"]);
 
-const SecurityConfigSchema = z.object({
-  enableSecurityScan: z.boolean().optional(),
-  minScore: z.number().min(0).max(100),
-  failOnCritical: z.boolean(),
-  failOnHigh: z.boolean(),
-  enabledBlocks: z.array(SecurityRuleBlockSchema),
-  disabledRules: z.array(z.string()),
-  rules: z.record(z.string(), RuleConfigSchema)
-}).partial();
+const SecurityConfigSchema = z
+  .object({
+    enableSecurityScan: z.boolean().optional(),
+    minScore: z.number().min(0).max(100),
+    failOnCritical: z.boolean(),
+    failOnHigh: z.boolean(),
+    enabledBlocks: z.array(SecurityRuleBlockSchema),
+    disabledRules: z.array(z.string()),
+    rules: z.record(z.string(), RuleConfigSchema),
+  })
+  .partial();
 
-const QualityConfigSchema = z.object({
-  minScore: z.number().min(0).max(100),
-  enableSemanticAnalysis: z.boolean(),
-  llmProvider: z.enum(['anthropic', 'openai', 'ollama']).optional()
-}).partial();
+const QualityConfigSchema = z
+  .object({
+    minScore: z.number().min(0).max(100),
+    enableSemanticAnalysis: z.boolean(),
+    llmProvider: z.enum(["anthropic", "openai", "ollama"]).optional(),
+  })
+  .partial();
 
-const FuzzingConfigSchema = z.object({
-  timeout: z.number().positive(),
-  delayBetweenRequests: z.number().min(0),
-  concurrency: z.number().positive(),
-  stopOnFirstVulnerability: z.boolean(),
-  enableFingerprinting: z.boolean(),
-  maxPayloadsPerTool: z.number().positive()
-}).partial();
+const FuzzingConfigSchema = z
+  .object({
+    timeout: z.number().positive(),
+    delayBetweenRequests: z.number().min(0),
+    concurrency: z.number().positive(),
+    stopOnFirstVulnerability: z.boolean(),
+    enableFingerprinting: z.boolean(),
+    maxPayloadsPerTool: z.number().positive(),
+  })
+  .partial();
 
-const NetworkConfigSchema = z.object({
-  connectionTimeout: z.number().positive(),
-  requestTimeout: z.number().positive(),
-  allowInsecure: z.boolean(),
-  headers: z.record(z.string(), z.string())
-}).partial();
+const NetworkConfigSchema = z
+  .object({
+    connectionTimeout: z.number().positive(),
+    requestTimeout: z.number().positive(),
+    allowInsecure: z.boolean(),
+    headers: z.record(z.string(), z.string()),
+  })
+  .partial();
 
-const SandboxConfigSchema = z.object({
-  enabled: z.boolean(),
-  allowRead: z.array(z.string()),
-  allowEnv: z.boolean(),
-  allowNet: z.array(z.string())
-}).partial();
-
-const ProxyConfigSchema = z.object({
-  blockedCommands: z.array(z.string()),
-  piiMasking: z.boolean(),
-  rateLimiting: z.boolean(),
-  rateLimit: z.number().positive()
-}).partial();
-
-const WorkspaceConfigSchema = z.object({
-  directory: z.string(),
-  historyLimit: z.number().positive(),
-  persistenceEnabled: z.boolean(),
-  sessionFile: z.string(),
-  autoSaveInterval: z.number().positive().optional(),
-  backup: z.object({
+const SandboxConfigSchema = z
+  .object({
     enabled: z.boolean(),
+    allowRead: z.array(z.string()),
+    allowEnv: z.boolean(),
+    allowNet: z.array(z.string()),
+  })
+  .partial();
+
+const ProxyConfigSchema = z
+  .object({
+    blockedCommands: z.array(z.string()),
+    piiMasking: z.boolean(),
+    rateLimiting: z.boolean(),
+    rateLimit: z.number().positive(),
+  })
+  .partial();
+
+const WorkspaceConfigSchema = z
+  .object({
+    directory: z.string(),
+    historyLimit: z.number().positive(),
+    persistenceEnabled: z.boolean(),
+    sessionFile: z.string(),
+    autoSaveInterval: z.number().positive().optional(),
+    backup: z
+      .object({
+        enabled: z.boolean(),
+        interval: z.number().positive(),
+        maxBackups: z.number().positive(),
+      })
+      .optional(),
+  })
+  .partial();
+
+const IntegrityConfigSchema = z
+  .object({
+    enabled: z.boolean(),
+    historyLimit: z.number().positive(),
+    autoCleanup: z.boolean(),
+    cleanupStrategy: z.enum(["keep-last-n", "keep-by-age", "manual"]),
+    cleanupAgeThreshold: z.number().positive().optional(),
+    verifyOnStartup: z.boolean(),
+    failOnMismatch: z.boolean(),
+    trackBinaries: z.array(z.enum(["cli", "server"])),
+    manifestPath: z.string(),
+  })
+  .partial();
+
+const LoggingConfigSchema = z
+  .object({
+    level: z.enum(["trace", "debug", "info", "warn", "error"]),
+    enableConsole: z.boolean(),
+    enableFile: z.boolean(),
+    fileDirectory: z.string(),
+    maxFileSize: z.number().positive(),
+    maxFiles: z.number().positive(),
+    redactSecrets: z.boolean(),
+    includeTimestamps: z.boolean(),
+    colorize: z.boolean(),
+  })
+  .partial();
+
+const BaselineConfigSchema = z
+  .object({
+    enabled: z.boolean(),
+    path: z.string(),
+    failOnDegradation: z.boolean(),
+    allowedScoreDrop: z.number().nonnegative(),
+    autoUpdate: z.boolean(),
+    trackMetrics: z.array(z.enum(["security", "quality", "performance"])),
+  })
+  .partial();
+
+const PerformanceConfigSchema = z
+  .object({
+    enableProfiling: z.boolean(),
+    trackMemory: z.boolean(),
+    trackCpu: z.boolean(),
+    slowOperationThreshold: z.number().positive(),
+    logSlowOperations: z.boolean(),
+  })
+  .partial();
+
+const NotificationsConfigSchema = z
+  .object({
+    enabled: z.boolean(),
+    email: z
+      .object({
+        enabled: z.boolean(),
+        recipients: z.array(z.string().email()),
+        onCriticalFinding: z.boolean(),
+        onScanComplete: z.boolean(),
+      })
+      .optional(),
+    slack: z
+      .object({
+        enabled: z.boolean(),
+        webhookUrl: z.string().url(),
+        channel: z.string(),
+      })
+      .optional(),
+    webhook: z
+      .object({
+        enabled: z.boolean(),
+        url: z.string().url(),
+        method: z.enum(["POST", "PUT"]),
+        headers: z.record(z.string(), z.string()),
+      })
+      .optional(),
+  })
+  .partial();
+
+const CiConfigSchema = z
+  .object({
+    enabled: z.boolean(),
+    provider: z.enum(["github", "gitlab", "circleci", "jenkins"]),
+    failPipeline: z.boolean(),
+    uploadArtifacts: z.boolean(),
+    createIssues: z.boolean(),
+    commentPR: z.boolean(),
+    statusChecks: z.boolean(),
+  })
+  .partial();
+
+const DisclaimersConfigSchema = z
+  .object({
+    enabled: z.boolean(),
+    suppressAll: z.boolean(),
+    accepted: z.object({
+      fuzz: z.boolean(),
+      stress: z.boolean(),
+      proxy: z.boolean(),
+      "scan-config": z.boolean(),
+    }),
+    requireAcceptance: z.boolean(),
+  })
+  .partial();
+
+const PluginsConfigSchema = z
+  .object({
+    enabled: z.boolean(),
+    directory: z.string(),
+    autoLoad: z.boolean(),
+    allowRemote: z.boolean(),
+    registry: z.array(z.string()),
+  })
+  .partial();
+
+const TelemetryConfigSchema = z
+  .object({
+    enabled: z.boolean(),
+    anonymize: z.boolean(),
+    endpoint: z.string().url(),
     interval: z.number().positive(),
-    maxBackups: z.number().positive()
-  }).optional()
-}).partial();
+  })
+  .partial();
 
-const IntegrityConfigSchema = z.object({
-  enabled: z.boolean(),
-  historyLimit: z.number().positive(),
-  autoCleanup: z.boolean(),
-  cleanupStrategy: z.enum(['keep-last-n', 'keep-by-age', 'manual']),
-  cleanupAgeThreshold: z.number().positive().optional(),
-  verifyOnStartup: z.boolean(),
-  failOnMismatch: z.boolean(),
-  trackBinaries: z.array(z.enum(['cli', 'server'])),
-  manifestPath: z.string()
-}).partial();
-
-const LoggingConfigSchema = z.object({
-  level: z.enum(['trace', 'debug', 'info', 'warn', 'error']),
-  enableConsole: z.boolean(),
-  enableFile: z.boolean(),
-  fileDirectory: z.string(),
-  maxFileSize: z.number().positive(),
-  maxFiles: z.number().positive(),
-  redactSecrets: z.boolean(),
-  includeTimestamps: z.boolean(),
-  colorize: z.boolean()
-}).partial();
-
-const BaselineConfigSchema = z.object({
-  enabled: z.boolean(),
-  path: z.string(),
-  failOnDegradation: z.boolean(),
-  allowedScoreDrop: z.number().nonnegative(),
-  autoUpdate: z.boolean(),
-  trackMetrics: z.array(z.enum(['security', 'quality', 'performance']))
-}).partial();
-
-const PerformanceConfigSchema = z.object({
-  enableProfiling: z.boolean(),
-  trackMemory: z.boolean(),
-  trackCpu: z.boolean(),
-  slowOperationThreshold: z.number().positive(),
-  logSlowOperations: z.boolean()
-}).partial();
-
-const NotificationsConfigSchema = z.object({
-  enabled: z.boolean(),
-  email: z.object({
-    enabled: z.boolean(),
-    recipients: z.array(z.string().email()),
-    onCriticalFinding: z.boolean(),
-    onScanComplete: z.boolean()
-  }).optional(),
-  slack: z.object({
-    enabled: z.boolean(),
-    webhookUrl: z.string().url(),
-    channel: z.string()
-  }).optional(),
-  webhook: z.object({
-    enabled: z.boolean(),
-    url: z.string().url(),
-    method: z.enum(['POST', 'PUT']),
-    headers: z.record(z.string(), z.string())
-  }).optional()
-}).partial();
-
-const CiConfigSchema = z.object({
-  enabled: z.boolean(),
-  provider: z.enum(['github', 'gitlab', 'circleci', 'jenkins']),
-  failPipeline: z.boolean(),
-  uploadArtifacts: z.boolean(),
-  createIssues: z.boolean(),
-  commentPR: z.boolean(),
-  statusChecks: z.boolean()
-}).partial();
-
-const DisclaimersConfigSchema = z.object({
-  enabled: z.boolean(),
-  suppressAll: z.boolean(),
-  accepted: z.object({
-    fuzz: z.boolean(),
-    stress: z.boolean(),
-    proxy: z.boolean(),
-    'scan-config': z.boolean()
-  }),
-  requireAcceptance: z.boolean()
-}).partial();
-
-const PluginsConfigSchema = z.object({
-  enabled: z.boolean(),
-  directory: z.string(),
-  autoLoad: z.boolean(),
-  allowRemote: z.boolean(),
-  registry: z.array(z.string())
-}).partial();
-
-const TelemetryConfigSchema = z.object({
-  enabled: z.boolean(),
-  anonymize: z.boolean(),
-  endpoint: z.string().url(),
-  interval: z.number().positive()
-}).partial();
-
-const ExitCodesConfigSchema = z.object({
-  success: z.number(),
-  validationFailed: z.number(),
-  criticalSecurity: z.number()
-}).partial();
+const ExitCodesConfigSchema = z
+  .object({
+    success: z.number(),
+    validationFailed: z.number(),
+    criticalSecurity: z.number(),
+  })
+  .partial();
 
 /**
  * Full configuration schema (all fields optional for partial configs)
@@ -917,7 +967,7 @@ export const McpVerifyConfigSchema = z.object({
   disclaimers: DisclaimersConfigSchema.optional(),
   plugins: PluginsConfigSchema.optional(),
   telemetry: TelemetryConfigSchema.optional(),
-  exitCodes: ExitCodesConfigSchema.optional()
+  exitCodes: ExitCodesConfigSchema.optional(),
 });
 
 /**
@@ -942,16 +992,16 @@ export function validateConfig(rawConfig: unknown): PartialConfig {
  * Allows override via MCP_VERIFY_* environment variables
  */
 export const ENV_MAPPING: Record<string, string> = {
-  'MCP_VERIFY_OUTPUT_DIR': 'output.directory',
-  'MCP_VERIFY_LANGUAGE': 'output.language',
-  'MCP_VERIFY_HTML': 'output.html',
-  'MCP_VERIFY_TIMEOUT': 'network.requestTimeout',
-  'MCP_VERIFY_SECURITY_MIN_SCORE': 'security.minScore',
-  'MCP_VERIFY_FAIL_ON_CRITICAL': 'security.failOnCritical',
-  'MCP_VERIFY_QUALITY_MIN_SCORE': 'quality.minScore',
-  'MCP_VERIFY_FUZZ_TIMEOUT': 'fuzzing.timeout',
-  'MCP_VERIFY_FUZZ_CONCURRENCY': 'fuzzing.concurrency',
-  'MCP_VERIFY_SANDBOX_ENABLED': 'sandbox.enabled',
-  'MCP_VERIFY_ALLOW_INSECURE': 'network.allowInsecure',
-  'MCP_VERIFY_WORKSPACE_DIR': 'workspace.directory'
+  MCP_VERIFY_OUTPUT_DIR: "output.directory",
+  MCP_VERIFY_LANGUAGE: "output.language",
+  MCP_VERIFY_HTML: "output.html",
+  MCP_VERIFY_TIMEOUT: "network.requestTimeout",
+  MCP_VERIFY_SECURITY_MIN_SCORE: "security.minScore",
+  MCP_VERIFY_FAIL_ON_CRITICAL: "security.failOnCritical",
+  MCP_VERIFY_QUALITY_MIN_SCORE: "quality.minScore",
+  MCP_VERIFY_FUZZ_TIMEOUT: "fuzzing.timeout",
+  MCP_VERIFY_FUZZ_CONCURRENCY: "fuzzing.concurrency",
+  MCP_VERIFY_SANDBOX_ENABLED: "sandbox.enabled",
+  MCP_VERIFY_ALLOW_INSECURE: "network.allowInsecure",
+  MCP_VERIFY_WORKSPACE_DIR: "workspace.directory",
 };

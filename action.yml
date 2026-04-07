@@ -1,40 +1,106 @@
 name: 'MCP Verify'
-description: 'Validate, test, and secure Model Context Protocol (MCP) servers'
+description: 'Validate, test, and secure Model Context Protocol (MCP) servers with comprehensive security scanning'
 author: 'Fink'
 branding:
-  icon: 'check-circle'
-  color: 'green'
+  icon: 'shield'
+  color: 'blue'
 
 inputs:
-  url:
-    description: 'Target URL of the MCP server to validate'
+  server:
+    description: 'Server command to validate (e.g., "node server.js" or "python server.py")'
     required: true
+
   transport:
     description: 'Transport type (http or stdio)'
     required: false
-    default: 'http'
-  fail-on-issue:
-    description: 'Fail the workflow if validation issues are found'
-    required: false
-    default: 'true'
+    default: 'stdio'
+
   format:
-    description: 'Output format (json, sarif)'
+    description: 'Output format: json, sarif, html'
     required: false
     default: 'sarif'
+
+  output-dir:
+    description: 'Output directory for reports'
+    required: false
+    default: 'mcp-reports'
+
+  enable-fuzzing:
+    description: 'Enable intelligent fuzzing for chaos testing'
+    required: false
+    default: 'false'
+
+  enable-semantic:
+    description: 'Enable LLM-powered semantic analysis (requires ANTHROPIC_API_KEY)'
+    required: false
+    default: 'false'
+
+  llm-provider:
+    description: 'LLM provider for semantic analysis (e.g., "anthropic:claude-haiku-4-5-20251001", "ollama:llama3.2")'
+    required: false
+    default: 'anthropic:claude-haiku-4-5-20251001'
+
+  rules:
+    description: 'Security rule blocks to execute (e.g., "OWASP,MCP,A")'
+    required: false
+    default: 'OWASP,MCP,A,B,C'
+
+  exclude-rules:
+    description: 'Rule blocks or IDs to exclude (e.g., "SEC-001,D")'
+    required: false
+
+  min-severity:
+    description: 'Minimum severity level to report (info, low, medium, high, critical)'
+    required: false
+    default: 'medium'
+
+  fail-on-issues:
+    description: 'Fail the workflow if security issues are found'
+    required: false
+    default: 'true'
+
+  baseline-path:
+    description: 'Path to baseline report for regression detection'
+    required: false
+
+  fail-on-degradation:
+    description: 'Fail if security score drops compared to baseline'
+    required: false
+    default: 'false'
+
+  allowed-score-drop:
+    description: 'Allowed security score drop before failing (0-100)'
+    required: false
+    default: '5'
 
 outputs:
   report-path:
     description: 'Path to the generated report file'
 
+  security-score:
+    description: 'Overall security score (0-100)'
+
+  critical-issues:
+    description: 'Number of critical security issues found'
+
+  high-issues:
+    description: 'Number of high severity issues found'
+
 runs:
   using: 'node20'
   main: 'dist/mcp-verify.js'
-  args:
-    - validate
-    - ${{ inputs.url }}
-    - --transport
-    - ${{ inputs.transport }}
-    - --format
-    - ${{ inputs.format }}
-    - --output
-    - 'mcp-reports'
+  post: 'dist/mcp-verify.js'
+  post-if: 'always()'
+
+# Example usage:
+# - name: Validate MCP Server
+#   uses: FinkTech/mcp-verify@v1
+#   with:
+#     server: 'node src/server.js'
+#     format: 'sarif'
+#     enable-fuzzing: 'true'
+#     rules: 'OWASP,MCP,A,B,C'
+#     min-severity: 'high'
+#     fail-on-issues: 'true'
+#   env:
+#     ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

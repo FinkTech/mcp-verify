@@ -14,14 +14,14 @@ The MCP ecosystem just got its first enterprise-grade security scanner. **mcp-ve
 
 The most comprehensive rule engine ever built for the Model Context Protocol.
 
-| Block | Category | Rules | Highlights |
-|-------|----------|-------|------------|
-| **OWASP Core** | OWASP Top 10 Aligned | SEC-001 → SEC-013 (13) | SQL/CMD Injection, SSRF, XXE, Path Traversal, Prompt Injection |
-| **MCP-Specific** | Protocol-Native Threats | SEC-014 → SEC-021 (8) | Exposed Endpoints, Dangerous Tool Chaining, Unencrypted Credentials |
-| **Block A** | OWASP LLM Top 10 | SEC-022 → SEC-030 (9) | Excessive Agency, Supply Chain Dependencies, Model DoS |
-| **Block B** | Multi-Agent Attacks | SEC-031 → SEC-041 (11) | Agent Swarm Coordination, Identity Spoofing, Cross-Agent Prompt Injection |
-| **Block C** | Enterprise Compliance | SEC-042 → SEC-050 (9) | Audit Logging, Session Management, Timing Side-Channels |
-| **Block D** | AI Weaponization & Supply Chain | SEC-051 → SEC-060 (10) | CVE-2025-59536, CVE-2026-21852, Self-Replicating MCP Detection |
+| Block            | Category                        | Rules                  | Highlights                                                                |
+| ---------------- | ------------------------------- | ---------------------- | ------------------------------------------------------------------------- |
+| **OWASP Core**   | OWASP Top 10 Aligned            | SEC-001 → SEC-013 (13) | SQL/CMD Injection, SSRF, XXE, Path Traversal, Prompt Injection            |
+| **MCP-Specific** | Protocol-Native Threats         | SEC-014 → SEC-021 (8)  | Exposed Endpoints, Dangerous Tool Chaining, Unencrypted Credentials       |
+| **Block A**      | OWASP LLM Top 10                | SEC-022 → SEC-030 (9)  | Excessive Agency, Supply Chain Dependencies, Model DoS                    |
+| **Block B**      | Multi-Agent Attacks             | SEC-031 → SEC-041 (11) | Agent Swarm Coordination, Identity Spoofing, Cross-Agent Prompt Injection |
+| **Block C**      | Enterprise Compliance           | SEC-042 → SEC-050 (9)  | Audit Logging, Session Management, Timing Side-Channels                   |
+| **Block D**      | AI Weaponization & Supply Chain | SEC-051 → SEC-060 (10) | CVE-2025-59536, CVE-2026-21852, Self-Replicating MCP Detection            |
 
 Every rule maps to an industry standard. Every finding scores on a 0–100 Unified Scoring Engine.
 
@@ -49,14 +49,14 @@ A professional workspace, not a toy CLI.
 
 An adaptive security testing engine that learns while it attacks.
 
-| Capability | Detail |
-|------------|--------|
-| **Feedback Loop** | Detects interesting responses (timing anomalies, crashes, structural drift) and auto-generates targeted mutations |
-| **12 Mutation Strategies** | SQL depth, null-byte injection, unicode bypass, timing probes, buffer stress, quote variation, case mutation, encoding bypass, polyglot payloads, recursive nesting, type confusion, boundary probing |
-| **8 Payload Generators** | Prompt Injection, SQL/XSS/CMD Injection, JWT Attacks, Prototype Pollution, JSON-RPC Violations, Schema Confusion, Path Traversal, Time-Based |
-| **9 Vulnerability Detectors** | Timing anomalies, error disclosure, XSS reflection, prompt leaks, jailbreak success, path traversal, weak IDs, info disclosure, protocol violation |
-| **Automatic Fingerprinting** | Detects server language/framework and disables irrelevant generators (saves 40–60% execution time) |
-| **Schema-Aware Fuzzing** | Parses tool JSON Schemas to generate 150–250+ targeted payloads per tool — type confusion, boundary violations, enum bypass, format-specific attacks |
+| Capability                    | Detail                                                                                                                                                                                                |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Feedback Loop**             | Detects interesting responses (timing anomalies, crashes, structural drift) and auto-generates targeted mutations                                                                                     |
+| **12 Mutation Strategies**    | SQL depth, null-byte injection, unicode bypass, timing probes, buffer stress, quote variation, case mutation, encoding bypass, polyglot payloads, recursive nesting, type confusion, boundary probing |
+| **8 Payload Generators**      | Prompt Injection, SQL/XSS/CMD Injection, JWT Attacks, Prototype Pollution, JSON-RPC Violations, Schema Confusion, Path Traversal, Time-Based                                                          |
+| **9 Vulnerability Detectors** | Timing anomalies, error disclosure, XSS reflection, prompt leaks, jailbreak success, path traversal, weak IDs, info disclosure, protocol violation                                                    |
+| **Automatic Fingerprinting**  | Detects server language/framework and disables irrelevant generators (saves 40–60% execution time)                                                                                                    |
+| **Schema-Aware Fuzzing**      | Parses tool JSON Schemas to generate 150–250+ targeted payloads per tool — type confusion, boundary violations, enum bypass, format-specific attacks                                                  |
 
 ```
 Smart Fuzzer v1.0
@@ -86,13 +86,13 @@ Enterprise-grade internals built for reliability at scale.
 
 Reports so clear they double as executive briefings.
 
-| Format | Use Case |
-|--------|----------|
-| **HTML** | High-aesthetic interactive reports with visual **Attack Chains** and **Risk Heatmaps** |
-| **JSON** | Machine-readable for CI/CD pipelines and automation |
-| **SARIF 2.1.0** | GitHub Security tab integration |
-| **Markdown** | GitHub-friendly, PR-embeddable summaries |
-| **SVG Badges** | shields.io-format badges for your README |
+| Format          | Use Case                                                                               |
+| --------------- | -------------------------------------------------------------------------------------- |
+| **HTML**        | High-aesthetic interactive reports with visual **Attack Chains** and **Risk Heatmaps** |
+| **JSON**        | Machine-readable for CI/CD pipelines and automation                                    |
+| **SARIF 2.1.0** | GitHub Security tab integration                                                        |
+| **Markdown**    | GitHub-friendly, PR-embeddable summaries                                               |
+| **SVG Badges**  | shields.io-format badges for your README                                               |
 
 Scores map to clear operational tiers: **≥ 90** Production · **≥ 70** Staging · **≥ 50** Internal Tools.
 
@@ -118,23 +118,23 @@ Real-time threat detection that sits between AI agents and MCP servers.
 
 ### 3-Layer Progressive Defense
 
-| Layer | Type | Latency | Detection Method | Cost (approx.) |
-|-------|------|---------|------------------|----------------|
-| **Layer 1: Fast Rules** | Pattern-based | <10ms | Regex + hardcoded patterns (SQL, CMD injection) | $0 |
-| **Layer 2: Suspicious Rules** | Heuristic analysis | <50ms | Scoring + anomaly detection | $0 |
-| **Layer 3: LLM Rules** | Deep semantic | 500-2000ms | AI-powered context analysis (opt-in, disabled by default) | $5-$15 per 1K req* |
+| Layer                         | Type               | Latency    | Detection Method                                          | Cost (approx.)      |
+| ----------------------------- | ------------------ | ---------- | --------------------------------------------------------- | ------------------- |
+| **Layer 1: Fast Rules**       | Pattern-based      | <10ms      | Regex + hardcoded patterns (SQL, CMD injection)           | $0                  |
+| **Layer 2: Suspicious Rules** | Heuristic analysis | <50ms      | Scoring + anomaly detection                               | $0                  |
+| **Layer 3: LLM Rules**        | Deep semantic      | 500-2000ms | AI-powered context analysis (opt-in, disabled by default) | $5-$15 per 1K req\* |
 
-*LLM costs vary by provider. Layer 3 is disabled by default.
+\*LLM costs vary by provider. Layer 3 is disabled by default.
 
 ### Client-Aware Panic Stop
 
 Progressive backoff system prevents DoS attacks by isolating misbehaving clients:
 
-| Strike | Backoff | Trigger | Behavior |
-|--------|---------|---------|----------|
-| **Strike 1** | 30 seconds | First 429 error | Client blocked for 30s, auto-resume after |
-| **Strike 2** | 60 seconds | Second 429 within session | Client blocked for 60s, warning logged |
-| **Strike 3** | Permanent | Third 429 within session | **PANIC MODE** - permanently blocked until proxy restart |
+| Strike       | Backoff    | Trigger                   | Behavior                                                 |
+| ------------ | ---------- | ------------------------- | -------------------------------------------------------- |
+| **Strike 1** | 30 seconds | First 429 error           | Client blocked for 30s, auto-resume after                |
+| **Strike 2** | 60 seconds | Second 429 within session | Client blocked for 60s, warning logged                   |
+| **Strike 3** | Permanent  | Third 429 within session  | **PANIC MODE** - permanently blocked until proxy restart |
 
 **Key Innovation**: Each client tracked separately by ID (from `x-client-id` header or IP address), preventing one malicious client from affecting others.
 
@@ -158,16 +158,18 @@ Every blocked request includes full forensic context:
       "blocked": true,
       "layer": 1,
       "latency_ms": 8,
-      "findings": [{
-        "ruleCode": "SEC-003",
-        "severity": "critical",
-        "message": "SQL injection detected in parameter 'filter'",
-        "cwe": "CWE-89",
-        "owasp": "A03:2021 - Injection",
-        "remediation": "Use parameterized queries",
-        "matchedPattern": "OR 1=1",
-        "affectedParameter": "filter"
-      }]
+      "findings": [
+        {
+          "ruleCode": "SEC-003",
+          "severity": "critical",
+          "message": "SQL injection detected in parameter 'filter'",
+          "cwe": "CWE-89",
+          "owasp": "A03:2021 - Injection",
+          "remediation": "Use parameterized queries",
+          "matchedPattern": "OR 1=1",
+          "affectedParameter": "filter"
+        }
+      ]
     }
   }
 }
@@ -176,6 +178,7 @@ Every blocked request includes full forensic context:
 ### Classic Guardrails (Post-Gateway)
 
 5 traditional guardrails run AFTER the 3-layer gateway passes a request:
+
 - **HTTPS Enforcer** - Blocks non-HTTPS URLs
 - **Input Sanitizer** - Sanitizes user inputs
 - **PII Redactor** - Redacts sensitive data
@@ -183,6 +186,7 @@ Every blocked request includes full forensic context:
 - **Sensitive Command Blocker** - Blocks dangerous shell commands
 
 **Usage**:
+
 ```bash
 # Start proxy (Layers 1+2 only, production-safe)
 mcp-verify proxy --target "node my-server.js" --port 3000
@@ -199,14 +203,14 @@ mcp-verify proxy --target "node my-server.js" \
 
 ## 🚀 Everything Else in the Box
 
-| Feature | Description |
-|---------|-------------|
-| **4 Interfaces** | Interactive Shell, CLI Commands (11 tools), MCP Server (7 tools for AI agents), VSCode Extension |
-| **Multi-LLM Semantic Analysis** | Gemini (FREE tier), Anthropic Claude, OpenAI GPT, Ollama — optional deep analysis |
-| **Baseline Comparison** | `--compare-baseline` with `--fail-on-degradation` for regression detection |
-| **CI/CD Exit Codes** | `0` pass · `1` warnings · `2` critical — GitHub Actions ready |
-| **Internationalization** | Full English + Spanish support (i18n) |
-| **Monorepo Architecture** | `apps/` (CLI, MCP Server, VSCode, Web Dashboard) + `libs/` (Core, Fuzzer, Shared, Protocol, Transport) |
+| Feature                         | Description                                                                                            |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| **4 Interfaces**                | Interactive Shell, CLI Commands (11 tools), MCP Server (7 tools for AI agents), VSCode Extension       |
+| **Multi-LLM Semantic Analysis** | Gemini (FREE tier), Anthropic Claude, OpenAI GPT, Ollama — optional deep analysis                      |
+| **Baseline Comparison**         | `--compare-baseline` with `--fail-on-degradation` for regression detection                             |
+| **CI/CD Exit Codes**            | `0` pass · `1` warnings · `2` critical — GitHub Actions ready                                          |
+| **Internationalization**        | Full English + Spanish support (i18n)                                                                  |
+| **Monorepo Architecture**       | `apps/` (CLI, MCP Server, VSCode, Web Dashboard) + `libs/` (Core, Fuzzer, Shared, Protocol, Transport) |
 
 ---
 
@@ -232,16 +236,16 @@ mcp-verify validate "node server.js"
 
 ## 📖 Documentation
 
-| Document | Description |
-|----------|-------------|
-| [README.md](./README.md) | Full feature reference |
-| [QUICKSTART.md](./QUICKSTART.md) | 3-minute setup guide |
-| [SECURITY.md](./SECURITY.md) | Security model & limitations |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | Clean Architecture deep-dive |
-| [COMMANDS.md](./COMMANDS.md) | All 11 CLI commands |
-| [API_REFERENCE.md](./API_REFERENCE.md) | Programmatic API |
-| [CONTRIBUTING.md](./CONTRIBUTING.md) | Contribution guide |
-| [RESPONSIBLE_USAGE.md](./RESPONSIBLE_USAGE.md) | Ethical guidelines |
+| Document                                       | Description                  |
+| ---------------------------------------------- | ---------------------------- |
+| [README.md](./README.md)                       | Full feature reference       |
+| [QUICKSTART.md](./QUICKSTART.md)               | 3-minute setup guide         |
+| [SECURITY.md](./SECURITY.md)                   | Security model & limitations |
+| [ARCHITECTURE.md](./ARCHITECTURE.md)           | Clean Architecture deep-dive |
+| [COMMANDS.md](./COMMANDS.md)                   | All 11 CLI commands          |
+| [API_REFERENCE.md](./API_REFERENCE.md)         | Programmatic API             |
+| [CONTRIBUTING.md](./CONTRIBUTING.md)           | Contribution guide           |
+| [RESPONSIBLE_USAGE.md](./RESPONSIBLE_USAGE.md) | Ethical guidelines           |
 
 ---
 

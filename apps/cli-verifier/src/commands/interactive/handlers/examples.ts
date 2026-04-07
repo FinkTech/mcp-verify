@@ -11,10 +11,10 @@
  * Extracted from interactive.ts - Section 10
  */
 
-import { runExamplesAction } from '../../examples';
+import { runExamplesAction } from "../../examples";
 
 export async function handleExamples(): Promise<void> {
-  console.log('');
+  console.log("");
   await runExamplesAction();
-  console.log('');
+  console.log("");
 }

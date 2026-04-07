@@ -26,44 +26,44 @@
  * @module libs/core/infrastructure/errors
  */
 
-import { Logger, AuditEventType, createScopedLogger } from '../logging/logger';
+import { Logger, AuditEventType, createScopedLogger } from "../logging/logger";
 
 /**
  * Error categories for classification
  */
 export enum ErrorCategory {
-  VALIDATION = 'VALIDATION',
-  AUTHENTICATION = 'AUTHENTICATION',
-  AUTHORIZATION = 'AUTHORIZATION',
-  NETWORK = 'NETWORK',
-  TIMEOUT = 'TIMEOUT',
-  SECURITY = 'SECURITY',
-  RATE_LIMIT = 'RATE_LIMIT',
-  CONFIGURATION = 'CONFIGURATION',
-  INTERNAL = 'INTERNAL',
-  EXTERNAL = 'EXTERNAL',
-  DATA = 'DATA'
+  VALIDATION = "VALIDATION",
+  AUTHENTICATION = "AUTHENTICATION",
+  AUTHORIZATION = "AUTHORIZATION",
+  NETWORK = "NETWORK",
+  TIMEOUT = "TIMEOUT",
+  SECURITY = "SECURITY",
+  RATE_LIMIT = "RATE_LIMIT",
+  CONFIGURATION = "CONFIGURATION",
+  INTERNAL = "INTERNAL",
+  EXTERNAL = "EXTERNAL",
+  DATA = "DATA",
 }
 
 /**
  * Error severity levels
  */
 export enum ErrorSeverity {
-  LOW = 'LOW',
-  MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH',
-  CRITICAL = 'CRITICAL'
+  LOW = "LOW",
+  MEDIUM = "MEDIUM",
+  HIGH = "HIGH",
+  CRITICAL = "CRITICAL",
 }
 
 /**
  * Recovery strategies
  */
 export enum RecoveryStrategy {
-  NONE = 'NONE',
-  RETRY = 'RETRY',
-  FALLBACK = 'FALLBACK',
-  CIRCUIT_BREAKER = 'CIRCUIT_BREAKER',
-  DEGRADE_GRACEFULLY = 'DEGRADE_GRACEFULLY'
+  NONE = "NONE",
+  RETRY = "RETRY",
+  FALLBACK = "FALLBACK",
+  CIRCUIT_BREAKER = "CIRCUIT_BREAKER",
+  DEGRADE_GRACEFULLY = "DEGRADE_GRACEFULLY",
 }
 
 /**
@@ -89,7 +89,7 @@ export class AppError extends Error {
       context?: Record<string, unknown>;
       recoveryStrategy?: RecoveryStrategy;
       innerError?: Error;
-    }
+    },
   ) {
     super(message);
     this.name = this.constructor.name;
@@ -110,8 +110,11 @@ export class AppError extends Error {
    */
   getUserMessage(): string {
     // In production, return generic message for security
-    if (process.env.NODE_ENV === 'production' && this.severity === ErrorSeverity.CRITICAL) {
-      return 'An unexpected error occurred. Please contact support.';
+    if (
+      process.env.NODE_ENV === "production" &&
+      this.severity === ErrorSeverity.CRITICAL
+    ) {
+      return "An unexpected error occurred. Please contact support.";
     }
     return this.message;
   }
@@ -129,7 +132,7 @@ export class AppError extends Error {
       isOperational: this.isOperational,
       timestamp: this.timestamp,
       context: this.context,
-      stack: process.env.NODE_ENV === 'development' ? this.stack : undefined
+      stack: process.env.NODE_ENV === "development" ? this.stack : undefined,
     };
   }
 }
@@ -139,11 +142,17 @@ export class AppError extends Error {
  */
 export class ValidationError extends AppError {
   constructor(message: string, context?: Record<string, unknown>) {
-    super(message, 'ERR_VALIDATION', ErrorCategory.VALIDATION, ErrorSeverity.LOW, {
-      isOperational: true,
-      context,
-      recoveryStrategy: RecoveryStrategy.NONE
-    });
+    super(
+      message,
+      "ERR_VALIDATION",
+      ErrorCategory.VALIDATION,
+      ErrorSeverity.LOW,
+      {
+        isOperational: true,
+        context,
+        recoveryStrategy: RecoveryStrategy.NONE,
+      },
+    );
   }
 }
 
@@ -151,12 +160,16 @@ export class ValidationError extends AppError {
  * Network errors
  */
 export class NetworkError extends AppError {
-  constructor(message: string, innerError?: Error, context?: Record<string, unknown>) {
-    super(message, 'ERR_NETWORK', ErrorCategory.NETWORK, ErrorSeverity.MEDIUM, {
+  constructor(
+    message: string,
+    innerError?: Error,
+    context?: Record<string, unknown>,
+  ) {
+    super(message, "ERR_NETWORK", ErrorCategory.NETWORK, ErrorSeverity.MEDIUM, {
       isOperational: true,
       context,
       recoveryStrategy: RecoveryStrategy.RETRY,
-      innerError
+      innerError,
     });
   }
 }
@@ -166,10 +179,10 @@ export class NetworkError extends AppError {
  */
 export class TimeoutError extends AppError {
   constructor(message: string, context?: Record<string, unknown>) {
-    super(message, 'ERR_TIMEOUT', ErrorCategory.TIMEOUT, ErrorSeverity.MEDIUM, {
+    super(message, "ERR_TIMEOUT", ErrorCategory.TIMEOUT, ErrorSeverity.MEDIUM, {
       isOperational: true,
       context,
-      recoveryStrategy: RecoveryStrategy.RETRY
+      recoveryStrategy: RecoveryStrategy.RETRY,
     });
   }
 }
@@ -178,11 +191,15 @@ export class TimeoutError extends AppError {
  * Security errors
  */
 export class SecurityError extends AppError {
-  constructor(message: string, code: string, context?: Record<string, unknown>) {
+  constructor(
+    message: string,
+    code: string,
+    context?: Record<string, unknown>,
+  ) {
     super(message, code, ErrorCategory.SECURITY, ErrorSeverity.CRITICAL, {
       isOperational: true,
       context,
-      recoveryStrategy: RecoveryStrategy.NONE
+      recoveryStrategy: RecoveryStrategy.NONE,
     });
   }
 }
@@ -193,12 +210,22 @@ export class SecurityError extends AppError {
 export class RateLimitError extends AppError {
   public readonly retryAfter?: number;
 
-  constructor(message: string, retryAfter?: number, context?: Record<string, unknown>) {
-    super(message, 'ERR_RATE_LIMIT', ErrorCategory.RATE_LIMIT, ErrorSeverity.MEDIUM, {
-      isOperational: true,
-      context,
-      recoveryStrategy: RecoveryStrategy.RETRY
-    });
+  constructor(
+    message: string,
+    retryAfter?: number,
+    context?: Record<string, unknown>,
+  ) {
+    super(
+      message,
+      "ERR_RATE_LIMIT",
+      ErrorCategory.RATE_LIMIT,
+      ErrorSeverity.MEDIUM,
+      {
+        isOperational: true,
+        context,
+        recoveryStrategy: RecoveryStrategy.RETRY,
+      },
+    );
     this.retryAfter = retryAfter;
   }
 }
@@ -208,11 +235,17 @@ export class RateLimitError extends AppError {
  */
 export class ConfigurationError extends AppError {
   constructor(message: string, context?: Record<string, unknown>) {
-    super(message, 'ERR_CONFIGURATION', ErrorCategory.CONFIGURATION, ErrorSeverity.HIGH, {
-      isOperational: false,
-      context,
-      recoveryStrategy: RecoveryStrategy.NONE
-    });
+    super(
+      message,
+      "ERR_CONFIGURATION",
+      ErrorCategory.CONFIGURATION,
+      ErrorSeverity.HIGH,
+      {
+        isOperational: false,
+        context,
+        recoveryStrategy: RecoveryStrategy.NONE,
+      },
+    );
   }
 }
 
@@ -223,14 +256,14 @@ export class MethodNotFoundError extends AppError {
   constructor(method: string, context?: Record<string, unknown>) {
     super(
       `Method "${method}" not supported by server`,
-      'ERR_METHOD_NOT_FOUND',
+      "ERR_METHOD_NOT_FOUND",
       ErrorCategory.EXTERNAL,
       ErrorSeverity.LOW,
       {
         isOperational: true,
         context: { method, ...context },
-        recoveryStrategy: RecoveryStrategy.NONE
-      }
+        recoveryStrategy: RecoveryStrategy.NONE,
+      },
     );
   }
 }
@@ -239,13 +272,23 @@ export class MethodNotFoundError extends AppError {
  * Internal errors
  */
 export class InternalError extends AppError {
-  constructor(message: string, innerError?: Error, context?: Record<string, unknown>) {
-    super(message, 'ERR_INTERNAL', ErrorCategory.INTERNAL, ErrorSeverity.CRITICAL, {
-      isOperational: false,
-      context,
-      recoveryStrategy: RecoveryStrategy.DEGRADE_GRACEFULLY,
-      innerError
-    });
+  constructor(
+    message: string,
+    innerError?: Error,
+    context?: Record<string, unknown>,
+  ) {
+    super(
+      message,
+      "ERR_INTERNAL",
+      ErrorCategory.INTERNAL,
+      ErrorSeverity.CRITICAL,
+      {
+        isOperational: false,
+        context,
+        recoveryStrategy: RecoveryStrategy.DEGRADE_GRACEFULLY,
+        innerError,
+      },
+    );
   }
 }
 
@@ -253,9 +296,9 @@ export class InternalError extends AppError {
  * Circuit breaker states
  */
 enum CircuitState {
-  CLOSED = 'CLOSED',
-  OPEN = 'OPEN',
-  HALF_OPEN = 'HALF_OPEN'
+  CLOSED = "CLOSED",
+  OPEN = "OPEN",
+  HALF_OPEN = "HALF_OPEN",
 }
 
 /**
@@ -272,8 +315,8 @@ export class CircuitBreaker {
     private readonly threshold: number = 5,
     private readonly timeout: number = 60000,
     private readonly halfOpenSuccessThreshold: number = 2,
-    private readonly name: string = 'default'
-  ) { }
+    private readonly name: string = "default",
+  ) {}
 
   /**
    * Execute operation with circuit breaker
@@ -360,8 +403,8 @@ export const DEFAULT_RETRY_CONFIG: RetryConfig = {
   retryableErrors: [
     ErrorCategory.NETWORK,
     ErrorCategory.TIMEOUT,
-    ErrorCategory.RATE_LIMIT
-  ]
+    ErrorCategory.RATE_LIMIT,
+  ],
 };
 
 /**
@@ -386,55 +429,56 @@ export class ErrorHandler {
   /**
    * Handle error with logging and auditing
    */
-  handle(error: Error | AppError, component: string = 'Unknown'): void {
+  handle(error: Error | AppError, component: string = "Unknown"): void {
     // Convert to AppError if needed
-    const appError = error instanceof AppError
-      ? error
-      : new InternalError('Unexpected error', error);
+    const appError =
+      error instanceof AppError
+        ? error
+        : new InternalError("Unexpected error", error);
 
     // Log error
-    this.logger.error(
-      appError.message,
-      error,
-      {
-        component,
-        metadata: {
-          code: appError.code,
-          category: appError.category,
-          severity: appError.severity,
-          context: appError.context
-        }
-      }
-    );
+    this.logger.error(appError.message, error, {
+      component,
+      metadata: {
+        code: appError.code,
+        category: appError.category,
+        severity: appError.severity,
+        context: appError.context,
+      },
+    });
 
     // Audit critical errors
-    if (appError.severity === ErrorSeverity.CRITICAL || appError.category === ErrorCategory.SECURITY) {
+    if (
+      appError.severity === ErrorSeverity.CRITICAL ||
+      appError.category === ErrorCategory.SECURITY
+    ) {
       this.logger.audit({
         eventType: AuditEventType.ERROR_OCCURRED,
-        severity: appError.severity === ErrorSeverity.CRITICAL ? 'critical' : 'high',
-        action: 'error_occurred',
-        result: 'failure',
+        severity:
+          appError.severity === ErrorSeverity.CRITICAL ? "critical" : "high",
+        action: "error_occurred",
+        result: "failure",
         context: {
           component,
           metadata: {
             errorCode: appError.code,
-            errorCategory: appError.category
-          }
+            errorCategory: appError.category,
+          },
         },
         details: {
           message: appError.message,
-          context: appError.context
-        }
+          context: appError.context,
+        },
       });
     }
 
     // Handle non-operational errors (programming errors)
     if (!appError.isOperational) {
-      this.logger.critical('Non-operational error detected', {
+      this.logger.critical("Non-operational error detected", {
         component,
         metadata: {
-          error: appError.toJSON()
-        }
+          error: appError.toJSON(),
+        },
       });
     }
   }
@@ -445,7 +489,7 @@ export class ErrorHandler {
   async executeWithRetry<T>(
     operation: () => Promise<T>,
     config: Partial<RetryConfig> = {},
-    component: string = 'Unknown'
+    component: string = "Unknown",
   ): Promise<T> {
     const retryConfig = { ...DEFAULT_RETRY_CONFIG, ...config };
     let lastError: Error | undefined;
@@ -465,20 +509,26 @@ export class ErrorHandler {
         }
 
         // Log retry attempt
-        this.logger.warn(`Retry attempt ${attempt}/${retryConfig.maxAttempts}`, {
-          component,
-          metadata: {
-            attempt,
-            maxAttempts: retryConfig.maxAttempts,
-            delay,
-            error: (error as Error).message
-          }
-        });
+        this.logger.warn(
+          `Retry attempt ${attempt}/${retryConfig.maxAttempts}`,
+          {
+            component,
+            metadata: {
+              attempt,
+              maxAttempts: retryConfig.maxAttempts,
+              delay,
+              error: (error as Error).message,
+            },
+          },
+        );
 
         // Don't sleep on last attempt
         if (attempt < retryConfig.maxAttempts) {
           await this.sleep(delay);
-          delay = Math.min(delay * retryConfig.backoffMultiplier, retryConfig.maxDelay);
+          delay = Math.min(
+            delay * retryConfig.backoffMultiplier,
+            retryConfig.maxDelay,
+          );
         }
       }
     }
@@ -494,7 +544,7 @@ export class ErrorHandler {
   async executeWithCircuitBreaker<T>(
     operation: () => Promise<T>,
     circuitName: string,
-    component: string = 'Unknown'
+    component: string = "Unknown",
   ): Promise<T> {
     let circuitBreaker = this.circuitBreakers.get(circuitName);
 
@@ -510,8 +560,8 @@ export class ErrorHandler {
         component,
         metadata: {
           circuitName,
-          state: circuitBreaker.getState()
-        }
+          state: circuitBreaker.getState(),
+        },
       });
       throw error;
     }
@@ -536,7 +586,7 @@ export class ErrorHandler {
    */
   wrapAsync<T extends unknown[], R>(
     fn: (...args: T) => Promise<R>,
-    component: string
+    component: string,
   ): (...args: T) => Promise<R> {
     return async (...args: T): Promise<R> => {
       try {
@@ -552,7 +602,7 @@ export class ErrorHandler {
    * Sleep utility
    */
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 
@@ -563,7 +613,7 @@ export function HandleErrors(component: string) {
   return function (
     target: unknown,
     propertyKey: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     const originalMethod = descriptor.value;
     const errorHandler = ErrorHandler.getInstance();

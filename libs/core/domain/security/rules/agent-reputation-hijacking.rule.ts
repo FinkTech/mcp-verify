@@ -29,26 +29,44 @@
  * - CWE-290: Authentication Bypass by Spoofing
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class AgentReputationHijackingRule implements ISecurityRule {
-  code = 'SEC-038';
-  name = 'Agent Reputation Hijacking';
-  severity: 'medium' = 'medium';
+  code = "SEC-038";
+  name = "Agent Reputation Hijacking";
+  severity: "medium" = "medium";
 
   private readonly REPUTATION_KEYWORDS = [
-    'reputation', 'trust', 'score', 'rating', 'rank',
-    'badge', 'credential', 'certification', 'level',
-    'karma', 'points', 'credibility', 'trustworthiness'
+    "reputation",
+    "trust",
+    "score",
+    "rating",
+    "rank",
+    "badge",
+    "credential",
+    "certification",
+    "level",
+    "karma",
+    "points",
+    "credibility",
+    "trustworthiness",
   ];
 
   private readonly REPUTATION_MODIFICATION_PATTERNS = [
-    /set.*reputation/i, /update.*trust/i, /modify.*score/i,
-    /assign.*badge/i, /grant.*credential/i, /increase.*rating/i,
-    /boost.*score/i, /elevate.*rank/i
+    /set.*reputation/i,
+    /update.*trust/i,
+    /modify.*score/i,
+    /assign.*badge/i,
+    /grant.*credential/i,
+    /increase.*rating/i,
+    /boost.*score/i,
+    /elevate.*rank/i,
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -67,17 +85,17 @@ export class AgentReputationHijackingRule implements ISecurityRule {
         if (!hasVerification) {
           findings.push({
             severity: this.severity,
-            message: t('sec_038_reputation_hijacking', {
-              toolName: tool.name
+            message: t("sec_038_reputation_hijacking", {
+              toolName: tool.name,
             }),
             component: `tool:${tool.name}`,
             ruleCode: this.code,
-            remediation: t('sec_038_recommendation'),
+            remediation: t("sec_038_recommendation"),
             references: [
-              'Multi-Agent Security Framework (MASF) 2024 - Trust Model',
-              'CWE-290: Authentication Bypass by Spoofing',
-              'Sybil Attack Prevention in Distributed Systems'
-            ]
+              "Multi-Agent Security Framework (MASF) 2024 - Trust Model",
+              "CWE-290: Authentication Bypass by Spoofing",
+              "Sybil Attack Prevention in Distributed Systems",
+            ],
           });
         }
       }
@@ -88,24 +106,27 @@ export class AgentReputationHijackingRule implements ISecurityRule {
 
   private modifiesReputationSystem(tool: McpTool): boolean {
     // Check name pattern
-    const nameMatches = this.REPUTATION_MODIFICATION_PATTERNS.some(pattern =>
-      pattern.test(tool.name)
+    const nameMatches = this.REPUTATION_MODIFICATION_PATTERNS.some((pattern) =>
+      pattern.test(tool.name),
     );
     if (nameMatches) return true;
 
     // Check description
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
-      const descMatches = this.REPUTATION_MODIFICATION_PATTERNS.some(pattern =>
-        pattern.test(descLower)
+      const descMatches = this.REPUTATION_MODIFICATION_PATTERNS.some(
+        (pattern) => pattern.test(descLower),
       );
       if (descMatches) return true;
 
       // Check for reputation keywords
-      const hasReputationKeyword = this.REPUTATION_KEYWORDS.some(keyword =>
-        descLower.includes(keyword)
+      const hasReputationKeyword = this.REPUTATION_KEYWORDS.some((keyword) =>
+        descLower.includes(keyword),
       );
-      const mentionsModification = descLower.includes('set') || descLower.includes('update') || descLower.includes('modify');
+      const mentionsModification =
+        descLower.includes("set") ||
+        descLower.includes("update") ||
+        descLower.includes("modify");
       if (hasReputationKeyword && mentionsModification) return true;
     }
 
@@ -113,8 +134,8 @@ export class AgentReputationHijackingRule implements ISecurityRule {
     if (tool.inputSchema?.properties) {
       for (const propName of Object.keys(tool.inputSchema.properties)) {
         const propLower = propName.toLowerCase();
-        const isReputationParam = this.REPUTATION_KEYWORDS.some(keyword =>
-          propLower.includes(keyword)
+        const isReputationParam = this.REPUTATION_KEYWORDS.some((keyword) =>
+          propLower.includes(keyword),
         );
         if (isReputationParam) return true;
       }
@@ -128,13 +149,21 @@ export class AgentReputationHijackingRule implements ISecurityRule {
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
       const verificationKeywords = [
-        'verified', 'authenticated', 'signed', 'cryptographic',
-        'signature', 'proof', 'attestation', 'certificate',
-        'validate', 'verify', 'check signature'
+        "verified",
+        "authenticated",
+        "signed",
+        "cryptographic",
+        "signature",
+        "proof",
+        "attestation",
+        "certificate",
+        "validate",
+        "verify",
+        "check signature",
       ];
 
-      const hasVerification = verificationKeywords.some(keyword =>
-        descLower.includes(keyword)
+      const hasVerification = verificationKeywords.some((keyword) =>
+        descLower.includes(keyword),
       );
       if (hasVerification) return true;
     }
@@ -143,7 +172,11 @@ export class AgentReputationHijackingRule implements ISecurityRule {
     if (tool.inputSchema?.properties) {
       for (const propName of Object.keys(tool.inputSchema.properties)) {
         const propLower = propName.toLowerCase();
-        if (propLower.includes('signature') || propLower.includes('proof') || propLower.includes('certificate')) {
+        if (
+          propLower.includes("signature") ||
+          propLower.includes("proof") ||
+          propLower.includes("certificate")
+        ) {
           return true;
         }
       }

@@ -35,11 +35,11 @@ MCP Verify uses an enterprise-grade GitHub Actions pipeline with the following f
 
 To enable full pipeline functionality, configure these GitHub Secrets:
 
-| Secret Name | Required | Purpose |
-|-------------|----------|---------|
-| `NPM_TOKEN` | Yes (for releases) | Publish to NPM registry |
-| `CODECOV_TOKEN` | Optional | Upload coverage reports |
-| `GITHUB_TOKEN` | Auto-provided | GitHub API access |
+| Secret Name     | Required           | Purpose                 |
+| --------------- | ------------------ | ----------------------- |
+| `NPM_TOKEN`     | Yes (for releases) | Publish to NPM registry |
+| `CODECOV_TOKEN` | Optional           | Upload coverage reports |
+| `GITHUB_TOKEN`  | Auto-provided      | GitHub API access       |
 
 #### Setting up NPM_TOKEN
 
@@ -87,6 +87,7 @@ graph LR
 ```
 
 **Parallel Phase:**
+
 - `security-scan`: Trivy + npm audit
 - `sast`: CodeQL static analysis
 - `code-quality`: Linting, formatting, type checking
@@ -94,6 +95,7 @@ graph LR
 - `license-check`: License compliance
 
 **Sequential Phase:**
+
 - `build`: Compile and bundle
 - `test`: Multi-OS matrix testing (9 combinations)
 - `coverage`: Upload to Codecov
@@ -101,6 +103,7 @@ graph LR
 - `performance`: Benchmarking
 
 **Release Phase (tags only):**
+
 - `release`: NPM publish + GitHub Release
 - `docker-build`: Container image build
 
@@ -114,6 +117,7 @@ graph LR
 ### 📖 Full Documentation
 
 For complete setup instructions, troubleshooting, and advanced configurations, see:
+
 - Pipeline configuration: `.github/workflows/ci.yml`
 - Detailed guide: `COMMANDS.md` (CI/CD section)
 
@@ -124,6 +128,7 @@ For complete setup instructions, troubleshooting, and advanced configurations, s
 This section explains how to integrate mcp-verify into your own CI/CD pipeline to automatically validate MCP servers on every commit, PR, or deployment.
 
 **Benefits**:
+
 - ✅ Block PRs with security vulnerabilities (60 security rules)
 - ✅ Run servers in isolated Sandbox (Deno/Docker)
 - ✅ Track security score trends over time
@@ -164,9 +169,9 @@ name: MCP Server Validation
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   validate:
@@ -179,7 +184,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install dependencies
         run: npm install
@@ -219,15 +224,15 @@ name: MCP Security Scan
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   security-scan:
     runs-on: ubuntu-latest
     permissions:
-      security-events: write  # Required for SARIF upload
+      security-events: write # Required for SARIF upload
 
     steps:
       - uses: actions/checkout@v3
@@ -235,7 +240,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install mcp-verify
         run: |
@@ -267,7 +272,7 @@ jobs:
 
 ### With LLM Semantic Analysis
 
-```yaml
+````yaml
 # .github/workflows/mcp-full-analysis.yml
 name: MCP Full Analysis (Security + LLM)
 
@@ -325,7 +330,7 @@ Run dynamic security tests to detect runtime vulnerabilities like Jailbreaks and
         run: |
           git clone https://github.com/FinkTech/mcp-verify.git
           cd mcp-verify && npm install && npm run build
-      
+
       - name: Run Security Fuzzer
         run: |
           cd mcp-verify
@@ -335,7 +340,7 @@ Run dynamic security tests to detect runtime vulnerabilities like Jailbreaks and
             --fuzz-concurrency 5 \
             --fuzz-timeout 5000 \
             --format html
-```
+````
 
       - name: Upload Reports
         uses: actions/upload-artifact@v3
@@ -343,7 +348,8 @@ Run dynamic security tests to detect runtime vulnerabilities like Jailbreaks and
         with:
           name: mcp-full-reports
           path: reports/
-```
+
+````
 
 **Setup**: Add `ANTHROPIC_API_KEY` to GitHub Secrets (Settings → Secrets and variables → Actions)
 
@@ -406,9 +412,10 @@ jobs:
         with:
           name: mcp-regression-reports
           path: reports/
-```
+````
 
 **How it works**:
+
 - On `main` branch: Save current state as baseline
 - On PRs: Compare against baseline, fail if regression detected
 
@@ -422,7 +429,7 @@ name: MCP Security Gate
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   security-gate:
@@ -434,7 +441,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install mcp-verify
         run: |
@@ -459,6 +466,7 @@ jobs:
 ```
 
 **Behavior**:
+
 - Exit 0: PR can merge
 - Exit 1: Warnings, but PR can merge
 - Exit 2: **Critical issues, PR is blocked**
@@ -484,10 +492,10 @@ mcp_validation:
     - npm install
     - npm run build
     - node dist/mcp-verify.js validate \
-        --server "node ../server.js" \
-        --security \
-        --format json \
-        --output ../reports
+      --server "node ../server.js" \
+      --security \
+      --format json \
+      --output ../reports
   artifacts:
     paths:
       - reports/
@@ -512,10 +520,10 @@ mcp_security:
     - npm install
     - npm run build
     - node dist/mcp-verify.js validate \
-        --server "node ../server.js" \
-        --security \
-        --format sarif \
-        --output ../reports
+      --server "node ../server.js" \
+      --security \
+      --format sarif \
+      --output ../reports
   artifacts:
     reports:
       sast: reports/sarif/mcp-report-*.sarif
@@ -533,18 +541,18 @@ mcp_llm_analysis:
   stage: security
   image: node:20
   variables:
-    ANTHROPIC_API_KEY: $ANTHROPIC_API_KEY  # Set in GitLab CI/CD Variables
+    ANTHROPIC_API_KEY: $ANTHROPIC_API_KEY # Set in GitLab CI/CD Variables
   script:
     - git clone https://github.com/FinkTech/mcp-verify.git
     - cd mcp-verify
     - npm install
     - npm run build
     - node dist/mcp-verify.js validate \
-        --server "node ../server.js" \
-        --security \
-        --llm anthropic:claude-haiku-4-5-20251001 \
-        --format html \
-        --output ../reports
+      --server "node ../server.js" \
+      --security \
+      --llm anthropic:claude-haiku-4-5-20251001 \
+      --format html \
+      --output ../reports
   artifacts:
     paths:
       - reports/
@@ -610,20 +618,20 @@ trigger:
   - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: "ubuntu-latest"
 
 steps:
   - task: NodeTool@0
     inputs:
-      versionSpec: '18.x'
-    displayName: 'Install Node.js'
+      versionSpec: "18.x"
+    displayName: "Install Node.js"
 
   - script: |
       git clone https://github.com/FinkTech/mcp-verify.git
       cd mcp-verify
       npm install
       npm run build
-    displayName: 'Install mcp-verify'
+    displayName: "Install mcp-verify"
 
   - script: |
       cd mcp-verify
@@ -632,12 +640,12 @@ steps:
         --security \
         --format sarif \
         --output ../reports
-    displayName: 'Validate MCP Server'
+    displayName: "Validate MCP Server"
 
   - task: PublishBuildArtifacts@1
     inputs:
-      pathToPublish: 'reports'
-      artifactName: 'mcp-reports'
+      pathToPublish: "reports"
+      artifactName: "mcp-reports"
 ```
 
 ---
@@ -675,11 +683,11 @@ npx husky add .husky/pre-commit "npm run mcp:validate"
 
 ### Understanding Exit Codes
 
-| Exit Code | Meaning | CI/CD Action |
-|-----------|---------|--------------|
-| `0` | ✅ Success | Continue pipeline |
-| `1` | ⚠️ Warnings | Continue (optional warning) |
-| `2` | 🔴 Critical | **Fail pipeline** |
+| Exit Code | Meaning     | CI/CD Action                |
+| --------- | ----------- | --------------------------- |
+| `0`       | ✅ Success  | Continue pipeline           |
+| `1`       | ⚠️ Warnings | Continue (optional warning) |
+| `2`       | 🔴 Critical | **Fail pipeline**           |
 
 ### Example: Conditional Failure
 
@@ -711,7 +719,7 @@ fi
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   save-baseline:
@@ -875,8 +883,8 @@ env:
 
 ```yaml
 permissions:
-  contents: read        # Read code
-  security-events: write  # Upload SARIF only
+  contents: read # Read code
+  security-events: write # Upload SARIF only
   # Don't grant: write, admin, etc.
 ```
 
@@ -922,7 +930,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install mcp-verify
         run: |
@@ -1150,7 +1158,7 @@ name: Proxy Monitoring (Scheduled)
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # Every 6 hours
+    - cron: "0 */6 * * *" # Every 6 hours
 
 jobs:
   monitor:
@@ -1246,12 +1254,12 @@ mcp_enterprise_scan:
     - git clone https://github.com/FinkTech/mcp-verify.git
     - cd mcp-verify && npm install && npm run build
     - node dist/mcp-verify.js validate \
-        --server "node ../server.js" \
-        --security \
-        --llm anthropic:claude-sonnet-4-20250514 \
-        --format sarif \
-        --compare-baseline ../baselines/production.json \
-        --fail-on-degradation
+      --server "node ../server.js" \
+      --security \
+      --llm anthropic:claude-sonnet-4-20250514 \
+      --format sarif \
+      --compare-baseline ../baselines/production.json \
+      --fail-on-degradation
   artifacts:
     reports:
       sast: reports/sarif/*.sarif
@@ -1269,6 +1277,7 @@ A: Yes, use CI/CD secrets (GitHub Secrets, GitLab Variables, etc.)
 
 **Q: What if I don't want to block PRs on warnings?**
 A: Handle exit code 1 separately:
+
 ```bash
 mcp-verify validate ... || EXIT_CODE=$?
 if [ $EXIT_CODE -eq 1 ]; then exit 0; fi
@@ -1284,6 +1293,7 @@ A: Not recommended (requires Ollama service running). Use Anthropic/OpenAI inste
 ### Problem: "mcp-verify: command not found"
 
 **Solution**: Use full path or npm link:
+
 ```bash
 node dist/mcp-verify.js validate ...
 # or
@@ -1295,6 +1305,7 @@ npm link && mcp-verify validate ...
 ### Problem: SARIF upload fails
 
 **Solution**: Add `security-events: write` permission:
+
 ```yaml
 permissions:
   security-events: write
@@ -1305,6 +1316,7 @@ permissions:
 ### Problem: Slow CI builds
 
 **Solutions**:
+
 1. Cache `node_modules` and `dist`
 2. Run jobs in parallel
 3. Use faster LLM model (haiku instead of sonnet)
@@ -1316,4 +1328,3 @@ permissions:
 - [Examples](./EXAMPLES.md) - CLI usage examples
 - [LLM Setup](./LLM_SETUP.md) - Configure LLM providers
 - [Security Scoring](../SECURITY_SCORING.md) - Understand scores
-

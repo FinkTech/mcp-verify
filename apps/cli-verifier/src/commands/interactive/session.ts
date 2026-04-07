@@ -16,19 +16,19 @@
  *   - Best-effort tool discovery from the active target
  */
 
-import path from 'path';
+import path from "path";
 
-import { setLanguage } from '@mcp-verify/shared';
+import { setLanguage } from "@mcp-verify/shared";
 import {
   ITransport,
   SecretScanner,
   HighConfidenceDetector,
   EntropyDetector,
   PrefixDetector,
-} from '@mcp-verify/core';
-import { createTransport } from '../../utils/transport-factory';
+} from "@mcp-verify/core";
+import { createTransport } from "../../utils/transport-factory";
 
-import { PersistenceManager } from './persistence';
+import { PersistenceManager } from "./persistence";
 import type {
   Language,
   SessionState,
@@ -37,42 +37,41 @@ import type {
   WorkspaceContext,
   SecurityProfile,
   SecurityProfilePreset,
-} from '../types/workspace-context';
-import { GlobalConfigManager } from '../managers/global-config-manager';
-import { EnvironmentLoader } from '../managers/environment-loader';
-import { SECURITY_PROFILES } from '../profiles/security-profiles';
-import { detectSessionVersion } from '../managers/migration';
+} from "../types/workspace-context";
+import { GlobalConfigManager } from "../managers/global-config-manager";
+import { EnvironmentLoader } from "../managers/environment-loader";
+import { SECURITY_PROFILES } from "../profiles/security-profiles";
+import { detectSessionVersion } from "../managers/migration";
 
-const RE_ASSIGNMENT = /\b(?:api[_-]?key|secret|token|password|credential|auth[_-]?token|access[_-]?key)\s*[=:]\s*["']?([^\s"']{8,})["']?/gi;
+const RE_ASSIGNMENT =
+  /\b(?:api[_-]?key|secret|token|password|credential|auth[_-]?token|access[_-]?key)\s*[=:]\s*["']?([^\s"']{8,})["']?/gi;
 const RE_BEARER = /Bearer\s+([a-zA-Z0-9_\-+/=.]{20,})/gi;
 const RE_AUTH_HEADER = /"Authorization"\s*:\s*"Bearer\s+([^"]{20,})"/gi;
 const SEPARATOR_RE = /([\s,;()[\]{}<>`]+)/;
 
-
 export class ShellSession {
-
   readonly state: SessionState;
   private secretScanner: SecretScanner;
 
   constructor() {
     const workspaceData = PersistenceManager.loadWorkspaceData();
-    const contexts      = this.loadContexts(workspaceData);
-    const globalConfig  = GlobalConfigManager.load();
-    const environment   = EnvironmentLoader.load();
+    const contexts = this.loadContexts(workspaceData);
+    const globalConfig = GlobalConfigManager.load();
+    const environment = EnvironmentLoader.load();
     const activeContext = contexts.contexts[contexts.activeContext];
 
     this.state = {
       // Multi-context fields
       activeContextName: contexts.activeContext,
-      contexts:          contexts.contexts,
+      contexts: contexts.contexts,
       globalConfig,
       environment,
       // Legacy compatibility fields (mirror the active context)
-      target:    activeContext?.target,
-      lang:      activeContext?.lang ?? globalConfig.defaultLanguage,
-      config:    activeContext?.config ?? {},
+      target: activeContext?.target,
+      lang: activeContext?.lang ?? globalConfig.defaultLanguage,
+      config: activeContext?.config ?? {},
       // Session metadata
-      history:   [],
+      history: [],
       workspace: path.basename(process.cwd()),
       startedAt: new Date(),
     };
@@ -118,7 +117,11 @@ export class ShellSession {
 
     const now = new Date().toISOString();
     const newContext: WorkspaceContext = baseOnActive
-      ? { ...structuredClone(this.getActiveContext()), createdAt: now, modifiedAt: now }
+      ? {
+          ...structuredClone(this.getActiveContext()),
+          createdAt: now,
+          modifiedAt: now,
+        }
       : this.buildDefaultContext();
 
     this.state.contexts[name] = newContext;
@@ -146,14 +149,14 @@ export class ShellSession {
   cloneContext(
     source: string,
     targetName: string,
-    overrides?: Partial<WorkspaceContext>
+    overrides?: Partial<WorkspaceContext>,
   ): boolean {
     if (!(source in this.state.contexts)) return false;
     if (targetName in this.state.contexts) return false;
 
-    const now    = new Date().toISOString();
+    const now = new Date().toISOString();
     const cloned = structuredClone(this.state.contexts[source]);
-    cloned.createdAt  = now;
+    cloned.createdAt = now;
     cloned.modifiedAt = now;
 
     if (overrides) {
@@ -174,8 +177,8 @@ export class ShellSession {
   // ── Setters ──────────────────────────────────────────────────────────────
 
   setTarget(value: string): void {
-    const ctx      = this.getActiveContext();
-    ctx.target     = value;
+    const ctx = this.getActiveContext();
+    ctx.target = value;
     ctx.modifiedAt = new Date().toISOString();
     this.state.target = value;
     this.persistContext();
@@ -183,8 +186,8 @@ export class ShellSession {
   }
 
   setLanguage(lang: Language): void {
-    const ctx      = this.getActiveContext();
-    ctx.lang       = lang;
+    const ctx = this.getActiveContext();
+    ctx.lang = lang;
     ctx.modifiedAt = new Date().toISOString();
     this.state.lang = lang;
     setLanguage(lang);
@@ -197,9 +200,10 @@ export class ShellSession {
    * Falls back to 'balanced' if the name is not found.
    */
   setProfile(profileName: string): void {
-    const ctx      = this.getActiveContext();
-    ctx.profile    = SECURITY_PROFILES[profileName as SecurityProfilePreset]
-                       ?? SECURITY_PROFILES['balanced'];
+    const ctx = this.getActiveContext();
+    ctx.profile =
+      SECURITY_PROFILES[profileName as SecurityProfilePreset] ??
+      SECURITY_PROFILES["balanced"];
     ctx.modifiedAt = new Date().toISOString();
     this.persistContext();
   }
@@ -210,8 +214,8 @@ export class ShellSession {
    * shallow copy stored only on the active context.
    */
   saveCustomProfile(profileName: string): void {
-    const ctx      = this.getActiveContext();
-    ctx.profile    = { ...ctx.profile, name: profileName, isPreset: false };
+    const ctx = this.getActiveContext();
+    ctx.profile = { ...ctx.profile, name: profileName, isPreset: false };
     ctx.modifiedAt = new Date().toISOString();
     this.persistContext();
   }
@@ -234,10 +238,10 @@ export class ShellSession {
     const redacted = parts.map((part) => {
       if (SEPARATOR_RE.test(part)) return part;
 
-      const trimmedToken = part.replace(/^["'`]+|["'`]+$/g, '');
-      const wrapLen      = (part.length - trimmedToken.length) / 2;
-      const prefix       = wrapLen > 0 ? part.slice(0, wrapLen)        : '';
-      const suffix       = wrapLen > 0 ? part.slice(part.length - wrapLen) : '';
+      const trimmedToken = part.replace(/^["'`]+|["'`]+$/g, "");
+      const wrapLen = (part.length - trimmedToken.length) / 2;
+      const prefix = wrapLen > 0 ? part.slice(0, wrapLen) : "";
+      const suffix = wrapLen > 0 ? part.slice(part.length - wrapLen) : "";
 
       if (this.secretScanner.isSecret(trimmedToken)) {
         return `${prefix}[REDACTED]${suffix}`;
@@ -245,18 +249,21 @@ export class ShellSession {
       return part;
     });
 
-    let result = redacted.join('');
+    let result = redacted.join("");
 
     result = result.replace(RE_ASSIGNMENT, (_match, _value, offset, string) => {
       const beforeValue = string.slice(
         offset,
-        offset + _match.length - _value.length
+        offset + _match.length - _value.length,
       );
       return `${beforeValue}[REDACTED]`;
     });
 
     result = result.replace(RE_BEARER, `Bearer [REDACTED]`);
-    result = result.replace(RE_AUTH_HEADER, `"Authorization": "Bearer [REDACTED]"`);
+    result = result.replace(
+      RE_AUTH_HEADER,
+      `"Authorization": "Bearer [REDACTED]"`,
+    );
 
     return result;
   }
@@ -266,9 +273,13 @@ export class ShellSession {
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
         const value = obj[key];
-        if (typeof value === 'string') {
+        if (typeof value === "string") {
           newObj[key] = this.redactSecrets(value);
-        } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        } else if (
+          typeof value === "object" &&
+          value !== null &&
+          !Array.isArray(value)
+        ) {
           newObj[key] = this.redactConfig(value as Record<string, unknown>);
         } else {
           newObj[key] = value;
@@ -290,19 +301,21 @@ export class ShellSession {
 
     let transport: ITransport | null = null;
     try {
-      const transportType = ctx.target.startsWith('http') ? 'http' : 'stdio';
+      const transportType = ctx.target.startsWith("http") ? "http" : "stdio";
       transport = createTransport(ctx.target, { transportType, timeout: 5000 });
 
       const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('timeout')), 4000)
+        setTimeout(() => reject(new Error("timeout")), 4000),
       );
 
       const init = transport.send({
-        jsonrpc: '2.0', id: 1, method: 'initialize',
+        jsonrpc: "2.0",
+        id: 1,
+        method: "initialize",
         params: {
-          protocolVersion: '2024-11-05',
-          capabilities:    {},
-          clientInfo:      { name: 'mcp-verify-shell', version: '1.0.0' },
+          protocolVersion: "2024-11-05",
+          capabilities: {},
+          clientInfo: { name: "mcp-verify-shell", version: "1.0.0" },
         },
       });
 
@@ -310,32 +323,40 @@ export class ShellSession {
 
       if (response) {
         const toolsResponse = await transport.send({
-          jsonrpc: '2.0', id: 2, method: 'tools/list', params: {},
+          jsonrpc: "2.0",
+          id: 2,
+          method: "tools/list",
+          params: {},
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const tools = (toolsResponse as any)?.result?.tools as
-          Array<{ name: string }> | undefined;
+          | Array<{ name: string }>
+          | undefined;
         if (Array.isArray(tools)) {
-          this.state.availableTools = tools.map(item => item.name);
+          this.state.availableTools = tools.map((item) => item.name);
         }
       }
     } catch {
       // Best-effort — ignore all errors
     } finally {
-      try { await transport?.close?.(); } catch { /* ignore */ }
+      try {
+        await transport?.close?.();
+      } catch {
+        /* ignore */
+      }
     }
   }
 
   // ── Private helpers ──────────────────────────────────────────────────────
 
   private loadContexts(
-    data: WorkspaceContexts | LegacyWorkspaceSession | undefined
+    data: WorkspaceContexts | LegacyWorkspaceSession | undefined,
   ): WorkspaceContexts {
     if (!data) return this.buildDefaultContexts();
 
     const version = detectSessionVersion(data);
 
-    if (version === 'v1') {
+    if (version === "v1") {
       const v1 = data as WorkspaceContexts;
       if (!(v1.activeContext in v1.contexts)) {
         v1.contexts[v1.activeContext] = this.buildDefaultContext();
@@ -343,18 +364,18 @@ export class ShellSession {
       return v1;
     }
 
-    if (version === 'legacy') {
+    if (version === "legacy") {
       const legacy = data as LegacyWorkspaceSession;
-      const now    = new Date().toISOString();
-      const ctx    = this.buildDefaultContext();
+      const now = new Date().toISOString();
+      const ctx = this.buildDefaultContext();
       if (legacy.target) ctx.target = legacy.target;
-      if (legacy.lang)   ctx.lang   = legacy.lang;
+      if (legacy.lang) ctx.lang = legacy.lang;
       if (legacy.config) ctx.config = legacy.config as Record<string, unknown>;
       return {
-        version:       '1.0',
-        activeContext: 'default',
-        contexts:      { default: ctx },
-        savedAt:       now,
+        version: "1.0",
+        activeContext: "default",
+        contexts: { default: ctx },
+        savedAt: now,
       };
     }
 
@@ -363,39 +384,40 @@ export class ShellSession {
 
   private buildDefaultContexts(): WorkspaceContexts {
     return {
-      version:       '1.0',
-      activeContext: 'default',
-      contexts:      { default: this.buildDefaultContext() },
-      savedAt:       new Date().toISOString(),
+      version: "1.0",
+      activeContext: "default",
+      contexts: { default: this.buildDefaultContext() },
+      savedAt: new Date().toISOString(),
     };
   }
 
   private buildDefaultContext(): WorkspaceContext {
-    const now          = new Date().toISOString();
+    const now = new Date().toISOString();
     const globalConfig = GlobalConfigManager.load();
     return {
-      target:     undefined,
-      lang:       globalConfig.defaultLanguage,
-      profile:    SECURITY_PROFILES[globalConfig.defaultProfile]
-                    ?? SECURITY_PROFILES['balanced'],
-      config:     {},
-      createdAt:  now,
+      target: undefined,
+      lang: globalConfig.defaultLanguage,
+      profile:
+        SECURITY_PROFILES[globalConfig.defaultProfile] ??
+        SECURITY_PROFILES["balanced"],
+      config: {},
+      createdAt: now,
       modifiedAt: now,
     };
   }
 
   private syncLegacyFields(ctx: WorkspaceContext): void {
     this.state.target = ctx.target;
-    this.state.lang   = ctx.lang;
+    this.state.lang = ctx.lang;
     this.state.config = ctx.config;
   }
 
   private persistContext(): void {
     PersistenceManager.saveWorkspaceContexts({
-      version:       '1.0',
+      version: "1.0",
       activeContext: this.state.activeContextName,
-      contexts:      this.state.contexts,
-      savedAt:       new Date().toISOString(),
+      contexts: this.state.contexts,
+      savedAt: new Date().toISOString(),
     });
   }
 }

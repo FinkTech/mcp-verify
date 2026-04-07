@@ -11,13 +11,13 @@
  * Start a dummy MCP server for testing purposes
  */
 
-import chalk from 'chalk';
-import { MockServer } from '@mcp-verify/core/use-cases/mock/mock-server';
-import { t } from '@mcp-verify/shared';
-import { registerCleanup } from '../utils/cleanup-handlers';
+import chalk from "chalk";
+import { MockServer } from "@mcp-verify/core/use-cases/mock/mock-server";
+import { t } from "@mcp-verify/shared";
+import { registerCleanup } from "../utils/cleanup-handlers";
 
 export async function runMockAction(options: Record<string, unknown>) {
-  const port = parseInt(String(options.port || '3000'));
+  const port = parseInt(String(options.port || "3000"));
   const mockServer = new MockServer(port);
   await mockServer.start();
 
@@ -26,21 +26,21 @@ export async function runMockAction(options: Record<string, unknown>) {
     await mockServer.stop();
   });
 
-  console.log(chalk.yellow(t('press_ctrl_c')));
+  console.log(chalk.yellow(t("press_ctrl_c")));
 
   // Handle auto-stop timeout if provided
   const timeoutMs = options.timeout ? parseInt(String(options.timeout)) : 0;
   if (timeoutMs > 0) {
-    console.log(chalk.gray(t('proxy_auto_stopping', { ms: timeoutMs })));
+    console.log(chalk.gray(t("proxy_auto_stopping", { ms: timeoutMs })));
     return new Promise<void>((resolve) => {
       setTimeout(async () => {
         await mockServer.stop();
-        console.log(chalk.yellow(`\n✅ ${t('goodbye')}`));
+        console.log(chalk.yellow(`\n✅ ${t("goodbye")}`));
         process.exit(0);
       }, timeoutMs);
     });
   }
 
   // Keep alive loop
-  return new Promise<void>(() => { });
+  return new Promise<void>(() => {});
 }

@@ -17,12 +17,18 @@
  * - Protocol compliance
  */
 
-import { MCPValidator, createScopedLogger, StdioTransport, translations, Language } from '@mcp-verify/core';
-import { formatForLLM } from '../utils/llm-formatter.js';
-import { ReportingService } from '@mcp-verify/shared';
+import {
+  MCPValidator,
+  createScopedLogger,
+  StdioTransport,
+  translations,
+  Language,
+} from "@mcp-verify/core";
+import { formatForLLM } from "../utils/llm-formatter.js";
+import { ReportingService } from "@mcp-verify/shared";
 
-const logger = createScopedLogger('validateServerTool');
-const lang: Language = (process.env.MCP_VERIFY_LANG as Language) || 'en';
+const logger = createScopedLogger("validateServerTool");
+const lang: Language = (process.env.MCP_VERIFY_LANG as Language) || "en";
 const t = translations[lang];
 
 interface ValidateServerArgs {
@@ -33,7 +39,7 @@ interface ValidateServerArgs {
 
 interface ValidateServerResult {
   content: Array<{
-    type: 'text';
+    type: "text";
     text: string;
   }>;
   isError?: boolean;
@@ -44,16 +50,20 @@ interface ValidateServerResult {
  * Execute comprehensive validation on an MCP server
  */
 export async function validateServerTool(
-  args: unknown
+  args: unknown,
 ): Promise<ValidateServerResult> {
-  const { command, args: serverArgs = [], configPath } = args as ValidateServerArgs;
+  const {
+    command,
+    args: serverArgs = [],
+    configPath,
+  } = args as ValidateServerArgs;
 
-  logger.info('Starting validateServer', {
+  logger.info("Starting validateServer", {
     metadata: {
       command,
       args: serverArgs,
-      configPath
-    }
+      configPath,
+    },
   });
 
   try {
@@ -64,58 +74,65 @@ export async function validateServerTool(
     const validator = new MCPValidator(transport, configPath);
 
     // Run complete validation workflow
-    logger.info('Testing handshake');
+    logger.info("Testing handshake");
     const handshake = await validator.testHandshake();
 
     if (!handshake.success) {
       return {
         content: [
           {
-            type: 'text',
-            text: JSON.stringify({
-              status: 'error',
-              error: handshake.error || t.mcp_error_handshake_failed,
-              message: t.mcp_error_failed_to_connect
-            }, null, 2)
-          }
+            type: "text",
+            text: JSON.stringify(
+              {
+                status: "error",
+                error: handshake.error || t.mcp_error_handshake_failed,
+                message: t.mcp_error_failed_to_connect,
+              },
+              null,
+              2,
+            ),
+          },
         ],
-        isError: true
+        isError: true,
       };
     }
 
-    logger.info('Discovering capabilities');
+    logger.info("Discovering capabilities");
     const discovery = await validator.discoverCapabilities();
 
-    logger.info('Validating schemas');
+    logger.info("Validating schemas");
     const validation = await validator.validateSchema();
 
-    logger.info('Generating comprehensive report');
+    logger.info("Generating comprehensive report");
     const report = await validator.generateReport({
       handshake,
       discovery,
-      validation
+      validation,
     });
 
     // Cleanup
     validator.cleanup();
 
     // Save report files (like CLI does)
-    logger.info('Saving report files');
-    const savedReports = await ReportingService.saveReport({ 
-      kind: 'validation', 
-      data: report 
-    }, {
-      outputDir: './reports',
-      formats: ['json', 'markdown', 'html'],
-      language: lang,
-      filenamePrefix: 'mcp-report',
-      organizeByFormat: true
-    });
+    logger.info("Saving report files");
+    const savedReports = await ReportingService.saveReport(
+      {
+        kind: "validation",
+        data: report,
+      },
+      {
+        outputDir: "./reports",
+        formats: ["json", "markdown", "html"],
+        language: lang,
+        filenamePrefix: "mcp-report",
+        organizeByFormat: true,
+      },
+    );
 
     const savedPaths = savedReports.paths;
 
-    logger.info('Reports saved to disk', {
-      metadata: savedPaths as unknown as Record<string, unknown>
+    logger.info("Reports saved to disk", {
+      metadata: savedPaths as unknown as Record<string, unknown>,
     });
 
     // Format response for LLM consumption
@@ -132,38 +149,42 @@ export async function validateServerTool(
       badges: report.badges,
     };
 
-    logger.info('Validation completed successfully', {
+    logger.info("Validation completed successfully", {
       metadata: {
         status: report.status,
         recommendation: llmOutput.recommendation,
         securityScore: report.security.score,
-        qualityScore: report.quality.score
-      }
+        qualityScore: report.quality.score,
+      },
     });
 
     return {
       content: [
         {
-          type: 'text',
-          text: JSON.stringify(response, null, 2)
-        }
-      ]
+          type: "text",
+          text: JSON.stringify(response, null, 2),
+        },
+      ],
     };
   } catch (error) {
-    logger.error('Validation failed', error as Error);
+    logger.error("Validation failed", error as Error);
 
     return {
       content: [
         {
-          type: 'text',
-          text: JSON.stringify({
-            status: 'error',
-            error: (error as Error).message,
-            message: t.mcp_error_failed_to_validate
-          }, null, 2)
-        }
+          type: "text",
+          text: JSON.stringify(
+            {
+              status: "error",
+              error: (error as Error).message,
+              message: t.mcp_error_failed_to_validate,
+            },
+            null,
+            2,
+          ),
+        },
       ],
-      isError: true
+      isError: true,
     };
   }
 }

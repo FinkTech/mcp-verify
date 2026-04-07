@@ -11,8 +11,8 @@
  * Utility to configure logging levels across the application
  */
 
-import { Logger as AppLogger, LogLevel } from '@mcp-verify/shared';
-import { Logger as InfrastructureLogger } from '@mcp-verify/core';
+import { Logger as AppLogger, LogLevel } from "@mcp-verify/shared";
+import { Logger as InfrastructureLogger } from "@mcp-verify/core";
 
 const logger = AppLogger.getInstance();
 
@@ -25,12 +25,12 @@ export function configureLogging(verbose: boolean): void {
     logger.setLevel(LogLevel.DEBUG);
     InfrastructureLogger.getInstance().configure({
       enableConsole: true,
-      prettyPrint: false
+      prettyPrint: false,
     });
   } else {
     logger.setLevel(LogLevel.INFO);
     InfrastructureLogger.getInstance().configure({
-      enableConsole: false
+      enableConsole: false,
     });
   }
 }

@@ -55,12 +55,32 @@ node_modules/
 azure-pipelines.yml
 .circleci/
 
-# Documentation (keep only README, LICENSE, CHANGELOG)
+# Documentation (keep essential docs, exclude subdirectories)
 docs/
 guides/
+
+# Include ALL root-level .md files (comprehensive documentation)
 *.md
 !README.md
 !CHANGELOG.md
+!SECURITY.md
+!QUICKSTART.md
+!RESPONSIBLE_USAGE.md
+!SECURITY_TESTING.md
+!CONTRIBUTING.md
+!CODE_OF_CONDUCT.md
+!AI_DEVELOPMENT.md
+!API_REFERENCE.md
+!ARCHITECTURE.md
+!CODE_MAP.md
+!COMMANDS.md
+!DEVELOPMENT.md
+!GLOSSARY.md
+!REGRESSION-DETECTION.md
+!RELEASE_NOTES.md
+!SECURITY_SCORING.md
+!TESTING.md
+!TROUBLESHOOTING.md
 
 # Package management
 package-lock.json
@@ -84,12 +104,8 @@ lerna-debug.log*
 # Temporary files
 tmp/
 temp/
-nuevo/
 *.tmp
 *.temp
-
-# Landing and Agent Sandboxes
-mcp-verify-landing/
 
 # OS files
 Thumbs.db
@@ -98,15 +114,32 @@ desktop.ini
 # Misc
 .husky/
 .lint-staged
-refactorizacion/
-AGENTS/
-300/
-analisis.txt
-ANALISIS_PROYECTO_REAL.md
+.archived/
+test_full_results.txt
+*.tape
+action.yml
+*.bat
+*.config.json
+*.config.example.json
+*.example
+
+# SEA build artifacts (not needed for npm package)
+dist/.sea/
+dist/bin/
+**/*.map
+*.map
 
 # Keep only essential files in package:
 # - dist/ (compiled code)
-# - README.md
-# - LICENSE
-# - CHANGELOG.md
 # - package.json
+# - LICENSE
+# - Root-level .md files (20 documentation files):
+#   * README.md, CHANGELOG.md, SECURITY.md
+#   * QUICKSTART.md, RESPONSIBLE_USAGE.md, SECURITY_TESTING.md
+#   * CONTRIBUTING.md, CODE_OF_CONDUCT.md
+#   * AI_DEVELOPMENT.md (AI dev guidance → points to repo for AGENTS.md/CLAUDE.md)
+#   * API_REFERENCE.md, ARCHITECTURE.md, CODE_MAP.md
+#   * COMMANDS.md, DEVELOPMENT.md, GLOSSARY.md
+#   * REGRESSION-DETECTION.md, RELEASE_NOTES.md
+#   * SECURITY_SCORING.md, TESTING.md, TROUBLESHOOTING.md
+# Note: AGENTS.md and CLAUDE.md are excluded (reference source files not present in dist/)

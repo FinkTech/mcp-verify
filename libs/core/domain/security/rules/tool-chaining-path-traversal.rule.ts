@@ -29,31 +29,52 @@
  * - OWASP Path Traversal Prevention
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class ToolChainingPathTraversalRule implements ISecurityRule {
-  code = 'SEC-039';
-  name = 'Tool Chaining Path Traversal';
-  severity: 'high' = 'high';
+  code = "SEC-039";
+  name = "Tool Chaining Path Traversal";
+  severity: "high" = "high";
 
   private readonly PATH_OUTPUT_PATTERNS = [
-    /get.*path/i, /list.*files?/i, /find.*file/i,
-    /search.*file/i, /locate/i, /resolve.*path/i,
-    /get.*location/i, /fetch.*file.*path/i
+    /get.*path/i,
+    /list.*files?/i,
+    /find.*file/i,
+    /search.*file/i,
+    /locate/i,
+    /resolve.*path/i,
+    /get.*location/i,
+    /fetch.*file.*path/i,
   ];
 
   private readonly PATH_CONSUMER_PATTERNS = [
-    /read.*file/i, /write.*file/i, /delete.*file/i,
-    /open.*file/i, /load.*file/i, /save.*file/i,
-    /move.*file/i, /copy.*file/i, /rename.*file/i
+    /read.*file/i,
+    /write.*file/i,
+    /delete.*file/i,
+    /open.*file/i,
+    /load.*file/i,
+    /save.*file/i,
+    /move.*file/i,
+    /copy.*file/i,
+    /rename.*file/i,
   ];
 
   private readonly PATH_PARAM_NAMES = [
-    'path', 'file_path', 'filepath', 'filename', 'file',
-    'location', 'directory', 'folder', 'dir'
+    "path",
+    "file_path",
+    "filepath",
+    "filename",
+    "file",
+    "location",
+    "directory",
+    "folder",
+    "dir",
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -64,8 +85,12 @@ export class ToolChainingPathTraversalRule implements ISecurityRule {
     }
 
     // Find path producers and consumers
-    const pathProducers = discovery.tools.filter(t => this.producesFilePaths(t));
-    const pathConsumers = discovery.tools.filter(t => this.consumesFilePaths(t));
+    const pathProducers = discovery.tools.filter((t) =>
+      this.producesFilePaths(t),
+    );
+    const pathConsumers = discovery.tools.filter((t) =>
+      this.consumesFilePaths(t),
+    );
 
     // Check if path consumers have proper validation
     for (const consumer of pathConsumers) {
@@ -74,18 +99,21 @@ export class ToolChainingPathTraversalRule implements ISecurityRule {
       if (!hasPathValidation && pathProducers.length > 0) {
         findings.push({
           severity: this.severity,
-          message: t('sec_039_path_traversal_chain', {
+          message: t("sec_039_path_traversal_chain", {
             toolName: consumer.name,
-            producers: pathProducers.map(p => p.name).slice(0, 3).join(', ')
+            producers: pathProducers
+              .map((p) => p.name)
+              .slice(0, 3)
+              .join(", "),
           }),
           component: `tool:${consumer.name}`,
           ruleCode: this.code,
-          remediation: t('sec_039_recommendation'),
+          remediation: t("sec_039_recommendation"),
           references: [
-            'CWE-22: Improper Limitation of a Pathname to a Restricted Directory',
-            'OWASP Path Traversal Prevention Cheat Sheet',
-            'Multi-Agent Security - Data Flow Validation'
-          ]
+            "CWE-22: Improper Limitation of a Pathname to a Restricted Directory",
+            "OWASP Path Traversal Prevention Cheat Sheet",
+            "Multi-Agent Security - Data Flow Validation",
+          ],
         });
       }
     }
@@ -95,22 +123,28 @@ export class ToolChainingPathTraversalRule implements ISecurityRule {
 
   private producesFilePaths(tool: McpTool): boolean {
     // Check name pattern
-    const nameMatches = this.PATH_OUTPUT_PATTERNS.some(pattern =>
-      pattern.test(tool.name)
+    const nameMatches = this.PATH_OUTPUT_PATTERNS.some((pattern) =>
+      pattern.test(tool.name),
     );
     if (nameMatches) return true;
 
     // Check description
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
-      const descMatches = this.PATH_OUTPUT_PATTERNS.some(pattern =>
-        pattern.test(descLower)
+      const descMatches = this.PATH_OUTPUT_PATTERNS.some((pattern) =>
+        pattern.test(descLower),
       );
       if (descMatches) return true;
 
       // Check if description mentions returning paths
-      const mentionsPaths = descLower.includes('path') || descLower.includes('file') || descLower.includes('location');
-      const mentionsReturn = descLower.includes('return') || descLower.includes('output') || descLower.includes('result');
+      const mentionsPaths =
+        descLower.includes("path") ||
+        descLower.includes("file") ||
+        descLower.includes("location");
+      const mentionsReturn =
+        descLower.includes("return") ||
+        descLower.includes("output") ||
+        descLower.includes("result");
       if (mentionsPaths && mentionsReturn) return true;
     }
 
@@ -119,8 +153,8 @@ export class ToolChainingPathTraversalRule implements ISecurityRule {
 
   private consumesFilePaths(tool: McpTool): boolean {
     // Check name pattern
-    const nameMatches = this.PATH_CONSUMER_PATTERNS.some(pattern =>
-      pattern.test(tool.name)
+    const nameMatches = this.PATH_CONSUMER_PATTERNS.some((pattern) =>
+      pattern.test(tool.name),
     );
     if (nameMatches) return true;
 
@@ -128,8 +162,8 @@ export class ToolChainingPathTraversalRule implements ISecurityRule {
     if (tool.inputSchema?.properties) {
       for (const propName of Object.keys(tool.inputSchema.properties)) {
         const propLower = propName.toLowerCase();
-        const isPathParam = this.PATH_PARAM_NAMES.some(name =>
-          propLower === name || propLower.includes(name)
+        const isPathParam = this.PATH_PARAM_NAMES.some(
+          (name) => propLower === name || propLower.includes(name),
         );
         if (isPathParam) return true;
       }
@@ -143,23 +177,31 @@ export class ToolChainingPathTraversalRule implements ISecurityRule {
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
       const validationKeywords = [
-        'validate path', 'sanitize path', 'normalize path',
-        'check path', 'verify path', 'whitelist', 'allowed paths',
-        'path validation', 'secure path'
+        "validate path",
+        "sanitize path",
+        "normalize path",
+        "check path",
+        "verify path",
+        "whitelist",
+        "allowed paths",
+        "path validation",
+        "secure path",
       ];
 
-      const hasValidation = validationKeywords.some(keyword =>
-        descLower.includes(keyword)
+      const hasValidation = validationKeywords.some((keyword) =>
+        descLower.includes(keyword),
       );
       if (hasValidation) return true;
     }
 
     // Check if path parameters have pattern constraints
     if (tool.inputSchema?.properties) {
-      for (const [propName, propSchema] of Object.entries(tool.inputSchema.properties)) {
+      for (const [propName, propSchema] of Object.entries(
+        tool.inputSchema.properties,
+      )) {
         const propLower = propName.toLowerCase();
-        const isPathParam = this.PATH_PARAM_NAMES.some(name =>
-          propLower === name || propLower.includes(name)
+        const isPathParam = this.PATH_PARAM_NAMES.some(
+          (name) => propLower === name || propLower.includes(name),
         );
 
         if (isPathParam) {
@@ -172,7 +214,8 @@ export class ToolChainingPathTraversalRule implements ISecurityRule {
 
           // Check for validation constraints
           const hasPattern = Boolean(schema.pattern);
-          const hasFormat = schema.format === 'uri' || schema.format === 'uri-reference';
+          const hasFormat =
+            schema.format === "uri" || schema.format === "uri-reference";
           const hasEnum = Boolean(schema.enum && schema.enum.length > 0);
 
           if (hasPattern || hasFormat || hasEnum) {

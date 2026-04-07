@@ -26,28 +26,28 @@
  * @module libs/core/infrastructure/monitoring
  */
 
-import { Logger, createScopedLogger } from '../logging/logger';
+import { Logger, createScopedLogger } from "../logging/logger";
 
 /**
  * Health status levels
  */
 export enum HealthStatus {
-  HEALTHY = 'healthy',
-  DEGRADED = 'degraded',
-  UNHEALTHY = 'unhealthy',
-  UNKNOWN = 'unknown'
+  HEALTHY = "healthy",
+  DEGRADED = "degraded",
+  UNHEALTHY = "unhealthy",
+  UNKNOWN = "unknown",
 }
 
 /**
  * Component types for health checks
  */
 export enum ComponentType {
-  SYSTEM = 'system',
-  NETWORK = 'network',
-  SECURITY = 'security',
-  DATABASE = 'database',
-  CACHE = 'cache',
-  EXTERNAL_SERVICE = 'external_service'
+  SYSTEM = "system",
+  NETWORK = "network",
+  SECURITY = "security",
+  DATABASE = "database",
+  CACHE = "cache",
+  EXTERNAL_SERVICE = "external_service",
 }
 
 /**
@@ -119,7 +119,7 @@ interface MetricDataPoint {
  * Abstract health check
  */
 export abstract class HealthCheck {
-  protected logger = createScopedLogger('HealthCheck');
+  protected logger = createScopedLogger("HealthCheck");
 
   abstract get name(): string;
   abstract get type(): ComponentType;
@@ -134,12 +134,12 @@ export abstract class HealthCheck {
     try {
       const result = await Promise.race([
         this.check(),
-        this.timeoutPromise(timeout)
+        this.timeoutPromise(timeout),
       ]);
 
       return {
         ...result,
-        responseTime: Date.now() - start
+        responseTime: Date.now() - start,
       };
     } catch (error) {
       return {
@@ -148,14 +148,17 @@ export abstract class HealthCheck {
         componentType: this.type,
         timestamp: new Date().toISOString(),
         responseTime: Date.now() - start,
-        message: (error as Error).message
+        message: (error as Error).message,
       };
     }
   }
 
   private timeoutPromise(ms: number): Promise<never> {
     return new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`Health check timeout after ${ms}ms`)), ms)
+      setTimeout(
+        () => reject(new Error(`Health check timeout after ${ms}ms`)),
+        ms,
+      ),
     );
   }
 }
@@ -164,7 +167,7 @@ export abstract class HealthCheck {
  * System health check
  */
 export class SystemHealthCheck extends HealthCheck {
-  name = 'System';
+  name = "System";
   type = ComponentType.SYSTEM;
 
   async check(): Promise<HealthCheckResult> {
@@ -174,9 +177,10 @@ export class SystemHealthCheck extends HealthCheck {
     const memoryMB = Math.round(memUsage.heapUsed / 1024 / 1024);
     const memoryLimit = 1024; // Configurable limit (increased for dev stability)
 
-    const status = memoryMB > memoryLimit * 0.9
-      ? HealthStatus.DEGRADED
-      : HealthStatus.HEALTHY;
+    const status =
+      memoryMB > memoryLimit * 0.9
+        ? HealthStatus.DEGRADED
+        : HealthStatus.HEALTHY;
 
     return {
       status,
@@ -190,8 +194,8 @@ export class SystemHealthCheck extends HealthCheck {
         uptime: Math.round(uptime),
         nodeVersion: process.version,
         platform: process.platform,
-        arch: process.arch
-      }
+        arch: process.arch,
+      },
     };
   }
 }
@@ -200,7 +204,7 @@ export class SystemHealthCheck extends HealthCheck {
  * Network health check
  */
 export class NetworkHealthCheck extends HealthCheck {
-  name = 'Network';
+  name = "Network";
   type = ComponentType.NETWORK;
 
   constructor(private testUrl?: string) {
@@ -217,7 +221,7 @@ export class NetworkHealthCheck extends HealthCheck {
       componentType: this.type,
       timestamp: new Date().toISOString(),
       responseTime: 0,
-      message: 'Network connectivity available'
+      message: "Network connectivity available",
     };
   }
 }
@@ -226,7 +230,7 @@ export class NetworkHealthCheck extends HealthCheck {
  * Security subsystem health check
  */
 export class SecurityHealthCheck extends HealthCheck {
-  name = 'Security';
+  name = "Security";
   type = ComponentType.SECURITY;
 
   async check(): Promise<HealthCheckResult> {
@@ -242,8 +246,8 @@ export class SecurityHealthCheck extends HealthCheck {
       details: {
         guardrailsActive: true,
         securityRulesLoaded: true,
-        auditingEnabled: true
-      }
+        auditingEnabled: true,
+      },
     };
   }
 }
@@ -290,8 +294,8 @@ export class HealthMonitor {
   registerCheck(check: HealthCheck) {
     this.checks.push(check);
     this.logger.debug(`Health check registered: ${check.name}`, {
-      component: 'HealthMonitor',
-      metadata: { checkName: check.name, checkType: check.type }
+      component: "HealthMonitor",
+      metadata: { checkName: check.name, checkType: check.type },
     });
   }
 
@@ -300,12 +304,16 @@ export class HealthMonitor {
    */
   async runHealthChecks(): Promise<SystemHealthReport> {
     const checkResults = await Promise.all(
-      this.checks.map(check => check.execute())
+      this.checks.map((check) => check.execute()),
     );
 
     // Determine overall status
-    const hasUnhealthy = checkResults.some(r => r.status === HealthStatus.UNHEALTHY);
-    const hasDegraded = checkResults.some(r => r.status === HealthStatus.DEGRADED);
+    const hasUnhealthy = checkResults.some(
+      (r) => r.status === HealthStatus.UNHEALTHY,
+    );
+    const hasDegraded = checkResults.some(
+      (r) => r.status === HealthStatus.DEGRADED,
+    );
 
     let overallStatus: HealthStatus;
     if (hasUnhealthy) {
@@ -322,9 +330,9 @@ export class HealthMonitor {
       status: overallStatus,
       timestamp: new Date().toISOString(),
       uptime: Date.now() - this.startTime,
-      version: '1.0.0',
+      version: "1.0.0",
       checks: checkResults,
-      metrics
+      metrics,
     };
   }
 
@@ -337,22 +345,22 @@ export class HealthMonitor {
 
     // Filter recent response times (last second)
     const recentTimes = this.responseTimes
-      .filter(dp => dp.timestamp > oneSecondAgo)
-      .map(dp => dp.value);
+      .filter((dp) => dp.timestamp > oneSecondAgo)
+      .map((dp) => dp.value);
 
     // Calculate percentiles
     const sortedTimes = [...recentTimes].sort((a, b) => a - b);
-    const avgResponseTime = recentTimes.length > 0
-      ? recentTimes.reduce((a, b) => a + b, 0) / recentTimes.length
-      : 0;
+    const avgResponseTime =
+      recentTimes.length > 0
+        ? recentTimes.reduce((a, b) => a + b, 0) / recentTimes.length
+        : 0;
     const p95ResponseTime = this.getPercentile(sortedTimes, 95);
     const p99ResponseTime = this.getPercentile(sortedTimes, 99);
 
     // Calculate rates
     const requestsPerSecond = recentTimes.length;
-    const errorRate = this.requestCount > 0
-      ? (this.errorCount / this.requestCount) * 100
-      : 0;
+    const errorRate =
+      this.requestCount > 0 ? (this.errorCount / this.requestCount) * 100 : 0;
     const successRate = 100 - errorRate;
 
     // Memory usage
@@ -360,12 +368,12 @@ export class HealthMonitor {
     const memoryUsage = {
       used: Math.round(memUsage.heapUsed / 1024 / 1024),
       total: Math.round(memUsage.heapTotal / 1024 / 1024),
-      percentage: (memUsage.heapUsed / memUsage.heapTotal) * 100
+      percentage: (memUsage.heapUsed / memUsage.heapTotal) * 100,
     };
 
     // CPU usage (simplified - would need more complex calculation in production)
     const cpuUsage = {
-      percentage: 0 // Placeholder
+      percentage: 0, // Placeholder
     };
 
     return {
@@ -381,7 +389,7 @@ export class HealthMonitor {
       totalValidations: this.validationCount,
       totalSecurityFindings: this.securityFindingCount,
       errorRate: Math.round(errorRate * 100) / 100,
-      successRate: Math.round(successRate * 100) / 100
+      successRate: Math.round(successRate * 100) / 100,
     };
   }
 
@@ -396,7 +404,7 @@ export class HealthMonitor {
 
     this.responseTimes.push({
       value: responseTime,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     // Trim old data points
@@ -454,28 +462,36 @@ export class HealthMonitor {
     const metrics = this.getMetrics();
     const lines: string[] = [];
 
-    lines.push('# HELP mcp_verify_requests_total Total number of requests');
-    lines.push('# TYPE mcp_verify_requests_total counter');
+    lines.push("# HELP mcp_verify_requests_total Total number of requests");
+    lines.push("# TYPE mcp_verify_requests_total counter");
     lines.push(`mcp_verify_requests_total ${metrics.totalRequests}`);
 
-    lines.push('# HELP mcp_verify_errors_total Total number of errors');
-    lines.push('# TYPE mcp_verify_errors_total counter');
+    lines.push("# HELP mcp_verify_errors_total Total number of errors");
+    lines.push("# TYPE mcp_verify_errors_total counter");
     lines.push(`mcp_verify_errors_total ${metrics.totalErrors}`);
 
-    lines.push('# HELP mcp_verify_response_time_seconds Response time in seconds');
-    lines.push('# TYPE mcp_verify_response_time_seconds histogram');
-    lines.push(`mcp_verify_response_time_seconds{quantile="0.95"} ${metrics.p95ResponseTime / 1000}`);
-    lines.push(`mcp_verify_response_time_seconds{quantile="0.99"} ${metrics.p99ResponseTime / 1000}`);
+    lines.push(
+      "# HELP mcp_verify_response_time_seconds Response time in seconds",
+    );
+    lines.push("# TYPE mcp_verify_response_time_seconds histogram");
+    lines.push(
+      `mcp_verify_response_time_seconds{quantile="0.95"} ${metrics.p95ResponseTime / 1000}`,
+    );
+    lines.push(
+      `mcp_verify_response_time_seconds{quantile="0.99"} ${metrics.p99ResponseTime / 1000}`,
+    );
 
-    lines.push('# HELP mcp_verify_memory_usage_bytes Memory usage in bytes');
-    lines.push('# TYPE mcp_verify_memory_usage_bytes gauge');
-    lines.push(`mcp_verify_memory_usage_bytes ${metrics.memoryUsage.used * 1024 * 1024}`);
+    lines.push("# HELP mcp_verify_memory_usage_bytes Memory usage in bytes");
+    lines.push("# TYPE mcp_verify_memory_usage_bytes gauge");
+    lines.push(
+      `mcp_verify_memory_usage_bytes ${metrics.memoryUsage.used * 1024 * 1024}`,
+    );
 
-    lines.push('# HELP mcp_verify_error_rate Error rate percentage');
-    lines.push('# TYPE mcp_verify_error_rate gauge');
+    lines.push("# HELP mcp_verify_error_rate Error rate percentage");
+    lines.push("# TYPE mcp_verify_error_rate gauge");
     lines.push(`mcp_verify_error_rate ${metrics.errorRate}`);
 
-    return lines.join('\n');
+    return lines.join("\n");
   }
 }
 
@@ -489,13 +505,16 @@ export async function getHealthCheckEndpoint(): Promise<{
   const monitor = HealthMonitor.getInstance();
   const report = await monitor.runHealthChecks();
 
-  const statusCode = report.status === HealthStatus.HEALTHY ? 200
-    : report.status === HealthStatus.DEGRADED ? 200
-    : 503;
+  const statusCode =
+    report.status === HealthStatus.HEALTHY
+      ? 200
+      : report.status === HealthStatus.DEGRADED
+        ? 200
+        : 503;
 
   return {
     statusCode,
-    body: JSON.stringify(report, null, 2)
+    body: JSON.stringify(report, null, 2),
   };
 }
 
@@ -511,7 +530,7 @@ export function getMetricsEndpoint(): {
 
   return {
     statusCode: 200,
-    body: JSON.stringify(metrics, null, 2)
+    body: JSON.stringify(metrics, null, 2),
   };
 }
 
@@ -529,7 +548,7 @@ export function getPrometheusMetricsEndpoint(): {
   return {
     statusCode: 200,
     body: prometheusMetrics,
-    contentType: 'text/plain; version=0.0.4'
+    contentType: "text/plain; version=0.0.4",
   };
 }
 

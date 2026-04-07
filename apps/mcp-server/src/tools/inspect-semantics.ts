@@ -23,13 +23,13 @@ import {
   createScopedLogger,
   StdioTransport,
   translations,
-  Language
-} from '@mcp-verify/core';
-import type { McpTool } from '@mcp-verify/core/domain/shared/common.types';
-import { formatForLLM } from '../utils/llm-formatter.js';
+  Language,
+} from "@mcp-verify/core";
+import type { McpTool } from "@mcp-verify/core/domain/shared/common.types";
+import { formatForLLM } from "../utils/llm-formatter.js";
 
-const logger = createScopedLogger('inspectSemanticsTool');
-const lang: Language = (process.env.MCP_VERIFY_LANG as Language) || 'en';
+const logger = createScopedLogger("inspectSemanticsTool");
+const lang: Language = (process.env.MCP_VERIFY_LANG as Language) || "en";
 const t = translations[lang];
 
 interface InspectSemanticsArgs {
@@ -37,13 +37,13 @@ interface InspectSemanticsArgs {
   args?: string[];
   toolName?: string;
   toolDefinition?: McpTool;
-  llmProvider?: 'anthropic' | 'openai' | 'ollama' | 'gemini';
+  llmProvider?: "anthropic" | "openai" | "ollama" | "gemini";
   llmModel?: string;
 }
 
 interface InspectSemanticsResult {
   content: Array<{
-    type: 'text';
+    type: "text";
     text: string;
   }>;
   isError?: boolean;
@@ -316,25 +316,25 @@ Begin analysis now.`;
  * Execute semantic analysis on a specific tool using LLM
  */
 export async function inspectToolSemanticsTool(
-  args: unknown
+  args: unknown,
 ): Promise<InspectSemanticsResult> {
   const {
     command,
     args: serverArgs = [],
     toolName,
     toolDefinition,
-    llmProvider = 'anthropic',
-    llmModel
+    llmProvider = "anthropic",
+    llmModel,
   } = args as InspectSemanticsArgs;
 
-  logger.info('Starting inspectToolSemantics', {
+  logger.info("Starting inspectToolSemantics", {
     metadata: {
       command,
       toolName,
       hasToolDefinition: !!toolDefinition,
       llmProvider,
-      llmModel
-    }
+      llmModel,
+    },
   });
 
   try {
@@ -347,7 +347,7 @@ export async function inspectToolSemanticsTool(
     }
     // Case 2: Fetch tool from server
     else if (command && toolName) {
-      logger.info('Fetching tool from server', { command, toolName });
+      logger.info("Fetching tool from server", { command, toolName });
 
       const transport = StdioTransport.create(command, serverArgs);
       const validator = new MCPValidator(transport);
@@ -358,37 +358,45 @@ export async function inspectToolSemanticsTool(
         return {
           content: [
             {
-              type: 'text',
-              text: JSON.stringify({
-                status: 'error',
-                error: handshake.error || t.mcp_error_handshake_failed,
-                message: t.mcp_error_failed_to_connect
-              }, null, 2)
-            }
+              type: "text",
+              text: JSON.stringify(
+                {
+                  status: "error",
+                  error: handshake.error || t.mcp_error_handshake_failed,
+                  message: t.mcp_error_failed_to_connect,
+                },
+                null,
+                2,
+              ),
+            },
           ],
-          isError: true
+          isError: true,
         };
       }
 
       // Discover capabilities
       const discovery = await validator.discoverCapabilities();
-      const foundTool = discovery.tools?.find(tool => tool.name === toolName);
+      const foundTool = discovery.tools?.find((tool) => tool.name === toolName);
 
       if (!foundTool) {
         validator.cleanup();
         return {
           content: [
             {
-              type: 'text',
-              text: JSON.stringify({
-                status: 'error',
-                error: `Tool "${toolName}" not found`,
-                message: `Available tools: ${discovery.tools?.map(t => t.name).join(', ') || 'none'}`,
-                availableTools: discovery.tools?.map(t => t.name) || []
-              }, null, 2)
-            }
+              type: "text",
+              text: JSON.stringify(
+                {
+                  status: "error",
+                  error: `Tool "${toolName}" not found`,
+                  message: `Available tools: ${discovery.tools?.map((t) => t.name).join(", ") || "none"}`,
+                  availableTools: discovery.tools?.map((t) => t.name) || [],
+                },
+                null,
+                2,
+              ),
+            },
           ],
-          isError: true
+          isError: true,
         };
       }
 
@@ -400,19 +408,25 @@ export async function inspectToolSemanticsTool(
       return {
         content: [
           {
-            type: 'text',
-            text: JSON.stringify({
-              status: 'error',
-              error: 'Missing required arguments',
-              message: 'Provide either: (1) toolDefinition, or (2) command + toolName',
-              usage: {
-                option1: 'inspectToolSemantics({ toolDefinition: {...} })',
-                option2: 'inspectToolSemantics({ command: "node server.js", toolName: "suspicious_tool" })'
-              }
-            }, null, 2)
-          }
+            type: "text",
+            text: JSON.stringify(
+              {
+                status: "error",
+                error: "Missing required arguments",
+                message:
+                  "Provide either: (1) toolDefinition, or (2) command + toolName",
+                usage: {
+                  option1: "inspectToolSemantics({ toolDefinition: {...} })",
+                  option2:
+                    'inspectToolSemantics({ command: "node server.js", toolName: "suspicious_tool" })',
+                },
+              },
+              null,
+              2,
+            ),
+          },
         ],
-        isError: true
+        isError: true,
       };
     }
 
@@ -424,7 +438,7 @@ export async function inspectToolSemanticsTool(
     const llmAnalysis = await executeLLMAnalysis(
       toolAnalysisPrompt,
       llmProvider,
-      llmModel
+      llmModel,
     );
 
     // Parse LLM response
@@ -432,7 +446,7 @@ export async function inspectToolSemanticsTool(
 
     // Build response
     const response = {
-      status: 'completed',
+      status: "completed",
       tool: targetTool.name,
       llm_provider: llmProvider,
 
@@ -448,73 +462,82 @@ export async function inspectToolSemanticsTool(
         discrepancyScore: analysis.discrepancyScore,
         primaryClaim: analysis.primaryClaim,
         actualCapabilities: analysis.actualCapabilities,
-        redFlags: analysis.redFlags
+        redFlags: analysis.redFlags,
       },
 
       recommendation: analysis.recommendation,
 
       tool_details: {
         name: targetTool.name,
-        description: targetTool.description || 'No description provided',
+        description: targetTool.description || "No description provided",
         parameterCount: targetTool.inputSchema?.properties
           ? Object.keys(targetTool.inputSchema.properties).length
           : 0,
         hasRequired: targetTool.inputSchema?.required
           ? targetTool.inputSchema.required.length > 0
-          : false
+          : false,
       },
 
-      next_steps: analysis.suspicious ? [
-        `🚨 DO NOT USE "${targetTool.name}" without thorough review`,
-        `Review red flags: ${analysis.redFlags.join(', ')}`,
-        analysis.riskLevel === 'critical'
-          ? `BLOCK this tool immediately - contains critical security issues`
-          : `Manually audit the tool's source code before deployment`,
-        `Consider fuzzing: fuzzTool({ command: "${command || 'N/A'}", toolName: "${targetTool.name}", profile: "aggressive" })`
-      ] : [
-        `✅ Tool appears safe based on semantic analysis`,
-        `Consider light fuzzing for validation: fuzzTool({ command: "${command || 'N/A'}", toolName: "${targetTool.name}", profile: "light" })`,
-        `Monitor tool behavior in production`
-      ]
+      next_steps: analysis.suspicious
+        ? [
+            `🚨 DO NOT USE "${targetTool.name}" without thorough review`,
+            `Review red flags: ${analysis.redFlags.join(", ")}`,
+            analysis.riskLevel === "critical"
+              ? `BLOCK this tool immediately - contains critical security issues`
+              : `Manually audit the tool's source code before deployment`,
+            `Consider fuzzing: fuzzTool({ command: "${command || "N/A"}", toolName: "${targetTool.name}", profile: "aggressive" })`,
+          ]
+        : [
+            `✅ Tool appears safe based on semantic analysis`,
+            `Consider light fuzzing for validation: fuzzTool({ command: "${command || "N/A"}", toolName: "${targetTool.name}", profile: "light" })`,
+            `Monitor tool behavior in production`,
+          ],
     };
 
-    logger.info('Semantic analysis completed', {
+    logger.info("Semantic analysis completed", {
       metadata: {
         toolName: targetTool.name,
         suspicious: analysis.suspicious,
-        riskLevel: analysis.riskLevel
-      }
+        riskLevel: analysis.riskLevel,
+      },
     });
 
     return {
       content: [
         {
-          type: 'text',
-          text: JSON.stringify(response, null, 2)
-        }
+          type: "text",
+          text: JSON.stringify(response, null, 2),
+        },
       ],
       _meta: {
         toolName: targetTool.name,
         suspicious: analysis.suspicious,
         riskLevel: analysis.riskLevel,
-        discrepancyScore: analysis.discrepancyScore
-      }
+        discrepancyScore: analysis.discrepancyScore,
+      },
     };
   } catch (error) {
-    logger.error('inspectToolSemantics failed', error as Error);
+    logger.error("inspectToolSemantics failed", error as Error);
     return {
       content: [
         {
-          type: 'text',
-          text: JSON.stringify({
-            status: 'error',
-            error: (error as Error).message,
-            message: 'Semantic analysis failed',
-            stack: process.env.NODE_ENV === 'development' ? (error as Error).stack : undefined
-          }, null, 2)
-        }
+          type: "text",
+          text: JSON.stringify(
+            {
+              status: "error",
+              error: (error as Error).message,
+              message: "Semantic analysis failed",
+              stack:
+                process.env.NODE_ENV === "development"
+                  ? (error as Error).stack
+                  : undefined,
+            },
+            null,
+            2,
+          ),
+        },
       ],
-      isError: true
+      isError: true,
     };
   }
 }
@@ -525,13 +548,13 @@ export async function inspectToolSemanticsTool(
 function buildToolAnalysisPrompt(tool: McpTool): string {
   const schemaStr = tool.inputSchema
     ? JSON.stringify(tool.inputSchema, null, 2)
-    : 'No schema provided';
+    : "No schema provided";
 
   return `Analyze this MCP tool for malicious intent:
 
 TOOL NAME: ${tool.name}
 
-DESCRIPTION: ${tool.description || 'No description provided'}
+DESCRIPTION: ${tool.description || "No description provided"}
 
 INPUT SCHEMA:
 ${schemaStr}
@@ -556,13 +579,14 @@ Perform a strict security analysis and return ONLY valid JSON matching this stru
 async function executeLLMAnalysis(
   prompt: string,
   provider: string,
-  model?: string
+  model?: string,
 ): Promise<string> {
-  logger.info('Starting LLM analysis', { provider, model });
+  logger.info("Starting LLM analysis", { provider, model });
 
   try {
     // Import LLMSemanticAnalyzer which handles all provider logic
-    const { LLMSemanticAnalyzer } = await import('@mcp-verify/core/domain/quality/llm-semantic-analyzer');
+    const { LLMSemanticAnalyzer } =
+      await import("@mcp-verify/core/domain/quality/llm-semantic-analyzer");
 
     // Create analyzer instance
     const analyzer = new LLMSemanticAnalyzer();
@@ -571,61 +595,70 @@ async function executeLLMAnalysis(
     const modelToUse = model || getDefaultModel(provider);
     const providerSpec = `${provider}:${modelToUse}`;
 
-    logger.info('Initializing LLM provider via LLMSemanticAnalyzer', { providerSpec });
+    logger.info("Initializing LLM provider via LLMSemanticAnalyzer", {
+      providerSpec,
+    });
 
     // Initialize provider (handles all API key validation and provider creation)
     const llmProvider = await analyzer.initializeProvider(providerSpec);
 
     if (!llmProvider) {
-      throw new Error('Failed to initialize LLM provider. Check your configuration.');
+      throw new Error(
+        "Failed to initialize LLM provider. Check your configuration.",
+      );
     }
 
     // Check if provider is available
     const isAvailable = await llmProvider.isAvailable();
     if (!isAvailable) {
-      throw new Error(`LLM provider ${provider} is not available. Check API keys and configuration.`);
+      throw new Error(
+        `LLM provider ${provider} is not available. Check API keys and configuration.`,
+      );
     }
 
-    logger.info('LLM provider initialized successfully', {
-      provider: llmProvider.getName()
+    logger.info("LLM provider initialized successfully", {
+      provider: llmProvider.getName(),
     });
 
     // Call LLM with STRICT system prompt and user prompt
-    const response = await llmProvider.complete([
+    const response = await llmProvider.complete(
+      [
+        {
+          role: "system",
+          content: STRICT_DETECTION_PROMPT,
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
       {
-        role: 'system',
-        content: STRICT_DETECTION_PROMPT
+        maxTokens: 2000,
+        temperature: 0.2,
+        timeout: 30000,
       },
-      {
-        role: 'user',
-        content: prompt
-      }
-    ], {
-      maxTokens: 2000,
-      temperature: 0.2,
-      timeout: 30000
-    });
+    );
 
-    logger.info('LLM analysis completed', {
+    logger.info("LLM analysis completed", {
       inputTokens: response.usage.inputTokens,
-      outputTokens: response.usage.outputTokens
+      outputTokens: response.usage.outputTokens,
     });
 
     return response.text;
-
   } catch (error) {
-    logger.error('LLM analysis failed', error as Error);
+    logger.error("LLM analysis failed", error as Error);
 
     // Return a fallback conservative response
     return JSON.stringify({
       suspicious: true,
-      riskLevel: 'medium',
+      riskLevel: "medium",
       discrepancyScore: 5,
-      primaryClaim: 'Tool function could not be analyzed',
-      actualCapabilities: ['Manual review required - LLM analysis failed'],
+      primaryClaim: "Tool function could not be analyzed",
+      actualCapabilities: ["Manual review required - LLM analysis failed"],
       redFlags: [`LLM provider error: ${(error as Error).message}`],
-      recommendation: 'Manually review this tool - automated analysis unavailable',
-      explanation: `LLM analysis failed: ${(error as Error).message}. Ensure API keys are configured and provider is available.`
+      recommendation:
+        "Manually review this tool - automated analysis unavailable",
+      explanation: `LLM analysis failed: ${(error as Error).message}. Ensure API keys are configured and provider is available.`,
     });
   }
 }
@@ -635,12 +668,12 @@ async function executeLLMAnalysis(
  */
 function getDefaultModel(provider: string): string {
   const defaults: Record<string, string> = {
-    anthropic: 'claude-3-5-sonnet-20241022',
-    openai: 'gpt-4o',
-    ollama: 'llama3.1',
-    gemini: 'gemini-1.5-pro'
+    anthropic: "claude-3-5-sonnet-20241022",
+    openai: "gpt-4o",
+    ollama: "llama3.1",
+    gemini: "gemini-1.5-pro",
   };
-  return defaults[provider] || 'claude-3-5-sonnet-20241022';
+  return defaults[provider] || "claude-3-5-sonnet-20241022";
 }
 
 /**
@@ -648,7 +681,7 @@ function getDefaultModel(provider: string): string {
  */
 function parseLLMAnalysis(llmResponse: string): {
   suspicious: boolean;
-  riskLevel: 'critical' | 'high' | 'medium' | 'low';
+  riskLevel: "critical" | "high" | "medium" | "low";
   discrepancyScore: number;
   primaryClaim: string;
   actualCapabilities: string[];
@@ -660,7 +693,7 @@ function parseLLMAnalysis(llmResponse: string): {
     // Extract JSON from response (LLM might include markdown)
     const jsonMatch = llmResponse.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      throw new Error('No JSON found in LLM response');
+      throw new Error("No JSON found in LLM response");
     }
 
     const parsed = JSON.parse(jsonMatch[0]);
@@ -668,27 +701,27 @@ function parseLLMAnalysis(llmResponse: string): {
     // Validate required fields
     return {
       suspicious: parsed.suspicious ?? false,
-      riskLevel: parsed.riskLevel ?? 'low',
+      riskLevel: parsed.riskLevel ?? "low",
       discrepancyScore: parsed.discrepancyScore ?? 0,
-      primaryClaim: parsed.primaryClaim ?? 'Unknown',
+      primaryClaim: parsed.primaryClaim ?? "Unknown",
       actualCapabilities: parsed.actualCapabilities ?? [],
       redFlags: parsed.redFlags ?? [],
-      recommendation: parsed.recommendation ?? 'Review manually',
-      explanation: parsed.explanation ?? 'No explanation provided'
+      recommendation: parsed.recommendation ?? "Review manually",
+      explanation: parsed.explanation ?? "No explanation provided",
     };
   } catch (error) {
-    logger.error('Failed to parse LLM response', error as Error);
+    logger.error("Failed to parse LLM response", error as Error);
 
     // Fallback: Conservative response (flag as suspicious)
     return {
       suspicious: true,
-      riskLevel: 'medium',
+      riskLevel: "medium",
       discrepancyScore: 5,
-      primaryClaim: 'Unable to parse LLM response',
-      actualCapabilities: ['Unknown - LLM analysis failed'],
-      redFlags: ['LLM response parsing failed - manual review required'],
-      recommendation: 'Manually review this tool - automated analysis failed',
-      explanation: `LLM analysis failed to produce valid JSON. Raw response: ${llmResponse.substring(0, 200)}...`
+      primaryClaim: "Unable to parse LLM response",
+      actualCapabilities: ["Unknown - LLM analysis failed"],
+      redFlags: ["LLM response parsing failed - manual review required"],
+      recommendation: "Manually review this tool - automated analysis failed",
+      explanation: `LLM analysis failed to produce valid JSON. Raw response: ${llmResponse.substring(0, 200)}...`,
     };
   }
 }

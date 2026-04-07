@@ -226,9 +226,10 @@ This directory contains the code that "boots" and "connects". These are dumb con
 
 #### `apps/cli-verifier/` (CLI Tool)
 
-*The main executable for technical users with interactive shell and multi-context workspaces.*
+_The main executable for technical users with interactive shell and multi-context workspaces._
 
 **Structure**:
+
 ```
 apps/cli-verifier/
 ├── src/
@@ -316,6 +317,7 @@ apps/cli-verifier/
 **Architecture Highlights**:
 
 **1. Multi-Context Workspace System** (`interactive.ts` + `managers/` + `handlers/`)
+
 - **Purpose**: Manage multiple MCP server targets (dev, staging, prod) with isolated configurations
 - **Persistence**: `.mcp-verify/session.json` (per-project), `~/.mcp-verify/config.json` (global)
 - **Features**:
@@ -325,6 +327,7 @@ apps/cli-verifier/
   - Environment variable auto-loading from `.env`
 
 **2. Security Profiles** (`profiles/security-profiles.ts`)
+
 - **Purpose**: Preset configurations for different security rigor levels
 - **Profiles**:
   - **light**: 25 payloads, no mutations, 60/100 score threshold (CI/CD)
@@ -333,6 +336,7 @@ apps/cli-verifier/
 - **Customization**: Save custom profiles to global config
 
 **3. Interactive Shell** (`interactive.ts`)
+
 - **REPL Features**:
   - Tab completion (commands, flags, file paths, tool names)
   - Command history with secret redaction (`~/.mcp-verify/history.json`)
@@ -345,6 +349,7 @@ apps/cli-verifier/
   - Workspace health monitoring
 
 **4. Configuration Hierarchy** (`managers/global-config-manager.ts`)
+
 ```
 Priority (highest to lowest):
 1. CLI Flags           (--timeout=5000)
@@ -354,6 +359,7 @@ Priority (highest to lowest):
 ```
 
 **Responsibilities**:
+
 - ✅ Parse command-line arguments (one-shot mode)
 - ✅ Run interactive REPL (default mode)
 - ✅ Manage multi-context workspaces
@@ -368,9 +374,10 @@ Priority (highest to lowest):
 
 #### `apps/web-dashboard/` (GUI)
 
-*Visual dashboard for deep analysis.*
+_Visual dashboard for deep analysis._
 
 **Structure**:
+
 ```
 apps/web-dashboard/
 ├── public/                   # Static assets
@@ -396,9 +403,10 @@ apps/web-dashboard/
 
 #### `apps/local-api-bridge/` (Local Bridge)
 
-*Lightweight server allowing the Web UI to communicate with the CLI or local processes.*
+_Lightweight server allowing the Web UI to communicate with the CLI or local processes._
 
 **Features**:
+
 - WebSocket handling for real-time data
 - Streaming validation logs
 - Local process management
@@ -498,6 +506,7 @@ libs/core/
 ```
 
 **Key Principles**:
+
 - **Domain**: Pure TypeScript, 100% testable, no external dependencies
 - **Infrastructure**: Implements interfaces defined by domain
 - **Use Cases**: Orchestrates domain + infrastructure
@@ -573,6 +582,7 @@ libs/fuzzer/
 ```
 
 **Architecture Workflow**:
+
 ```
 1. Fingerprinting    → Detect server language/framework
 2. Baseline          → Calibrate normal response patterns
@@ -583,6 +593,7 @@ libs/fuzzer/
 ```
 
 **Key Features**:
+
 - **Adaptive Testing**: Learns from responses, mutates payloads dynamically
 - **Baseline Comparison**: Eliminates false positives from legitimate slow operations
 - **Comprehensive Coverage**: Tests all parameter combinations (nested objects, arrays, edge cases)
@@ -595,6 +606,7 @@ libs/fuzzer/
 #### `libs/protocol/` (MCP Specification)
 
 **Structure**:
+
 ```
 libs/protocol/
 └── types/                # TypeScript interfaces for MCP
@@ -610,11 +622,13 @@ libs/protocol/
 #### `libs/transport/` (Connection Layer)
 
 **Implementations**:
+
 - **STDIO Transport**: Local process communication (stdin/stdout)
 - **HTTP Transport**: REST API communication
 - **SSE Transport**: Server-Sent Events (real-time)
 
 **Features**:
+
 - Reconnection strategies (exponential backoff)
 - Timeout handling
 - Error recovery
@@ -624,6 +638,7 @@ libs/protocol/
 #### `libs/shared/` (Cross-cutting Utilities)
 
 **Utilities**:
+
 - `i18n-helper.ts` - Translation (EN/ES)
 - `path-validator.ts` - 🔒 Path traversal prevention
 - `url-validator.ts` - 🔒 Private IP detection
@@ -637,6 +652,7 @@ libs/protocol/
 ### 3. `tools/` (Development Tools)
 
 **Contents**:
+
 ```
 tools/
 ├── mocks/servers/                # Mock MCP servers
@@ -659,6 +675,7 @@ tools/
 Centralized configuration files to ensure consistency across the monorepo.
 
 **Files**:
+
 - `eslint/` - Linting rules
 - `jest/` - Testing configuration
 - `tsconfig/` - Base TypeScript configurations
@@ -668,6 +685,7 @@ Centralized configuration files to ensure consistency across the monorepo.
 ### 5. `tests/` (Global Testing)
 
 **Structure**:
+
 ```
 tests/
 ├── unit/              # Unit tests (fast, isolated)
@@ -732,7 +750,7 @@ sequenceDiagram
 ```typescript
 // ❌ BAD: Domain depends on infrastructure
 // domain/security/scanner.ts
-import { FileSystem } from '../../infrastructure/file-system';  // NO!
+import { FileSystem } from "../../infrastructure/file-system"; // NO!
 
 // ✅ GOOD: Domain defines interface, infrastructure implements
 // domain/security/scanner.ts
@@ -743,7 +761,7 @@ export interface IReportStorage {
 // infrastructure/file-storage.ts
 export class FileStorage implements IReportStorage {
   async save(report: Report): Promise<void> {
-    await fs.writeFile('report.json', JSON.stringify(report));
+    await fs.writeFile("report.json", JSON.stringify(report));
   }
 }
 ```
@@ -753,6 +771,7 @@ export class FileStorage implements IReportStorage {
 ### 2. Single Responsibility Principle
 
 Each module has ONE reason to change:
+
 - **Domain**: Business rules change
 - **Infrastructure**: External systems change (APIs, file system)
 - **Use Cases**: Application workflows change
@@ -763,6 +782,7 @@ Each module has ONE reason to change:
 ### 3. Separation of Concerns
 
 **Layers**:
+
 - **Presentation** (apps/) - User interaction
 - **Application** (use-cases/) - Workflow orchestration
 - **Domain** (domain/) - Business logic
@@ -777,6 +797,7 @@ Each module has ONE reason to change:
 **E2E Tests**: Applications layer (full workflows)
 
 **Coverage by Layer**:
+
 - Domain: 90%+ (easy to test)
 - Infrastructure: 70%+ (requires real I/O)
 - Use Cases: 80%+ (mock infrastructure)
@@ -834,6 +855,7 @@ Each module has ONE reason to change:
 The Security Gateway is a **3-layer real-time threat detection system** built into the proxy server (`libs/core/use-cases/proxy/proxy-server.ts`). It provides defense-in-depth with progressive analysis and client-aware panic stop mechanism.
 
 **Design Goals**:
+
 - **Zero False Positives on Layer 1**: Pattern-based detection with 100% precision
 - **Sub-50ms Latency**: Fast enough for production without noticeable delay
 - **Client Isolation**: Prevent one malicious actor from causing global DoS
@@ -903,6 +925,7 @@ flowchart TD
 ```
 
 **Key Decision Points**:
+
 1. **Panic Stop Check** (Early Exit #1): Blocks client immediately if in backoff or panic mode
 2. **Cache Hit** (Early Exit #2): Returns cached analysis in <1ms if request seen recently
 3. **Layer 1 Block** (Early Exit #3): Rejects SQL/CMD injection in <10ms
@@ -924,6 +947,7 @@ private generateCacheKey(toolName: string, args: any): string {
 ```
 
 **Cache Strategy**:
+
 - **Key**: SHA-256 hash of `{ toolName, args }` (deterministic, collision-resistant)
 - **TTL**: 60 seconds (configurable via `CACHE_TTL_MS`)
 - **Eviction**: LRU with max 1000 entries (configurable via `MAX_CACHE_SIZE`)
@@ -954,11 +978,13 @@ classDiagram
 ```
 
 **Cache Hit Ratio** (Production Benchmarks):
+
 - Typical workload: **65-75%** hit ratio
 - Repeated tool calls: **95%+** hit ratio
 - Cold start: **0%** (expected)
 
 **Performance Impact**:
+
 - Cache miss: Layer 1 (10ms) + Layer 2 (50ms) = **60ms total**
 - Cache hit: **<1ms** (800x faster)
 
@@ -969,6 +995,7 @@ classDiagram
 #### Problem: Global DoS Vulnerability
 
 **Without client isolation**:
+
 ```
 Client A (malicious) → 3x 429 errors → GLOBAL panic mode
 Client B (legitimate) → BLOCKED (collateral damage) ❌
@@ -1086,16 +1113,17 @@ stateDiagram-v2
 
 **State Transitions**:
 
-| Current State | Event | Next State | Action |
-|---------------|-------|------------|--------|
-| Clean | 429 error | Backoff30s | `strikes = 1`, `blockedUntil = now + 30s` |
-| Backoff30s | Timer expires | Strike1 (resumed) | `inBackoff = false` |
-| Backoff30s | 429 before timer | Backoff60s | `strikes = 2`, `blockedUntil = now + 60s` |
-| Backoff60s | Timer expires | Strike2 (resumed) | `inBackoff = false` |
-| Backoff60s | 429 before timer | PanicMode | `strikes = 3`, `panicMode = true` |
-| PanicMode | Any request | Reject 503 | Permanent block |
+| Current State | Event            | Next State        | Action                                    |
+| ------------- | ---------------- | ----------------- | ----------------------------------------- |
+| Clean         | 429 error        | Backoff30s        | `strikes = 1`, `blockedUntil = now + 30s` |
+| Backoff30s    | Timer expires    | Strike1 (resumed) | `inBackoff = false`                       |
+| Backoff30s    | 429 before timer | Backoff60s        | `strikes = 2`, `blockedUntil = now + 60s` |
+| Backoff60s    | Timer expires    | Strike2 (resumed) | `inBackoff = false`                       |
+| Backoff60s    | 429 before timer | PanicMode         | `strikes = 3`, `panicMode = true`         |
+| PanicMode     | Any request      | Reject 503        | Permanent block                           |
 
 **Anti-DoS Properties**:
+
 - ✅ Isolated strikes per client (no global cascade)
 - ✅ Auto-resume after backoff (self-healing)
 - ✅ Permanent block only for persistent abusers
@@ -1110,6 +1138,7 @@ stateDiagram-v2
 **Location**: `libs/core/use-cases/proxy/proxy-server.ts:724-887`
 
 **Detection Methods**:
+
 ```typescript
 // SQL Injection (SEC-001)
 private detectSQLInjection(toolName: string, args: any): SecurityFinding[] {
@@ -1149,6 +1178,7 @@ private detectCommandInjection(toolName: string, args: any): SecurityFinding[] {
 ```
 
 **Characteristics**:
+
 - **Runtime Analysis**: Checks actual parameter values, not schemas
 - **Universal Application**: Runs on ALL tools (not filtered by name)
 - **Zero Configuration**: No setup required
@@ -1159,6 +1189,7 @@ private detectCommandInjection(toolName: string, args: any): SecurityFinding[] {
 **Location**: `libs/core/use-cases/proxy/proxy-server.ts:888-1026`
 
 **Detection Methods**:
+
 ```typescript
 // Tool Chaining Detection (SEC-020)
 private detectDangerousToolChaining(toolName: string, args: any): SecurityFinding[] {
@@ -1191,6 +1222,7 @@ private detectExcessiveAgency(toolName: string, args: any): SecurityFinding[] {
 ```
 
 **Characteristics**:
+
 - **Stateful Analysis**: Tracks tool call history
 - **Heuristic Scoring**: Accumulates evidence across parameters
 - **Configurable Thresholds**: Tune sensitivity per deployment
@@ -1200,6 +1232,7 @@ private detectExcessiveAgency(toolName: string, args: any): SecurityFinding[] {
 **Location**: `libs/core/use-cases/proxy/proxy-server.ts:1041-1126`
 
 **Detection Methods**:
+
 ```typescript
 private async runLLMRules(
   toolName: string,
@@ -1232,6 +1265,7 @@ private async runLLMRules(
 ```
 
 **When to Enable**:
+
 - ✅ Research environments (studying novel attacks)
 - ✅ High-security deployments (military, finance, healthcare)
 - ✅ Honeypot/deception systems
@@ -1239,6 +1273,7 @@ private async runLLMRules(
 - ❌ High-throughput systems (cost prohibitive)
 
 **Cost Analysis** (per 1000 requests):
+
 - Layer 1+2 only: **$0** (local processing)
 - Layer 1+2+3: **$5-$15** (LLM API costs)
 
@@ -1259,17 +1294,19 @@ Every rejection includes complete metadata for compliance and forensics:
       "blocked": true,
       "layer": 1,
       "latency_ms": 8,
-      "findings": [{
-        "ruleCode": "SEC-001",
-        "severity": "critical",
-        "message": "SQL injection detected in parameter 'query'",
-        "component": "database_query",
-        "cwe": "CWE-89",
-        "owasp": "A03:2021 - Injection",
-        "remediation": "Use parameterized queries instead of string concatenation",
-        "matchedPattern": "OR 1=1",
-        "affectedParameter": "query"
-      }],
+      "findings": [
+        {
+          "ruleCode": "SEC-001",
+          "severity": "critical",
+          "message": "SQL injection detected in parameter 'query'",
+          "component": "database_query",
+          "cwe": "CWE-89",
+          "owasp": "A03:2021 - Injection",
+          "remediation": "Use parameterized queries instead of string concatenation",
+          "matchedPattern": "OR 1=1",
+          "affectedParameter": "query"
+        }
+      ],
       "timestamp": "2026-03-07T12:34:56.789Z",
       "clientId": "192.168.1.100"
     }
@@ -1278,6 +1315,7 @@ Every rejection includes complete metadata for compliance and forensics:
 ```
 
 **Audit Event Stream**:
+
 ```jsonl
 {"type":"security-analysis","timestamp":"2026-03-07T12:34:56Z","layer":1,"latency":8,"blocked":true,"clientId":"192.168.1.100"}
 {"type":"rate-limit-backoff","timestamp":"2026-03-07T12:35:02Z","message":"Strike 1/3 for client 192.168.1.100: Entering 30 second backoff","clientId":"192.168.1.100"}
@@ -1297,6 +1335,7 @@ Every rejection includes complete metadata for compliance and forensics:
 5. **Worker Pools**: Reuse Deno sandbox instances
 
 **Benchmarks**:
+
 - Simple validation: < 500ms
 - With security analysis: < 2s
 - With LLM analysis: < 5s (depends on provider)
@@ -1305,11 +1344,10 @@ Every rejection includes complete metadata for compliance and forensics:
 
 ## 🔗 Related Documentation
 
-| Document | Purpose |
-|----------|---------|
-| [libs/README.md](./libs/README.md) | Library architecture overview |
-| [libs/core/README.md](./libs/core/README.md) | Hexagonal architecture deep dive |
-| [CODE_MAP.md](./CODE_MAP.md) | "I want to..." quick reference |
-| [DEVELOPMENT.md](./DEVELOPMENT.md) | Local setup and testing |
-| [SECURITY.md](./SECURITY.md) | Security model and threat analysis |
-
+| Document                                     | Purpose                            |
+| -------------------------------------------- | ---------------------------------- |
+| [libs/README.md](./libs/README.md)           | Library architecture overview      |
+| [libs/core/README.md](./libs/core/README.md) | Hexagonal architecture deep dive   |
+| [CODE_MAP.md](./CODE_MAP.md)                 | "I want to..." quick reference     |
+| [DEVELOPMENT.md](./DEVELOPMENT.md)           | Local setup and testing            |
+| [SECURITY.md](./SECURITY.md)                 | Security model and threat analysis |

@@ -5,13 +5,17 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import { spawn } from 'child_process';
-import type { ChildProcess } from 'child_process';
-import { StringDecoder } from 'string_decoder';
-import { parse as parseShellCommand } from 'shell-quote';
-import { t, getUserAgent } from '@mcp-verify/shared';
-import type { ISandbox } from './sandbox/sandbox.interface';
-import type { JsonValue, JsonRpcRequest, JsonRpcNotification } from './shared/common.types';
+import { spawn } from "child_process";
+import type { ChildProcess } from "child_process";
+import { StringDecoder } from "string_decoder";
+import { parse as parseShellCommand } from "shell-quote";
+import { t, getUserAgent } from "@mcp-verify/shared";
+import type { ISandbox } from "./sandbox/sandbox.interface";
+import type {
+  JsonValue,
+  JsonRpcRequest,
+  JsonRpcNotification,
+} from "./shared/common.types";
 
 interface SseMessageEvent {
   data: string;
@@ -23,7 +27,10 @@ export interface TransportOptions {
 
 export interface ITransport {
   connect(): Promise<void>;
-  send(message: JsonRpcRequest | JsonRpcNotification, options?: TransportOptions): Promise<JsonValue>;
+  send(
+    message: JsonRpcRequest | JsonRpcNotification,
+    options?: TransportOptions,
+  ): Promise<JsonValue>;
   close(): void;
 }
 
@@ -33,7 +40,11 @@ export class HttpTransport implements ITransport {
   private userAgent: string;
   private customHeaders: Record<string, string>;
 
-  private constructor(url: string, defaultTimeout = 30000, headers: Record<string, string> = {}) {
+  private constructor(
+    url: string,
+    defaultTimeout = 30000,
+    headers: Record<string, string> = {},
+  ) {
     this.url = url;
     this.defaultTimeout = defaultTimeout;
     this.customHeaders = headers;
@@ -50,7 +61,11 @@ export class HttpTransport implements ITransport {
    * @param headers - Custom HTTP headers to include in requests
    * @returns A new HttpTransport instance
    */
-  public static create(url: string, defaultTimeout = 30000, headers: Record<string, string> = {}): HttpTransport {
+  public static create(
+    url: string,
+    defaultTimeout = 30000,
+    headers: Record<string, string> = {},
+  ): HttpTransport {
     return new HttpTransport(url, defaultTimeout, headers);
   }
 
@@ -60,7 +75,7 @@ export class HttpTransport implements ITransport {
 
   async send(
     message: JsonRpcRequest | JsonRpcNotification,
-    options?: TransportOptions
+    options?: TransportOptions,
   ): Promise<JsonValue> {
     const timeout = options?.timeoutMs ?? this.defaultTimeout;
 
@@ -77,7 +92,7 @@ export class HttpTransport implements ITransport {
         headers: {
           "Content-Type": "application/json",
           "User-Agent": this.userAgent,
-          ...this.customHeaders
+          ...this.customHeaders,
         },
         body: JSON.stringify(message),
       });
@@ -85,12 +100,12 @@ export class HttpTransport implements ITransport {
       // Distinguish timeout from other network failures for clearer error messages
       if ((err as Error).name === "AbortError") {
         throw new Error(
-          `MCP request timed out after ${timeout}ms (method: "${message.method}")`
+          `MCP request timed out after ${timeout}ms (method: "${message.method}")`,
         );
       }
       // Re-wrap low-level fetch/network errors with context
       throw new Error(
-        `MCP network error for method "${message.method}": ${(err as Error).message}`
+        `MCP network error for method "${message.method}": ${(err as Error).message}`,
       );
     } finally {
       // Always clear the timer, whether the request succeeded or failed
@@ -103,7 +118,7 @@ export class HttpTransport implements ITransport {
       const body = await response.text().catch(() => "(unreadable body)");
       throw new Error(
         `MCP server returned HTTP ${response.status} ${response.statusText} ` +
-        `for method "${message.method}". Body: ${body}`
+          `for method "${message.method}". Body: ${body}`,
       );
     }
 
@@ -113,7 +128,7 @@ export class HttpTransport implements ITransport {
       data = (await response.json()) as JsonValue;
     } catch {
       throw new Error(
-        `MCP server returned a non-JSON response for method "${message.method}"`
+        `MCP server returned a non-JSON response for method "${message.method}"`,
       );
     }
 
@@ -127,21 +142,31 @@ export class HttpTransport implements ITransport {
       const rpcError = (data as Record<string, unknown>).error;
 
       if (rpcError !== null && typeof rpcError === "object") {
-        const { code, message: msg, data: errData } = rpcError as {
+        const {
+          code,
+          message: msg,
+          data: errData,
+        } = rpcError as {
           code?: number;
           message?: string;
           data?: unknown;
         };
 
-        const detail = errData !== undefined ? ` | data: ${JSON.stringify(errData)}` : "";
+        const detail =
+          errData !== undefined ? ` | data: ${JSON.stringify(errData)}` : "";
         throw new Error(
-          `JSON-RPC error ${code ?? "unknown"}: ${msg ?? "No message provided"}${detail}`
+          `JSON-RPC error ${code ?? "unknown"}: ${msg ?? "No message provided"}${detail}`,
         );
       }
     }
 
     // Return the result property for success cases
-    if (data !== null && typeof data === "object" && !Array.isArray(data) && "result" in data) {
+    if (
+      data !== null &&
+      typeof data === "object" &&
+      !Array.isArray(data) &&
+      "result" in data
+    ) {
       return (data as Record<string, unknown>).result as JsonValue;
     }
 
@@ -168,7 +193,7 @@ function parseCommandString(commandString: string): [string, string[]] {
   const trimmed = commandString.trim();
 
   if (!trimmed) {
-    throw new Error(t('error_command_empty'));
+    throw new Error(t("error_command_empty"));
   }
 
   // Use shell-quote to safely parse the command string
@@ -177,18 +202,20 @@ function parseCommandString(commandString: string): [string, string[]] {
 
   // Filter out any shell operators (objects) which indicate dangerous constructs
   // shell-quote returns objects for operators like |, &&, ||, ;, etc.
-  const stringParts = parsed.filter((part: string | object): part is string => typeof part === 'string');
+  const stringParts = parsed.filter(
+    (part: string | object): part is string => typeof part === "string",
+  );
 
   // If we filtered out any operators, the command is potentially dangerous
   if (stringParts.length !== parsed.length) {
     throw new Error(
-      'Command string contains shell operators (|, &&, ||, ;, etc.) which are not allowed. ' +
-      'Use separate command and args instead: new StdioTransport(command, [args])'
+      "Command string contains shell operators (|, &&, ||, ;, etc.) which are not allowed. " +
+        "Use separate command and args instead: new StdioTransport(command, [args])",
     );
   }
 
   if (stringParts.length === 0) {
-    throw new Error('No command found in command string');
+    throw new Error("No command found in command string");
   }
 
   const command = stringParts[0];
@@ -203,35 +230,44 @@ export class StdioTransport implements ITransport {
   private command: string;
   private args: string[];
   private process: ChildProcess | null = null;
-  private buffer: string = '';
+  private buffer: string = "";
   private decoder: StringDecoder;
-  private pendingRequests: Map<number | string, { resolve: Function, reject: Function, timer: NodeJS.Timeout }> = new Map();
+  private pendingRequests: Map<
+    number | string,
+    { resolve: Function; reject: Function; timer: NodeJS.Timeout }
+  > = new Map();
   private defaultTimeout: number;
   private env: NodeJS.ProcessEnv | undefined;
   private sandbox?: ISandbox;
   private stderrBuffer: string[] = [];
   private static readonly MAX_STDERR_LINES = 10;
 
-  private constructor(command: string, args: string[] = [], defaultTimeout = 30000, env?: NodeJS.ProcessEnv, sandbox?: ISandbox) {
+  private constructor(
+    command: string,
+    args: string[] = [],
+    defaultTimeout = 30000,
+    env?: NodeJS.ProcessEnv,
+    sandbox?: ISandbox,
+  ) {
     // Validate inputs
-    if (!command || typeof command !== 'string') {
-      throw new Error('Command must be a non-empty string');
+    if (!command || typeof command !== "string") {
+      throw new Error("Command must be a non-empty string");
     }
 
     if (!Array.isArray(args)) {
-      throw new Error('Args must be an array');
+      throw new Error("Args must be an array");
     }
 
     // Support both patterns:
     // 1. New (recommended): new StdioTransport('node', ['server.js', '--port', '3000'])
     // 2. Legacy (deprecated): new StdioTransport('node server.js --port 3000')
-    if (args.length === 0 && command.includes(' ')) {
+    if (args.length === 0 && command.includes(" ")) {
       // Legacy format: Parse command string
       // Emit deprecation warning in dev mode
-      if (process.env.NODE_ENV !== 'production') {
+      if (process.env.NODE_ENV !== "production") {
         console.warn(
-          '[DEPRECATION WARNING] Passing a single command string to StdioTransport is deprecated. ' +
-          'Use separate command and args instead: new StdioTransport(command, [args])'
+          "[DEPRECATION WARNING] Passing a single command string to StdioTransport is deprecated. " +
+            "Use separate command and args instead: new StdioTransport(command, [args])",
         );
       }
 
@@ -240,7 +276,9 @@ export class StdioTransport implements ITransport {
         this.command = parsedCommand;
         this.args = parsedArgs;
       } catch (error) {
-        throw new Error(`Failed to parse command string: ${(error as Error).message}`);
+        throw new Error(
+          `Failed to parse command string: ${(error as Error).message}`,
+        );
       }
     } else {
       // New format: Use provided command and args
@@ -251,12 +289,12 @@ export class StdioTransport implements ITransport {
     this.defaultTimeout = defaultTimeout;
     this.env = env;
     this.sandbox = sandbox;
-    this.decoder = new StringDecoder('utf8');
+    this.decoder = new StringDecoder("utf8");
 
     // Windows Compatibility: npm and npx are batch files (.cmd) on Windows
     // spawn() without shell:true requires the full extension
-    if (process.platform === 'win32') {
-      if (this.command === 'npm' || this.command === 'npx') {
+    if (process.platform === "win32") {
+      if (this.command === "npm" || this.command === "npx") {
         this.command = `${this.command}.cmd`;
       }
     }
@@ -278,7 +316,7 @@ export class StdioTransport implements ITransport {
     args: string[] = [],
     defaultTimeout = 30000,
     env?: NodeJS.ProcessEnv,
-    sandbox?: ISandbox
+    sandbox?: ISandbox,
   ): StdioTransport {
     return new StdioTransport(command, args, defaultTimeout, env, sandbox);
   }
@@ -294,65 +332,73 @@ export class StdioTransport implements ITransport {
         }
 
         this.process = spawn(spawnCmd, spawnArgs, {
-          stdio: ['pipe', 'pipe', 'pipe'],
+          stdio: ["pipe", "pipe", "pipe"],
           env: { ...process.env, ...this.env },
-          shell: process.platform === 'win32'  // Windows needs shell to resolve .cmd scripts
+          shell: process.platform === "win32", // Windows needs shell to resolve .cmd scripts
         });
 
         // Capture stderr to help debug startup issues (e.g. missing modules, syntax errors)
-        this.process.stderr?.on('data', (data) => {
-          const lines = data.toString().split('\n');
-          
+        this.process.stderr?.on("data", (data) => {
+          const lines = data.toString().split("\n");
+
           // Noise patterns to filter out from user console (but keep in internal buffer)
           const noisePatterns = [
             /\[MODULE_TYPELESS_PACKAGE_JSON\]/,
             /Warning: Module type of file/,
             /Reparsing as ES module because module syntax was detected/,
             /To eliminate this warning, add "type": "module"/,
-            /Use `node --trace-warnings ...` to show where the warning was created/
+            /Use `node --trace-warnings ...` to show where the warning was created/,
           ];
 
           for (const line of lines) {
             const trimmed = line.trim();
             if (trimmed) {
               this.stderrBuffer.push(trimmed);
-              
+
               // Only passthrough to real stderr if it's NOT a noise pattern
-              const isNoise = noisePatterns.some(p => p.test(trimmed));
+              const isNoise = noisePatterns.some((p) => p.test(trimmed));
               if (!isNoise) {
-                process.stderr.write(line + '\n');
+                process.stderr.write(line + "\n");
               }
             }
           }
           // Keep buffer size manageable
           if (this.stderrBuffer.length > StdioTransport.MAX_STDERR_LINES) {
-            this.stderrBuffer = this.stderrBuffer.slice(-StdioTransport.MAX_STDERR_LINES);
+            this.stderrBuffer = this.stderrBuffer.slice(
+              -StdioTransport.MAX_STDERR_LINES,
+            );
           }
         });
 
-        this.process.stdout?.on('data', (data) => this.handleData(data));
+        this.process.stdout?.on("data", (data) => this.handleData(data));
 
-        this.process.on('error', (err) => {
-          reject(new Error(t('error_process_spawn').replace('{message}', err.message)));
+        this.process.on("error", (err) => {
+          reject(
+            new Error(
+              t("error_process_spawn").replace("{message}", err.message),
+            ),
+          );
         });
 
-        this.process.on('spawn', () => {
+        this.process.on("spawn", () => {
           resolve();
         });
 
-        this.process.on('exit', (code) => {
+        this.process.on("exit", (code) => {
           // Reject all pending requests if process dies
           Array.from(this.pendingRequests.entries()).forEach(([id, req]) => {
             clearTimeout(req.timer);
-            let errorMsg = t('error_process_exit').replace('{code}', String(code));
+            let errorMsg = t("error_process_exit").replace(
+              "{code}",
+              String(code),
+            );
             if (this.stderrBuffer.length > 0) {
-              errorMsg += `\n${t('latest_stderr_output')}\n${this.stderrBuffer.join('\n')}`;
+              errorMsg += `\n${t("latest_stderr_output")}\n${this.stderrBuffer.join("\n")}`;
             }
             req.reject(new Error(errorMsg));
           });
           this.pendingRequests.clear();
         });
-
       } catch (e) {
         reject(e);
       }
@@ -372,17 +418,19 @@ export class StdioTransport implements ITransport {
     if (attemptedSize > StdioTransport.MAX_BUFFER_SIZE) {
       // Kill the connection immediately
       if (this.process) {
-        this.process.kill('SIGTERM');
+        this.process.kill("SIGTERM");
       }
 
       // Reject all pending requests
       for (const [id, req] of this.pendingRequests.entries()) {
         clearTimeout(req.timer);
-        req.reject(new Error(
-          `Transport buffer limit exceeded (attempted: ${attemptedSize} bytes, ` +
-          `limit: ${StdioTransport.MAX_BUFFER_SIZE} bytes). ` +
-          'Possible JSON bomb attack detected. Connection terminated.'
-        ));
+        req.reject(
+          new Error(
+            `Transport buffer limit exceeded (attempted: ${attemptedSize} bytes, ` +
+              `limit: ${StdioTransport.MAX_BUFFER_SIZE} bytes). ` +
+              "Possible JSON bomb attack detected. Connection terminated.",
+          ),
+        );
       }
       this.pendingRequests.clear();
       return;
@@ -390,8 +438,8 @@ export class StdioTransport implements ITransport {
 
     this.buffer += chunk;
 
-    const lines = this.buffer.split('\n');
-    this.buffer = lines.pop() || '';
+    const lines = this.buffer.split("\n");
+    this.buffer = lines.pop() || "";
 
     for (const line of lines) {
       if (!line.trim()) continue;
@@ -414,20 +462,23 @@ export class StdioTransport implements ITransport {
     }
   }
 
-  async send(message: JsonRpcRequest | JsonRpcNotification, options?: TransportOptions): Promise<JsonValue> {
-    if (!this.process) throw new Error(t('error_process_not_started'));
+  async send(
+    message: JsonRpcRequest | JsonRpcNotification,
+    options?: TransportOptions,
+  ): Promise<JsonValue> {
+    if (!this.process) throw new Error(t("error_process_not_started"));
 
     // Handle Notifications (Fire and Forget)
     // If no ID is provided, we send the data and resolve immediately
     // as per JSON-RPC 2.0 Notification spec.
     if (message.id === undefined || message.id === null) {
-        const jsonLine = JSON.stringify(message) + '\n';
-        try {
-            this.process?.stdin?.write(jsonLine);
-            return null;
-        } catch (e) {
-            throw new Error((e as Error).message);
-        }
+      const jsonLine = JSON.stringify(message) + "\n";
+      try {
+        this.process?.stdin?.write(jsonLine);
+        return null;
+      } catch (e) {
+        throw new Error((e as Error).message);
+      }
     }
 
     const timeoutMs = options?.timeoutMs || this.defaultTimeout;
@@ -436,9 +487,9 @@ export class StdioTransport implements ITransport {
       const timer = setTimeout(() => {
         if (this.pendingRequests.has(message.id!)) {
           this.pendingRequests.delete(message.id!);
-          let errorMsg = t('request_timeout', { ms: String(timeoutMs) });
+          let errorMsg = t("request_timeout", { ms: String(timeoutMs) });
           if (this.stderrBuffer.length > 0) {
-            errorMsg += `\n${t('latest_stderr_output')}\n${this.stderrBuffer.join('\n')}`;
+            errorMsg += `\n${t("latest_stderr_output")}\n${this.stderrBuffer.join("\n")}`;
           }
           reject(new Error(errorMsg));
         }
@@ -446,7 +497,7 @@ export class StdioTransport implements ITransport {
 
       this.pendingRequests.set(message.id!, { resolve, reject, timer });
 
-      const jsonLine = JSON.stringify(message) + '\n';
+      const jsonLine = JSON.stringify(message) + "\n";
       try {
         this.process?.stdin?.write(jsonLine);
       } catch (e) {
@@ -455,7 +506,7 @@ export class StdioTransport implements ITransport {
 
         let errorMsg = (e as Error).message;
         if (this.stderrBuffer.length > 0) {
-          errorMsg += `\n${t('latest_stderr_output')}\n${this.stderrBuffer.join('\n')}`;
+          errorMsg += `\n${t("latest_stderr_output")}\n${this.stderrBuffer.join("\n")}`;
         }
         reject(new Error(errorMsg));
       }
@@ -468,7 +519,7 @@ export class StdioTransport implements ITransport {
     if (remaining) {
       this.buffer += remaining;
       // Process any final complete lines
-      const lines = this.buffer.split('\n');
+      const lines = this.buffer.split("\n");
       for (const line of lines) {
         if (!line.trim()) continue;
         try {

@@ -22,12 +22,12 @@ mcp-verify includes **optional** AI-powered semantic analysis that detects:
 
 ## ⚡ TL;DR - Quick Start by Provider
 
-| Provider | Cost | Privacy | Speed | Setup Time | Best For |
-|----------|------|---------|-------|------------|----------|
-| **Gemini** | 💰 FREE tier! | ☁️ Cloud | ⚡⚡ Very Fast | 30 sec | New users, budget-conscious |
-| **Ollama** | 💰 FREE | 🔒 100% Local | ⚡ Fast | 3 min | Open source devs, privacy-first |
-| **Anthropic** | 💰 $0.0003/scan | ☁️ Cloud | ⚡⚡ Very Fast | 30 sec | Professional projects |
-| **OpenAI** | 💰 $0.0002/scan | ☁️ Cloud | ⚡⚡ Very Fast | 30 sec | Existing OpenAI users |
+| Provider      | Cost            | Privacy       | Speed          | Setup Time | Best For                        |
+| ------------- | --------------- | ------------- | -------------- | ---------- | ------------------------------- |
+| **Gemini**    | 💰 FREE tier!   | ☁️ Cloud      | ⚡⚡ Very Fast | 30 sec     | New users, budget-conscious     |
+| **Ollama**    | 💰 FREE         | 🔒 100% Local | ⚡ Fast        | 3 min      | Open source devs, privacy-first |
+| **Anthropic** | 💰 $0.0003/scan | ☁️ Cloud      | ⚡⚡ Very Fast | 30 sec     | Professional projects           |
+| **OpenAI**    | 💰 $0.0002/scan | ☁️ Cloud      | ⚡⚡ Very Fast | 30 sec     | Existing OpenAI users           |
 
 **Recommendation**: Start with **Gemini** (free tier, fast setup) or **Ollama** (100% local, privacy-first).
 
@@ -133,11 +133,11 @@ htop  # Ensure CPU/RAM available
 
 ### Free Tier Limits (as of 2024)
 
-| Limit | Value |
-|-------|-------|
-| Requests per minute | 15 |
-| Tokens per minute | 1,000,000 |
-| Requests per day | 1,500 |
+| Limit               | Value     |
+| ------------------- | --------- |
+| Requests per minute | 15        |
+| Tokens per minute   | 1,000,000 |
+| Requests per day    | 1,500     |
 
 More than enough for most projects!
 
@@ -347,24 +347,24 @@ export OPENAI_API_KEY="sk-..."
 
 ### Use Case Matrix
 
-| Scenario | Recommended Provider | Why |
-|----------|---------------------|-----|
-| **First time trying semantic analysis** | Ollama | Free, no commitment, privacy-first |
-| **Open source project** | Ollama | Free forever, community-friendly |
-| **Sensitive codebase** | Ollama | 100% local, no data leaves your machine |
-| **Professional project** | Anthropic | Best quality, fast, reliable |
-| **CI/CD pipeline** | Anthropic or OpenAI | Cloud-based, no local dependencies |
-| **Already use OpenAI** | OpenAI | Reuse existing credits |
-| **Budget-conscious** | Ollama | Free forever |
-| **Air-gapped environment** | Ollama | Works offline |
+| Scenario                                | Recommended Provider | Why                                     |
+| --------------------------------------- | -------------------- | --------------------------------------- |
+| **First time trying semantic analysis** | Ollama               | Free, no commitment, privacy-first      |
+| **Open source project**                 | Ollama               | Free forever, community-friendly        |
+| **Sensitive codebase**                  | Ollama               | 100% local, no data leaves your machine |
+| **Professional project**                | Anthropic            | Best quality, fast, reliable            |
+| **CI/CD pipeline**                      | Anthropic or OpenAI  | Cloud-based, no local dependencies      |
+| **Already use OpenAI**                  | OpenAI               | Reuse existing credits                  |
+| **Budget-conscious**                    | Ollama               | Free forever                            |
+| **Air-gapped environment**              | Ollama               | Works offline                           |
 
 ### Cost Comparison (1000 scans)
 
-| Provider | Cost | Equivalent to |
-|----------|------|---------------|
-| Ollama | **$0** | FREE |
-| Anthropic (Haiku) | **$0.30** | 1 coffee ☕ |
-| OpenAI (GPT-4o-mini) | **$0.20** | 1 snack 🍫 |
+| Provider             | Cost      | Equivalent to |
+| -------------------- | --------- | ------------- |
+| Ollama               | **$0**    | FREE          |
+| Anthropic (Haiku)    | **$0.30** | 1 coffee ☕   |
+| OpenAI (GPT-4o-mini) | **$0.20** | 1 snack 🍫    |
 
 ---
 
@@ -380,6 +380,7 @@ mcp-verify validate \
 ```
 
 **Output:**
+
 ```
 ✓ Testing handshake
 ✓ Discovering capabilities
@@ -429,22 +430,24 @@ mcp-verify validate "node server.js" --llm openai:gpt-4o-mini
 ### API Key Storage
 
 **✅ DO:**
+
 - Store API keys in environment variables
 - Use CI/CD secrets (GitHub Secrets, GitLab Variables)
 - Use `.env` files (added to `.gitignore`)
 
 **❌ DON'T:**
+
 - Hardcode API keys in code
 - Commit API keys to Git
 - Share API keys in public forums
 
 ### Data Privacy
 
-| Provider | Data Sent to Cloud | Retention Policy |
-|----------|-------------------|------------------|
-| **Ollama** | ❌ Nothing | N/A (100% local) |
+| Provider      | Data Sent to Cloud           | Retention Policy               |
+| ------------- | ---------------------------- | ------------------------------ |
+| **Ollama**    | ❌ Nothing                   | N/A (100% local)               |
 | **Anthropic** | ✅ Tool descriptions/schemas | 30 days (per Anthropic policy) |
-| **OpenAI** | ✅ Tool descriptions/schemas | 30 days (per OpenAI policy) |
+| **OpenAI**    | ✅ Tool descriptions/schemas | 30 days (per OpenAI policy)    |
 
 **Important**: If analyzing **sensitive/proprietary code**, use **Ollama** to keep everything local.
 
@@ -460,12 +463,14 @@ mcp-verify validate "node server.js"
 ```
 
 **What you still get:**
+
 - ✅ 60 security rules (SQL injection, command injection, etc.)
 - ✅ Protocol compliance validation
 - ✅ Quality scoring
 - ✅ JSON/HTML/SARIF reports
 
 **What you miss:**
+
 - ❌ Deep semantic understanding
 - ❌ Description mismatch detection
 - ❌ Misleading name detection
@@ -474,15 +479,15 @@ mcp-verify validate "node server.js"
 
 ## 📊 Performance Comparison
 
-| Provider | Avg Analysis Time | Accuracy | Cost per 100 Scans |
-|----------|------------------|----------|-------------------|
-| Ollama (llama3.2) | 5-10s | ⭐⭐⭐⭐ | FREE |
-| Ollama (mistral) | 3-7s | ⭐⭐⭐ | FREE |
-| Anthropic (Haiku) | 1-2s | ⭐⭐⭐⭐⭐ | $0.03 |
-| Anthropic (Sonnet) | 2-3s | ⭐⭐⭐⭐⭐ | $0.15 |
-| OpenAI (GPT-4o-mini) | 1-2s | ⭐⭐⭐⭐ | $0.02 |
+| Provider             | Avg Analysis Time | Accuracy   | Cost per 100 Scans |
+| -------------------- | ----------------- | ---------- | ------------------ |
+| Ollama (llama3.2)    | 5-10s             | ⭐⭐⭐⭐   | FREE               |
+| Ollama (mistral)     | 3-7s              | ⭐⭐⭐     | FREE               |
+| Anthropic (Haiku)    | 1-2s              | ⭐⭐⭐⭐⭐ | $0.03              |
+| Anthropic (Sonnet)   | 2-3s              | ⭐⭐⭐⭐⭐ | $0.15              |
+| OpenAI (GPT-4o-mini) | 1-2s              | ⭐⭐⭐⭐   | $0.02              |
 
-*Performance measured on: MacBook Pro M1, 16GB RAM*
+_Performance measured on: MacBook Pro M1, 16GB RAM_
 
 ---
 
@@ -524,4 +529,3 @@ A: Not yet. This feature is planned for a future release.
 - [Security Scoring](../SECURITY_SCORING.md) - How scoring works
 - [CI/CD Integration](./CI_CD.md) - GitHub Actions, GitLab CI
 - [Contributing](../CONTRIBUTING.md) - Development guide
-

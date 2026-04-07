@@ -15,16 +15,16 @@
  * - MCP server connection (via real protocol handshake)
  */
 
-import fs from 'fs';
-import path from 'path';
-import { WorkspaceHealth, ConnectionStatus } from '../types/workspace-health';
-import { EnvironmentVars } from '../types/environment-vars';
-import { WorkspaceContext } from '../types/workspace-context';
-import { EnvironmentLoader } from './environment-loader';
-import { createTransport } from '../../utils/transport-factory';
-import { MCPValidator } from '@mcp-verify/core/use-cases/validator/validator';
-import { HandshakeResult } from '@mcp-verify/core/domain/mcp-server/entities/validation.types';
-import { Logger } from '@mcp-verify/core/infrastructure/logging/logger';
+import fs from "fs";
+import path from "path";
+import { WorkspaceHealth, ConnectionStatus } from "../types/workspace-health";
+import { EnvironmentVars } from "../types/environment-vars";
+import { WorkspaceContext } from "../types/workspace-context";
+import { EnvironmentLoader } from "./environment-loader";
+import { createTransport } from "../../utils/transport-factory";
+import { MCPValidator } from "@mcp-verify/core/use-cases/validator/validator";
+import { HandshakeResult } from "@mcp-verify/core/domain/mcp-server/entities/validation.types";
+import { Logger } from "@mcp-verify/core/infrastructure/logging/logger";
 
 /**
  * Workspace health checker
@@ -36,9 +36,9 @@ export class WorkspaceHealthChecker {
 
   /** Paths where reports are typically stored */
   private static readonly REPORT_PATHS = [
-    'reports/html',
-    'reports/json',
-    'reports/md',
+    "reports/html",
+    "reports/json",
+    "reports/md",
   ];
 
   /**
@@ -52,7 +52,7 @@ export class WorkspaceHealthChecker {
   static async check(
     activeContextName: string,
     activeContext: WorkspaceContext,
-    environment: EnvironmentVars | undefined
+    environment: EnvironmentVars | undefined,
   ): Promise<WorkspaceHealth> {
     // Load environment if not provided
     const env = environment ?? EnvironmentLoader.load();
@@ -69,7 +69,9 @@ export class WorkspaceHealthChecker {
         keysFound: EnvironmentLoader.getLoadedKeys(env),
       },
       lastReport: WorkspaceHealthChecker.checkLastReport(),
-      connection: await WorkspaceHealthChecker.checkConnection(activeContext.target),
+      connection: await WorkspaceHealthChecker.checkConnection(
+        activeContext.target,
+      ),
     };
   }
 
@@ -81,11 +83,11 @@ export class WorkspaceHealthChecker {
    * @returns Connection status information
    */
   private static async checkConnection(
-    target: string | undefined
-  ): Promise<WorkspaceHealth['connection']> {
+    target: string | undefined,
+  ): Promise<WorkspaceHealth["connection"]> {
     if (!target) {
       return {
-        status: 'not_configured',
+        status: "not_configured",
       };
     }
 
@@ -103,12 +105,13 @@ export class WorkspaceHealthChecker {
 
       // CRITICAL: Strict timeout with Promise.race
       // This guarantees we NEVER wait more than HEALTH_TIMEOUT milliseconds
-      const handshakePromise = WorkspaceHealthChecker.performHandshake(validator);
+      const handshakePromise =
+        WorkspaceHealthChecker.performHandshake(validator);
       const timeoutPromise = new Promise<HandshakeResult>((resolve) => {
         setTimeout(() => {
           resolve({
             success: false,
-            error: 'Connection timeout (2000ms exceeded)',
+            error: "Connection timeout (2000ms exceeded)",
           });
         }, WorkspaceHealthChecker.HEALTH_TIMEOUT);
       });
@@ -119,7 +122,7 @@ export class WorkspaceHealthChecker {
       // Map HandshakeResult to ConnectionStatus
       if (result.success) {
         return {
-          status: 'connected',
+          status: "connected",
           responseTime,
           protocolVersion: result.protocolVersion,
           serverName: result.serverName,
@@ -127,14 +130,14 @@ export class WorkspaceHealthChecker {
       }
 
       // Check if error indicates protocol mismatch
-      const errorMsg = result.error ?? '';
+      const errorMsg = result.error ?? "";
       if (
-        errorMsg.includes('protocol') ||
-        errorMsg.includes('invalid') ||
-        errorMsg.includes('version')
+        errorMsg.includes("protocol") ||
+        errorMsg.includes("invalid") ||
+        errorMsg.includes("version")
       ) {
         return {
-          status: 'protocol_mismatch',
+          status: "protocol_mismatch",
           responseTime,
           error: errorMsg,
         };
@@ -142,16 +145,16 @@ export class WorkspaceHealthChecker {
 
       // Connection failed or timeout
       return {
-        status: 'unreachable',
+        status: "unreachable",
         responseTime,
         error: errorMsg,
       };
     } catch (error) {
       const responseTime = Date.now() - startTime;
       return {
-        status: 'unreachable',
+        status: "unreachable",
         responseTime,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     } finally {
       // CRITICAL: Always close transport to prevent resource leaks
@@ -172,14 +175,14 @@ export class WorkspaceHealthChecker {
    * @returns HandshakeResult with connection status
    */
   private static async performHandshake(
-    validator: MCPValidator
+    validator: MCPValidator,
   ): Promise<HandshakeResult> {
     try {
       return await validator.testHandshake();
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Handshake failed',
+        error: error instanceof Error ? error.message : "Handshake failed",
       };
     }
   }
@@ -189,7 +192,7 @@ export class WorkspaceHealthChecker {
    *
    * @returns Last report information
    */
-  private static checkLastReport(): WorkspaceHealth['lastReport'] {
+  private static checkLastReport(): WorkspaceHealth["lastReport"] {
     try {
       let mostRecent: { path: string; timestamp: string } | undefined;
 

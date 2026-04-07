@@ -11,8 +11,8 @@
  * Utility to setup graceful shutdown handlers for long-running processes
  */
 
-import chalk from 'chalk';
-import { t } from '@mcp-verify/shared';
+import chalk from "chalk";
+import { t } from "@mcp-verify/shared";
 
 type CleanupCallback = () => Promise<void> | void;
 
@@ -31,24 +31,24 @@ export function registerCleanup(callback: CleanupCallback): void {
     handlersRegistered = true;
 
     const shutdown = async (signal: string) => {
-      console.log(chalk.yellow(`\n\n${t('received_signal')}: ${signal}`));
-      console.log(chalk.gray(t('cleaning_up')));
+      console.log(chalk.yellow(`\n\n${t("received_signal")}: ${signal}`));
+      console.log(chalk.gray(t("cleaning_up")));
 
       // Execute all cleanup callbacks
       for (const cleanup of cleanupCallbacks) {
         try {
           await cleanup();
         } catch (error) {
-          console.error(chalk.red(t('cleanup_error')), error);
+          console.error(chalk.red(t("cleanup_error")), error);
         }
       }
 
-      console.log(chalk.green(t('cleanup_complete')));
+      console.log(chalk.green(t("cleanup_complete")));
       process.exit(0);
     };
 
-    process.on('SIGINT', () => shutdown('SIGINT'));
-    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on("SIGINT", () => shutdown("SIGINT"));
+    process.on("SIGTERM", () => shutdown("SIGTERM"));
   }
 }
 

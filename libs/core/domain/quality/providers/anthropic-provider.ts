@@ -24,14 +24,14 @@
  * @module libs/core/domain/quality/providers/anthropic-provider
  */
 
-import Anthropic from '@anthropic-ai/sdk';
-import { t } from '@mcp-verify/shared';
+import Anthropic from "@anthropic-ai/sdk";
+import { t } from "@mcp-verify/shared";
 import type {
   ILLMProvider,
   LLMMessage,
   LLMResponse,
   LLMProviderConfig,
-} from './llm-provider.interface';
+} from "./llm-provider.interface";
 
 export class AnthropicProvider implements ILLMProvider {
   private client: Anthropic | null = null;
@@ -41,23 +41,23 @@ export class AnthropicProvider implements ILLMProvider {
    * Model context windows
    */
   private readonly CONTEXT_WINDOWS: Record<string, number> = {
-    'claude-haiku-4-5-20251001': 200_000,
-    'claude-sonnet-4-20250514': 200_000,
-    'claude-opus-4-5-20251101': 200_000,
+    "claude-haiku-4-5-20251001": 200_000,
+    "claude-sonnet-4-20250514": 200_000,
+    "claude-opus-4-5-20251101": 200_000,
   };
 
   constructor(config: LLMProviderConfig) {
     this.config = config;
 
     if (!this.config.apiKey) {
-      throw new Error(
-        t('anthropic_api_key_not_configured')
-      );
+      throw new Error(t("anthropic_api_key_not_configured"));
     }
   }
 
   getName(): string {
-    const modelName = this.config.model.replace('claude-', 'Claude ').replace(/-\d+$/g, '');
+    const modelName = this.config.model
+      .replace("claude-", "Claude ")
+      .replace(/-\d+$/g, "");
     return `Anthropic ${modelName}`;
   }
 
@@ -68,9 +68,7 @@ export class AnthropicProvider implements ILLMProvider {
 
     // Validate API key format
     if (!this.isValidAnthropicKey(this.config.apiKey)) {
-      console.warn(
-        t('anthropic_invalid_key_format')
-      );
+      console.warn(t("anthropic_invalid_key_format"));
       return false;
     }
 
@@ -79,18 +77,22 @@ export class AnthropicProvider implements ILLMProvider {
 
   async complete(
     messages: LLMMessage[],
-    options?: { maxTokens?: number; temperature?: number; timeout?: number }
+    options?: { maxTokens?: number; temperature?: number; timeout?: number },
   ): Promise<LLMResponse> {
     const client = await this.initClient();
 
-    const { maxTokens = 2000, temperature = 0.2, timeout = 30000 } = options || {};
+    const {
+      maxTokens = 2000,
+      temperature = 0.2,
+      timeout = 30000,
+    } = options || {};
 
     // Create timeout promise
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(
         () => reject(new Error(`Anthropic API timeout after ${timeout}ms`)),
-        timeout
-      )
+        timeout,
+      ),
     );
 
     // Create API request
@@ -99,7 +101,7 @@ export class AnthropicProvider implements ILLMProvider {
       max_tokens: maxTokens,
       temperature,
       messages: messages.map((m) => ({
-        role: m.role === 'system' ? 'user' : m.role, // Anthropic doesn't have 'system' role
+        role: m.role === "system" ? "user" : m.role, // Anthropic doesn't have 'system' role
         content: m.content,
       })),
     });
@@ -108,8 +110,9 @@ export class AnthropicProvider implements ILLMProvider {
     const response = await Promise.race([apiPromise, timeoutPromise]);
 
     // Extract text from response
-    const textContent = response.content.find((c) => c.type === 'text');
-    const text = textContent && textContent.type === 'text' ? textContent.text : '';
+    const textContent = response.content.find((c) => c.type === "text");
+    const text =
+      textContent && textContent.type === "text" ? textContent.text : "";
 
     return {
       text,
@@ -126,12 +129,12 @@ export class AnthropicProvider implements ILLMProvider {
 
   getModelInfo(): {
     name: string;
-    provider: 'anthropic' | 'ollama' | 'openai' | 'custom';
+    provider: "anthropic" | "ollama" | "openai" | "custom";
     contextWindow: number;
   } {
     return {
       name: this.config.model,
-      provider: 'anthropic',
+      provider: "anthropic",
       contextWindow: this.CONTEXT_WINDOWS[this.config.model] || 200_000,
     };
   }
@@ -145,7 +148,7 @@ export class AnthropicProvider implements ILLMProvider {
     }
 
     if (!this.config.apiKey) {
-      throw new Error(t('anthropic_api_key_not_configured'));
+      throw new Error(t("anthropic_api_key_not_configured"));
     }
 
     this.client = new Anthropic({ apiKey: this.config.apiKey });

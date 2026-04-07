@@ -8,22 +8,22 @@ Track security score changes across scans, prevent regressions in CI/CD pipeline
 
 **Regression Detection** is a core feature of `mcp-verify` that allows you to snapshot the security and quality state of an MCP server at a given point in time — called a **baseline** — and then compare future scans against it.
 
-Instead of only asking *"What issues exist today?"*, you can now ask:
+Instead of only asking _"What issues exist today?"_, you can now ask:
 
-- *"Did we introduce new vulnerabilities since the last release?"*
-- *"Did the security score drop after merging this PR?"*
-- *"What problems did we fix? What new ones came in?"*
+- _"Did we introduce new vulnerabilities since the last release?"_
+- _"Did the security score drop after merging this PR?"_
+- _"What problems did we fix? What new ones came in?"_
 
 This is especially valuable in **CI/CD pipelines**, where you want to automatically block deployments that introduce critical security regressions, even if the overall validation still passes.
 
 ### Why it matters
 
-| Without Regression Detection          | With Regression Detection                      |
-|---------------------------------------|------------------------------------------------|
-| ✅ Score: 72 — build passes           | ✅ Score: 72 — but wait...                     |
-| Silent regression goes unnoticed      | ⚠️ Score dropped 8 points from baseline        |
-| New CRITICAL finding is just a number | 🚨 Build fails: new CRITICAL finding detected  |
-| No record of what changed             | 📋 Diff: 2 new issues, 1 resolved              |
+| Without Regression Detection          | With Regression Detection                     |
+| ------------------------------------- | --------------------------------------------- |
+| ✅ Score: 72 — build passes           | ✅ Score: 72 — but wait...                    |
+| Silent regression goes unnoticed      | ⚠️ Score dropped 8 points from baseline       |
+| New CRITICAL finding is just a number | 🚨 Build fails: new CRITICAL finding detected |
+| No record of what changed             | 📋 Diff: 2 new issues, 1 resolved             |
 
 ---
 
@@ -76,12 +76,12 @@ All regression-related flags are used with the `validate` command.
 
 ### Flags
 
-| Flag                      | Argument   | Default | Description                                                                  |
-|---------------------------|------------|---------|------------------------------------------------------------------------------|
-| `--save-baseline`         | `<path>`   | `—`     | Save current scan results as a baseline snapshot to the given file path        |
-| `--compare-baseline`      | `<path>`   | `—`     | Load and compare the current scan against the baseline at the given path       |
-| `--fail-on-degradation`   | —          | `false` | Exit with code `2` if the score drops beyond the allowed threshold             |
-| `--allowed-score-drop`    | `<number>` | `5`     | Maximum allowed score drop (in points) before `--fail-on-degradation` triggers |
+| Flag                    | Argument   | Default | Description                                                                    |
+| ----------------------- | ---------- | ------- | ------------------------------------------------------------------------------ |
+| `--save-baseline`       | `<path>`   | `—`     | Save current scan results as a baseline snapshot to the given file path        |
+| `--compare-baseline`    | `<path>`   | `—`     | Load and compare the current scan against the baseline at the given path       |
+| `--fail-on-degradation` | —          | `false` | Exit with code `2` if the score drops beyond the allowed threshold             |
+| `--allowed-score-drop`  | `<number>` | `5`     | Maximum allowed score drop (in points) before `--fail-on-degradation` triggers |
 
 > **Note:** `--save-baseline` and `--compare-baseline` can be used **together** in a single command. This is useful for pipelines where you want to update the baseline and still check for regressions in the same step.
 
@@ -140,11 +140,11 @@ mcp-verify validate "node server.js" \
 
 ## 🚦 Exit Codes
 
-| Code | Meaning            | When it occurs                                                              |
-|------|--------------------|-----------------------------------------------------------------------------|
-| `0`  | ✅ Success         | Scan completed, no critical issues or regression detected                   |
-| `1`  | ❌ Command error   | Invalid arguments, connection failure, or unhandled runtime error           |
-| `2`  | 🚨 Critical Issue  | New CRITICAL findings detected **OR** regression found via `--fail-on-degradation` |
+| Code | Meaning           | When it occurs                                                                     |
+| ---- | ----------------- | ---------------------------------------------------------------------------------- |
+| `0`  | ✅ Success        | Scan completed, no critical issues or regression detected                          |
+| `1`  | ❌ Command error  | Invalid arguments, connection failure, or unhandled runtime error                  |
+| `2`  | 🚨 Critical Issue | New CRITICAL findings detected **OR** regression found via `--fail-on-degradation` |
 
 > **CI/CD tip:** Always check exit codes explicitly. A `2` should fail the pipeline step. A `1` may indicate an infrastructure problem (e.g., server unreachable) and may warrant a separate alert.
 
@@ -186,9 +186,11 @@ This approach correctly identifies regressions even when the total finding count
 You are responsible for managing your baseline files. We recommend storing them in `reports/baseline/` and committing them to your repository.
 
 Separately, `mcp-verify` can maintain an automatic history of every scan in:
+
 ```
 .mcp-verify/history/
 ```
+
 These historical files are used for the `history` command and trend analysis, but are distinct from the explicit baseline files you create with `--save-baseline`.
 
 ---
@@ -217,7 +219,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install mcp-verify
         run: npm install -g mcp-verify
@@ -268,7 +270,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install mcp-verify
         run: npm install -g mcp-verify
@@ -307,12 +309,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - run: npm install -g mcp-verify
 
       - name: Download existing baseline (if available)
-        continue-on-error: true  # First run won't have a baseline yet
+        continue-on-error: true # First run won't have a baseline yet
         uses: actions/download-artifact@v4
         with:
           name: mcp-verify-baseline
@@ -421,5 +423,5 @@ git commit -m "chore: refresh mcp-verify security baseline"
 
 ---
 
-*Part of the **mcp-verify** project — the open-source security scanner for Model Context Protocol servers.*
-*Licensed under [AGPL-3.0](./LICENSE). © 2026 FinkTech.*
+_Part of the **mcp-verify** project — the open-source security scanner for Model Context Protocol servers._
+_Licensed under [AGPL-3.0](./LICENSE). © 2026 FinkTech._

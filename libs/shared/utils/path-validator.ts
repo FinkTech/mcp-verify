@@ -16,8 +16,8 @@
  * @module libs/shared/utils/path-validator
  */
 
-import path from 'path';
-import fs from 'fs';
+import path from "path";
+import fs from "fs";
 
 export class PathValidator {
   /**
@@ -37,7 +37,10 @@ export class PathValidator {
    * validateOutputPath('../../../etc/passwd')     // ❌ Throws
    * validateOutputPath('/etc/passwd')             // ❌ Throws
    */
-  static validateOutputPath(userPath: string, baseDir: string = './reportes'): string {
+  static validateOutputPath(
+    userPath: string,
+    baseDir: string = "./reportes",
+  ): string {
     // Normalize path (removes .., ./, etc)
     const normalized = path.normalize(userPath);
 
@@ -49,9 +52,9 @@ export class PathValidator {
     if (!resolved.startsWith(baseDirResolved)) {
       throw new Error(
         `[Security] Invalid output path: "${userPath}" attempts to write outside allowed directory.\n` +
-        `Allowed: ${baseDirResolved}\n` +
-        `Attempted: ${resolved}\n\n` +
-        `This is blocked to prevent path traversal attacks.`
+          `Allowed: ${baseDirResolved}\n` +
+          `Attempted: ${resolved}\n\n` +
+          `This is blocked to prevent path traversal attacks.`,
       );
     }
 
@@ -89,9 +92,9 @@ export class PathValidator {
     if (!resolved.startsWith(cwd)) {
       throw new Error(
         `[Security] Invalid baseline path: "${userPath}" is outside project directory.\n` +
-        `Project: ${cwd}\n` +
-        `Attempted: ${resolved}\n\n` +
-        `Baseline files must be within the project directory for security.`
+          `Project: ${cwd}\n` +
+          `Attempted: ${resolved}\n\n` +
+          `Baseline files must be within the project directory for security.`,
       );
     }
 
@@ -102,7 +105,10 @@ export class PathValidator {
    * Check if a path is safe (for testing/validation purposes)
    * Returns true if path would pass validation
    */
-  static isSafeOutputPath(userPath: string, baseDir: string = './reportes'): boolean {
+  static isSafeOutputPath(
+    userPath: string,
+    baseDir: string = "./reportes",
+  ): boolean {
     try {
       this.validateOutputPath(userPath, baseDir);
       return true;

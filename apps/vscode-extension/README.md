@@ -13,6 +13,7 @@ Enterprise-grade security validation for Model Context Protocol (MCP) servers di
 This VS Code extension provides **production-ready** enterprise-grade security validation for MCP servers.
 
 **Core Features (Stable):**
+
 - ✅ Full security validation with **60 security rules across 6 threat categories**
 - ✅ Advanced fuzzing engine with smart payload generation
 - ✅ Real-time diagnostics in Problems panel
@@ -23,6 +24,7 @@ This VS Code extension provides **production-ready** enterprise-grade security v
 - ✅ Multi-language support (English, Spanish)
 
 **In Development:**
+
 - 🚧 Security proxy with guardrails
 - 🚧 Interactive tool execution playground
 - 🚧 Real-time dashboard monitoring
@@ -91,19 +93,19 @@ npm run build
 
 All commands available via Command Palette (`Ctrl+Shift+P`):
 
-| Command | Description |
-|---------|-------------|
-| `MCP Verify: Validate MCP Server` | Full security validation |
-| `MCP Verify: Fuzz MCP Server` | Run fuzzing session |
-| `MCP Verify: Stress Test MCP Server` | Load testing |
-| `MCP Verify: Run Diagnostics` | Check environment setup |
-| `MCP Verify: Open Playground` | Interactive tool execution |
-| `MCP Verify: Start Security Proxy` | Proxy with guardrails |
-| `MCP Verify: Open Dashboard` | Real-time monitoring |
-| `MCP Verify: Export SARIF Report` | Export for CI/CD integration |
-| `MCP Verify: Generate Security Badge` | Create SVG badge |
-| `MCP Verify: Compare with Baseline` | Regression detection |
-| `MCP Verify: Clear Scan History` | Clear stored results |
+| Command                               | Description                  |
+| ------------------------------------- | ---------------------------- |
+| `MCP Verify: Validate MCP Server`     | Full security validation     |
+| `MCP Verify: Fuzz MCP Server`         | Run fuzzing session          |
+| `MCP Verify: Stress Test MCP Server`  | Load testing                 |
+| `MCP Verify: Run Diagnostics`         | Check environment setup      |
+| `MCP Verify: Open Playground`         | Interactive tool execution   |
+| `MCP Verify: Start Security Proxy`    | Proxy with guardrails        |
+| `MCP Verify: Open Dashboard`          | Real-time monitoring         |
+| `MCP Verify: Export SARIF Report`     | Export for CI/CD integration |
+| `MCP Verify: Generate Security Badge` | Create SVG badge             |
+| `MCP Verify: Compare with Baseline`   | Regression detection         |
+| `MCP Verify: Clear Scan History`      | Clear stored results         |
 
 ---
 
@@ -112,26 +114,34 @@ All commands available via Command Palette (`Ctrl+Shift+P`):
 The extension adds a dedicated **MCP Verify** panel to the Activity Bar with four views:
 
 ### Servers
+
 List of configured MCP servers with status indicators:
+
 - Connection status (idle, scanning, connected, error)
 - Last scan date and security score
 - Quick actions to validate or remove
 
 ### Security Findings
+
 Hierarchical view of security issues:
+
 - Grouped by severity (Critical, High, Medium, Low, Info)
 - Sub-grouped by rule (SEC-001, SEC-002, etc.)
 - Click to view detailed finding information
 
 ### Discovered Tools
+
 Tools exposed by the MCP server:
+
 - Tool name and description
 - Input schema preview
 - Security issue indicators
 - Click to execute in playground
 
 ### Scan History
+
 Past validation results:
+
 - Grouped by date (Today, Yesterday, etc.)
 - Server name, score, and timestamp
 - Click to view historical report
@@ -144,97 +154,98 @@ The extension validates against **60 security rules** organized in **6 threat ca
 
 ### Block OWASP: OWASP Top 10 Aligned (SEC-001 to SEC-013)
 
-| Rule | Severity | Description |
-|------|----------|-------------|
-| SEC-001 | Critical | Authentication Bypass Detection |
-| SEC-002 | Critical | Command Injection Detection |
-| SEC-003 | Critical | SQL Injection Detection |
-| SEC-004 | High | Server-Side Request Forgery (SSRF) |
-| SEC-005 | High | XML External Entity (XXE) |
-| SEC-006 | High | Insecure Deserialization |
-| SEC-007 | High | Path Traversal Detection |
-| SEC-008 | Medium | Data Leakage Prevention |
-| SEC-009 | Medium | Sensitive Data Exposure |
-| SEC-010 | Medium | Missing Rate Limiting |
-| SEC-011 | Medium | ReDoS Detection |
-| SEC-012 | Medium | Weak Cryptography |
-| SEC-013 | Medium | Prompt Injection Detection |
+| Rule    | Severity | Description                        |
+| ------- | -------- | ---------------------------------- |
+| SEC-001 | Critical | Authentication Bypass Detection    |
+| SEC-002 | Critical | Command Injection Detection        |
+| SEC-003 | Critical | SQL Injection Detection            |
+| SEC-004 | High     | Server-Side Request Forgery (SSRF) |
+| SEC-005 | High     | XML External Entity (XXE)          |
+| SEC-006 | High     | Insecure Deserialization           |
+| SEC-007 | High     | Path Traversal Detection           |
+| SEC-008 | Medium   | Data Leakage Prevention            |
+| SEC-009 | Medium   | Sensitive Data Exposure            |
+| SEC-010 | Medium   | Missing Rate Limiting              |
+| SEC-011 | Medium   | ReDoS Detection                    |
+| SEC-012 | Medium   | Weak Cryptography                  |
+| SEC-013 | Medium   | Prompt Injection Detection         |
 
 ### Block MCP: MCP-Specific Security (SEC-014 to SEC-021)
 
-| Rule | Severity | Description |
-|------|----------|-------------|
-| SEC-014 | High | Exposed Network Endpoint Prevention |
-| SEC-015 | Critical | Missing Authentication Implementation |
-| SEC-016 | High | Insecure URI Scheme Prevention |
-| SEC-017 | High | Excessive Permissions Prevention |
-| SEC-018 | Medium | Sensitive Data in Descriptions Prevention |
-| SEC-019 | Medium | Missing Input Constraints Prevention |
-| SEC-020 | High | Dangerous Tool Chaining Prevention |
+| Rule    | Severity | Description                               |
+| ------- | -------- | ----------------------------------------- |
+| SEC-014 | High     | Exposed Network Endpoint Prevention       |
+| SEC-015 | Critical | Missing Authentication Implementation     |
+| SEC-016 | High     | Insecure URI Scheme Prevention            |
+| SEC-017 | High     | Excessive Permissions Prevention          |
+| SEC-018 | Medium   | Sensitive Data in Descriptions Prevention |
+| SEC-019 | Medium   | Missing Input Constraints Prevention      |
+| SEC-020 | High     | Dangerous Tool Chaining Prevention        |
 | SEC-021 | Critical | Unencrypted Credential Storage Prevention |
 
 ### Block A: OWASP LLM Top 10 in MCP Context (SEC-022 to SEC-030)
 
-| Rule | Severity | Description |
-|------|----------|-------------|
-| SEC-022 | High | Insecure Output Handling |
-| SEC-023 | High | Excessive Agency |
-| SEC-024 | Critical | Prompt Injection via Tools |
-| SEC-025 | High | Supply Chain Tool Dependencies |
-| SEC-026 | High | Sensitive Data in Tool Responses |
-| SEC-027 | Medium | Training Data Poisoning |
-| SEC-028 | High | Model DoS via Tools |
-| SEC-029 | High | Insecure Plugin Design |
-| SEC-030 | High | Excessive Data Disclosure |
+| Rule    | Severity | Description                      |
+| ------- | -------- | -------------------------------- |
+| SEC-022 | High     | Insecure Output Handling         |
+| SEC-023 | High     | Excessive Agency                 |
+| SEC-024 | Critical | Prompt Injection via Tools       |
+| SEC-025 | High     | Supply Chain Tool Dependencies   |
+| SEC-026 | High     | Sensitive Data in Tool Responses |
+| SEC-027 | Medium   | Training Data Poisoning          |
+| SEC-028 | High     | Model DoS via Tools              |
+| SEC-029 | High     | Insecure Plugin Design           |
+| SEC-030 | High     | Excessive Data Disclosure        |
 
 ### Block B: Multi-Agent & Agentic Attacks (SEC-031 to SEC-041)
 
-| Rule | Severity | Description |
-|------|----------|-------------|
-| SEC-031 | Critical | Agent Identity Spoofing |
-| SEC-032 | Critical | Tool Result Tampering |
-| SEC-033 | High | Recursive Agent Loop |
+| Rule    | Severity | Description                      |
+| ------- | -------- | -------------------------------- |
+| SEC-031 | Critical | Agent Identity Spoofing          |
+| SEC-032 | Critical | Tool Result Tampering            |
+| SEC-033 | High     | Recursive Agent Loop             |
 | SEC-034 | Critical | Multi-Agent Privilege Escalation |
-| SEC-035 | High | Agent State Poisoning |
-| SEC-036 | High | Distributed Agent DDoS |
-| SEC-037 | Critical | Cross-Agent Prompt Injection |
-| SEC-038 | Medium | Agent Reputation Hijacking |
-| SEC-039 | High | Tool Chaining Path Traversal |
-| SEC-040 | High | Agent Swarm Coordination Attack |
-| SEC-041 | Critical | Agent Memory Injection |
+| SEC-035 | High     | Agent State Poisoning            |
+| SEC-036 | High     | Distributed Agent DDoS           |
+| SEC-037 | Critical | Cross-Agent Prompt Injection     |
+| SEC-038 | Medium   | Agent Reputation Hijacking       |
+| SEC-039 | High     | Tool Chaining Path Traversal     |
+| SEC-040 | High     | Agent Swarm Coordination Attack  |
+| SEC-041 | Critical | Agent Memory Injection           |
 
 ### Block C: Operational & Enterprise Compliance (SEC-042 to SEC-050)
 
-| Rule | Severity | Description |
-|------|----------|-------------|
-| SEC-042 | High | Missing Audit Logging |
-| SEC-043 | High | Insecure Session Management |
-| SEC-044 | Medium | Schema Versioning Absent |
-| SEC-045 | Medium | Insufficient Error Granularity |
-| SEC-046 | High | Missing CORS Validation |
-| SEC-047 | High | Insecure Default Configuration |
-| SEC-048 | Medium | Missing Capability Negotiation |
-| SEC-049 | Medium | Timing Side-Channel Auth |
-| SEC-050 | Medium | Insufficient Output Entropy |
+| Rule    | Severity | Description                    |
+| ------- | -------- | ------------------------------ |
+| SEC-042 | High     | Missing Audit Logging          |
+| SEC-043 | High     | Insecure Session Management    |
+| SEC-044 | Medium   | Schema Versioning Absent       |
+| SEC-045 | Medium   | Insufficient Error Granularity |
+| SEC-046 | High     | Missing CORS Validation        |
+| SEC-047 | High     | Insecure Default Configuration |
+| SEC-048 | Medium   | Missing Capability Negotiation |
+| SEC-049 | Medium   | Timing Side-Channel Auth       |
+| SEC-050 | Medium   | Insufficient Output Entropy    |
 
 ### Block D: AI Weaponization & Supply Chain (SEC-051 to SEC-060)
 
-| Rule | Severity | Description | Default |
-|------|----------|-------------|---------|
-| SEC-051 | High | Weaponized MCP Fuzzer | ❌ Disabled |
-| SEC-052 | Critical | Autonomous MCP Backdoor | ❌ Disabled |
-| SEC-053 | Critical | Malicious Config File | ❌ Disabled |
-| SEC-054 | Critical | API Endpoint Hijacking | ✅ Enabled |
-| SEC-055 | High | Jailbreak-as-a-Service | ❌ Disabled |
-| SEC-056 | High | Phishing via MCP | ❌ Disabled |
-| SEC-057 | Medium | Data Exfiltration via Steganography | ❌ Disabled |
-| SEC-058 | Critical | Self-Replicating MCP | ❌ Disabled |
-| SEC-059 | High | Unvalidated Tool Authorization | ✅ Enabled |
-| SEC-060 | Medium | Missing Transaction Semantics | ✅ Enabled |
+| Rule    | Severity | Description                         | Default     |
+| ------- | -------- | ----------------------------------- | ----------- |
+| SEC-051 | High     | Weaponized MCP Fuzzer               | ❌ Disabled |
+| SEC-052 | Critical | Autonomous MCP Backdoor             | ❌ Disabled |
+| SEC-053 | Critical | Malicious Config File               | ❌ Disabled |
+| SEC-054 | Critical | API Endpoint Hijacking              | ✅ Enabled  |
+| SEC-055 | High     | Jailbreak-as-a-Service              | ❌ Disabled |
+| SEC-056 | High     | Phishing via MCP                    | ❌ Disabled |
+| SEC-057 | Medium   | Data Exfiltration via Steganography | ❌ Disabled |
+| SEC-058 | Critical | Self-Replicating MCP                | ❌ Disabled |
+| SEC-059 | High     | Unvalidated Tool Authorization      | ✅ Enabled  |
+| SEC-060 | Medium   | Missing Transaction Semantics       | ✅ Enabled  |
 
 > **⚠️ Note**: Most Block D rules are **disabled by default** due to their adversarial nature. Enable them only in controlled environments for offensive security testing.
 
 Each finding includes:
+
 - Detailed description
 - Evidence from the scan
 - Remediation guidance
@@ -249,46 +260,46 @@ Configure via VS Code Settings (`Ctrl+,` → search "MCP Verify"):
 
 ### Validation
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `mcpVerify.language` | `auto` | Language for reports (en, es, auto) |
-| `mcpVerify.validation.enableFuzzing` | `false` | Enable fuzzing during validation |
-| `mcpVerify.validation.enableSemanticCheck` | `false` | LLM-powered semantic analysis |
-| `mcpVerify.validation.llmProvider` | `none` | LLM provider (anthropic, openai, ollama) |
-| `mcpVerify.validation.saveHistory` | `true` | Save results to history |
-| `mcpVerify.validation.outputFormat` | `html` | Report format (json, html, md, sarif) |
+| Setting                                    | Default | Description                              |
+| ------------------------------------------ | ------- | ---------------------------------------- |
+| `mcpVerify.language`                       | `auto`  | Language for reports (en, es, auto)      |
+| `mcpVerify.validation.enableFuzzing`       | `false` | Enable fuzzing during validation         |
+| `mcpVerify.validation.enableSemanticCheck` | `false` | LLM-powered semantic analysis            |
+| `mcpVerify.validation.llmProvider`         | `none`  | LLM provider (anthropic, openai, ollama) |
+| `mcpVerify.validation.saveHistory`         | `true`  | Save results to history                  |
+| `mcpVerify.validation.outputFormat`        | `html`  | Report format (json, html, md, sarif)    |
 
 ### Fuzzing
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `mcpVerify.fuzzing.concurrency` | `1` | Concurrent fuzzing workers (1-10) |
-| `mcpVerify.fuzzing.timeout` | `5000` | Timeout per request in ms |
-| `mcpVerify.fuzzing.generators` | `["all"]` | Payload generators to use |
-| `mcpVerify.fuzzing.stopOnFirst` | `false` | Stop on first vulnerability |
+| Setting                         | Default   | Description                       |
+| ------------------------------- | --------- | --------------------------------- |
+| `mcpVerify.fuzzing.concurrency` | `1`       | Concurrent fuzzing workers (1-10) |
+| `mcpVerify.fuzzing.timeout`     | `5000`    | Timeout per request in ms         |
+| `mcpVerify.fuzzing.generators`  | `["all"]` | Payload generators to use         |
+| `mcpVerify.fuzzing.stopOnFirst` | `false`   | Stop on first vulnerability       |
 
 ### Stress Testing
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `mcpVerify.stress.concurrentUsers` | `5` | Virtual concurrent users |
-| `mcpVerify.stress.duration` | `10` | Test duration in seconds |
+| Setting                            | Default | Description              |
+| ---------------------------------- | ------- | ------------------------ |
+| `mcpVerify.stress.concurrentUsers` | `5`     | Virtual concurrent users |
+| `mcpVerify.stress.duration`        | `10`    | Test duration in seconds |
 
 ### Proxy
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `mcpVerify.proxy.port` | `8080` | Proxy server port |
-| `mcpVerify.proxy.enableGuardrails` | `true` | Enable security guardrails |
-| `mcpVerify.proxy.guardrails` | `[...]` | Active guardrails list |
+| Setting                            | Default | Description                |
+| ---------------------------------- | ------- | -------------------------- |
+| `mcpVerify.proxy.port`             | `8080`  | Proxy server port          |
+| `mcpVerify.proxy.enableGuardrails` | `true`  | Enable security guardrails |
+| `mcpVerify.proxy.guardrails`       | `[...]` | Active guardrails list     |
 
 ### Baseline
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `mcpVerify.baseline.path` | `""` | Path to baseline file |
-| `mcpVerify.baseline.failOnDegradation` | `false` | Fail if score drops |
-| `mcpVerify.baseline.allowedScoreDrop` | `5` | Max allowed score drop |
+| Setting                                | Default | Description            |
+| -------------------------------------- | ------- | ---------------------- |
+| `mcpVerify.baseline.path`              | `""`    | Path to baseline file  |
+| `mcpVerify.baseline.failOnDegradation` | `false` | Fail if score drops    |
+| `mcpVerify.baseline.allowedScoreDrop`  | `5`     | Max allowed score drop |
 
 ### Security Rules Override
 
@@ -348,6 +359,7 @@ The Shield Pattern automatically hardens JSON schemas by adding security constra
 ### Example
 
 **Original Schema:**
+
 ```json
 {
   "type": "object",
@@ -359,6 +371,7 @@ The Shield Pattern automatically hardens JSON schemas by adding security constra
 ```
 
 **Hardened Schema:**
+
 ```json
 {
   "type": "object",
@@ -371,7 +384,7 @@ The Shield Pattern automatically hardens JSON schemas by adding security constra
     "limit": {
       "type": "number",
       "minimum": 0,
-      "maximum": 1.7976931348623157e+308
+      "maximum": 1.7976931348623157e308
     }
   },
   "additionalProperties": false
@@ -389,6 +402,7 @@ No default shortcuts are configured. You can set your own via:
 3. Click the + icon to assign your preferred keys
 
 Suggested shortcuts:
+
 - `Ctrl+Shift+M V` - Validate
 - `Ctrl+Shift+M F` - Fuzz
 - `Ctrl+Shift+M D` - Doctor
@@ -468,11 +482,13 @@ apps/vscode-extension/
 ## Contributing
 
 **For Contributors:**
+
 1. Read [CLAUDE.md](./CLAUDE.md) - Complete architecture and development guide
 2. See [CONTRIBUTING.md](https://github.com/FinkTech/mcp-verify/blob/main/CONTRIBUTING.md) - Contribution guidelines
 3. Check [DEVELOPMENT.md](https://github.com/FinkTech/mcp-verify/blob/main/DEVELOPMENT.md) - Local setup
 
 **Quick Start for Contributors:**
+
 ```bash
 # Clone the repository
 git clone https://github.com/FinkTech/mcp-verify.git
@@ -502,20 +518,20 @@ AGPL-3.0 - See [LICENSE](https://github.com/FinkTech/mcp-verify/blob/main/LICENS
 
 ### Stability Matrix
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Security Validation | ✅ Stable | Full 60 rules across 6 threat categories |
-| Diagnostics Provider | ✅ Stable | Problems panel integration |
-| Fuzzing Engine | ✅ Stable | 8 generators, 9 detectors, production-ready |
-| Shield Pattern | ✅ Stable | Secure schema generation (SEC-019) |
-| Tree Views | ✅ Stable | Results, Servers, Tools, History |
-| HTML Reports | ✅ Stable | WebView panel rendering |
-| SARIF Export | ✅ Stable | CI/CD integration |
-| Code Actions | ✅ Stable | Quick fixes (dynamic rule suggestions) |
-| Stress Testing | ✅ Stable | Load testing with configurable parameters |
-| Security Proxy | 🔜 Planned | Guardrails integration |
-| Interactive Playground | 🔜 Planned | Tool execution environment |
-| Real-time Dashboard | 🔜 Planned | Terminal-style monitoring |
+| Feature                | Status     | Notes                                       |
+| ---------------------- | ---------- | ------------------------------------------- |
+| Security Validation    | ✅ Stable  | Full 60 rules across 6 threat categories    |
+| Diagnostics Provider   | ✅ Stable  | Problems panel integration                  |
+| Fuzzing Engine         | ✅ Stable  | 8 generators, 9 detectors, production-ready |
+| Shield Pattern         | ✅ Stable  | Secure schema generation (SEC-019)          |
+| Tree Views             | ✅ Stable  | Results, Servers, Tools, History            |
+| HTML Reports           | ✅ Stable  | WebView panel rendering                     |
+| SARIF Export           | ✅ Stable  | CI/CD integration                           |
+| Code Actions           | ✅ Stable  | Quick fixes (dynamic rule suggestions)      |
+| Stress Testing         | ✅ Stable  | Load testing with configurable parameters   |
+| Security Proxy         | 🔜 Planned | Guardrails integration                      |
+| Interactive Playground | 🔜 Planned | Tool execution environment                  |
+| Real-time Dashboard    | 🔜 Planned | Terminal-style monitoring                   |
 
 ---
 

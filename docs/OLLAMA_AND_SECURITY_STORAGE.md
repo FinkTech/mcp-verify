@@ -1,6 +1,7 @@
 # 🦙 Ollama Support & Security Storage Architecture
 
 This document explains:
+
 1. How to add **Ollama** and other open-source LLM support
 2. How **security findings are currently stored**
 3. Recommendations for improved security tracking
@@ -10,12 +11,14 @@ This document explains:
 ## 📊 Current State (v1.0)
 
 ### LLM Integration
+
 - **Provider**: Anthropic Claude API only (hardcoded)
 - **Model**: `claude-haiku-4-5-20251001`
 - **File**: `libs/core/domain/quality/llm-semantic-analyzer.ts`
 - **API Key**: Environment variable `ANTHROPIC_API_KEY`
 
 ### Security Storage
+
 - **Format**: JSON, HTML, Markdown, SARIF
 - **Location**: `./reportes/{format}/{timestamp}.{ext}`
 - **Baselines**: Stored via `BaselineManager` (path traversal protected)
@@ -56,7 +59,7 @@ Proposed (v1.1+):
 // libs/core/domain/quality/providers/llm-provider.interface.ts
 
 export interface LLMMessage {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
 }
 
@@ -90,7 +93,7 @@ export interface ILLMProvider {
       maxTokens?: number;
       temperature?: number;
       timeout?: number;
-    }
+    },
   ): Promise<LLMResponse>;
 
   /**
@@ -111,8 +114,13 @@ export interface ILLMProvider {
 ```typescript
 // libs/core/domain/quality/providers/anthropic-provider.ts
 
-import Anthropic from '@anthropic-ai/sdk';
-import { ILLMProvider, LLMMessage, LLMResponse, LLMProviderConfig } from './llm-provider.interface';
+import Anthropic from "@anthropic-ai/sdk";
+import {
+  ILLMProvider,
+  LLMMessage,
+  LLMResponse,
+  LLMProviderConfig,
+} from "./llm-provider.interface";
 
 export class AnthropicProvider implements ILLMProvider {
   private client: Anthropic | null = null;
@@ -134,7 +142,7 @@ export class AnthropicProvider implements ILLMProvider {
     if (this.client) return this.client;
 
     if (!this.config.apiKey) {
-      throw new Error('Anthropic API key not configured');
+      throw new Error("Anthropic API key not configured");
     }
 
     this.client = new Anthropic({ apiKey: this.config.apiKey });
@@ -143,18 +151,19 @@ export class AnthropicProvider implements ILLMProvider {
 
   async complete(
     messages: LLMMessage[],
-    options?: { maxTokens?: number; temperature?: number; timeout?: number }
+    options?: { maxTokens?: number; temperature?: number; timeout?: number },
   ): Promise<LLMResponse> {
     const client = await this.initClient();
 
     const response = await client.messages.create({
-      model: this.config.model || 'claude-haiku-4-5-20251001',
+      model: this.config.model || "claude-haiku-4-5-20251001",
       max_tokens: options?.maxTokens || 2000,
       temperature: options?.temperature || 0.2,
-      messages: messages.map(m => ({ role: m.role, content: m.content })),
+      messages: messages.map((m) => ({ role: m.role, content: m.content })),
     });
 
-    const text = response.content[0].type === 'text' ? response.content[0].text : '';
+    const text =
+      response.content[0].type === "text" ? response.content[0].text : "";
 
     return {
       text,
@@ -166,11 +175,14 @@ export class AnthropicProvider implements ILLMProvider {
   }
 
   estimateCost(inputTokens: number, outputTokens: number): number {
-    return inputTokens * this.INPUT_COST_PER_MTK + outputTokens * this.OUTPUT_COST_PER_MTK;
+    return (
+      inputTokens * this.INPUT_COST_PER_MTK +
+      outputTokens * this.OUTPUT_COST_PER_MTK
+    );
   }
 
   getName(): string {
-    return 'Anthropic Claude';
+    return "Anthropic Claude";
   }
 }
 ```
@@ -180,7 +192,12 @@ export class AnthropicProvider implements ILLMProvider {
 ```typescript
 // libs/core/domain/quality/providers/ollama-provider.ts
 
-import { ILLMProvider, LLMMessage, LLMResponse, LLMProviderConfig } from './llm-provider.interface';
+import {
+  ILLMProvider,
+  LLMMessage,
+  LLMResponse,
+  LLMProviderConfig,
+} from "./llm-provider.interface";
 
 /**
  * Ollama Provider - Local LLM execution
@@ -197,7 +214,7 @@ export class OllamaProvider implements ILLMProvider {
 
   constructor(config: LLMProviderConfig) {
     this.config = config;
-    this.baseUrl = config.baseUrl || 'http://localhost:11434';
+    this.baseUrl = config.baseUrl || "http://localhost:11434";
   }
 
   async isAvailable(): Promise<boolean> {
@@ -213,16 +230,18 @@ export class OllamaProvider implements ILLMProvider {
 
   async complete(
     messages: LLMMessage[],
-    options?: { maxTokens?: number; temperature?: number; timeout?: number }
+    options?: { maxTokens?: number; temperature?: number; timeout?: number },
   ): Promise<LLMResponse> {
     // Convert messages to Ollama format
-    const prompt = messages.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n\n');
+    const prompt = messages
+      .map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
+      .join("\n\n");
 
     const response = await fetch(`${this.baseUrl}/api/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: this.config.model || 'llama3.2',
+        model: this.config.model || "llama3.2",
         prompt,
         stream: false,
         options: {
@@ -234,7 +253,9 @@ export class OllamaProvider implements ILLMProvider {
     });
 
     if (!response.ok) {
-      throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Ollama API error: ${response.status} ${response.statusText}`,
+      );
     }
 
     const data = await response.json();
@@ -254,7 +275,7 @@ export class OllamaProvider implements ILLMProvider {
   }
 
   getName(): string {
-    return `Ollama (${this.config.model || 'llama3.2'})`;
+    return `Ollama (${this.config.model || "llama3.2"})`;
   }
 }
 ```
@@ -264,8 +285,13 @@ export class OllamaProvider implements ILLMProvider {
 ```typescript
 // libs/core/domain/quality/providers/openai-provider.ts
 
-import OpenAI from 'openai';
-import { ILLMProvider, LLMMessage, LLMResponse, LLMProviderConfig } from './llm-provider.interface';
+import OpenAI from "openai";
+import {
+  ILLMProvider,
+  LLMMessage,
+  LLMResponse,
+  LLMProviderConfig,
+} from "./llm-provider.interface";
 
 export class OpenAIProvider implements ILLMProvider {
   private client: OpenAI | null = null;
@@ -273,7 +299,7 @@ export class OpenAIProvider implements ILLMProvider {
 
   // Pricing (Jan 2025) - GPT-4o-mini
   private readonly INPUT_COST_PER_MTK = 0.15 / 1_000_000;
-  private readonly OUTPUT_COST_PER_MTK = 0.60 / 1_000_000;
+  private readonly OUTPUT_COST_PER_MTK = 0.6 / 1_000_000;
 
   constructor(config: LLMProviderConfig) {
     this.config = config;
@@ -287,7 +313,7 @@ export class OpenAIProvider implements ILLMProvider {
     if (this.client) return this.client;
 
     if (!this.config.apiKey) {
-      throw new Error('OpenAI API key not configured');
+      throw new Error("OpenAI API key not configured");
     }
 
     this.client = new OpenAI({ apiKey: this.config.apiKey });
@@ -296,18 +322,18 @@ export class OpenAIProvider implements ILLMProvider {
 
   async complete(
     messages: LLMMessage[],
-    options?: { maxTokens?: number; temperature?: number; timeout?: number }
+    options?: { maxTokens?: number; temperature?: number; timeout?: number },
   ): Promise<LLMResponse> {
     const client = await this.initClient();
 
     const response = await client.chat.completions.create({
-      model: this.config.model || 'gpt-4o-mini',
+      model: this.config.model || "gpt-4o-mini",
       max_tokens: options?.maxTokens || 2000,
       temperature: options?.temperature || 0.2,
-      messages: messages.map(m => ({ role: m.role, content: m.content })),
+      messages: messages.map((m) => ({ role: m.role, content: m.content })),
     });
 
-    const text = response.choices[0].message.content || '';
+    const text = response.choices[0].message.content || "";
 
     return {
       text,
@@ -319,11 +345,14 @@ export class OpenAIProvider implements ILLMProvider {
   }
 
   estimateCost(inputTokens: number, outputTokens: number): number {
-    return inputTokens * this.INPUT_COST_PER_MTK + outputTokens * this.OUTPUT_COST_PER_MTK;
+    return (
+      inputTokens * this.INPUT_COST_PER_MTK +
+      outputTokens * this.OUTPUT_COST_PER_MTK
+    );
   }
 
   getName(): string {
-    return 'OpenAI GPT';
+    return "OpenAI GPT";
   }
 }
 ```
@@ -333,10 +362,10 @@ export class OpenAIProvider implements ILLMProvider {
 ```typescript
 // libs/core/domain/quality/llm-semantic-analyzer.ts (REFACTORED)
 
-import { ILLMProvider } from './providers/llm-provider.interface';
-import { AnthropicProvider } from './providers/anthropic-provider';
-import { OllamaProvider } from './providers/ollama-provider';
-import { OpenAIProvider } from './providers/openai-provider';
+import { ILLMProvider } from "./providers/llm-provider.interface";
+import { AnthropicProvider } from "./providers/anthropic-provider";
+import { OllamaProvider } from "./providers/ollama-provider";
+import { OpenAIProvider } from "./providers/openai-provider";
 
 export class LLMSemanticAnalyzer {
   private provider: ILLMProvider | null = null;
@@ -350,24 +379,24 @@ export class LLMSemanticAnalyzer {
     // Priority order: Anthropic > OpenAI > Ollama
     const providers: Array<{ name: string; provider: ILLMProvider }> = [
       {
-        name: 'anthropic',
+        name: "anthropic",
         provider: new AnthropicProvider({
           apiKey: process.env.ANTHROPIC_API_KEY,
-          model: 'claude-haiku-4-5-20251001',
+          model: "claude-haiku-4-5-20251001",
         }),
       },
       {
-        name: 'openai',
+        name: "openai",
         provider: new OpenAIProvider({
           apiKey: process.env.OPENAI_API_KEY,
-          model: 'gpt-4o-mini',
+          model: "gpt-4o-mini",
         }),
       },
       {
-        name: 'ollama',
+        name: "ollama",
         provider: new OllamaProvider({
-          baseUrl: process.env.OLLAMA_URL || 'http://localhost:11434',
-          model: process.env.OLLAMA_MODEL || 'llama3.2',
+          baseUrl: process.env.OLLAMA_URL || "http://localhost:11434",
+          model: process.env.OLLAMA_MODEL || "llama3.2",
         }),
       },
     ];
@@ -384,26 +413,30 @@ export class LLMSemanticAnalyzer {
     return null;
   }
 
-  async analyze(discovery: DiscoveryResult, options: LLMAnalysisOptions = {}): Promise<LLMSemanticResult> {
+  async analyze(
+    discovery: DiscoveryResult,
+    options: LLMAnalysisOptions = {},
+  ): Promise<LLMSemanticResult> {
     const provider = await this.initializeProvider();
 
     if (!provider) {
       return {
         enabled: false,
         findings: [],
-        error: 'No LLM provider available. Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or run Ollama locally.',
+        error:
+          "No LLM provider available. Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or run Ollama locally.",
       };
     }
 
     const prompt = this.buildAnalysisPrompt(discovery);
 
     const response = await provider.complete(
-      [{ role: 'user', content: prompt }],
+      [{ role: "user", content: prompt }],
       {
         maxTokens: options.maxTokens || 2000,
         temperature: options.temperature || 0.2,
         timeout: options.timeout || 30000,
-      }
+      },
     );
 
     const findings = this.parseFindings(response.text);
@@ -414,7 +447,10 @@ export class LLMSemanticAnalyzer {
       cost: {
         inputTokens: response.usage.inputTokens,
         outputTokens: response.usage.outputTokens,
-        estimatedCostUSD: provider.estimateCost(response.usage.inputTokens, response.usage.outputTokens),
+        estimatedCostUSD: provider.estimateCost(
+          response.usage.inputTokens,
+          response.usage.outputTokens,
+        ),
       },
     };
   }
@@ -443,18 +479,18 @@ export OLLAMA_MODEL="codellama:7b"
 
 #### Step 7: Update Documentation
 
-```markdown
+````markdown
 # README.md - Add LLM Configuration Section
 
 ## 🤖 LLM-Powered Semantic Analysis
 
 mcp-verify supports multiple LLM providers for deep semantic validation:
 
-| Provider | Type | Cost | Setup |
-|----------|------|------|-------|
-| **Anthropic Claude** | Cloud API | ~$0.0003/validation | `export ANTHROPIC_API_KEY=...` |
-| **OpenAI GPT** | Cloud API | ~$0.0002/validation | `export OPENAI_API_KEY=...` |
-| **Ollama** | Local | Free | Install Ollama + `ollama pull llama3.2` |
+| Provider             | Type      | Cost                | Setup                                   |
+| -------------------- | --------- | ------------------- | --------------------------------------- |
+| **Anthropic Claude** | Cloud API | ~$0.0003/validation | `export ANTHROPIC_API_KEY=...`          |
+| **OpenAI GPT**       | Cloud API | ~$0.0002/validation | `export OPENAI_API_KEY=...`             |
+| **Ollama**           | Local     | Free                | Install Ollama + `ollama pull llama3.2` |
 
 ### Quick Start with Ollama (Free)
 
@@ -468,20 +504,23 @@ ollama pull llama3.2
 # 3. Run validation
 mcp-verify validate http://localhost:3000 --security
 ```
+````
 
 The tool will auto-detect available providers in this order:
+
 1. Anthropic (if `ANTHROPIC_API_KEY` set)
 2. OpenAI (if `OPENAI_API_KEY` set)
 3. Ollama (if running on localhost:11434)
 
 ### Recommended Models
 
-| Provider | Model | Speed | Quality | Cost |
-|----------|-------|-------|---------|------|
-| Anthropic | `claude-haiku-4-5` | ⚡ Fast | ⭐⭐⭐⭐⭐ | $0.0003 |
-| OpenAI | `gpt-4o-mini` | ⚡ Fast | ⭐⭐⭐⭐ | $0.0002 |
-| Ollama | `llama3.2` (3B) | ⚡⚡ Very Fast | ⭐⭐⭐ | Free |
-| Ollama | `codellama:13b` | 🐌 Slow | ⭐⭐⭐⭐ | Free |
+| Provider  | Model              | Speed          | Quality    | Cost    |
+| --------- | ------------------ | -------------- | ---------- | ------- |
+| Anthropic | `claude-haiku-4-5` | ⚡ Fast        | ⭐⭐⭐⭐⭐ | $0.0003 |
+| OpenAI    | `gpt-4o-mini`      | ⚡ Fast        | ⭐⭐⭐⭐   | $0.0002 |
+| Ollama    | `llama3.2` (3B)    | ⚡⚡ Very Fast | ⭐⭐⭐     | Free    |
+| Ollama    | `codellama:13b`    | 🐌 Slow        | ⭐⭐⭐⭐   | Free    |
+
 ```
 
 ---
@@ -491,33 +530,35 @@ The tool will auto-detect available providers in this order:
 ### Current Implementation (v1.0)
 
 ```
+
 ┌─────────────────────────────────────────────────────┐
-│           mcp-verify validate                       │
+│ mcp-verify validate │
 └─────────────────────────────────────────────────────┘
-                        │
-                        ▼
+│
+▼
 ┌─────────────────────────────────────────────────────┐
-│         Validation Engine                           │
-│  (discovers, validates, applies security rules)     │
+│ Validation Engine │
+│ (discovers, validates, applies security rules) │
 └─────────────────────────────────────────────────────┘
-                        │
-                        ▼
+│
+▼
 ┌─────────────────────────────────────────────────────┐
-│          Generate Report                            │
-│   (JSON, HTML, Markdown, SARIF)                     │
+│ Generate Report │
+│ (JSON, HTML, Markdown, SARIF) │
 └─────────────────────────────────────────────────────┘
-                        │
-                        ▼
+│
+▼
 ┌─────────────────────────────────────────────────────┐
-│      Write to File System                           │
-│                                                      │
-│  ./reportes/                                        │
-│  ├── json/2026-02-03_10-30-00.json                 │
-│  ├── html/2026-02-03_10-30-00.html                 │
-│  ├── markdown/2026-02-03_10-30-00.md               │
-│  └── sarif/2026-02-03_10-30-00.sarif               │
+│ Write to File System │
+│ │
+│ ./reportes/ │
+│ ├── json/2026-02-03_10-30-00.json │
+│ ├── html/2026-02-03_10-30-00.html │
+│ ├── markdown/2026-02-03_10-30-00.md │
+│ └── sarif/2026-02-03_10-30-00.sarif │
 └─────────────────────────────────────────────────────┘
-```
+
+````
 
 **File**: `apps/cli-verifier/src/commands/validate.ts:206-227`
 
@@ -545,7 +586,7 @@ fs.writeFileSync(path.join(htmlDir, `${filenameBase}.html`), htmlContent);
 
 const mdContent = MarkdownReportGenerator.generate(report);
 fs.writeFileSync(path.join(mdDir, `${filenameBase}.md`), mdContent);
-```
+````
 
 ### Security Report Structure
 
@@ -588,10 +629,13 @@ fs.writeFileSync(path.join(mdDir, `${filenameBase}.md`), mdContent);
 
 ```typescript
 // Baseline saved to user-specified path
-BaselineManager.saveBaseline(report, './baselines/prod-v1.0.json');
+BaselineManager.saveBaseline(report, "./baselines/prod-v1.0.json");
 
 // Comparison loads both files and diffs
-const diff = BaselineManager.compare('./baselines/prod-v1.0.json', currentReport);
+const diff = BaselineManager.compare(
+  "./baselines/prod-v1.0.json",
+  currentReport,
+);
 ```
 
 ### Limitations of Current Approach
@@ -761,23 +805,24 @@ mcp-verify audit --output audit-report.pdf --from 2026-01-01 --to 2026-02-01
 
 ## 📊 Comparison: Current vs Proposed
 
-| Feature | v1.0 (Files) | v1.2+ (SQLite) |
-|---------|--------------|----------------|
-| **Storage** | JSON files | SQLite DB |
-| **Historical tracking** | ❌ No | ✅ Yes |
-| **Deduplication** | ❌ No | ✅ Yes (by hash) |
-| **Trend analysis** | ❌ No | ✅ Yes |
-| **Suppressions** | ❌ No | ✅ Yes (with expiry) |
-| **Audit trail** | ❌ No | ✅ Yes |
-| **Query performance** | 🐌 Slow (scan files) | ⚡ Fast (indexed) |
-| **Collaboration** | ⚠️ Git only | ✅ DB can be shared |
-| **CI/CD integration** | ⚠️ Basic | ✅ Advanced |
+| Feature                 | v1.0 (Files)         | v1.2+ (SQLite)       |
+| ----------------------- | -------------------- | -------------------- |
+| **Storage**             | JSON files           | SQLite DB            |
+| **Historical tracking** | ❌ No                | ✅ Yes               |
+| **Deduplication**       | ❌ No                | ✅ Yes (by hash)     |
+| **Trend analysis**      | ❌ No                | ✅ Yes               |
+| **Suppressions**        | ❌ No                | ✅ Yes (with expiry) |
+| **Audit trail**         | ❌ No                | ✅ Yes               |
+| **Query performance**   | 🐌 Slow (scan files) | ⚡ Fast (indexed)    |
+| **Collaboration**       | ⚠️ Git only          | ✅ DB can be shared  |
+| **CI/CD integration**   | ⚠️ Basic             | ✅ Advanced          |
 
 ---
 
 ## 📝 Notes
 
 ### Why SQLite?
+
 - **Single file** (portable, easy backup)
 - **No server** (zero config)
 - **Fast** (50,000+ reads/sec)
@@ -785,12 +830,14 @@ mcp-verify audit --output audit-report.pdf --from 2026-01-01 --to 2026-02-01
 - **Universal** (works on all platforms)
 
 ### Why Not PostgreSQL/MySQL?
+
 - Overkill for local CLI tool
 - Requires server setup
 - Not portable (can't commit to git)
 - mcp-verify should be **zero-config**
 
 ### Privacy Considerations
+
 - Database stored locally (not uploaded)
 - User controls retention (can delete old validations)
 - No telemetry sent to cloud

@@ -18,18 +18,18 @@
  * - Dynamic prompt with workspace + target
  */
 
-import readline from 'readline';
-import path from 'path';
-import chalk from 'chalk';
-import { t } from '@mcp-verify/shared';
+import readline from "readline";
+import path from "path";
+import chalk from "chalk";
+import { t } from "@mcp-verify/shared";
 
-import { ShellSession } from './session';
-import { ShellParser } from './parser';
-import { PersistenceManager } from './persistence';
-import { ContextCompleter } from './completer';
-import { buildPrompt, withRedirect } from './utils';
-import { dispatch, showSessionSummary } from './router';
-import type { ParseResult } from './types';
+import { ShellSession } from "./session";
+import { ShellParser } from "./parser";
+import { PersistenceManager } from "./persistence";
+import { ContextCompleter } from "./completer";
+import { buildPrompt, withRedirect } from "./utils";
+import { dispatch, showSessionSummary } from "./router";
+import type { ParseResult } from "./types";
 
 // ============================================================================
 // ─── Main Entry Point ───────────────────────────────────────────────────────
@@ -38,7 +38,7 @@ import type { ParseResult } from './types';
 export function startInteractiveMode(): void {
   // ── 1. Detect and load workspace session ────────────────────────────────
   const workspaceSession = PersistenceManager.loadWorkspaceSession();
-  const session          = new ShellSession();
+  const session = new ShellSession();
 
   // ── 1.5. Load available tools if target is configured ───────────────────
   if (session.state.target) {
@@ -48,24 +48,26 @@ export function startInteractiveMode(): void {
   }
 
   // ── 2. Welcome banner ────────────────────────────────────────────────
-  console.log(chalk.bold.cyan(`\n  ${t('interactive_shell')}`));
+  console.log(chalk.bold.cyan(`\n  ${t("interactive_shell")}`));
 
   if (workspaceSession) {
     console.log(
-      chalk.green('  ✓ Workspace loaded') +
-      chalk.dim(` — ${path.basename(process.cwd())}`) +
-      (workspaceSession.target ? chalk.dim(` — target: ${workspaceSession.target}`) : '')
+      chalk.green("  ✓ Workspace loaded") +
+        chalk.dim(` — ${path.basename(process.cwd())}`) +
+        (workspaceSession.target
+          ? chalk.dim(` — target: ${workspaceSession.target}`)
+          : ""),
     );
   }
 
-  console.log(chalk.gray(`  ${t('interactive_type_help')}`));
-  console.log(chalk.dim(`  ${t('interactive_tab_hint')}\n`));
+  console.log(chalk.gray(`  ${t("interactive_type_help")}`));
+  console.log(chalk.dim(`  ${t("interactive_tab_hint")}\n`));
 
   // ── 3. Create readline with contextual completer ─────────────────────────────
   const rl = readline.createInterface({
-    input:     process.stdin,
-    output:    process.stdout,
-    prompt:    buildPrompt(session),
+    input: process.stdin,
+    output: process.stdout,
+    prompt: buildPrompt(session),
     completer: (line: string) => ContextCompleter.complete(line, session),
   });
 
@@ -76,7 +78,7 @@ export function startInteractiveMode(): void {
   rl.prompt();
 
   // ── 4. Input loop ───────────────────────────────────────────────────────
-  rl.on('line', async (raw: string) => {
+  rl.on("line", async (raw: string) => {
     const input = raw.trim();
 
     if (!input) {
@@ -92,7 +94,11 @@ export function startInteractiveMode(): void {
     try {
       parsed = ShellParser.parse(input);
     } catch (e) {
-      console.error(chalk.red(`\n  ✗ Parse error: ${e instanceof Error ? e.message : String(e)}\n`));
+      console.error(
+        chalk.red(
+          `\n  ✗ Parse error: ${e instanceof Error ? e.message : String(e)}\n`,
+        ),
+      );
       rl.setPrompt(buildPrompt(session));
       rl.prompt();
       return;
@@ -113,15 +119,21 @@ export function startInteractiveMode(): void {
       rl.pause();
 
       // Temporarily remove line listeners to ensure Inquirer has exclusive access to stdin
-      const listeners = rl.listeners('line');
-      rl.removeAllListeners('line');
+      const listeners = rl.listeners("line");
+      rl.removeAllListeners("line");
 
-      await withRedirect(parsed, () => dispatch(command.toLowerCase(), rest, session, rl));
+      await withRedirect(parsed, () =>
+        dispatch(command.toLowerCase(), rest, session, rl),
+      );
 
       // Restore listeners after command completion
-      listeners.forEach(l => rl.on('line', l as any));
+      listeners.forEach((l) => rl.on("line", l as any));
     } catch (err) {
-      console.error(chalk.red(`\n  ✗ ${err instanceof Error ? err.message : String(err)}\n`));
+      console.error(
+        chalk.red(
+          `\n  ✗ ${err instanceof Error ? err.message : String(err)}\n`,
+        ),
+      );
     } finally {
       // Always resume and reprompt
       rl.resume();
@@ -131,7 +143,7 @@ export function startInteractiveMode(): void {
   });
 
   // ── 5. Exit via Ctrl+C or Ctrl+D ────────────────────────────────────────────
-  rl.on('close', () => {
+  rl.on("close", () => {
     showSessionSummary(session);
     process.exit(0);
   });

@@ -126,6 +126,7 @@ Closes #<!-- issue number -->
 ---
 
 **✅ This PR will be automatically reviewed via GitHub Actions:**
+
 - **Tests**: Unit, integration, and security test verification
 - **Linting**: Code style validation with ESLint
 - **Type Checking**: TypeScript types compilation

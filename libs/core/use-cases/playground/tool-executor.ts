@@ -5,8 +5,14 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import type { ITransport } from '../../domain/transport';
-import type { JsonObject, JsonValue, McpTool, McpPrompt, JsonRpcNotification } from '../../domain/shared/common.types';
+import type { ITransport } from "../../domain/transport";
+import type {
+  JsonObject,
+  JsonValue,
+  McpTool,
+  McpPrompt,
+  JsonRpcNotification,
+} from "../../domain/shared/common.types";
 
 export interface ToolExecutionResult {
   success: boolean;
@@ -26,23 +32,27 @@ export class ToolExecutor {
   async connect(): Promise<void> {
     await this.transport.connect();
     // Initialize connection
-    await this.executeRPC('initialize', {
-      protocolVersion: '2024-11-05',
+    await this.executeRPC("initialize", {
+      protocolVersion: "2024-11-05",
       capabilities: {},
-      clientInfo: { name: 'mcp-playground', version: '0.1.0' }
+      clientInfo: { name: "mcp-playground", version: "0.1.0" },
     });
     // Send initialized notification (fire and forget, no ID)
-    await this.executeRPC('notifications/initialized', {}, { isNotification: true });
+    await this.executeRPC(
+      "notifications/initialized",
+      {},
+      { isNotification: true },
+    );
   }
 
   async listTools(): Promise<McpTool[]> {
-    const response = await this.executeRPC('tools/list', {});
+    const response = await this.executeRPC("tools/list", {});
     return (response.tools as McpTool[]) || [];
   }
 
   async listPrompts(): Promise<McpPrompt[]> {
     try {
-      const response = await this.executeRPC('prompts/list', {});
+      const response = await this.executeRPC("prompts/list", {});
       return (response.prompts as McpPrompt[]) || [];
     } catch (e) {
       // Server might not support prompts
@@ -50,66 +60,82 @@ export class ToolExecutor {
     }
   }
 
-  async executeTool(name: string, args: JsonObject): Promise<ToolExecutionResult> {
+  async executeTool(
+    name: string,
+    args: JsonObject,
+  ): Promise<ToolExecutionResult> {
     const start = Date.now();
     try {
-      const response = await this.executeRPC('tools/call', {
+      const response = await this.executeRPC("tools/call", {
         name,
-        arguments: args
+        arguments: args,
       });
 
       return {
         success: true,
         result: response,
-        durationMs: Date.now() - start
+        durationMs: Date.now() - start,
       };
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error),
-        durationMs: Date.now() - start
+        durationMs: Date.now() - start,
       };
     }
   }
 
-  async getPrompt(name: string, args: JsonObject): Promise<ToolExecutionResult> {
+  async getPrompt(
+    name: string,
+    args: JsonObject,
+  ): Promise<ToolExecutionResult> {
     const start = Date.now();
     try {
-        const response = await this.executeRPC('prompts/get', {
-            name,
-            arguments: args
-        });
+      const response = await this.executeRPC("prompts/get", {
+        name,
+        arguments: args,
+      });
 
-        return {
-            success: true,
-            result: response,
-            durationMs: Date.now() - start
-        };
+      return {
+        success: true,
+        result: response,
+        durationMs: Date.now() - start,
+      };
     } catch (error) {
-        return {
-            success: false,
-            error: error instanceof Error ? error.message : String(error),
-            durationMs: Date.now() - start
-        };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+        durationMs: Date.now() - start,
+      };
     }
   }
 
-  private async sendJsonRPC(method: string, params: JsonObject, timeoutMs?: number): Promise<any> {
-    const response = await this.transport.send({
-      jsonrpc: '2.0',
-      id: this.requestId++,
-      method,
-      params
-    }, { timeoutMs });
+  private async sendJsonRPC(
+    method: string,
+    params: JsonObject,
+    timeoutMs?: number,
+  ): Promise<any> {
+    const response = await this.transport.send(
+      {
+        jsonrpc: "2.0",
+        id: this.requestId++,
+        method,
+        params,
+      },
+      { timeoutMs },
+    );
     return response;
   }
 
-  private async sendNotification(method: string, params: JsonObject): Promise<void> {
+  private async sendNotification(
+    method: string,
+    params: JsonObject,
+  ): Promise<void> {
     // Notifications have no ID
     const notification: JsonRpcNotification = {
-      jsonrpc: '2.0',
+      jsonrpc: "2.0",
       method,
-      params
+      params,
     };
     await this.transport.send(notification);
   }
@@ -120,8 +146,9 @@ export class ToolExecutor {
   private async executeRPC<T = any>(
     method: string,
     params: JsonObject,
-    options?: { isNotification?: boolean; timeoutMs?: number }
-  ): Promise<T | any> { // Using any as fallback return type since T | null causes strict check issues in callers
+    options?: { isNotification?: boolean; timeoutMs?: number },
+  ): Promise<T | any> {
+    // Using any as fallback return type since T | null causes strict check issues in callers
     try {
       if (options?.isNotification) {
         await this.sendNotification(method, params);

@@ -35,6 +35,7 @@ The **infrastructure layer** contains **adapters** that connect pure domain logi
 ```
 
 **Key Principle**: **Dependency Inversion**
+
 - Domain defines interfaces (ports)
 - Infrastructure implements interfaces (adapters)
 - Domain never imports from infrastructure
@@ -92,33 +93,36 @@ libs/core/infrastructure/
 **Implements**: No interface (used directly)
 
 **Responsibilities**:
+
 - Log to console with levels (DEBUG, INFO, WARN, ERROR)
 - Log to files (optional)
 - Structured JSON logs
 - Singleton pattern
 
 **Usage**:
+
 ```typescript
-import { Logger } from './infrastructure/logging/logger';
+import { Logger } from "./infrastructure/logging/logger";
 
 const logger = Logger.getInstance();
 
 // Configure
 logger.configure({
-  level: 'INFO',              // 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'
+  level: "INFO", // 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'
   enableConsole: true,
   enableFile: false,
-  filePath: './logs/app.log'
+  filePath: "./logs/app.log",
 });
 
 // Log messages
-logger.info('Starting validation', { target: 'http://localhost:3000' });
-logger.warn('Slow response', { duration: 5000 });
-logger.error('Connection failed', { error: err });
-logger.debug('Raw response', { data: response });
+logger.info("Starting validation", { target: "http://localhost:3000" });
+logger.warn("Slow response", { duration: 5000 });
+logger.error("Connection failed", { error: err });
+logger.debug("Raw response", { data: response });
 ```
 
 **Features**:
+
 - **Levels**: DEBUG < INFO < WARN < ERROR
 - **Structured**: Logs include timestamp, level, message, metadata
 - **Configurable**: Enable/disable console/file output
@@ -133,6 +137,7 @@ logger.debug('Raw response', { data: response });
 **Implements**: `ISandbox` (defined in `domain/sandbox/`)
 
 **Responsibilities**:
+
 - Execute MCP servers in isolated environment
 - Restrict file system access
 - Restrict network access
@@ -141,22 +146,24 @@ logger.debug('Raw response', { data: response });
 **Current Implementation**: Deno Sandbox
 
 **Usage**:
+
 ```typescript
-import { DenoSandbox } from './infrastructure/sandbox/deno-sandbox';
+import { DenoSandbox } from "./infrastructure/sandbox/deno-sandbox";
 
 const sandbox = new DenoSandbox({
-  allowRead: ['.'],        // Allow reading current directory
-  allowWrite: [],          // No write access
-  allowEnv: true,          // Allow env variable access
-  allowNet: [],            // No network access
-  timeout: 10000           // 10 second timeout
+  allowRead: ["."], // Allow reading current directory
+  allowWrite: [], // No write access
+  allowEnv: true, // Allow env variable access
+  allowNet: [], // No network access
+  timeout: 10000, // 10 second timeout
 });
 
 // Execute command in sandbox
-const result = await sandbox.execute('node', ['server.js']);
+const result = await sandbox.execute("node", ["server.js"]);
 ```
 
 **Security Features**:
+
 - **File System Isolation**: Restrict reads/writes to specific paths
 - **Network Isolation**: Block all network or whitelist domains
 - **Environment Access**: Control env variable visibility
@@ -171,34 +178,37 @@ const result = await sandbox.execute('node', ['server.js']);
 **Implements**: No interface (used directly)
 
 **Responsibilities**:
+
 - Read `.mcpverify.json` config files
 - Write config files
 - Validate config structure
 - Provide defaults
 
 **Usage**:
+
 ```typescript
-import { ConfigManager } from './infrastructure/config/config-manager';
+import { ConfigManager } from "./infrastructure/config/config-manager";
 
 const manager = new ConfigManager();
 
 // Load config
-const config = await manager.load('./.mcpverify.json');
+const config = await manager.load("./.mcpverify.json");
 // config: {
 //   security: { ignoreRules: ['SEC-001'] },
 //   quality: { llmProvider: 'ollama:llama3.2' }
 // }
 
 // Save config
-await manager.save('./.mcpverify.json', {
-  security: { ignoreRules: ['SEC-001', 'SEC-002'] }
+await manager.save("./.mcpverify.json", {
+  security: { ignoreRules: ["SEC-001", "SEC-002"] },
 });
 
 // Get with defaults
-const config = await manager.loadOrDefault('./.mcpverify.json');
+const config = await manager.loadOrDefault("./.mcpverify.json");
 ```
 
 **Config File Format**:
+
 ```json
 {
   "security": {
@@ -224,6 +234,7 @@ const config = await manager.loadOrDefault('./.mcpverify.json');
 **Implements**: Check pattern (interface + implementations)
 
 **Responsibilities**:
+
 - Check Node.js version
 - Check Deno installation
 - Check API keys (Anthropic, OpenAI)
@@ -231,9 +242,10 @@ const config = await manager.loadOrDefault('./.mcpverify.json');
 - Run all checks and report
 
 **Usage**:
+
 ```typescript
-import { DiagnosticRunner } from './infrastructure/diagnostics/diagnostic-runner';
-import { EnvironmentChecks } from './infrastructure/diagnostics/checks/environment-checks';
+import { DiagnosticRunner } from "./infrastructure/diagnostics/diagnostic-runner";
+import { EnvironmentChecks } from "./infrastructure/diagnostics/checks/environment-checks";
 
 const runner = new DiagnosticRunner();
 
@@ -252,11 +264,15 @@ const results = await runner.runAll();
 ```
 
 **Adding Custom Check**:
+
 ```typescript
-import { IDiagnosticCheck, DiagnosticResult } from './diagnostic-check.interface';
+import {
+  IDiagnosticCheck,
+  DiagnosticResult,
+} from "./diagnostic-check.interface";
 
 export class MyCustomCheck implements IDiagnosticCheck {
-  name = 'My Custom Check';
+  name = "My Custom Check";
 
   async run(): Promise<DiagnosticResult> {
     try {
@@ -265,14 +281,14 @@ export class MyCustomCheck implements IDiagnosticCheck {
 
       return {
         name: this.name,
-        status: result.ok ? 'pass' : 'fail',
-        message: result.message
+        status: result.ok ? "pass" : "fail",
+        message: result.message,
       };
     } catch (error) {
       return {
         name: this.name,
-        status: 'error',
-        message: error.message
+        status: "error",
+        message: error.message,
       };
     }
   }
@@ -288,13 +304,15 @@ export class MyCustomCheck implements IDiagnosticCheck {
 **Implements**: Health check pattern
 
 **Responsibilities**:
+
 - Monitor application health
 - Check system resources
 - Report uptime, memory usage
 
 **Usage**:
+
 ```typescript
-import { HealthCheck } from './infrastructure/monitoring/health-check';
+import { HealthCheck } from "./infrastructure/monitoring/health-check";
 
 const health = new HealthCheck();
 
@@ -319,13 +337,15 @@ const status = await health.check();
 **Implements**: No interface (utility)
 
 **Responsibilities**:
+
 - Catch unhandled errors
 - Format errors for user display
 - Log errors to logger
 
 **Usage**:
+
 ```typescript
-import { ErrorHandler } from './infrastructure/errors/error-handler';
+import { ErrorHandler } from "./infrastructure/errors/error-handler";
 
 const handler = new ErrorHandler(logger);
 
@@ -336,11 +356,12 @@ handler.registerGlobalHandlers();
 try {
   await riskyOperation();
 } catch (error) {
-  handler.handle(error, { context: 'Validation' });
+  handler.handle(error, { context: "Validation" });
 }
 ```
 
 **Features**:
+
 - **Uncaught Exception Handler**: Catches process-level errors
 - **Unhandled Rejection Handler**: Catches promise rejections
 - **Graceful Shutdown**: Cleanup before exit
@@ -386,18 +407,19 @@ export class DenoSandbox implements ISandbox {
 export class MCPValidator {
   constructor(
     private transport: ITransport,
-    private sandbox?: ISandbox  // ← Interface, not implementation
+    private sandbox?: ISandbox, // ← Interface, not implementation
   ) {}
 
   async validate() {
     if (this.sandbox) {
-      await this.sandbox.execute('node', ['server.js']);
+      await this.sandbox.execute("node", ["server.js"]);
     }
   }
 }
 ```
 
 **Benefits**:
+
 - ✅ Domain doesn't know about Deno
 - ✅ Can swap DenoSandbox for DockerSandbox without changing domain
 - ✅ Easy to mock in tests
@@ -409,25 +431,27 @@ export class MCPValidator {
 ### ✅ YES - Infrastructure Layer
 
 **File System Operations**:
+
 ```typescript
 // ✅ GOOD: File I/O in infrastructure
 export class ConfigManager {
   async load(path: string): Promise<Config> {
-    const content = await fs.readFile(path, 'utf-8');
+    const content = await fs.readFile(path, "utf-8");
     return JSON.parse(content);
   }
 }
 ```
 
 **Network Operations**:
+
 ```typescript
 // ✅ GOOD: HTTP in infrastructure
 export class AnthropicProvider implements ILLMProvider {
   async complete(messages: LLMMessage[]): Promise<LLMResponse> {
-    const response = await fetch('https://api.anthropic.com/...', {
-      method: 'POST',
-      headers: { 'x-api-key': this.apiKey },
-      body: JSON.stringify({ messages })
+    const response = await fetch("https://api.anthropic.com/...", {
+      method: "POST",
+      headers: { "x-api-key": this.apiKey },
+      body: JSON.stringify({ messages }),
     });
     return response.json();
   }
@@ -435,6 +459,7 @@ export class AnthropicProvider implements ILLMProvider {
 ```
 
 **External Services**:
+
 ```typescript
 // ✅ GOOD: Deno integration in infrastructure
 export class DenoSandbox implements ISandbox {
@@ -450,16 +475,17 @@ export class DenoSandbox implements ISandbox {
 ### ❌ NO - Not Infrastructure Layer
 
 **Business Logic**:
+
 ```typescript
 // ❌ BAD: Business logic in infrastructure
 export class ConfigManager {
   async load(path: string): Promise<Config> {
-    const content = await fs.readFile(path, 'utf-8');
+    const content = await fs.readFile(path, "utf-8");
     const config = JSON.parse(content);
 
     // NO! This is business logic
     if (config.security.score < 50) {
-      throw new Error('Security score too low');
+      throw new Error("Security score too low");
     }
 
     return config;
@@ -469,8 +495,8 @@ export class ConfigManager {
 // ✅ GOOD: Just load config, let domain validate
 export class ConfigManager {
   async load(path: string): Promise<Config> {
-    const content = await fs.readFile(path, 'utf-8');
-    return JSON.parse(content);  // Just parse, don't validate
+    const content = await fs.readFile(path, "utf-8");
+    return JSON.parse(content); // Just parse, don't validate
   }
 }
 ```
@@ -491,11 +517,14 @@ export class ConfigManager {
 ```typescript
 // infrastructure/diagnostics/checks/my-check.ts
 
-import { IDiagnosticCheck, DiagnosticResult } from '../diagnostic-check.interface';
+import {
+  IDiagnosticCheck,
+  DiagnosticResult,
+} from "../diagnostic-check.interface";
 
 export class MyCustomCheck implements IDiagnosticCheck {
-  name = 'My Custom Check';
-  description = 'Checks if something is configured correctly';
+  name = "My Custom Check";
+  description = "Checks if something is configured correctly";
 
   async run(): Promise<DiagnosticResult> {
     try {
@@ -505,22 +534,22 @@ export class MyCustomCheck implements IDiagnosticCheck {
       if (isConfigured) {
         return {
           name: this.name,
-          status: 'pass',
-          message: 'Configuration is valid'
+          status: "pass",
+          message: "Configuration is valid",
         };
       } else {
         return {
           name: this.name,
-          status: 'fail',
-          message: 'Configuration not found',
-          suggestion: 'Run: npm run setup'
+          status: "fail",
+          message: "Configuration not found",
+          suggestion: "Run: npm run setup",
         };
       }
     } catch (error) {
       return {
         name: this.name,
-        status: 'error',
-        message: error.message
+        status: "error",
+        message: error.message,
       };
     }
   }
@@ -537,11 +566,11 @@ export class MyCustomCheck implements IDiagnosticCheck {
 ```typescript
 // apps/cli-verifier/src/commands/doctor.ts
 
-import { MyCustomCheck } from '../../../../libs/core/infrastructure/diagnostics/checks/my-check';
+import { MyCustomCheck } from "../../../../libs/core/infrastructure/diagnostics/checks/my-check";
 
 const runner = new DiagnosticRunner();
 runner.addCheck(new EnvironmentChecks());
-runner.addCheck(new MyCustomCheck());  // ← ADD HERE
+runner.addCheck(new MyCustomCheck()); // ← ADD HERE
 
 const results = await runner.runAll();
 ```
@@ -566,7 +595,10 @@ mcp-verify doctor
 ```typescript
 // infrastructure/sandbox/docker-sandbox.ts
 
-import { ISandbox, ExecutionResult } from '../../domain/sandbox/sandbox.interface';
+import {
+  ISandbox,
+  ExecutionResult,
+} from "../../domain/sandbox/sandbox.interface";
 
 export class DockerSandbox implements ISandbox {
   constructor(private options: DockerSandboxOptions) {}
@@ -574,34 +606,37 @@ export class DockerSandbox implements ISandbox {
   async execute(command: string, args: string[]): Promise<ExecutionResult> {
     // Run command in Docker container
     const dockerCommand = [
-      'docker', 'run',
-      '--rm',
-      '--network', 'none',  // No network access
-      '-v', `${process.cwd()}:/app`,  // Mount current dir
-      'node:18-alpine',
+      "docker",
+      "run",
+      "--rm",
+      "--network",
+      "none", // No network access
+      "-v",
+      `${process.cwd()}:/app`, // Mount current dir
+      "node:18-alpine",
       command,
-      ...args
+      ...args,
     ];
 
     const process = spawn(dockerCommand[0], dockerCommand.slice(1));
 
     return new Promise((resolve, reject) => {
-      let stdout = '';
-      let stderr = '';
+      let stdout = "";
+      let stderr = "";
 
-      process.stdout.on('data', (data) => stdout += data);
-      process.stderr.on('data', (data) => stderr += data);
+      process.stdout.on("data", (data) => (stdout += data));
+      process.stderr.on("data", (data) => (stderr += data));
 
-      process.on('close', (code) => {
+      process.on("close", (code) => {
         resolve({
           exitCode: code,
           stdout,
           stderr,
-          success: code === 0
+          success: code === 0,
         });
       });
 
-      process.on('error', reject);
+      process.on("error", reject);
     });
   }
 
@@ -617,7 +652,7 @@ export class DockerSandbox implements ISandbox {
 // In CLI command or use-case
 const sandbox = new DockerSandbox({
   allowNetwork: false,
-  timeout: 30000
+  timeout: 30000,
 });
 
 const validator = new MCPValidator(transport, sandbox);
@@ -632,12 +667,12 @@ const validator = new MCPValidator(transport, sandbox);
 **Requires external systems** - File system, network, processes
 
 ```typescript
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { ConfigManager } from './config-manager';
-import fs from 'fs/promises';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { ConfigManager } from "./config-manager";
+import fs from "fs/promises";
 
-describe('ConfigManager', () => {
-  const testConfigPath = './test-config.json';
+describe("ConfigManager", () => {
+  const testConfigPath = "./test-config.json";
 
   beforeEach(async () => {
     // Setup: Create test file
@@ -649,7 +684,7 @@ describe('ConfigManager', () => {
     await fs.unlink(testConfigPath);
   });
 
-  it('should load config from file', async () => {
+  it("should load config from file", async () => {
     const manager = new ConfigManager();
     const config = await manager.load(testConfigPath);
 
@@ -686,11 +721,11 @@ graph TD
 // ❌ BAD
 export class ConfigManager {
   async load(path: string): Promise<Config> {
-    const config = JSON.parse(await fs.readFile(path, 'utf-8'));
+    const config = JSON.parse(await fs.readFile(path, "utf-8"));
 
     // NO! This is business validation
     if (config.security.score < 50) {
-      throw new Error('Security too low');
+      throw new Error("Security too low");
     }
 
     return config;
@@ -700,7 +735,7 @@ export class ConfigManager {
 // ✅ GOOD
 export class ConfigManager {
   async load(path: string): Promise<Config> {
-    return JSON.parse(await fs.readFile(path, 'utf-8'));
+    return JSON.parse(await fs.readFile(path, "utf-8"));
   }
 }
 
@@ -708,7 +743,7 @@ export class ConfigManager {
 export class ConfigValidator {
   validate(config: Config): ValidationResult {
     if (config.security.score < 50) {
-      return { valid: false, error: 'Security too low' };
+      return { valid: false, error: "Security too low" };
     }
     return { valid: true };
   }
@@ -721,13 +756,13 @@ export class ConfigValidator {
 
 ```typescript
 // ❌ BAD: domain/security/security-scanner.ts
-import { Logger } from '../../infrastructure/logging/logger';  // NO!
+import { Logger } from "../../infrastructure/logging/logger"; // NO!
 
 export class SecurityScanner {
   private logger = Logger.getInstance();
 
   scan(discovery: DiscoveryResult) {
-    this.logger.info('Scanning...');  // Domain coupled to infrastructure
+    this.logger.info("Scanning..."); // Domain coupled to infrastructure
     // ...
   }
 }
@@ -737,7 +772,7 @@ export class SecurityScanner {
   constructor(private logger?: ILogger) {}
 
   scan(discovery: DiscoveryResult) {
-    this.logger?.info('Scanning...');
+    this.logger?.info("Scanning...");
     // ...
   }
 }
@@ -751,4 +786,3 @@ export class SecurityScanner {
 - **[libs/core/domain/README.md](../domain/README.md)** - Domain layer (business logic)
 - **[libs/core/use-cases/README.md](../use-cases/README.md)** - Use case orchestration
 - **[CODE_MAP.md](../../../CODE_MAP.md)** - Codebase navigation
-

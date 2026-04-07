@@ -15,61 +15,61 @@
  * without running a full validation.
  */
 
-import fs from 'fs';
-import path from 'path';
-import { HtmlReportGenerator } from '../../libs/core/domain/reporting/html-generator';
-import type { Report } from '../../libs/core/domain/mcp-server/entities/validation.types';
+import fs from "fs";
+import path from "path";
+import { HtmlReportGenerator } from "../../libs/core/domain/reporting/html-generator";
+import type { Report } from "../../libs/core/domain/mcp-server/entities/validation.types";
 
-const ROOT = path.resolve(__dirname, '../..');
+const ROOT = path.resolve(__dirname, "../..");
 
 const MOCK_REPORT: Report = {
-  server_name: 'demo-mcp-server',
-  url: 'http://localhost:3000',
-  status: 'valid',
-  protocol_version: '2024-11-05',
+  server_name: "demo-mcp-server",
+  url: "http://localhost:3000",
+  status: "valid",
+  protocol_version: "2024-11-05",
 
   security: {
     score: 78,
-    level: 'Medium Risk',
+    level: "Medium Risk",
     findings: [
       {
-        severity: 'high',
-        message: 'Tool accepts unrestricted file paths',
-        component: 'read_file',
-        ruleCode: 'MCP-SEC-001',
-        remediation: 'Validate and sanitize input paths'
+        severity: "high",
+        message: "Tool accepts unrestricted file paths",
+        component: "read_file",
+        ruleCode: "MCP-SEC-001",
+        remediation: "Validate and sanitize input paths",
       },
       {
-        severity: 'medium',
-        message: 'Missing rate limiting on tool invocations',
-        component: 'general',
-        ruleCode: 'MCP-SEC-002',
-        remediation: 'Implement throttling per client'
+        severity: "medium",
+        message: "Missing rate limiting on tool invocations",
+        component: "general",
+        ruleCode: "MCP-SEC-002",
+        remediation: "Implement throttling per client",
       },
       {
-        severity: 'low',
-        message: 'Tool description could be more detailed',
-        component: 'list_files',
-        ruleCode: 'MCP-QUAL-001',
-        remediation: 'Add parameter documentation'
-      }
+        severity: "low",
+        message: "Tool description could be more detailed",
+        component: "list_files",
+        ruleCode: "MCP-QUAL-001",
+        remediation: "Add parameter documentation",
+      },
     ],
     criticalCount: 0,
     highCount: 1,
     mediumCount: 1,
-    lowCount: 1
+    lowCount: 1,
   },
 
   quality: {
     score: 85,
     issues: [
       {
-        severity: 'medium',
-        message: 'Inconsistent naming convention',
-        component: 'tools',
-        suggestion: 'Use snake_case for tool names'
-      }
-    ]
+        severity: "medium",
+        message: "Inconsistent naming convention",
+        component: "tools",
+        suggestion: "Use snake_case for tool names",
+      },
+    ],
   },
 
   protocolCompliance: {
@@ -78,7 +78,7 @@ const MOCK_REPORT: Report = {
     issues: [],
     testsPassed: 12,
     testsFailed: 0,
-    totalTests: 12
+    totalTests: 12,
   },
 
   tools: {
@@ -87,24 +87,30 @@ const MOCK_REPORT: Report = {
     invalid: 1,
     items: [
       {
-        name: 'read_file',
-        description: 'Reads file contents from the filesystem',
-        inputSchema: { type: 'object', properties: { path: { type: 'string' } } },
-        status: 'valid'
+        name: "read_file",
+        description: "Reads file contents from the filesystem",
+        inputSchema: {
+          type: "object",
+          properties: { path: { type: "string" } },
+        },
+        status: "valid",
       },
       {
-        name: 'list_files',
-        description: 'Lists files in a directory',
-        inputSchema: { type: 'object', properties: { directory: { type: 'string' } } },
-        status: 'valid'
+        name: "list_files",
+        description: "Lists files in a directory",
+        inputSchema: {
+          type: "object",
+          properties: { directory: { type: "string" } },
+        },
+        status: "valid",
       },
       {
-        name: 'execute_command',
-        description: 'Executes a shell command',
-        inputSchema: { type: 'object', properties: {} },
-        status: 'invalid'
-      }
-    ]
+        name: "execute_command",
+        description: "Executes a shell command",
+        inputSchema: { type: "object", properties: {} },
+        status: "invalid",
+      },
+    ],
   },
 
   resources: {
@@ -112,9 +118,21 @@ const MOCK_REPORT: Report = {
     valid: 2,
     invalid: 0,
     items: [
-      { name: 'file:///docs', description: 'Documentation', uri: 'file:///docs', mimeType: 'text/markdown', status: 'valid' as const },
-      { name: 'config', description: 'Server config', uri: 'file:///config.json', mimeType: 'application/json', status: 'valid' as const }
-    ]
+      {
+        name: "file:///docs",
+        description: "Documentation",
+        uri: "file:///docs",
+        mimeType: "text/markdown",
+        status: "valid" as const,
+      },
+      {
+        name: "config",
+        description: "Server config",
+        uri: "file:///config.json",
+        mimeType: "application/json",
+        status: "valid" as const,
+      },
+    ],
   },
 
   prompts: {
@@ -122,31 +140,36 @@ const MOCK_REPORT: Report = {
     valid: 1,
     invalid: 0,
     items: [
-      { name: 'summarize', description: 'Summarize content', arguments: [{ name: 'content', required: true }], status: 'valid' as const }
-    ]
+      {
+        name: "summarize",
+        description: "Summarize content",
+        arguments: [{ name: "content", required: true }],
+        status: "valid" as const,
+      },
+    ],
   },
 
   timestamp: new Date().toISOString(),
   duration_ms: 1234,
 
   badges: {
-    markdown: '[![MCP Valid](https://img.shields.io/badge/MCP-Valid-green)]()',
+    markdown: "[![MCP Valid](https://img.shields.io/badge/MCP-Valid-green)]()",
     html: '<img src="https://img.shields.io/badge/MCP-Valid-green" alt="MCP Valid"/>',
-    url: 'https://example.com/badge'
-  }
+    url: "https://example.com/badge",
+  },
 };
 
 function main() {
-  const outputDir = path.join(ROOT, 'reportes', 'html');
-  const outputPath = path.join(outputDir, 'preview.html');
+  const outputDir = path.join(ROOT, "reportes", "html");
+  const outputPath = path.join(outputDir, "preview.html");
 
   fs.mkdirSync(outputDir, { recursive: true });
 
-  const html = HtmlReportGenerator.generate(MOCK_REPORT, 'en');
-  fs.writeFileSync(outputPath, html, 'utf-8');
+  const html = HtmlReportGenerator.generate(MOCK_REPORT, "en");
+  fs.writeFileSync(outputPath, html, "utf-8");
 
   console.log(`Preview report generated: ${outputPath}`);
-  console.log('Open in browser to review design changes.');
+  console.log("Open in browser to review design changes.");
 }
 
 main();

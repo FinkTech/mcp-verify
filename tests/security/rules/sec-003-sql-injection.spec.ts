@@ -20,21 +20,24 @@
  * 6. Clean up server and report files
  */
 
-import * as path from 'path';
-import * as fs from 'fs';
-import { runValidationAction } from '../../../apps/cli-verifier/src/commands/validate';
-import { TestServerManager } from '../helpers/test-server-manager';
+import * as path from "path";
+import * as fs from "fs";
+import { runValidationAction } from "../../../apps/cli-verifier/src/commands/validate";
+import { TestServerManager } from "../helpers/test-server-manager";
 
-describe('SEC-003: SQL Injection Detection', () => {
+describe("SEC-003: SQL Injection Detection", () => {
   let serverManager: TestServerManager;
-  const testReportDir = path.resolve(__dirname, '../../__test-reports__/sec-003');
+  const testReportDir = path.resolve(
+    __dirname,
+    "../../__test-reports__/sec-003",
+  );
 
   beforeAll(async () => {
     serverManager = new TestServerManager();
     await serverManager.start({
-      profile: 'sql-injection',
-      lang: 'en',
-      transport: 'stdio',
+      profile: "sql-injection",
+      lang: "en",
+      transport: "stdio",
       timeout: 30000,
     });
 
@@ -49,105 +52,142 @@ describe('SEC-003: SQL Injection Detection', () => {
     }
   });
 
-  it('should detect SQL injection vulnerability (SEC-003) via validate command', async () => {
+  it("should detect SQL injection vulnerability (SEC-003) via validate command", async () => {
     const target = serverManager.getTarget();
 
     const exitCode = await runValidationAction(target, {
       output: testReportDir,
-      format: 'json',
-      lang: 'en',
+      format: "json",
+      lang: "en",
       quiet: true,
       html: false,
     });
 
     expect([0, 2]).toContain(exitCode);
 
-    const dateStr = new Date().toISOString().split('T')[0];
-    const jsonReportPath = path.join(testReportDir, dateStr, 'validate', 'json', 'en');
+    const dateStr = new Date().toISOString().split("T")[0];
+    const jsonReportPath = path.join(
+      testReportDir,
+      dateStr,
+      "validate",
+      "json",
+      "en",
+    );
     expect(fs.existsSync(jsonReportPath)).toBe(true);
 
-    const reportFiles = fs.readdirSync(jsonReportPath).filter(f => f.startsWith('mcp-report-') && f.endsWith('.json'));
+    const reportFiles = fs
+      .readdirSync(jsonReportPath)
+      .filter((f) => f.startsWith("mcp-report-") && f.endsWith(".json"));
     expect(reportFiles.length).toBeGreaterThan(0);
 
     const latestReport = reportFiles.sort().reverse()[0];
-    const reportContent = fs.readFileSync(path.join(jsonReportPath, latestReport), 'utf8');
+    const reportContent = fs.readFileSync(
+      path.join(jsonReportPath, latestReport),
+      "utf8",
+    );
     const report = JSON.parse(reportContent);
 
-    expect(report).toHaveProperty('security');
-    expect(report.security).toHaveProperty('findings');
+    expect(report).toHaveProperty("security");
+    expect(report.security).toHaveProperty("findings");
     expect(Array.isArray(report.security.findings)).toBe(true);
 
     const sqliFinding = report.security.findings.find(
-      (f: any) => f.ruleCode === 'SEC-003'
+      (f: any) => f.ruleCode === "SEC-003",
     );
 
     expect(sqliFinding).toBeDefined();
-    expect(sqliFinding.ruleCode).toBe('SEC-003');
+    expect(sqliFinding.ruleCode).toBe("SEC-003");
     expect(sqliFinding.severity).toMatch(/high|critical/i);
     expect(sqliFinding.message.toLowerCase()).toMatch(/sql|injection|query/);
 
     if (sqliFinding) {
-      console.log('\n✓ SEC-003 detected:', sqliFinding.message);
+      console.log("\n✓ SEC-003 detected:", sqliFinding.message);
     }
   });
 
-  it('should detect SQL injection pattern in tool description', async () => {
+  it("should detect SQL injection pattern in tool description", async () => {
     const target = serverManager.getTarget();
 
     const exitCode = await runValidationAction(target, {
       output: testReportDir,
-      format: 'json',
-      lang: 'en',
+      format: "json",
+      lang: "en",
       quiet: true,
       html: false,
     });
 
-    const dateStr = new Date().toISOString().split('T')[0];
-    const jsonReportPath = path.join(testReportDir, dateStr, 'validate', 'json', 'en');
-    const reportFiles = fs.readdirSync(jsonReportPath).filter(f => f.startsWith('mcp-report-') && f.endsWith('.json'));
+    const dateStr = new Date().toISOString().split("T")[0];
+    const jsonReportPath = path.join(
+      testReportDir,
+      dateStr,
+      "validate",
+      "json",
+      "en",
+    );
+    const reportFiles = fs
+      .readdirSync(jsonReportPath)
+      .filter((f) => f.startsWith("mcp-report-") && f.endsWith(".json"));
     const latestReport = reportFiles.sort().reverse()[0];
-    const reportContent = fs.readFileSync(path.join(jsonReportPath, latestReport), 'utf8');
+    const reportContent = fs.readFileSync(
+      path.join(jsonReportPath, latestReport),
+      "utf8",
+    );
     const report = JSON.parse(reportContent);
 
-    expect(report.tools).toHaveProperty('items');
-    const executeSqlTool = report.tools.items.find((t: any) => t.name === 'execute_sql');
+    expect(report.tools).toHaveProperty("items");
+    const executeSqlTool = report.tools.items.find(
+      (t: any) => t.name === "execute_sql",
+    );
 
     expect(executeSqlTool).toBeDefined();
-    expect(executeSqlTool.description.toLowerCase()).toMatch(/sql|query|select/);
+    expect(executeSqlTool.description.toLowerCase()).toMatch(
+      /sql|query|select/,
+    );
 
-    console.log('\n✓ Vulnerable tool discovered:', executeSqlTool.name);
+    console.log("\n✓ Vulnerable tool discovered:", executeSqlTool.name);
   });
 
-  it('should calculate security score penalty for SQL injection', async () => {
+  it("should calculate security score penalty for SQL injection", async () => {
     const target = serverManager.getTarget();
 
     const exitCode = await runValidationAction(target, {
       output: testReportDir,
-      format: 'json',
-      lang: 'en',
+      format: "json",
+      lang: "en",
       quiet: true,
       html: false,
     });
 
-    const dateStr = new Date().toISOString().split('T')[0];
-    const jsonReportPath = path.join(testReportDir, dateStr, 'validate', 'json', 'en');
-    const reportFiles = fs.readdirSync(jsonReportPath).filter(f => f.startsWith('mcp-report-') && f.endsWith('.json'));
+    const dateStr = new Date().toISOString().split("T")[0];
+    const jsonReportPath = path.join(
+      testReportDir,
+      dateStr,
+      "validate",
+      "json",
+      "en",
+    );
+    const reportFiles = fs
+      .readdirSync(jsonReportPath)
+      .filter((f) => f.startsWith("mcp-report-") && f.endsWith(".json"));
     const latestReport = reportFiles.sort().reverse()[0];
-    const reportContent = fs.readFileSync(path.join(jsonReportPath, latestReport), 'utf8');
+    const reportContent = fs.readFileSync(
+      path.join(jsonReportPath, latestReport),
+      "utf8",
+    );
     const report = JSON.parse(reportContent);
 
-    expect(report.security).toHaveProperty('score');
+    expect(report.security).toHaveProperty("score");
     expect(report.security.score).toBeLessThan(100);
 
     const criticalOrHighCount = report.security.findings.filter(
-      (f: any) => f.severity === 'critical' || f.severity === 'high'
+      (f: any) => f.severity === "critical" || f.severity === "high",
     ).length;
 
     if (criticalOrHighCount > 0) {
       expect(report.security.score).toBeLessThan(70);
     }
 
-    console.log('\n✓ Security score:', report.security.score);
-    console.log('✓ Security level:', report.security.level);
+    console.log("\n✓ Security score:", report.security.score);
+    console.log("✓ Security level:", report.security.level);
   });
 });

@@ -8,14 +8,14 @@ Welcome to **mcp-verify** documentation! This directory contains user-facing gui
 
 **Choose your path based on what you need:**
 
-| I want to... | Guide | Time |
-|--------------|-------|------|
-| Get started quickly | [LLM Setup](#-llm-setup) → [Examples](#-examples) | 5 min |
-| Integrate with CI/CD | [CI/CD Guide](#-cicd-integration) | 10 min |
-| Understand security scoring | [Security Scoring](../SECURITY_SCORING.md) | 15 min |
-| Contribute code | [Development Guide](../DEVELOPMENT.md) → [Code Map](../CODE_MAP.md) | 30 min |
-| See all commands | [Examples](#-examples) | 5 min |
-| Debug connection issues | [Troubleshooting](#-troubleshooting) | 5 min |
+| I want to...                | Guide                                                               | Time   |
+| --------------------------- | ------------------------------------------------------------------- | ------ |
+| Get started quickly         | [LLM Setup](#-llm-setup) → [Examples](#-examples)                   | 5 min  |
+| Integrate with CI/CD        | [CI/CD Guide](#-cicd-integration)                                   | 10 min |
+| Understand security scoring | [Security Scoring](../SECURITY_SCORING.md)                          | 15 min |
+| Contribute code             | [Development Guide](../DEVELOPMENT.md) → [Code Map](../CODE_MAP.md) | 30 min |
+| See all commands            | [Examples](#-examples)                                              | 5 min  |
+| Debug connection issues     | [Troubleshooting](#-troubleshooting)                                | 5 min  |
 
 ---
 
@@ -28,6 +28,7 @@ Welcome to **mcp-verify** documentation! This directory contains user-facing gui
 **For**: First-time users, security engineers
 
 **What you'll learn**:
+
 - How to configure Anthropic Claude (best quality, $0.0003/scan)
 - How to use Ollama (free, local, privacy-first)
 - How to use OpenAI GPT (existing API key, $0.0002/scan)
@@ -35,6 +36,7 @@ Welcome to **mcp-verify** documentation! This directory contains user-facing gui
 - Troubleshooting LLM issues
 
 **Quick Start**:
+
 ```bash
 # Ollama (free, local)
 ollama pull llama3.2
@@ -60,6 +62,7 @@ mcp-verify validate "node server.js" --llm openai:gpt-4o-mini
 **For**: All users (first-time and experienced)
 
 **What you'll learn**:
+
 - Copy-paste commands for all scenarios
 - Basic validation (STDIO, HTTP)
 - Security scanning
@@ -70,6 +73,7 @@ mcp-verify validate "node server.js" --llm openai:gpt-4o-mini
 - Complete workflows by use case
 
 **Quick Start**:
+
 ```bash
 # Basic validation
 mcp-verify validate "node server.js"
@@ -92,6 +96,7 @@ mcp-verify validate "node server.js" --html --format sarif
 **For**: DevOps engineers, CI/CD users
 
 **What you'll learn**:
+
 - GitHub Actions workflows (basic, SARIF upload, LLM analysis)
 - GitLab CI examples
 - CircleCI configuration
@@ -104,6 +109,7 @@ mcp-verify validate "node server.js" --html --format sarif
 **Quick Start**:
 
 **GitHub Actions**:
+
 ```yaml
 - name: Validate MCP Server
   run: |
@@ -112,6 +118,7 @@ mcp-verify validate "node server.js" --html --format sarif
 ```
 
 **GitLab CI**:
+
 ```yaml
 mcp-verify:
   script:
@@ -132,6 +139,7 @@ mcp-verify:
 **For**: Security engineers, DevOps managers
 
 **What you'll learn**:
+
 - How scores are calculated (100 - penalties)
 - 13 OWASP security rules explained
 - Acceptable risk levels by environment:
@@ -142,6 +150,7 @@ mcp-verify:
 - False positive handling
 
 **Quick Start**:
+
 ```bash
 # Check security score
 mcp-verify validate "node server.js" --security
@@ -161,6 +170,7 @@ mcp-verify validate "node server.js" --fail-on-degradation
 **For**: Security auditors, compliance teams
 
 **What you'll learn**:
+
 - Threat model
 - Security assumptions
 - Vulnerability reporting process
@@ -176,6 +186,7 @@ mcp-verify validate "node server.js" --fail-on-degradation
 **For**: Contributors, developers
 
 **What you'll learn**:
+
 - Local setup (clone, install, build, test)
 - Development workflow
 - Testing guide (unit, integration, e2e)
@@ -185,6 +196,7 @@ mcp-verify validate "node server.js" --fail-on-degradation
 - Adding new features
 
 **Quick Start**:
+
 ```bash
 # Clone and setup
 git clone https://github.com/FinkTech/mcp-verify.git
@@ -208,6 +220,7 @@ npm run dev
 **For**: Contributors navigating codebase
 
 **What you'll learn**:
+
 - "I want to..." quick reference table
 - Directory structure with responsibilities
 - Key component deep dives
@@ -217,12 +230,12 @@ npm run dev
 
 **Quick Start Table**:
 
-| I want to... | Edit this file |
-|--------------|----------------|
-| Add security rule | `libs/core/domain/security/rules/` |
-| Add CLI command | `apps/cli-verifier/src/commands/` |
-| Add LLM provider | `libs/core/domain/quality/providers/` |
-| Add report format | `libs/core/domain/reporting/` |
+| I want to...      | Edit this file                        |
+| ----------------- | ------------------------------------- |
+| Add security rule | `libs/core/domain/security/rules/`    |
+| Add CLI command   | `apps/cli-verifier/src/commands/`     |
+| Add LLM provider  | `libs/core/domain/quality/providers/` |
+| Add report format | `libs/core/domain/reporting/`         |
 
 **When to read**: When you know what you want to add, but not where it goes
 
@@ -235,6 +248,7 @@ npm run dev
 **For**: Contributors understanding system design
 
 **What you'll learn**:
+
 - Hexagonal/clean architecture principles
 - Dependency flow (apps → use-cases → domain)
 - Why we separated domain from infrastructure
@@ -251,6 +265,7 @@ npm run dev
 **For**: First-time contributors
 
 **What you'll learn**:
+
 - How to submit issues
 - How to create pull requests
 - Code review process
@@ -267,6 +282,7 @@ npm run dev
 **For**: Contributors writing tests
 
 **What you'll learn**:
+
 - Testing pyramid (unit, integration, e2e)
 - Test organization
 - Coverage requirements
@@ -281,6 +297,7 @@ npm run dev
 **For**: All users tracking changes
 
 **What you'll learn**:
+
 - Version history
 - New features
 - Breaking changes
@@ -295,6 +312,7 @@ npm run dev
 **Goal**: Run first validation successfully
 
 **Path**:
+
 1. [LLM Setup](./LLM_SETUP.md) - Configure LLM provider (5 min)
 2. [Examples](./EXAMPLES.md) - Copy-paste commands (2 min)
 3. Run validation:
@@ -311,6 +329,7 @@ npm run dev
 **Goal**: Add mcp-verify to build pipeline
 
 **Path**:
+
 1. [Examples](./EXAMPLES.md) - Understand exit codes (5 min)
 2. [CI/CD Guide](./CI_CD.md) - Copy workflow for your platform (5 min)
 3. [Security Scoring](../SECURITY_SCORING.md) - Set acceptable thresholds (5 min)
@@ -329,6 +348,7 @@ npm run dev
 **Goal**: Assess production readiness
 
 **Path**:
+
 1. [Security Scoring](../SECURITY_SCORING.md) - Understand risk levels (15 min)
 2. [LLM Setup](./LLM_SETUP.md) - Choose privacy-appropriate LLM (5 min)
 3. [CI/CD Guide](./CI_CD.md) - Set up regression detection (10 min)
@@ -350,6 +370,7 @@ npm run dev
 **Goal**: Add new feature
 
 **Path**:
+
 1. [Development Guide](../DEVELOPMENT.md) - Local setup (15 min)
 2. [Code Map](../CODE_MAP.md) - Find relevant files (5 min)
 3. [Architecture](../ARCHITECTURE.md) - Understand design (10 min)
@@ -490,12 +511,12 @@ docs/
 
 ## 📊 Documentation Coverage
 
-| Persona | Documentation | Status |
-|---------|--------------|--------|
-| **First-Time User** | LLM Setup, Examples | ✅ Complete |
-| **CI/CD Developer** | CI/CD Guide, Examples | ✅ Complete |
-| **Security Engineer** | Security Scoring, LLM Setup | ✅ Complete |
-| **Contributor** | Development, Code Map, Architecture | ✅ Complete |
+| Persona               | Documentation                       | Status      |
+| --------------------- | ----------------------------------- | ----------- |
+| **First-Time User**   | LLM Setup, Examples                 | ✅ Complete |
+| **CI/CD Developer**   | CI/CD Guide, Examples               | ✅ Complete |
+| **Security Engineer** | Security Scoring, LLM Setup         | ✅ Complete |
+| **Contributor**       | Development, Code Map, Architecture | ✅ Complete |
 
 **Overall Coverage**: 100% ✅
 
@@ -552,4 +573,3 @@ Found a typo? Command doesn't work? Documentation unclear?
 - **Report Issue**: [GitHub Issues](https://github.com/FinkTech/mcp-verify/issues)
 - **Suggest Improvement**: [GitHub Discussions](https://github.com/FinkTech/mcp-verify/discussions)
 - **Submit Fix**: [Pull Request](https://github.com/FinkTech/mcp-verify/pulls)
-

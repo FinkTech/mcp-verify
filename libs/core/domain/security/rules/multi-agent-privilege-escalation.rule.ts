@@ -29,24 +29,42 @@
  * - CWE-269: Improper Privilege Management
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class MultiAgentPrivilegeEscalationRule implements ISecurityRule {
-  code = 'SEC-034';
-  name = 'Multi-Agent Permission Escalation';
-  severity: 'critical' = 'critical';
+  code = "SEC-034";
+  name = "Multi-Agent Permission Escalation";
+  severity: "critical" = "critical";
 
   private readonly DELEGATION_PARAMS = [
-    'on_behalf_of', 'delegate_to', 'acting_as', 'impersonate',
-    'run_as', 'sudo', 'escalate', 'assume_role', 'switch_user'
+    "on_behalf_of",
+    "delegate_to",
+    "acting_as",
+    "impersonate",
+    "run_as",
+    "sudo",
+    "escalate",
+    "assume_role",
+    "switch_user",
   ];
 
   private readonly PRIVILEGE_KEYWORDS = [
-    'admin', 'root', 'superuser', 'elevated', 'privileged',
-    'system', 'sudo', 'master', 'owner', 'full_access'
+    "admin",
+    "root",
+    "superuser",
+    "elevated",
+    "privileged",
+    "system",
+    "sudo",
+    "master",
+    "owner",
+    "full_access",
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -66,17 +84,17 @@ export class MultiAgentPrivilegeEscalationRule implements ISecurityRule {
         if (!hasRoleValidation) {
           findings.push({
             severity: this.severity,
-            message: t('sec_034_privilege_escalation', {
-              toolName: tool.name
+            message: t("sec_034_privilege_escalation", {
+              toolName: tool.name,
             }),
             component: `tool:${tool.name}`,
             ruleCode: this.code,
-            remediation: t('sec_034_recommendation'),
+            remediation: t("sec_034_recommendation"),
             references: [
-              'Multi-Agent Security Framework (MASF) 2024 - Permission Model',
-              'CWE-269: Improper Privilege Management',
-              'NIST RBAC - Role-Based Access Control'
-            ]
+              "Multi-Agent Security Framework (MASF) 2024 - Permission Model",
+              "CWE-269: Improper Privilege Management",
+              "NIST RBAC - Role-Based Access Control",
+            ],
           });
         }
       }
@@ -86,17 +104,17 @@ export class MultiAgentPrivilegeEscalationRule implements ISecurityRule {
         const mixesPrivileges = this.mixesPrivilegeLevels(tool);
         if (mixesPrivileges) {
           findings.push({
-            severity: 'high',
-            message: t('sec_034_mixed_privileges', {
-              toolName: tool.name
+            severity: "high",
+            message: t("sec_034_mixed_privileges", {
+              toolName: tool.name,
             }),
             component: `tool:${tool.name}`,
             ruleCode: this.code,
-            remediation: t('sec_034_separation_recommendation'),
+            remediation: t("sec_034_separation_recommendation"),
             references: [
-              'Principle of Least Privilege (PoLP)',
-              'CWE-250: Execution with Unnecessary Privileges'
-            ]
+              "Principle of Least Privilege (PoLP)",
+              "CWE-250: Execution with Unnecessary Privileges",
+            ],
           });
         }
       }
@@ -110,19 +128,19 @@ export class MultiAgentPrivilegeEscalationRule implements ISecurityRule {
       return false;
     }
 
-    const paramNames = Object.keys(tool.inputSchema.properties).map(p => p.toLowerCase());
-
-    return this.DELEGATION_PARAMS.some(param =>
-      paramNames.includes(param)
+    const paramNames = Object.keys(tool.inputSchema.properties).map((p) =>
+      p.toLowerCase(),
     );
+
+    return this.DELEGATION_PARAMS.some((param) => paramNames.includes(param));
   }
 
   private isPrivilegedTool(tool: McpTool): boolean {
     const nameLower = tool.name.toLowerCase();
-    const descLower = tool.description?.toLowerCase() || '';
+    const descLower = tool.description?.toLowerCase() || "";
 
-    return this.PRIVILEGE_KEYWORDS.some(keyword =>
-      nameLower.includes(keyword) || descLower.includes(keyword)
+    return this.PRIVILEGE_KEYWORDS.some(
+      (keyword) => nameLower.includes(keyword) || descLower.includes(keyword),
     );
   }
 
@@ -131,12 +149,16 @@ export class MultiAgentPrivilegeEscalationRule implements ISecurityRule {
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
       const validationKeywords = [
-        'validates role', 'checks permission', 'verifies authorization',
-        'requires role', 'permission check', 'authorization required'
+        "validates role",
+        "checks permission",
+        "verifies authorization",
+        "requires role",
+        "permission check",
+        "authorization required",
       ];
 
-      const hasValidation = validationKeywords.some(keyword =>
-        descLower.includes(keyword)
+      const hasValidation = validationKeywords.some((keyword) =>
+        descLower.includes(keyword),
       );
       if (hasValidation) return true;
     }
@@ -145,7 +167,11 @@ export class MultiAgentPrivilegeEscalationRule implements ISecurityRule {
     if (tool.inputSchema?.properties) {
       for (const propName of Object.keys(tool.inputSchema.properties)) {
         const propLower = propName.toLowerCase();
-        if (propLower.includes('role') || propLower.includes('permission') || propLower.includes('scope')) {
+        if (
+          propLower.includes("role") ||
+          propLower.includes("permission") ||
+          propLower.includes("scope")
+        ) {
           return true;
         }
       }
@@ -166,11 +192,19 @@ export class MultiAgentPrivilegeEscalationRule implements ISecurityRule {
     for (const propName of Object.keys(tool.inputSchema.properties)) {
       const propLower = propName.toLowerCase();
 
-      if (propLower.includes('read') || propLower.includes('get') || propLower.includes('fetch')) {
+      if (
+        propLower.includes("read") ||
+        propLower.includes("get") ||
+        propLower.includes("fetch")
+      ) {
         readParams.push(propName);
       }
 
-      if (propLower.includes('write') || propLower.includes('delete') || propLower.includes('update')) {
+      if (
+        propLower.includes("write") ||
+        propLower.includes("delete") ||
+        propLower.includes("update")
+      ) {
         writeParams.push(propName);
       }
     }

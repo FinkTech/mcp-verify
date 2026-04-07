@@ -9,6 +9,6 @@
  * MCP Verify - Providers Module
  */
 
-export { McpDiagnosticProvider } from './diagnostics';
-export { McpReportPanel } from './report-panel';
-export { McpCodeActionProvider, generateSuggestionFile } from './code-actions';
+export { McpDiagnosticProvider } from "./diagnostics";
+export { McpReportPanel } from "./report-panel";
+export { McpCodeActionProvider, generateSuggestionFile } from "./code-actions";

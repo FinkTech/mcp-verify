@@ -15,8 +15,8 @@
  * - context delete <name>: Delete a context
  */
 
-import chalk from 'chalk';
-import type { ShellSession } from '../interactive/session';
+import chalk from "chalk";
+import type { ShellSession } from "../interactive/session";
 
 /**
  * Display list of all contexts
@@ -39,7 +39,7 @@ export function handleContextList(session: ShellSession): void {
     const isActive = name === active;
 
     // Marker: ● for active, ○ for inactive
-    const marker = isActive ? chalk.green('●') : chalk.dim('○');
+    const marker = isActive ? chalk.green("●") : chalk.dim("○");
 
     // Context name: bold green if active, cyan if inactive
     const nameDisplay = isActive
@@ -47,17 +47,19 @@ export function handleContextList(session: ShellSession): void {
       : chalk.cyan(name.padEnd(12));
 
     // Target: truncate if too long
-    const targetRaw = context.target ?? chalk.dim('(not set)');
+    const targetRaw = context.target ?? chalk.dim("(not set)");
     const targetDisplay =
-      typeof targetRaw === 'string' && targetRaw.length > 40
-        ? targetRaw.substring(0, 37) + '...'
+      typeof targetRaw === "string" && targetRaw.length > 40
+        ? targetRaw.substring(0, 37) + "..."
         : targetRaw;
     const targetPadded = String(targetDisplay).padEnd(40);
 
     // Profile name
     const profileDisplay = chalk.yellow(context.profile.name);
 
-    console.log(`  ${marker} ${nameDisplay}  ${targetPadded}  ${profileDisplay}`);
+    console.log(
+      `  ${marker} ${nameDisplay}  ${targetPadded}  ${profileDisplay}`,
+    );
   }
 
   console.log(); // Empty line at end
@@ -69,10 +71,13 @@ export function handleContextList(session: ShellSession): void {
  * @param args - Command arguments [context-name]
  * @param session - Shell session
  */
-export function handleContextSwitch(args: string[], session: ShellSession): void {
+export function handleContextSwitch(
+  args: string[],
+  session: ShellSession,
+): void {
   if (args.length === 0) {
-    console.log(chalk.red('✗ Error: Context name required'));
-    console.log(chalk.dim('  Usage: context switch <name>'));
+    console.log(chalk.red("✗ Error: Context name required"));
+    console.log(chalk.dim("  Usage: context switch <name>"));
     return;
   }
 
@@ -91,10 +96,12 @@ export function handleContextSwitch(args: string[], session: ShellSession): void
     const context = session.getActiveContext();
     const targetDisplay = context.target
       ? chalk.cyan(context.target)
-      : chalk.dim('(not set)');
+      : chalk.dim("(not set)");
     const profileDisplay = chalk.yellow(context.profile.name);
 
-    console.log(chalk.green(`✓ Switched to context: ${chalk.bold(targetName)}`));
+    console.log(
+      chalk.green(`✓ Switched to context: ${chalk.bold(targetName)}`),
+    );
     console.log(chalk.dim(`  Target:  ${targetDisplay}`));
     console.log(chalk.dim(`  Profile: ${profileDisplay}`));
   } else {
@@ -109,18 +116,23 @@ export function handleContextSwitch(args: string[], session: ShellSession): void
  * @param args - Command arguments [context-name, ...flags]
  * @param session - Shell session
  */
-export function handleContextCreate(args: string[], session: ShellSession): void {
+export function handleContextCreate(
+  args: string[],
+  session: ShellSession,
+): void {
   if (args.length === 0) {
-    console.log(chalk.red('✗ Error: Context name required'));
-    console.log(chalk.dim('  Usage: context create <name> [--copy]'));
-    console.log(chalk.dim('         --copy: Copy settings from active context'));
+    console.log(chalk.red("✗ Error: Context name required"));
+    console.log(chalk.dim("  Usage: context create <name> [--copy]"));
+    console.log(
+      chalk.dim("         --copy: Copy settings from active context"),
+    );
     return;
   }
 
   const targetName = args[0];
 
   // Check for --copy flag
-  const copyFromActive = args.includes('--copy');
+  const copyFromActive = args.includes("--copy");
 
   // Attempt to create
   const success = session.createContext(targetName, copyFromActive);
@@ -133,10 +145,14 @@ export function handleContextCreate(args: string[], session: ShellSession): void
     console.log(chalk.dim(`  Profile: ${profileDisplay}`));
 
     if (copyFromActive) {
-      console.log(chalk.dim(`  (Copied from: ${session.state.activeContextName})`));
+      console.log(
+        chalk.dim(`  (Copied from: ${session.state.activeContextName})`),
+      );
     }
 
-    console.log(chalk.dim(`\n  Switch to it with: context switch ${targetName}`));
+    console.log(
+      chalk.dim(`\n  Switch to it with: context switch ${targetName}`),
+    );
   } else {
     console.log(chalk.red(`✗ Context already exists: ${targetName}`));
     console.log(chalk.dim('  Use "context switch" to switch to it'));
@@ -149,10 +165,13 @@ export function handleContextCreate(args: string[], session: ShellSession): void
  * @param args - Command arguments [context-name]
  * @param session - Shell session
  */
-export function handleContextDelete(args: string[], session: ShellSession): void {
+export function handleContextDelete(
+  args: string[],
+  session: ShellSession,
+): void {
   if (args.length === 0) {
-    console.log(chalk.red('✗ Error: Context name required'));
-    console.log(chalk.dim('  Usage: context delete <name>'));
+    console.log(chalk.red("✗ Error: Context name required"));
+    console.log(chalk.dim("  Usage: context delete <name>"));
     return;
   }
 
@@ -160,8 +179,8 @@ export function handleContextDelete(args: string[], session: ShellSession): void
 
   // Check if trying to delete active context
   if (targetName === session.state.activeContextName) {
-    console.log(chalk.red('✗ Cannot delete active context'));
-    console.log(chalk.dim('  Switch to another context first'));
+    console.log(chalk.red("✗ Cannot delete active context"));
+    console.log(chalk.dim("  Switch to another context first"));
     return;
   }
 

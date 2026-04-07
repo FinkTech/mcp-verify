@@ -5,13 +5,13 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import { IDetector } from './interfaces';
+import { IDetector } from "./interfaces";
 
 export class SecretScanner {
   private detectors: IDetector[];
 
   /**
-   * @param detectors An ordered array of secret detectors. 
+   * @param detectors An ordered array of secret detectors.
    *                  They will be executed in the order they are provided.
    */
   constructor(detectors: IDetector[]) {
@@ -28,7 +28,7 @@ export class SecretScanner {
       // console.log(`SecretScanner: Token too short (${token.length} < 8): '${token}'`); // Opcional: log para tokens cortos
       return false;
     }
-    
+
     // console.log(`SecretScanner: Checking token '${token}'`); // Debug: token que entra
     for (const detector of this.detectors) {
       const isDetected = detector.detect(token);

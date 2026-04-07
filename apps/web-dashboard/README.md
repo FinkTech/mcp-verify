@@ -9,6 +9,7 @@
 ## 📋 What is Web Dashboard?
 
 A **modern web interface** for visualizing MCP server validation results:
+
 - **Interactive reports** instead of CLI JSON
 - **Historical tracking** with trend analysis
 - **Real-time validation** with live progress
@@ -53,12 +54,14 @@ This is the **frontend UI** that connects to the **Local API Bridge** (REST API)
 ## 🎯 Why Build This?
 
 ### Problem
+
 - **JSON reports are hard to read**: Developers need visual tools
 - **No historical tracking**: Can't see security score trends over time
 - **Hard to share**: Non-technical stakeholders can't interpret CLI output
 - **Manual workflow**: Copy-paste findings into JIRA/Notion
 
 ### Solution: Visual Dashboard
+
 ```
 Developer's Workflow:
 1. Open http://localhost:3000
@@ -123,18 +126,18 @@ apps/web-dashboard/
 
 ### Tech Stack
 
-| Layer | Technology | Reason |
-|-------|-----------|--------|
-| **Framework** | React 18+ | Industry standard, large ecosystem |
-| **Build Tool** | Vite | Fast dev server, modern bundling |
-| **Styling** | Tailwind CSS | Rapid UI development, consistency |
-| **Charts** | Recharts | React-native charting library |
-| **State** | Zustand | Lightweight, TypeScript-friendly |
-| **HTTP Client** | Axios | Interceptors, request cancellation |
-| **WebSocket** | Native WebSocket API | No extra dependencies |
-| **UI Components** | shadcn/ui | Accessible, customizable components |
-| **Icons** | Lucide React | Modern icon set |
-| **Routing** | React Router v6 | Standard routing solution |
+| Layer             | Technology           | Reason                              |
+| ----------------- | -------------------- | ----------------------------------- |
+| **Framework**     | React 18+            | Industry standard, large ecosystem  |
+| **Build Tool**    | Vite                 | Fast dev server, modern bundling    |
+| **Styling**       | Tailwind CSS         | Rapid UI development, consistency   |
+| **Charts**        | Recharts             | React-native charting library       |
+| **State**         | Zustand              | Lightweight, TypeScript-friendly    |
+| **HTTP Client**   | Axios                | Interceptors, request cancellation  |
+| **WebSocket**     | Native WebSocket API | No extra dependencies               |
+| **UI Components** | shadcn/ui            | Accessible, customizable components |
+| **Icons**         | Lucide React         | Modern icon set                     |
+| **Routing**       | React Router v6      | Standard routing solution           |
 
 ---
 
@@ -283,24 +286,27 @@ apps/web-dashboard/
 
 ```typescript
 // src/services/api.service.ts
-import axios from 'axios';
+import axios from "axios";
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = "http://localhost:3000/api";
 
 export class APIService {
   private client = axios.create({
     baseURL: API_BASE_URL,
     timeout: 60000,
-    headers: { 'Content-Type': 'application/json' }
+    headers: { "Content-Type": "application/json" },
   });
 
   /**
    * Start a new validation
    */
-  async startValidation(target: string, options: ValidationOptions): Promise<ValidationResponse> {
-    const response = await this.client.post('/validate', {
+  async startValidation(
+    target: string,
+    options: ValidationOptions,
+  ): Promise<ValidationResponse> {
+    const response = await this.client.post("/validate", {
       target,
-      options
+      options,
     });
 
     return response.data;
@@ -318,7 +324,7 @@ export class APIService {
    * List historical validations
    */
   async listValidations(params?: ListParams): Promise<ValidationList> {
-    const response = await this.client.get('/validations', { params });
+    const response = await this.client.get("/validations", { params });
     return response.data;
   }
 
@@ -352,40 +358,40 @@ export class WebSocketService {
     this.ws = new WebSocket(wsUrl);
 
     this.ws.onopen = () => {
-      console.log('WebSocket connected');
-      this.emit('connected');
+      console.log("WebSocket connected");
+      this.emit("connected");
     };
 
     this.ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
 
       switch (message.type) {
-        case 'log':
-          this.emit('log', message);
+        case "log":
+          this.emit("log", message);
           break;
-        case 'progress':
-          this.emit('progress', message);
+        case "progress":
+          this.emit("progress", message);
           break;
-        case 'finding':
-          this.emit('finding', message);
+        case "finding":
+          this.emit("finding", message);
           break;
-        case 'complete':
-          this.emit('complete', message);
+        case "complete":
+          this.emit("complete", message);
           break;
-        case 'error':
-          this.emit('error', message);
+        case "error":
+          this.emit("error", message);
           break;
       }
     };
 
     this.ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      this.emit('error', error);
+      console.error("WebSocket error:", error);
+      this.emit("error", error);
     };
 
     this.ws.onclose = () => {
-      console.log('WebSocket disconnected');
-      this.emit('disconnected');
+      console.log("WebSocket disconnected");
+      this.emit("disconnected");
     };
   }
 
@@ -398,7 +404,7 @@ export class WebSocketService {
 
   private emit(event: string, data?: any) {
     const callbacks = this.listeners.get(event) || [];
-    callbacks.forEach(cb => cb(data));
+    callbacks.forEach((cb) => cb(data));
   }
 
   disconnect() {
@@ -418,17 +424,21 @@ export class WebSocketService {
 
 ```tsx
 // src/components/ValidationForm.tsx
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 
-export function ValidationForm({ onSubmit }: { onSubmit: (data: ValidationData) => void }) {
-  const [target, setTarget] = useState('http://localhost:3000');
+export function ValidationForm({
+  onSubmit,
+}: {
+  onSubmit: (data: ValidationData) => void;
+}) {
+  const [target, setTarget] = useState("http://localhost:3000");
   const [options, setOptions] = useState({
     security: true,
     sandbox: true,
-    fuzzing: false
+    fuzzing: false,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -439,9 +449,7 @@ export function ValidationForm({ onSubmit }: { onSubmit: (data: ValidationData) 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 p-6 border rounded-lg">
       <div>
-        <label className="block text-sm font-medium mb-2">
-          Server Target
-        </label>
+        <label className="block text-sm font-medium mb-2">Server Target</label>
         <Input
           type="text"
           value={target}
@@ -503,7 +511,7 @@ export function ValidationForm({ onSubmit }: { onSubmit: (data: ValidationData) 
 export function ProgressBar({
   percent,
   stage,
-  message
+  message,
 }: {
   percent: number;
   stage: string;
@@ -512,7 +520,9 @@ export function ProgressBar({
   return (
     <div className="space-y-2">
       <div className="flex justify-between text-sm">
-        <span className="font-medium">Progress: {Math.round(percent * 100)}%</span>
+        <span className="font-medium">
+          Progress: {Math.round(percent * 100)}%
+        </span>
         <span className="text-gray-600">{stage}</span>
       </div>
 
@@ -535,35 +545,47 @@ export function ProgressBar({
 // src/components/FindingCard.tsx
 export function FindingCard({ finding }: { finding: SecurityFinding }) {
   const severityColors = {
-    critical: 'bg-red-100 border-red-500 text-red-900',
-    high: 'bg-orange-100 border-orange-500 text-orange-900',
-    medium: 'bg-yellow-100 border-yellow-500 text-yellow-900',
-    low: 'bg-blue-100 border-blue-500 text-blue-900'
+    critical: "bg-red-100 border-red-500 text-red-900",
+    high: "bg-orange-100 border-orange-500 text-orange-900",
+    medium: "bg-yellow-100 border-yellow-500 text-yellow-900",
+    low: "bg-blue-100 border-blue-500 text-blue-900",
   };
 
   const severityIcons = {
-    critical: '🔴',
-    high: '🟠',
-    medium: '🟡',
-    low: '🔵'
+    critical: "🔴",
+    high: "🟠",
+    medium: "🟡",
+    low: "🔵",
   };
 
   return (
-    <div className={`border-l-4 p-4 rounded ${severityColors[finding.severity]}`}>
+    <div
+      className={`border-l-4 p-4 rounded ${severityColors[finding.severity]}`}
+    >
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <h3 className="font-semibold text-lg">
-            {severityIcons[finding.severity]} {finding.ruleCode}: {finding.message}
+            {severityIcons[finding.severity]} {finding.ruleCode}:{" "}
+            {finding.message}
           </h3>
           <p className="text-sm mt-1">
-            Tool: <code className="bg-white px-2 py-1 rounded">{finding.component}</code>
+            Tool:{" "}
+            <code className="bg-white px-2 py-1 rounded">
+              {finding.component}
+            </code>
           </p>
-          <p className="text-sm mt-2">{finding.evidence?.risk || 'No additional details'}</p>
+          <p className="text-sm mt-2">
+            {finding.evidence?.risk || "No additional details"}
+          </p>
         </div>
 
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">View Details</Button>
-          <Button variant="outline" size="sm">Assign</Button>
+          <Button variant="outline" size="sm">
+            View Details
+          </Button>
+          <Button variant="outline" size="sm">
+            Assign
+          </Button>
         </div>
       </div>
 
@@ -582,12 +604,26 @@ export function FindingCard({ finding }: { finding: SecurityFinding }) {
 
 ```tsx
 // src/components/TrendChart.tsx
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
 
-export function TrendChart({ data }: { data: Array<{ date: string; score: number }> }) {
+export function TrendChart({
+  data,
+}: {
+  data: Array<{ date: string; score: number }>;
+}) {
   return (
     <div className="p-6 border rounded-lg">
-      <h3 className="text-lg font-semibold mb-4">📊 Score Trend (Last 30 Days)</h3>
+      <h3 className="text-lg font-semibold mb-4">
+        📊 Score Trend (Last 30 Days)
+      </h3>
 
       <LineChart width={800} height={300} data={data}>
         <CartesianGrid strokeDasharray="3 3" />
@@ -614,24 +650,24 @@ export function TrendChart({ data }: { data: Array<{ date: string; score: number
 
 ### Client-Side Security
 
-| Threat | Mitigation |
-|--------|------------|
-| **XSS in Report Data** | Sanitize all HTML with DOMPurify, use React's built-in escaping |
-| **CSRF Attacks** | Include CSRF token in all POST requests |
-| **Insecure WebSocket** | Validate message signatures, limit message size |
-| **Sensitive Data Leak** | Never log API tokens, redact credentials in UI |
-| **Open Redirects** | Validate all URLs before navigation |
+| Threat                  | Mitigation                                                      |
+| ----------------------- | --------------------------------------------------------------- |
+| **XSS in Report Data**  | Sanitize all HTML with DOMPurify, use React's built-in escaping |
+| **CSRF Attacks**        | Include CSRF token in all POST requests                         |
+| **Insecure WebSocket**  | Validate message signatures, limit message size                 |
+| **Sensitive Data Leak** | Never log API tokens, redact credentials in UI                  |
+| **Open Redirects**      | Validate all URLs before navigation                             |
 
 ### Implementation
 
 ```typescript
 // src/utils/sanitize.ts
-import DOMPurify from 'dompurify';
+import DOMPurify from "dompurify";
 
 export function sanitizeHTML(html: string): string {
   return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'code', 'pre'],
-    ALLOWED_ATTR: []
+    ALLOWED_TAGS: ["b", "i", "em", "strong", "code", "pre"],
+    ALLOWED_ATTR: [],
   });
 }
 
@@ -639,7 +675,7 @@ export function sanitizeHTML(html: string): string {
 export function isValidURL(url: string): boolean {
   try {
     const parsed = new URL(url);
-    return ['http:', 'https:'].includes(parsed.protocol);
+    return ["http:", "https:"].includes(parsed.protocol);
   } catch {
     return false;
   }
@@ -658,6 +694,7 @@ Want to build this? Here's how:
 4. **PR**: Submit with screenshots + demo video
 
 **Key Questions**:
+
 - Should dashboard be served by API Bridge or separate dev server?
 - What chart library for historical trends?
 - Dark mode by default or user preference?
@@ -677,6 +714,7 @@ Want to build this? Here's how:
 ## 📝 Decision Log
 
 **2026-02-09**: Decision to postpone Web Dashboard
+
 - **Rationale**: Local API Bridge must exist first. Building UI without backend has no value. Also, MCP Inspector already provides basic Web UI.
 - **Alternative**: Users can use CLI + JSON reports + external tools (VS Code extensions, Jupyter notebooks)
 - **Revisit**: Q2 2026 if Local API Bridge is built and demand increases

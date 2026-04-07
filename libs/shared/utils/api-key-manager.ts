@@ -23,13 +23,13 @@
  * @module libs/shared/utils/api-key-manager
  */
 
-import Anthropic from '@anthropic-ai/sdk';
-import { loadNativeAddon } from './native-loader';
-import { t } from './cli/i18n-helper';
+import Anthropic from "@anthropic-ai/sdk";
+import { loadNativeAddon } from "./native-loader";
+import { t } from "./cli/i18n-helper";
 
-const ENV_VAR_NAME = 'ANTHROPIC_API_KEY';
-const KEYCHAIN_SERVICE = 'mcp-verify';
-const KEYCHAIN_ACCOUNT = 'anthropic_api_key';
+const ENV_VAR_NAME = "ANTHROPIC_API_KEY";
+const KEYCHAIN_SERVICE = "mcp-verify";
+const KEYCHAIN_ACCOUNT = "anthropic_api_key";
 
 export interface ApiKeyValidationResult {
   valid: boolean;
@@ -52,7 +52,7 @@ export class ApiKeyManager {
 
     // 2. Check System Keychain
     try {
-      const keyring = loadNativeAddon<any>('@napi-rs/keyring');
+      const keyring = loadNativeAddon<any>("@napi-rs/keyring");
       if (keyring) {
         // This is a purely local call to the OS Credential Manager
         return await keyring.getPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT);
@@ -70,15 +70,23 @@ export class ApiKeyManager {
    */
   async saveApiKey(apiKey: string): Promise<boolean> {
     try {
-      const keyring = loadNativeAddon<any>('@napi-rs/keyring');
+      const keyring = loadNativeAddon<any>("@napi-rs/keyring");
       if (!keyring) {
-        throw new Error(t('mcp_error_native_addon_not_available', { addon: '@napi-rs/keyring' }));
+        throw new Error(
+          t("mcp_error_native_addon_not_available", {
+            addon: "@napi-rs/keyring",
+          }),
+        );
       }
 
       await keyring.setPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT, apiKey);
       return true;
     } catch (error) {
-      console.error(t('mcp_error_keychain_save_failed', { error: error instanceof Error ? error.message : String(error) }));
+      console.error(
+        t("mcp_error_keychain_save_failed", {
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      );
       return false;
     }
   }
@@ -88,7 +96,7 @@ export class ApiKeyManager {
    */
   async deleteApiKey(): Promise<boolean> {
     try {
-      const keyring = loadNativeAddon<any>('@napi-rs/keyring');
+      const keyring = loadNativeAddon<any>("@napi-rs/keyring");
       if (!keyring) return false;
 
       await keyring.deletePassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT);
@@ -117,21 +125,21 @@ export class ApiKeyManager {
 
       // Make minimal request (1 token = cheapest possible)
       await anthropic.messages.create({
-        model: 'claude-haiku-4-5-20251001', // Cheapest model
+        model: "claude-haiku-4-5-20251001", // Cheapest model
         max_tokens: 1,
-        messages: [{ role: 'user', content: 'test' }]
+        messages: [{ role: "user", content: "test" }],
       });
 
       return {
         valid: true,
-        provider: 'anthropic'
+        provider: "anthropic",
       };
     } catch (error: any) {
-      if (error.status === 401 || error.message?.includes('authentication')) {
+      if (error.status === 401 || error.message?.includes("authentication")) {
         return {
           valid: false,
-          error: t('llm_api_key_invalid', { provider: 'Anthropic' }),
-          provider: 'anthropic'
+          error: t("llm_api_key_invalid", { provider: "Anthropic" }),
+          provider: "anthropic",
         };
       }
 
@@ -139,14 +147,17 @@ export class ApiKeyManager {
         // Rate limited, but key is valid
         return {
           valid: true,
-          provider: 'anthropic'
+          provider: "anthropic",
         };
       }
 
       return {
         valid: false,
-        error: t('llm_validation_failed', { provider: 'Anthropic', error: error.message }),
-        provider: 'anthropic'
+        error: t("llm_validation_failed", {
+          provider: "Anthropic",
+          error: error.message,
+        }),
+        provider: "anthropic",
       };
     }
   }
@@ -155,31 +166,70 @@ export class ApiKeyManager {
    * Get masked API key for display (show only last 4 chars)
    */
   maskApiKey(apiKey: string): string {
-    if (apiKey.length < 20) return '***';
+    if (apiKey.length < 20) return "***";
     const visible = apiKey.slice(-4);
     return `sk-ant-***...***${visible}`;
   }
 
   /**
-   * Sanitize object for logging (redact API keys)
+   * Sanitize object for logging (redact API keys).
+   * This function is type-safe, recursive, and does not mutate the original object.
+   *
+   * @param obj - The object to sanitize.
+   * @returns A deep-cloned and sanitized object.
    */
-  sanitizeForLog(obj: any): any {
-    const sensitive = ['api_key', 'apiKey', 'apikey', 'token', 'authorization', 'auth', 'secret', 'password'];
+  sanitizeForLog<T>(obj: T): T {
+    const sensitiveKeys = [
+      "api_key",
+      "apiKey",
+      "apikey",
+      "token",
+      "authorization",
+      "auth",
+      "secret",
+      "password",
+    ];
+    const redacted = "[REDACTED]";
+
+    // Use a robust deep-cloning method to avoid mutating the original object
+    const clonedObj = structuredClone(obj);
+
+    const recurse = (current: unknown) => {
+      // Base case: ignore primitives and null
+      if (!current || typeof current !== "object") {
+        return;
+      }
+
+      // Handle arrays by recursing into each item
+      if (Array.isArray(current)) {
+        current.forEach(recurse);
+        return;
+      }
+
+      // Handle objects
+      for (const key in current) {
+        if (Object.prototype.hasOwnProperty.call(current, key)) {
+          const lowerKey = key.toLowerCase();
+          const value = (current as Record<string, unknown>)[key];
+
+          if (sensitiveKeys.some((s) => lowerKey.includes(s))) {
+            (current as Record<string, unknown>)[key] = redacted;
+          } else if (typeof value === "string" && value.startsWith("sk-ant-")) {
+            (current as Record<string, unknown>)[key] = redacted;
+          } else {
+            // Recurse into nested objects/arrays
+            recurse(value);
+          }
+        }
+      }
+    };
 
     try {
-      return JSON.parse(JSON.stringify(obj, (key, value) => {
-        if (typeof key === 'string' && sensitive.some(s => key.toLowerCase().includes(s))) {
-          return '[REDACTED]';
-        }
-        // Also check string values that look like API keys
-        if (typeof value === 'string' && value.startsWith('sk-ant-')) {
-          return '[REDACTED]';
-        }
-        return value;
-      }));
+      recurse(clonedObj);
+      return clonedObj;
     } catch (error) {
-      // If sanitization fails, return placeholder instead of failing
-      return { error: 'Failed to sanitize object' };
+      // If sanitization fails, return a placeholder instead of throwing
+      return { error: "Failed to sanitize object" } as T;
     }
   }
 

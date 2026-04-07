@@ -32,31 +32,57 @@
  * - Zero Trust Architecture - Continuous Verification
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class UnvalidatedToolAuthorizationRule implements ISecurityRule {
-  code = 'SEC-059';
-  name = 'Unvalidated Tool Call Authorization';
-  severity: 'critical' = 'critical';
+  code = "SEC-059";
+  name = "Unvalidated Tool Call Authorization";
+  severity: "critical" = "critical";
 
   private readonly TOOL_INVOCATION_PATTERNS = [
-    /execute.*tool/i, /invoke.*tool/i, /call.*tool/i,
-    /run.*tool/i, /trigger.*tool/i, /dispatch.*tool/i,
-    /proxy.*tool/i, /forward.*tool/i, /delegate.*tool/i
+    /execute.*tool/i,
+    /invoke.*tool/i,
+    /call.*tool/i,
+    /run.*tool/i,
+    /trigger.*tool/i,
+    /dispatch.*tool/i,
+    /proxy.*tool/i,
+    /forward.*tool/i,
+    /delegate.*tool/i,
   ];
 
   private readonly PRIVILEGED_KEYWORDS = [
-    'admin', 'root', 'system', 'elevated', 'privileged',
-    'superuser', 'master', 'owner', 'sudo', 'execute'
+    "admin",
+    "root",
+    "system",
+    "elevated",
+    "privileged",
+    "superuser",
+    "master",
+    "owner",
+    "sudo",
+    "execute",
   ];
 
   private readonly AUTH_PARAM_NAMES = [
-    'authorization', 'auth', 'token', 'api_key', 'apiKey',
-    'permission', 'permission_level', 'role', 'scope',
-    'access_token', 'bearer_token', 'credentials'
+    "authorization",
+    "auth",
+    "token",
+    "api_key",
+    "apiKey",
+    "permission",
+    "permission_level",
+    "role",
+    "scope",
+    "access_token",
+    "bearer_token",
+    "credentials",
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -74,24 +100,24 @@ export class UnvalidatedToolAuthorizationRule implements ISecurityRule {
         const hasAuthorization = this.hasAuthorizationCheck(tool);
 
         if (!hasAuthorization) {
-          const severity = invokesOtherTools ? 'critical' : 'high';
+          const severity = invokesOtherTools ? "critical" : "high";
 
           findings.push({
             severity,
-            message: t('sec_059_unvalidated_auth', {
+            message: t("sec_059_unvalidated_auth", {
               toolName: tool.name,
               reason: invokesOtherTools
-                ? 'can invoke other tools without authorization'
-                : 'performs privileged operations without authorization'
+                ? "can invoke other tools without authorization"
+                : "performs privileged operations without authorization",
             }),
             component: `tool:${tool.name}`,
             ruleCode: this.code,
-            remediation: t('sec_059_recommendation'),
+            remediation: t("sec_059_recommendation"),
             references: [
-              'OWASP API Security - API5:2023 Broken Function Level Authorization',
-              'CWE-285: Improper Authorization',
-              'Zero Trust Architecture - NIST SP 800-207'
-            ]
+              "OWASP API Security - API5:2023 Broken Function Level Authorization",
+              "CWE-285: Improper Authorization",
+              "Zero Trust Architecture - NIST SP 800-207",
+            ],
           });
         }
       }
@@ -102,23 +128,29 @@ export class UnvalidatedToolAuthorizationRule implements ISecurityRule {
 
   private invokesOtherTools(tool: McpTool): boolean {
     // Check name pattern
-    const nameMatches = this.TOOL_INVOCATION_PATTERNS.some(pattern =>
-      pattern.test(tool.name)
+    const nameMatches = this.TOOL_INVOCATION_PATTERNS.some((pattern) =>
+      pattern.test(tool.name),
     );
     if (nameMatches) return true;
 
     // Check description
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
-      const descMatches = this.TOOL_INVOCATION_PATTERNS.some(pattern =>
-        pattern.test(descLower)
+      const descMatches = this.TOOL_INVOCATION_PATTERNS.some((pattern) =>
+        pattern.test(descLower),
       );
       if (descMatches) return true;
 
       // Check for mentions of tool invocation
-      const invocationKeywords = ['invoke tool', 'call tool', 'execute tool', 'run tool', 'tool_name'];
-      const hasInvocationKeyword = invocationKeywords.some(keyword =>
-        descLower.includes(keyword)
+      const invocationKeywords = [
+        "invoke tool",
+        "call tool",
+        "execute tool",
+        "run tool",
+        "tool_name",
+      ];
+      const hasInvocationKeyword = invocationKeywords.some((keyword) =>
+        descLower.includes(keyword),
       );
       if (hasInvocationKeyword) return true;
     }
@@ -127,7 +159,11 @@ export class UnvalidatedToolAuthorizationRule implements ISecurityRule {
     if (tool.inputSchema?.properties) {
       for (const propName of Object.keys(tool.inputSchema.properties)) {
         const propLower = propName.toLowerCase();
-        if (propLower === 'tool_name' || propLower === 'toolname' || propLower === 'tool') {
+        if (
+          propLower === "tool_name" ||
+          propLower === "toolname" ||
+          propLower === "tool"
+        ) {
           return true;
         }
       }
@@ -138,10 +174,10 @@ export class UnvalidatedToolAuthorizationRule implements ISecurityRule {
 
   private isPrivilegedTool(tool: McpTool): boolean {
     const nameLower = tool.name.toLowerCase();
-    const descLower = tool.description?.toLowerCase() || '';
+    const descLower = tool.description?.toLowerCase() || "";
 
-    return this.PRIVILEGED_KEYWORDS.some(keyword =>
-      nameLower.includes(keyword) || descLower.includes(keyword)
+    return this.PRIVILEGED_KEYWORDS.some(
+      (keyword) => nameLower.includes(keyword) || descLower.includes(keyword),
     );
   }
 
@@ -150,22 +186,28 @@ export class UnvalidatedToolAuthorizationRule implements ISecurityRule {
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
       const authKeywords = [
-        'requires authorization', 'requires permission', 'requires auth',
-        'validates authorization', 'checks permission', 'verifies authorization'
+        "requires authorization",
+        "requires permission",
+        "requires auth",
+        "validates authorization",
+        "checks permission",
+        "verifies authorization",
       ];
 
-      const hasAuthMention = authKeywords.some(keyword =>
-        descLower.includes(keyword)
+      const hasAuthMention = authKeywords.some((keyword) =>
+        descLower.includes(keyword),
       );
       if (hasAuthMention) return true;
     }
 
     // Check for authorization parameters
     if (tool.inputSchema?.properties) {
-      const paramNames = Object.keys(tool.inputSchema.properties).map(p => p.toLowerCase());
+      const paramNames = Object.keys(tool.inputSchema.properties).map((p) =>
+        p.toLowerCase(),
+      );
 
-      const hasAuthParam = this.AUTH_PARAM_NAMES.some(authParam =>
-        paramNames.includes(authParam)
+      const hasAuthParam = this.AUTH_PARAM_NAMES.some((authParam) =>
+        paramNames.includes(authParam),
       );
       if (hasAuthParam) return true;
     }

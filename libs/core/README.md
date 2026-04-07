@@ -94,6 +94,7 @@ libs/core/
 **Purpose**: Business rules, calculations, validations
 
 **Rules**:
+
 - ✅ Pure TypeScript (no I/O, no frameworks)
 - ✅ Unit-testable without mocks
 - ✅ Imports from `shared/` only
@@ -102,6 +103,7 @@ libs/core/
 - ❌ NO I/O operations (file reads, network calls)
 
 **Examples**:
+
 - Security rule checks (SQL injection detection)
 - Score calculations (0-100 algorithm)
 - Report formatting (HTML generation)
@@ -114,6 +116,7 @@ libs/core/
 **Purpose**: Adapt external services to domain interfaces
 
 **Rules**:
+
 - ✅ Can import from `domain/` and `shared/`
 - ✅ Contains I/O operations
 - ✅ Implements domain interfaces
@@ -121,6 +124,7 @@ libs/core/
 - ❌ NO business logic (that goes in domain/)
 
 **Examples**:
+
 - Logger (Winston adapter)
 - Sandbox (Deno runtime adapter)
 - File system operations
@@ -133,6 +137,7 @@ libs/core/
 **Purpose**: Coordinate domain + infrastructure to achieve goals
 
 **Rules**:
+
 - ✅ Can import from `domain/`, `infrastructure/`, `shared/`
 - ✅ Orchestrates workflows
 - ✅ Handles errors and recovery
@@ -140,6 +145,7 @@ libs/core/
 - ❌ NO business logic (that goes in domain/)
 
 **Examples**:
+
 - Validator (orchestrates handshake → discovery → analysis → reporting)
 - Fuzzer (generates test cases → executes → analyzes results)
 - Proxy (intercepts traffic → applies guardrails → forwards)
@@ -211,7 +217,7 @@ export class HardcodedSecretsRule implements ISecurityRule {
 2. **Register rule**: `domain/security/security-scanner.ts`
 
 ```typescript
-import { HardcodedSecretsRule } from './rules/hardcoded-secrets';
+import { HardcodedSecretsRule } from "./rules/hardcoded-secrets";
 
 export class SecurityScanner {
   private rules: ISecurityRule[] = [
@@ -224,36 +230,40 @@ export class SecurityScanner {
 3. **Add tests**: `tests/core/domain/security/rules/hardcoded-secrets.spec.ts`
 
 ```typescript
-import { describe, test, expect } from '@jest/globals';
-import { HardcodedSecretsRule } from '../../../../../libs/core/domain/security/rules/hardcoded-secrets';
+import { describe, test, expect } from "@jest/globals";
+import { HardcodedSecretsRule } from "../../../../../libs/core/domain/security/rules/hardcoded-secrets";
 
-describe('HardcodedSecretsRule', () => {
-  test('should detect hardcoded password in description', () => {
+describe("HardcodedSecretsRule", () => {
+  test("should detect hardcoded password in description", () => {
     const rule = new HardcodedSecretsRule();
     const findings = rule.evaluate({
-      tools: [{
-        name: 'login',
-        description: 'Login with password="admin123"',
-        inputSchema: { type: 'object', properties: {} }
-      }],
+      tools: [
+        {
+          name: "login",
+          description: 'Login with password="admin123"',
+          inputSchema: { type: "object", properties: {} },
+        },
+      ],
       resources: [],
-      prompts: []
+      prompts: [],
     });
 
     expect(findings).toHaveLength(1);
-    expect(findings[0].severity).toBe('critical');
+    expect(findings[0].severity).toBe("critical");
   });
 
-  test('should not flag normal description', () => {
+  test("should not flag normal description", () => {
     const rule = new HardcodedSecretsRule();
     const findings = rule.evaluate({
-      tools: [{
-        name: 'get_weather',
-        description: 'Get current weather',
-        inputSchema: { type: 'object', properties: {} }
-      }],
+      tools: [
+        {
+          name: "get_weather",
+          description: "Get current weather",
+          inputSchema: { type: "object", properties: {} },
+        },
+      ],
       resources: [],
-      prompts: []
+      prompts: [],
     });
 
     expect(findings).toHaveLength(0);
@@ -360,11 +370,11 @@ async initializeProvider(providerSpec?: string): Promise<ILLMProvider | null> {
 ```typescript
 export const translations = {
   en: {
-    gemini_api_key_not_configured: 'Google Gemini API key not configured',
+    gemini_api_key_not_configured: "Google Gemini API key not configured",
   },
   es: {
-    gemini_api_key_not_configured: 'Clave API de Google Gemini no configurada',
-  }
+    gemini_api_key_not_configured: "Clave API de Google Gemini no configurada",
+  },
 };
 ```
 
@@ -383,11 +393,14 @@ export const translations = {
 1. **Create generator**: `domain/reporting/pdf-generator.ts`
 
 ```typescript
-import { ValidationReport } from '../mcp-server/entities/validation.types';
-import * as fs from 'fs/promises';
+import { ValidationReport } from "../mcp-server/entities/validation.types";
+import * as fs from "fs/promises";
 
 export class PdfReportGenerator {
-  async generate(report: ValidationReport, outputPath: string): Promise<string> {
+  async generate(
+    report: ValidationReport,
+    outputPath: string,
+  ): Promise<string> {
     // Generate PDF content (using a library like pdfkit)
     const pdfBuffer = await this.buildPdf(report);
 
@@ -407,10 +420,10 @@ export class PdfReportGenerator {
 2. **Register in validator**: `use-cases/validator/validator.ts`
 
 ```typescript
-import { PdfReportGenerator } from '../../domain/reporting/pdf-generator';
+import { PdfReportGenerator } from "../../domain/reporting/pdf-generator";
 
 // In report generation section
-if (format === 'pdf') {
+if (format === "pdf") {
   const pdfGenerator = new PdfReportGenerator();
   await pdfGenerator.generate(report, outputPath);
 }
@@ -420,8 +433,12 @@ if (format === 'pdf') {
 
 ```typescript
 program
-  .command('validate <target>')
-  .option('--format <type>', 'Report format: json, html, sarif, md, pdf', 'json')
+  .command("validate <target>")
+  .option(
+    "--format <type>",
+    "Report format: json, html, sarif, md, pdf",
+    "json",
+  );
 ```
 
 **Time**: ~2 hours (depending on PDF library complexity)
@@ -437,8 +454,8 @@ program
 1. **Create transport**: `domain/transport/websocket-transport.ts`
 
 ```typescript
-import { ITransport } from './transport.interface';
-import WebSocket from 'ws';
+import { ITransport } from "./transport.interface";
+import WebSocket from "ws";
 
 export class WebSocketTransport implements ITransport {
   private ws: WebSocket | null = null;
@@ -452,27 +469,27 @@ export class WebSocketTransport implements ITransport {
     return new Promise((resolve, reject) => {
       this.ws = new WebSocket(this.url);
 
-      this.ws.on('open', () => {
+      this.ws.on("open", () => {
         // Send handshake
-        this.sendRequest('initialize', {}).then(resolve);
+        this.sendRequest("initialize", {}).then(resolve);
       });
 
-      this.ws.on('error', reject);
+      this.ws.on("error", reject);
     });
   }
 
   async sendRequest(method: string, params: any): Promise<any> {
     return new Promise((resolve, reject) => {
       const request = {
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         id: Date.now(),
         method,
-        params
+        params,
       };
 
       this.ws!.send(JSON.stringify(request));
 
-      this.ws!.once('message', (data: string) => {
+      this.ws!.once("message", (data: string) => {
         const response = JSON.parse(data);
         resolve(response.result);
       });
@@ -488,10 +505,13 @@ export class WebSocketTransport implements ITransport {
 2. **Add to factory**: `apps/cli-verifier/src/utils/transport-factory.ts`
 
 ```typescript
-import { WebSocketTransport } from '../../../../libs/core/domain/transport/websocket-transport';
+import { WebSocketTransport } from "../../../../libs/core/domain/transport/websocket-transport";
 
-export async function createTransport(target: string, type?: string): Promise<ITransport> {
-  if (type === 'ws' || target.startsWith('ws://')) {
+export async function createTransport(
+  target: string,
+  type?: string,
+): Promise<ITransport> {
+  if (type === "ws" || target.startsWith("ws://")) {
     return new WebSocketTransport(target);
   }
   // ... other transports
@@ -513,8 +533,8 @@ export async function createTransport(target: string, type?: string): Promise<IT
 export class Logger {
   logSecurityFinding(tool: McpTool) {
     // Analyzing security here? NO!
-    if (tool.description.includes('sql')) {
-      this.warn('SQL injection detected');
+    if (tool.description.includes("sql")) {
+      this.warn("SQL injection detected");
     }
   }
 }
@@ -532,7 +552,7 @@ export class Logger {
 // ❌ BAD: domain/security/security-scanner.ts
 export class SecurityScanner {
   async scan(discovery: DiscoveryResult) {
-    const config = await fs.readFile('./config.json'); // NO I/O in domain!
+    const config = await fs.readFile("./config.json"); // NO I/O in domain!
   }
 }
 ```
@@ -578,6 +598,7 @@ Shared Utilities (i18n, formatters)
 ```
 
 **Key Rules**:
+
 1. Domain NEVER imports from Use Cases or Infrastructure
 2. Use Cases can import from Domain and Infrastructure
 3. Infrastructure can import from Domain (to implement interfaces)
@@ -591,13 +612,15 @@ Shared Utilities (i18n, formatters)
 
 ```typescript
 // No mocks needed! Domain is pure.
-test('SecurityScanner calculates score correctly', () => {
+test("SecurityScanner calculates score correctly", () => {
   const analyzer = new SecurityScanner();
   const result = analyzer.analyze({
-    tools: [{
-      name: 'dangerous',
-      description: 'SQL query: DROP TABLE'
-    }]
+    tools: [
+      {
+        name: "dangerous",
+        description: "SQL query: DROP TABLE",
+      },
+    ],
   });
 
   expect(result.score).toBeLessThan(70);
@@ -609,7 +632,7 @@ test('SecurityScanner calculates score correctly', () => {
 
 ```typescript
 // Mock infrastructure, test orchestration
-test('Validator orchestrates workflow', async () => {
+test("Validator orchestrates workflow", async () => {
   const mockTransport = createMockTransport();
   const validator = new MCPValidator(mockTransport);
 
@@ -625,21 +648,25 @@ test('Validator orchestrates workflow', async () => {
 ## 🎓 Learning Path
 
 **Day 1**: Understand layers
+
 - Read this README
 - Browse `domain/security/` (simplest domain)
 - Check `use-cases/validator/` (orchestration example)
 
 **Day 2**: Add small feature
+
 - Add new security rule
 - Add test
 - See it work end-to-end
 
 **Week 1**: Medium complexity
+
 - Add new LLM provider
 - Add new report format
 - Modify scoring algorithm
 
 **Week 2**: Advanced
+
 - Add new transport type
 - Refactor use case
 - Improve architecture
@@ -664,4 +691,3 @@ test('Validator orchestrates workflow', async () => {
 3. Ask in [GitHub Discussions](https://github.com/FinkTech/mcp-verify/discussions)
 
 **General rule**: If it's a business rule → domain/. If it's I/O → infrastructure/. If it's orchestration → use-cases/.
-

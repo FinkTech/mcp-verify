@@ -24,8 +24,8 @@
 import {
   IPayloadGenerator,
   GeneratorConfig,
-  GeneratedPayload
-} from './generator.interface';
+  GeneratedPayload,
+} from "./generator.interface";
 
 export interface TimeBasedConfig extends GeneratorConfig {
   /** Base delay in seconds for SLEEP commands (default: 5) */
@@ -41,10 +41,11 @@ export interface TimeBasedConfig extends GeneratorConfig {
 }
 
 export class TimeBasedPayloadGenerator implements IPayloadGenerator {
-  readonly id = 'time-based';
-  readonly name = 'Time-Based Payload Generator';
-  readonly category = 'blind-injection';
-  readonly description = 'Generates time-based payloads for blind injection detection';
+  readonly id = "time-based";
+  readonly name = "Time-Based Payload Generator";
+  readonly category = "blind-injection";
+  readonly description =
+    "Generates time-based payloads for blind injection detection";
 
   private config: TimeBasedConfig;
   private delay: number;
@@ -56,7 +57,7 @@ export class TimeBasedPayloadGenerator implements IPayloadGenerator {
       includeNoSql: config.includeNoSql ?? true,
       includeCommand: config.includeCommand ?? true,
       includeOther: config.includeOther ?? true,
-      ...config
+      ...config,
     };
     this.delay = this.config.delaySeconds!;
   }
@@ -114,13 +115,13 @@ export class TimeBasedPayloadGenerator implements IPayloadGenerator {
     for (const payload of mysqlPayloads) {
       payloads.push({
         value: payload,
-        category: 'time-based-sqli',
-        type: 'mysql-sleep',
-        severity: 'critical',
+        category: "time-based-sqli",
+        type: "mysql-sleep",
+        severity: "critical",
         description: `MySQL time-based blind SQLi with ${d}s delay`,
         expectedVulnerableBehavior: `Response delayed by ~${d} seconds`,
-        tags: ['sqli', 'blind', 'time-based', 'mysql'],
-        metadata: { expectedDelayMs: d * 1000, database: 'mysql' }
+        tags: ["sqli", "blind", "time-based", "mysql"],
+        metadata: { expectedDelayMs: d * 1000, database: "mysql" },
       });
     }
 
@@ -137,13 +138,13 @@ export class TimeBasedPayloadGenerator implements IPayloadGenerator {
     for (const payload of mssqlPayloads) {
       payloads.push({
         value: payload,
-        category: 'time-based-sqli',
-        type: 'mssql-waitfor',
-        severity: 'critical',
+        category: "time-based-sqli",
+        type: "mssql-waitfor",
+        severity: "critical",
         description: `SQL Server time-based blind SQLi with ${d}s delay`,
         expectedVulnerableBehavior: `Response delayed by ~${d} seconds`,
-        tags: ['sqli', 'blind', 'time-based', 'mssql'],
-        metadata: { expectedDelayMs: d * 1000, database: 'mssql' }
+        tags: ["sqli", "blind", "time-based", "mssql"],
+        metadata: { expectedDelayMs: d * 1000, database: "mssql" },
       });
     }
 
@@ -161,13 +162,13 @@ export class TimeBasedPayloadGenerator implements IPayloadGenerator {
     for (const payload of pgsqlPayloads) {
       payloads.push({
         value: payload,
-        category: 'time-based-sqli',
-        type: 'pgsql-sleep',
-        severity: 'critical',
+        category: "time-based-sqli",
+        type: "pgsql-sleep",
+        severity: "critical",
         description: `PostgreSQL time-based blind SQLi with ${d}s delay`,
         expectedVulnerableBehavior: `Response delayed by ~${d} seconds`,
-        tags: ['sqli', 'blind', 'time-based', 'postgresql'],
-        metadata: { expectedDelayMs: d * 1000, database: 'postgresql' }
+        tags: ["sqli", "blind", "time-based", "postgresql"],
+        metadata: { expectedDelayMs: d * 1000, database: "postgresql" },
       });
     }
 
@@ -182,13 +183,13 @@ export class TimeBasedPayloadGenerator implements IPayloadGenerator {
     for (const payload of oraclePayloads) {
       payloads.push({
         value: payload,
-        category: 'time-based-sqli',
-        type: 'oracle-sleep',
-        severity: 'critical',
+        category: "time-based-sqli",
+        type: "oracle-sleep",
+        severity: "critical",
         description: `Oracle time-based blind SQLi with ${d}s delay`,
         expectedVulnerableBehavior: `Response delayed by ~${d} seconds`,
-        tags: ['sqli', 'blind', 'time-based', 'oracle'],
-        metadata: { expectedDelayMs: d * 1000, database: 'oracle' }
+        tags: ["sqli", "blind", "time-based", "oracle"],
+        metadata: { expectedDelayMs: d * 1000, database: "oracle" },
       });
     }
 
@@ -201,13 +202,13 @@ export class TimeBasedPayloadGenerator implements IPayloadGenerator {
     for (const payload of sqlitePayloads) {
       payloads.push({
         value: payload,
-        category: 'time-based-sqli',
-        type: 'sqlite-timing',
-        severity: 'high',
-        description: 'SQLite time-based attack via heavy computation',
-        expectedVulnerableBehavior: 'Response delayed by heavy computation',
-        tags: ['sqli', 'blind', 'time-based', 'sqlite'],
-        metadata: { database: 'sqlite' }
+        category: "time-based-sqli",
+        type: "sqlite-timing",
+        severity: "high",
+        description: "SQLite time-based attack via heavy computation",
+        expectedVulnerableBehavior: "Response delayed by heavy computation",
+        tags: ["sqli", "blind", "time-based", "sqlite"],
+        metadata: { database: "sqlite" },
       });
     }
 
@@ -228,19 +229,19 @@ export class TimeBasedPayloadGenerator implements IPayloadGenerator {
       { $where: `function() { sleep(${delayMs}); return true; }` },
       { $where: `this.a == 'a' || sleep(${delayMs})` },
       // DoS via regex (ReDos-like)
-      { $where: `'${'a'.repeat(50)}'.match(/a{1,100}$/)` },
+      { $where: `'${"a".repeat(50)}'.match(/a{1,100}$/)` },
     ];
 
     for (const payload of mongoPayloads) {
       payloads.push({
         value: payload,
-        category: 'time-based-nosql',
-        type: 'mongodb-where-sleep',
-        severity: 'critical',
+        category: "time-based-nosql",
+        type: "mongodb-where-sleep",
+        severity: "critical",
         description: `MongoDB $where time-based injection with ${d}s delay`,
         expectedVulnerableBehavior: `Response delayed by ~${d} seconds`,
-        tags: ['nosql', 'mongodb', 'blind', 'time-based'],
-        metadata: { expectedDelayMs: delayMs, database: 'mongodb' }
+        tags: ["nosql", "mongodb", "blind", "time-based"],
+        metadata: { expectedDelayMs: delayMs, database: "mongodb" },
       });
     }
 
@@ -253,26 +254,26 @@ export class TimeBasedPayloadGenerator implements IPayloadGenerator {
     for (const payload of mongoStringPayloads) {
       payloads.push({
         value: payload,
-        category: 'time-based-nosql',
-        type: 'mongodb-json',
-        severity: 'critical',
-        description: 'MongoDB JSON time-based injection',
+        category: "time-based-nosql",
+        type: "mongodb-json",
+        severity: "critical",
+        description: "MongoDB JSON time-based injection",
         expectedVulnerableBehavior: `Response delayed by ~${d} seconds`,
-        tags: ['nosql', 'mongodb', 'blind', 'time-based', 'json'],
-        metadata: { expectedDelayMs: delayMs }
+        tags: ["nosql", "mongodb", "blind", "time-based", "json"],
+        metadata: { expectedDelayMs: delayMs },
       });
     }
 
     // CouchDB
     payloads.push({
       value: `function(doc) { var start = new Date().getTime(); while(new Date().getTime() < start + ${delayMs}); emit(doc._id, doc); }`,
-      category: 'time-based-nosql',
-      type: 'couchdb-timing',
-      severity: 'critical',
-      description: 'CouchDB view function time-based injection',
+      category: "time-based-nosql",
+      type: "couchdb-timing",
+      severity: "critical",
+      description: "CouchDB view function time-based injection",
       expectedVulnerableBehavior: `Response delayed by ~${d} seconds`,
-      tags: ['nosql', 'couchdb', 'blind', 'time-based'],
-      metadata: { expectedDelayMs: delayMs }
+      tags: ["nosql", "couchdb", "blind", "time-based"],
+      metadata: { expectedDelayMs: delayMs },
     });
 
     return payloads;
@@ -310,13 +311,13 @@ export class TimeBasedPayloadGenerator implements IPayloadGenerator {
     for (const payload of unixPayloads) {
       payloads.push({
         value: payload,
-        category: 'time-based-cmd',
-        type: 'unix-sleep',
-        severity: 'critical',
+        category: "time-based-cmd",
+        type: "unix-sleep",
+        severity: "critical",
         description: `Unix command injection with ${d}s sleep`,
         expectedVulnerableBehavior: `Response delayed by ~${d} seconds`,
-        tags: ['command-injection', 'blind', 'time-based', 'unix'],
-        metadata: { expectedDelayMs: d * 1000, os: 'unix' }
+        tags: ["command-injection", "blind", "time-based", "unix"],
+        metadata: { expectedDelayMs: d * 1000, os: "unix" },
       });
     }
 
@@ -340,32 +341,32 @@ export class TimeBasedPayloadGenerator implements IPayloadGenerator {
     for (const payload of windowsPayloads) {
       payloads.push({
         value: payload,
-        category: 'time-based-cmd',
-        type: 'windows-timeout',
-        severity: 'critical',
+        category: "time-based-cmd",
+        type: "windows-timeout",
+        severity: "critical",
         description: `Windows command injection with ${d}s delay`,
         expectedVulnerableBehavior: `Response delayed by ~${d} seconds`,
-        tags: ['command-injection', 'blind', 'time-based', 'windows'],
-        metadata: { expectedDelayMs: d * 1000, os: 'windows' }
+        tags: ["command-injection", "blind", "time-based", "windows"],
+        metadata: { expectedDelayMs: d * 1000, os: "windows" },
       });
     }
 
     // Cross-platform (ping works on both with -c/-n)
     const crossPlatform = [
-      `; ping -c ${d + 1} 127.0.0.1 #`,  // Unix
-      `& ping -c ${d + 1} 127.0.0.1 &`,  // Unix background
+      `; ping -c ${d + 1} 127.0.0.1 #`, // Unix
+      `& ping -c ${d + 1} 127.0.0.1 &`, // Unix background
     ];
 
     for (const payload of crossPlatform) {
       payloads.push({
         value: payload,
-        category: 'time-based-cmd',
-        type: 'cross-platform-ping',
-        severity: 'critical',
+        category: "time-based-cmd",
+        type: "cross-platform-ping",
+        severity: "critical",
         description: `Cross-platform command injection via ping`,
         expectedVulnerableBehavior: `Response delayed by ~${d} seconds`,
-        tags: ['command-injection', 'blind', 'time-based'],
-        metadata: { expectedDelayMs: d * 1000 }
+        tags: ["command-injection", "blind", "time-based"],
+        metadata: { expectedDelayMs: d * 1000 },
       });
     }
 
@@ -380,19 +381,19 @@ export class TimeBasedPayloadGenerator implements IPayloadGenerator {
 
     // LDAP time-based (via slow operations)
     const ldapPayloads = [
-      `*)(objectClass=*))(|(cn=*`,  // LDAP injection that may cause slow query
-      `*))%00`,  // Null byte
+      `*)(objectClass=*))(|(cn=*`, // LDAP injection that may cause slow query
+      `*))%00`, // Null byte
     ];
 
     for (const payload of ldapPayloads) {
       payloads.push({
         value: payload,
-        category: 'time-based-other',
-        type: 'ldap-timing',
-        severity: 'high',
-        description: 'LDAP injection that may cause timing differences',
-        expectedVulnerableBehavior: 'Slow LDAP query indicates injection',
-        tags: ['ldap', 'blind', 'time-based']
+        category: "time-based-other",
+        type: "ldap-timing",
+        severity: "high",
+        description: "LDAP injection that may cause timing differences",
+        expectedVulnerableBehavior: "Slow LDAP query indicates injection",
+        tags: ["ldap", "blind", "time-based"],
       });
     }
 
@@ -405,12 +406,13 @@ export class TimeBasedPayloadGenerator implements IPayloadGenerator {
     for (const payload of xpathPayloads) {
       payloads.push({
         value: payload,
-        category: 'time-based-other',
-        type: 'xpath-timing',
-        severity: 'high',
-        description: 'XPath injection with potential timing side-channel',
-        expectedVulnerableBehavior: 'Timing differences indicate data extraction',
-        tags: ['xpath', 'blind', 'time-based']
+        category: "time-based-other",
+        type: "xpath-timing",
+        severity: "high",
+        description: "XPath injection with potential timing side-channel",
+        expectedVulnerableBehavior:
+          "Timing differences indicate data extraction",
+        tags: ["xpath", "blind", "time-based"],
       });
     }
 
@@ -427,13 +429,13 @@ export class TimeBasedPayloadGenerator implements IPayloadGenerator {
     for (const payload of sstiPayloads) {
       payloads.push({
         value: payload,
-        category: 'time-based-other',
-        type: 'ssti-timing',
-        severity: 'critical',
+        category: "time-based-other",
+        type: "ssti-timing",
+        severity: "critical",
         description: `SSTI with ${d}s command delay`,
         expectedVulnerableBehavior: `Template executes sleep, response delayed by ~${d}s`,
-        tags: ['ssti', 'template-injection', 'blind', 'time-based'],
-        metadata: { expectedDelayMs: d * 1000 }
+        tags: ["ssti", "template-injection", "blind", "time-based"],
+        metadata: { expectedDelayMs: d * 1000 },
       });
     }
 
@@ -447,13 +449,13 @@ export class TimeBasedPayloadGenerator implements IPayloadGenerator {
     for (const payload of elPayloads) {
       payloads.push({
         value: payload,
-        category: 'time-based-other',
-        type: 'el-timing',
-        severity: 'critical',
+        category: "time-based-other",
+        type: "el-timing",
+        severity: "critical",
         description: `Java Expression Language with ${d}s Thread.sleep`,
         expectedVulnerableBehavior: `Response delayed by ~${d} seconds`,
-        tags: ['el', 'java', 'blind', 'time-based'],
-        metadata: { expectedDelayMs: d * 1000 }
+        tags: ["el", "java", "blind", "time-based"],
+        metadata: { expectedDelayMs: d * 1000 },
       });
     }
 
@@ -466,6 +468,6 @@ export class TimeBasedPayloadGenerator implements IPayloadGenerator {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   }
 }

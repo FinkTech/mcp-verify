@@ -31,8 +31,8 @@
  * @module libs/core/infrastructure/config
  */
 
-import { t } from '@mcp-verify/shared';
-import { Logger, AuditEventType } from '../logging/logger';
+import { t } from "@mcp-verify/shared";
+import { Logger, AuditEventType } from "../logging/logger";
 
 export interface SecurityConfig {
   // Security scanning
@@ -42,7 +42,7 @@ export interface SecurityConfig {
     enabledRules: string[];
     disabledRules: string[];
   };
-  maxSeverityThreshold: 'critical' | 'high' | 'medium' | 'low';
+  maxSeverityThreshold: "critical" | "high" | "medium" | "low";
   failOnCritical: boolean;
   failOnHigh: boolean;
 
@@ -89,7 +89,7 @@ export interface NetworkConfig {
   connectionTimeout: number;
   requestTimeout: number;
   maxRetries: number;
-  retryBackoff: 'linear' | 'exponential';
+  retryBackoff: "linear" | "exponential";
 
   // TLS/SSL
   rejectUnauthorized: boolean;
@@ -106,7 +106,7 @@ export interface NetworkConfig {
 }
 
 export interface LoggingConfig {
-  level: 'debug' | 'info' | 'warn' | 'error' | 'critical';
+  level: "debug" | "info" | "warn" | "error" | "critical";
   enableConsole: boolean;
   enableFile: boolean;
   enableAudit: boolean;
@@ -156,7 +156,7 @@ export interface ComplianceConfig {
 
 export interface McpVerifyConfig {
   version: string;
-  environment: 'development' | 'staging' | 'production';
+  environment: "development" | "staging" | "production";
 
   security: SecurityConfig;
   network: NetworkConfig;
@@ -176,17 +176,17 @@ export interface McpVerifyConfig {
  * Following principle of "secure by default"
  */
 export const SECURE_DEFAULTS: McpVerifyConfig = {
-  version: '1.0.0',
-  environment: 'production',
+  version: "1.0.0",
+  environment: "production",
 
   security: {
     enableSecurityScan: true,
     securityRules: {
       enableAll: true,
       enabledRules: [],
-      disabledRules: []
+      disabledRules: [],
     },
-    maxSeverityThreshold: 'high',
+    maxSeverityThreshold: "high",
     failOnCritical: true,
     failOnHigh: false,
 
@@ -194,131 +194,132 @@ export const SECURE_DEFAULTS: McpVerifyConfig = {
       enableAll: true,
       piiRedaction: {
         enabled: true,
-        strictMode: true,  // Block critical PII by default
-        customPatterns: []
+        strictMode: true, // Block critical PII by default
+        customPatterns: [],
       },
       rateLimiting: {
         enabled: true,
         perMinute: 60,
         perHour: 1000,
-        burstSize: 10
+        burstSize: 10,
       },
       inputSanitization: {
         enabled: true,
-        strictMode: false,  // Sanitize by default, don't block
-        allowedCharsets: []
+        strictMode: false, // Sanitize by default, don't block
+        allowedCharsets: [],
       },
       httpsEnforcement: {
         enabled: true,
-        autoUpgrade: false,  // Don't auto-upgrade, require explicit HTTPS
-        allowLocalhost: true  // Allow localhost for development
-      }
+        autoUpgrade: false, // Don't auto-upgrade, require explicit HTTPS
+        allowLocalhost: true, // Allow localhost for development
+      },
     },
 
     fuzzing: {
       enabled: true,
       useSecurityPayloads: true,
-      useMutations: false,  // Disabled by default for performance
+      useMutations: false, // Disabled by default for performance
       mutationsPerPayload: 3,
       timeout: 5000,
       delayBetweenTests: 100,
-      maxPayloadsPerTool: 50  // Limit to prevent excessive testing
-    }
+      maxPayloadsPerTool: 50, // Limit to prevent excessive testing
+    },
   },
 
   network: {
     connectionTimeout: 30000,
     requestTimeout: 60000,
     maxRetries: 3,
-    retryBackoff: 'exponential',
-    rejectUnauthorized: true,  // Strict TLS validation
-    minTlsVersion: 'TLSv1.2',
-    allowInsecureConnections: false  // No HTTP by default
+    retryBackoff: "exponential",
+    rejectUnauthorized: true, // Strict TLS validation
+    minTlsVersion: "TLSv1.2",
+    allowInsecureConnections: false, // No HTTP by default
   },
 
   logging: {
-    level: 'info',
+    level: "info",
     enableConsole: true,
-    enableFile: false,  // Disabled by default, enable in production
+    enableFile: false, // Disabled by default, enable in production
     enableAudit: true,
     redactPII: true,
-    includeStackTrace: false,  // Don't leak stack traces by default
-    prettyPrint: false,  // JSON format for production
+    includeStackTrace: false, // Don't leak stack traces by default
+    prettyPrint: false, // JSON format for production
     maxMessageLength: 5000,
     logRotation: {
       enabled: true,
       maxFiles: 10,
-      maxSize: '10M'
-    }
+      maxSize: "10M",
+    },
   },
 
   performance: {
     maxMemoryMB: 512,
     maxConcurrentOperations: 10,
-    maxPayloadSize: 10485760,  // 10MB
+    maxPayloadSize: 10485760, // 10MB
     enableCaching: true,
     cacheTTL: 3600,
     enableMetrics: true,
-    metricsInterval: 60000
+    metricsInterval: 60000,
   },
 
   compliance: {
     enableOWASPChecks: true,
     enableCISChecks: true,
-    enableSOC2Checks: false,  // Opt-in
+    enableSOC2Checks: false, // Opt-in
     generateSARIF: true,
     generateJSON: true,
     generateHTML: false,
     includeRemediation: true,
     retainAuditLogs: true,
-    auditLogRetentionDays: 90
+    auditLogRetentionDays: 90,
   },
 
   features: {
     enableExperimentalFeatures: false,
-    enableBetaFeatures: false
-  }
+    enableBetaFeatures: false,
+  },
 };
 
 /**
  * Development-friendly defaults
  */
 export const DEVELOPMENT_DEFAULTS: Partial<McpVerifyConfig> = {
-  environment: 'development',
+  environment: "development",
   logging: {
     ...SECURE_DEFAULTS.logging,
-    level: 'debug',
+    level: "debug",
     prettyPrint: true,
-    includeStackTrace: true
+    includeStackTrace: true,
   },
   network: {
     ...SECURE_DEFAULTS.network,
-    allowInsecureConnections: true,  // Allow HTTP in development
-    rejectUnauthorized: false  // Allow self-signed certs
+    allowInsecureConnections: true, // Allow HTTP in development
+    rejectUnauthorized: false, // Allow self-signed certs
   },
   security: {
     ...SECURE_DEFAULTS.security,
-    failOnCritical: false,  // Don't fail fast in development
+    failOnCritical: false, // Don't fail fast in development
     guardrails: {
       ...SECURE_DEFAULTS.security.guardrails,
       piiRedaction: {
         ...SECURE_DEFAULTS.security.guardrails.piiRedaction,
-        strictMode: false  // Less strict in development
+        strictMode: false, // Less strict in development
       },
       rateLimiting: {
         ...SECURE_DEFAULTS.security.guardrails.rateLimiting,
-        perMinute: 1000,  // Higher limits in development
-        perHour: 10000
-      }
-    }
-  }
+        perMinute: 1000, // Higher limits in development
+        perHour: 10000,
+      },
+    },
+  },
 };
 
 export class ConfigManager {
   private static instance: ConfigManager;
   private config: McpVerifyConfig;
   private logger: Logger;
-  private configHistory: Array<{ timestamp: string; config: McpVerifyConfig }> = [];
+  private configHistory: Array<{ timestamp: string; config: McpVerifyConfig }> =
+    [];
 
   private constructor(initialConfig?: Partial<McpVerifyConfig>) {
     this.logger = Logger.getInstance();
@@ -327,7 +328,7 @@ export class ConfigManager {
     this.config = { ...SECURE_DEFAULTS };
 
     // Apply environment-specific defaults
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       this.mergeConfig(DEVELOPMENT_DEFAULTS);
     }
 
@@ -341,11 +342,11 @@ export class ConfigManager {
 
     // Log configuration status
     this.logger.info(`Configuration initialized`, {
-      component: 'ConfigManager',
+      component: "ConfigManager",
       metadata: {
         environment: this.config.environment,
-        version: this.config.version
-      }
+        version: this.config.version,
+      },
     });
 
     // Audit configuration - DISABLED for CLI noise reduction
@@ -412,7 +413,7 @@ export class ConfigManager {
     // Save current config to history
     this.configHistory.push({
       timestamp: new Date().toISOString(),
-      config: { ...this.config }
+      config: { ...this.config },
     });
 
     // Trim history
@@ -427,20 +428,20 @@ export class ConfigManager {
     this.validateConfig();
 
     // Log and audit
-    this.logger.warn('Configuration updated', {
-      component: 'ConfigManager',
-      metadata: { updates }
+    this.logger.warn("Configuration updated", {
+      component: "ConfigManager",
+      metadata: { updates },
     });
 
     this.logger.audit({
       eventType: AuditEventType.CONFIG_CHANGED,
-      severity: 'medium',
-      action: 'config_updated',
-      result: 'success',
+      severity: "medium",
+      action: "config_updated",
+      result: "success",
       context: {
-        component: 'ConfigManager'
+        component: "ConfigManager",
       },
-      details: updates
+      details: updates,
     });
   }
 
@@ -451,18 +452,18 @@ export class ConfigManager {
     this.config = { ...SECURE_DEFAULTS };
     this.validateConfig();
 
-    this.logger.warn('Configuration reset to secure defaults', {
-      component: 'ConfigManager'
+    this.logger.warn("Configuration reset to secure defaults", {
+      component: "ConfigManager",
     });
 
     this.logger.audit({
       eventType: AuditEventType.CONFIG_CHANGED,
-      severity: 'medium',
-      action: 'config_reset',
-      result: 'success',
+      severity: "medium",
+      action: "config_reset",
+      result: "success",
       context: {
-        component: 'ConfigManager'
-      }
+        component: "ConfigManager",
+      },
     });
   }
 
@@ -482,7 +483,7 @@ export class ConfigManager {
     const output = { ...targetObj };
 
     if (this.isObject(target) && this.isObject(source)) {
-      Object.keys(sourceObj).forEach(key => {
+      Object.keys(sourceObj).forEach((key) => {
         if (this.isObject(sourceObj[key])) {
           if (!(key in targetObj)) {
             output[key] = sourceObj[key];
@@ -499,7 +500,7 @@ export class ConfigManager {
   }
 
   private isObject(item: unknown): item is Record<string, unknown> {
-    return item !== null && typeof item === 'object' && !Array.isArray(item);
+    return item !== null && typeof item === "object" && !Array.isArray(item);
   }
 
   /**
@@ -510,54 +511,59 @@ export class ConfigManager {
 
     // Validate network timeouts
     if (this.config.network.connectionTimeout < 1000) {
-      errors.push('network.connectionTimeout must be at least 1000ms');
+      errors.push("network.connectionTimeout must be at least 1000ms");
     }
     if (this.config.network.requestTimeout < 5000) {
-      errors.push('network.requestTimeout must be at least 5000ms');
+      errors.push("network.requestTimeout must be at least 5000ms");
     }
 
     // Validate rate limiting
     if (this.config.security.guardrails.rateLimiting.enabled) {
       if (this.config.security.guardrails.rateLimiting.perMinute < 1) {
-        errors.push('security.guardrails.rateLimiting.perMinute must be at least 1');
+        errors.push(
+          "security.guardrails.rateLimiting.perMinute must be at least 1",
+        );
       }
     }
 
     // Validate performance limits
     if (this.config.performance.maxMemoryMB < 128) {
-      errors.push('performance.maxMemoryMB must be at least 128');
+      errors.push("performance.maxMemoryMB must be at least 128");
     }
     if (this.config.performance.maxPayloadSize < 1024) {
-      errors.push('performance.maxPayloadSize must be at least 1024 bytes');
+      errors.push("performance.maxPayloadSize must be at least 1024 bytes");
     }
 
     // Validate fuzzing config
     if (this.config.security.fuzzing.timeout < 1000) {
-      errors.push('security.fuzzing.timeout must be at least 1000ms');
+      errors.push("security.fuzzing.timeout must be at least 1000ms");
     }
 
     // Security validations
-    if (this.config.environment === 'production') {
+    if (this.config.environment === "production") {
       if (this.config.network.allowInsecureConnections) {
-        this.logger.warn('Insecure connections allowed in production environment', {
-          component: 'ConfigManager'
-        });
+        this.logger.warn(
+          "Insecure connections allowed in production environment",
+          {
+            component: "ConfigManager",
+          },
+        );
       }
       if (!this.config.network.rejectUnauthorized) {
-        this.logger.warn('TLS certificate validation disabled in production', {
-          component: 'ConfigManager'
+        this.logger.warn("TLS certificate validation disabled in production", {
+          component: "ConfigManager",
         });
       }
       if (!this.config.logging.redactPII) {
-        errors.push('PII redaction must be enabled in production');
+        errors.push("PII redaction must be enabled in production");
       }
     }
 
     if (errors.length > 0) {
-      const errorMessage = `Configuration validation failed: ${errors.join('; ')}`;
+      const errorMessage = `Configuration validation failed: ${errors.join("; ")}`;
       this.logger.error(errorMessage, undefined, {
-        component: 'ConfigManager',
-        metadata: { errors }
+        component: "ConfigManager",
+        metadata: { errors },
       });
       throw new Error(errorMessage);
     }
@@ -585,18 +591,18 @@ export class ConfigManager {
       const imported = JSON.parse(json);
       this.updateConfig(imported);
     } catch (error) {
-      this.logger.error('Failed to import configuration', error as Error, {
-        component: 'ConfigManager'
+      this.logger.error("Failed to import configuration", error as Error, {
+        component: "ConfigManager",
       });
-      throw new Error(t('invalid_json'));
+      throw new Error(t("invalid_json"));
     }
   }
 
   /**
    * Check if feature is enabled
    */
-  isFeatureEnabled(feature: 'experimental' | 'beta'): boolean {
-    if (feature === 'experimental') {
+  isFeatureEnabled(feature: "experimental" | "beta"): boolean {
+    if (feature === "experimental") {
       return this.config.features.enableExperimentalFeatures;
     }
     return this.config.features.enableBetaFeatures;
@@ -606,14 +612,14 @@ export class ConfigManager {
    * Check if running in production
    */
   isProduction(): boolean {
-    return this.config.environment === 'production';
+    return this.config.environment === "production";
   }
 
   /**
    * Check if running in development
    */
   isDevelopment(): boolean {
-    return this.config.environment === 'development';
+    return this.config.environment === "development";
   }
 }
 

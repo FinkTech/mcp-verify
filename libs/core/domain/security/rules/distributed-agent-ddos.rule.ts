@@ -30,26 +30,43 @@
  * - CWE-400: Uncontrolled Resource Consumption
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class DistributedAgentDdosRule implements ISecurityRule {
-  code = 'SEC-036';
-  name = 'Distributed Agent Denial of Service';
-  severity: 'high' = 'high';
+  code = "SEC-036";
+  name = "Distributed Agent Denial of Service";
+  severity: "high" = "high";
 
   private readonly AMPLIFICATION_PATTERNS = [
-    /broadcast/i, /notify.*all/i, /send.*all/i,
-    /trigger.*webhook/i, /call.*api/i, /fetch.*url/i,
-    /request.*external/i, /invoke.*remote/i
+    /broadcast/i,
+    /notify.*all/i,
+    /send.*all/i,
+    /trigger.*webhook/i,
+    /call.*api/i,
+    /fetch.*url/i,
+    /request.*external/i,
+    /invoke.*remote/i,
   ];
 
   private readonly RESOURCE_INTENSIVE_KEYWORDS = [
-    'process', 'compute', 'calculate', 'analyze',
-    'generate', 'render', 'compile', 'transform',
-    'encode', 'decode', 'compress', 'encrypt'
+    "process",
+    "compute",
+    "calculate",
+    "analyze",
+    "generate",
+    "render",
+    "compile",
+    "transform",
+    "encode",
+    "decode",
+    "compress",
+    "encrypt",
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -70,22 +87,24 @@ export class DistributedAgentDdosRule implements ISecurityRule {
         const hasPerAgentLimit = this.hasPerAgentRateLimit(tool);
 
         if (!hasPerAgentLimit && !hasGlobalRateLimit) {
-          const severity = isAmplifiable ? 'high' : 'medium';
+          const severity = isAmplifiable ? "high" : "medium";
 
           findings.push({
             severity,
-            message: t('sec_036_agent_ddos', {
+            message: t("sec_036_agent_ddos", {
               toolName: tool.name,
-              reason: isAmplifiable ? 'amplification vector' : 'resource intensive'
+              reason: isAmplifiable
+                ? "amplification vector"
+                : "resource intensive",
             }),
             component: `tool:${tool.name}`,
             ruleCode: this.code,
-            remediation: t('sec_036_recommendation'),
+            remediation: t("sec_036_recommendation"),
             references: [
-              'Multi-Agent Security Framework (MASF) 2024 - Resource Quotas',
-              'CWE-400: Uncontrolled Resource Consumption',
-              'OWASP API Security - Rate Limiting'
-            ]
+              "Multi-Agent Security Framework (MASF) 2024 - Resource Quotas",
+              "CWE-400: Uncontrolled Resource Consumption",
+              "OWASP API Security - Rate Limiting",
+            ],
           });
         }
       }
@@ -97,29 +116,32 @@ export class DistributedAgentDdosRule implements ISecurityRule {
   private hasGlobalRateLimiting(discovery: DiscoveryResult): boolean {
     if (!discovery.serverInfo) return false;
 
-    const serverDesc = discovery.serverInfo.description?.toLowerCase() || '';
+    const serverDesc = discovery.serverInfo.description?.toLowerCase() || "";
     const rateLimitKeywords = [
-      'rate limit', 'throttle', 'quota', 'rate-limit',
-      'requests per', 'rps limit', 'qps limit'
+      "rate limit",
+      "throttle",
+      "quota",
+      "rate-limit",
+      "requests per",
+      "rps limit",
+      "qps limit",
     ];
 
-    return rateLimitKeywords.some(keyword =>
-      serverDesc.includes(keyword)
-    );
+    return rateLimitKeywords.some((keyword) => serverDesc.includes(keyword));
   }
 
   private isAmplificationVector(tool: McpTool): boolean {
     // Check name pattern
-    const nameMatches = this.AMPLIFICATION_PATTERNS.some(pattern =>
-      pattern.test(tool.name)
+    const nameMatches = this.AMPLIFICATION_PATTERNS.some((pattern) =>
+      pattern.test(tool.name),
     );
     if (nameMatches) return true;
 
     // Check description
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
-      const descMatches = this.AMPLIFICATION_PATTERNS.some(pattern =>
-        pattern.test(descLower)
+      const descMatches = this.AMPLIFICATION_PATTERNS.some((pattern) =>
+        pattern.test(descLower),
       );
       if (descMatches) return true;
     }
@@ -128,7 +150,11 @@ export class DistributedAgentDdosRule implements ISecurityRule {
     if (tool.inputSchema?.properties) {
       for (const propName of Object.keys(tool.inputSchema.properties)) {
         const propLower = propName.toLowerCase();
-        if (propLower.includes('url') || propLower.includes('webhook') || propLower.includes('endpoint')) {
+        if (
+          propLower.includes("url") ||
+          propLower.includes("webhook") ||
+          propLower.includes("endpoint")
+        ) {
           return true;
         }
       }
@@ -139,10 +165,10 @@ export class DistributedAgentDdosRule implements ISecurityRule {
 
   private isResourceIntensive(tool: McpTool): boolean {
     const nameLower = tool.name.toLowerCase();
-    const descLower = tool.description?.toLowerCase() || '';
+    const descLower = tool.description?.toLowerCase() || "";
 
-    return this.RESOURCE_INTENSIVE_KEYWORDS.some(keyword =>
-      nameLower.includes(keyword) || descLower.includes(keyword)
+    return this.RESOURCE_INTENSIVE_KEYWORDS.some(
+      (keyword) => nameLower.includes(keyword) || descLower.includes(keyword),
     );
   }
 
@@ -151,20 +177,28 @@ export class DistributedAgentDdosRule implements ISecurityRule {
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
       const rateLimitKeywords = [
-        'rate limit', 'throttle', 'per agent', 'per user',
-        'quota', 'limit per', 'max requests'
+        "rate limit",
+        "throttle",
+        "per agent",
+        "per user",
+        "quota",
+        "limit per",
+        "max requests",
       ];
 
-      const hasRateLimit = rateLimitKeywords.some(keyword =>
-        descLower.includes(keyword)
+      const hasRateLimit = rateLimitKeywords.some((keyword) =>
+        descLower.includes(keyword),
       );
       if (hasRateLimit) return true;
     }
 
     // Check for agent_id parameter (suggests per-agent tracking)
     if (tool.inputSchema?.properties) {
-      const paramNames = Object.keys(tool.inputSchema.properties).map(p => p.toLowerCase());
-      const hasAgentId = paramNames.includes('agent_id') || paramNames.includes('user_id');
+      const paramNames = Object.keys(tool.inputSchema.properties).map((p) =>
+        p.toLowerCase(),
+      );
+      const hasAgentId =
+        paramNames.includes("agent_id") || paramNames.includes("user_id");
       if (hasAgentId) return true;
     }
 

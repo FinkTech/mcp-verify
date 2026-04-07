@@ -76,7 +76,7 @@ export {
   getMetricsEndpoint,
   getPrometheusMetricsEndpoint,
   DiagnosticRunner,
-} from './infrastructure';
+} from "./infrastructure";
 
 // ==================== DOMAIN LAYER ====================
 // Business logic and domain entities
@@ -121,7 +121,7 @@ export {
   MissingInputConstraintsRule,
   DangerousToolChainingRule,
   UnencryptedCredentialsRule,
-} from './domain';
+} from "./domain";
 
 export {
   // Security - Guardrails
@@ -130,7 +130,7 @@ export {
   InputSanitizer,
   HttpsEnforcer,
   SensitiveCommandBlocker,
-} from './use-cases/proxy/guardrails';
+} from "./use-cases/proxy/guardrails";
 
 export {
   // Security - Secret Redaction
@@ -139,12 +139,9 @@ export {
   HighConfidenceDetector,
   PrefixDetector,
   SecretScanner,
-} from './domain/redaction';
+} from "./domain/redaction";
 
-export {
-  IGuardrail,
-  InterceptResult,
-} from './use-cases/proxy/proxy.types';
+export { IGuardrail, InterceptResult } from "./use-cases/proxy/proxy.types";
 
 export {
   // Quality Analysis
@@ -189,15 +186,21 @@ export {
   getDisclaimerText,
   getLlmNotice,
   DisclaimerOptions,
-} from './domain';
+} from "./domain";
 
 // ==================== USE CASE LAYER ====================
 // Application orchestration
 
-export { MCPValidator } from './use-cases/validator/validator';
-export { ProtocolComplianceTester, ProtocolComplianceReport } from './use-cases/compliance/protocol-tester';
-export type { JsonRpcRequest, JsonRpcNotification } from './domain/shared/common.types';
+export { MCPValidator } from "./use-cases/validator/validator";
+export {
+  ProtocolComplianceTester,
+  ProtocolComplianceReport,
+} from "./use-cases/compliance/protocol-tester";
+export type {
+  JsonRpcRequest,
+  JsonRpcNotification,
+} from "./domain/shared/common.types";
 
 // ==================== VERSION ====================
-export const VERSION = '1.0.0';
-export const PACKAGE_NAME = 'mcp-verify';
+export const VERSION = "1.0.0";
+export const PACKAGE_NAME = "mcp-verify";

@@ -23,10 +23,13 @@
  * @module libs/core/domain/security/rules/prompt-injection.rule
  */
 
-import { t } from '@mcp-verify/shared';
-import { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool, JsonValue } from '../../shared/common.types';
+import { t } from "@mcp-verify/shared";
+import { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool, JsonValue } from "../../shared/common.types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // KEYWORD CATEGORIES FOR DETECTION
@@ -37,81 +40,85 @@ import type { McpTool, JsonValue } from '../../shared/common.types';
  * High confidence of being injection vectors
  */
 const DIRECT_PROMPT_KEYWORDS: readonly string[] = [
-  'prompt',
-  'instruction',
-  'message',
-  'user_input',
-  'user_message',
-  'system_prompt',
-  'assistant_message',
-  'chat_message',
-  'conversation',
+  "prompt",
+  "instruction",
+  "message",
+  "user_input",
+  "user_message",
+  "system_prompt",
+  "assistant_message",
+  "chat_message",
+  "conversation",
 ];
 
 /**
- * NLP processing indicators - descriptions that suggest LLM processing
- * Medium-High confidence - these tools process text that may contain injections
+ * NLP processing indicators - descriptions that suggest LLM processing.
+ * Deliberately narrow: only verbs that clearly imply feeding text to an LLM.
+ * Removed: "generate", "describe", "explain", "answer", "respond", "reply" —
+ * these appear constantly in legitimate API documentation and produce noise.
  */
 const NLP_PROCESSING_KEYWORDS: readonly string[] = [
-  'summarize',
-  'summarise',
-  'translate',
-  'extract',
-  'analyze',
-  'analyse',
-  'parse',
-  'interpret',
-  'generate',
-  'rewrite',
-  'paraphrase',
-  'classify',
-  'categorize',
-  'sentiment',
-  'answer',
-  'respond',
-  'reply',
-  'explain',
-  'describe',
+  "summarize",
+  "summarise",
+  "translate",
+  "extract",
+  "analyze",
+  "analyse",
+  "interpret",
+  "rewrite",
+  "paraphrase",
+  "classify",
+  "categorize",
+  "sentiment",
 ];
 
 /**
- * Generic text input indicators - parameters that accept free-form text
- * Medium confidence - may or may not be processed by LLM
+ * Generic text input indicators - parameters that accept free-form text.
+ * Kept narrow: "data", "request", "body", "content" removed because they are
+ * ubiquitous param names in any REST/RPC API and generate massive false positives.
+ * Only keeping names that strongly suggest user-provided free text.
  */
 const GENERIC_TEXT_KEYWORDS: readonly string[] = [
-  'input',
-  'query',
-  'text',
-  'content',
-  'body',
-  'data',
-  'request',
-  'question',
-  'task',
-  'command',
+  "query",
+  "text",
+  "question",
+  "task",
+  "command",
 ];
 
 /**
- * Indirect injection sources - tools that fetch/read external content
- * Critical risk if content is then processed by LLM
+ * Indirect injection sources - params/tools that fetch user-controlled external content.
+ * Narrowed significantly: only terms that specifically imply fetching content from a
+ * user-controlled location. Removed: "read", "load", "file", "document", "import" —
+ * these are common operation verbs in tool names (read_contact, load_config) and
+ * produce critical-severity false positives on legitimate tools.
  */
 const INDIRECT_INJECTION_KEYWORDS: readonly string[] = [
-  'url',
-  'uri',
-  'link',
-  'fetch',
-  'read',
-  'load',
-  'download',
-  'scrape',
-  'crawl',
-  'import',
-  'webpage',
-  'website',
-  'file',
-  'document',
-  'email',
-  'attachment',
+  "fetch_url",
+  "source_url",
+  "callback_url",
+  "webhook_url",
+  "scrape",
+  "crawl",
+  "webpage",
+  "website",
+  "remote_url",
+  "external_url",
+];
+
+/**
+ * URL-like param names that are indirect injection vectors when the tool
+ * also does NLP processing. Checked separately from INDIRECT_INJECTION_KEYWORDS
+ * to avoid firing on all tools with "url" in a param (e.g. avatar_url, docs_url).
+ */
+const URL_PARAM_KEYWORDS: readonly string[] = [
+  "url",
+  "uri",
+  "link",
+  "endpoint",
+  "download",
+  "attachment",
+  "email",
 ];
 
 /**
@@ -123,32 +130,35 @@ const RECOMMENDED_PATTERNS = {
    * Basic: Alphanumeric + common punctuation, no control chars
    * Blocks: backticks, pipes, angle brackets, null bytes
    */
-  basic: '^[\\p{L}\\p{N}\\s.,!?;:\'"()\\-@#$%&*+=\\[\\]{}]+$',
+  basic: "^[\\p{L}\\p{N}\\s.,!?;:'\"()\\-@#$%&*+=\\[\\]{}]+$",
 
   /**
    * Strict: Alphanumeric + minimal punctuation
    * Maximum security, may be too restrictive for some use cases
    */
-  strict: '^[\\p{L}\\p{N}\\s.,!?;:]+$',
+  strict: "^[\\p{L}\\p{N}\\s.,!?;:]+$",
 
   /**
    * Block injection markers: Prevents common prompt injection delimiters
    * Blocks: [INST], <<SYS>>, ###, ---, ~~~, etc.
    */
-  noInjectionMarkers: '^(?!.*\\[(?:INST|SYSTEM|USER|ASSISTANT)\\])(?!.*(?:<<|>>)SYS)(?!.*(?:###|---|~~~|\\*\\*\\*)).*$',
+  noInjectionMarkers:
+    "^(?!.*\\[(?:INST|SYSTEM|USER|ASSISTANT)\\])(?!.*(?:<<|>>)SYS)(?!.*(?:###|---|~~~|\\*\\*\\*)).*$",
 };
 
 /**
  * Keyword risk categorization result
  */
 interface KeywordMatch {
-  category: 'direct' | 'nlp' | 'generic' | 'indirect';
+  category: "direct" | "nlp" | "generic" | "indirect";
   keyword: string;
-  riskLevel: 'critical' | 'high' | 'medium';
+  riskLevel: "critical" | "high" | "medium";
 }
 
 /**
- * Analyzes text for prompt injection risk indicators
+ * Analyzes text for prompt injection risk indicators.
+ * URL_PARAM_KEYWORDS are not returned here — they only matter when the
+ * containing tool also has NLP indicators (checked at the call site).
  */
 function analyzeTextForRisk(text: string): KeywordMatch | null {
   const lower = text.toLowerCase();
@@ -156,32 +166,42 @@ function analyzeTextForRisk(text: string): KeywordMatch | null {
   // Check direct prompt keywords (highest risk)
   for (const kw of DIRECT_PROMPT_KEYWORDS) {
     if (lower.includes(kw)) {
-      return { category: 'direct', keyword: kw, riskLevel: 'high' };
+      return { category: "direct", keyword: kw, riskLevel: "high" };
     }
   }
 
   // Check NLP processing keywords (high risk)
   for (const kw of NLP_PROCESSING_KEYWORDS) {
     if (lower.includes(kw)) {
-      return { category: 'nlp', keyword: kw, riskLevel: 'high' };
+      return { category: "nlp", keyword: kw, riskLevel: "high" };
     }
   }
 
-  // Check indirect injection sources (critical when combined with NLP)
+  // Check specific indirect injection sources (e.g. scrape, crawl, webhook_url)
   for (const kw of INDIRECT_INJECTION_KEYWORDS) {
     if (lower.includes(kw)) {
-      return { category: 'indirect', keyword: kw, riskLevel: 'critical' };
+      return { category: "indirect", keyword: kw, riskLevel: "critical" };
     }
   }
 
-  // Check generic text keywords (medium risk)
+  // Check generic text keywords — only exact-word matches to avoid
+  // flagging params like "request_body" → "body", "task_id" → "task"
   for (const kw of GENERIC_TEXT_KEYWORDS) {
-    if (lower.includes(kw)) {
-      return { category: 'generic', keyword: kw, riskLevel: 'medium' };
+    if (lower === kw || lower.startsWith(kw + "_") || lower.endsWith("_" + kw)) {
+      return { category: "generic", keyword: kw, riskLevel: "medium" };
     }
   }
 
   return null;
+}
+
+/**
+ * Returns true if the param name looks like a user-controlled URL/content source.
+ * Used specifically for indirect injection chain detection.
+ */
+function isUrlParam(paramName: string): boolean {
+  const lower = paramName.toLowerCase();
+  return URL_PARAM_KEYWORDS.some((kw) => lower.includes(kw));
 }
 
 /**
@@ -192,11 +212,16 @@ function containsPromptKeyword(value: string): boolean {
 }
 
 export class PromptInjectionRule implements ISecurityRule {
-  readonly code = 'SEC-013';
-  get name() { return t('sec_prompt_injection_name'); }
-  get description() { return t('sec_prompt_injection_desc'); }
-  readonly helpUri = 'https://owasp.org/www-project-top-10-for-large-language-model-applications/';
-  readonly tags = ['LLM01', 'OWASP-LLM', 'Prompt Injection'];
+  readonly code = "SEC-013";
+  get name() {
+    return t("sec_prompt_injection_name");
+  }
+  get description() {
+    return t("sec_prompt_injection_desc");
+  }
+  readonly helpUri =
+    "https://owasp.org/www-project-top-10-for-large-language-model-applications/";
+  readonly tags = ["LLM01", "OWASP-LLM", "Prompt Injection"];
 
   /**
    * Evaluates the MCP server discovery data for prompt injection risks.
@@ -218,117 +243,102 @@ export class PromptInjectionRule implements ISecurityRule {
   /**
    * Iterates over every tool's input-schema properties and checks whether
    * prompt-like string parameters are missing safety constraints.
-   * Enhanced with multi-category risk detection and specific remediation.
+   *
+   * Key design decisions:
+   * - One finding per vulnerable param (deduplication): lists all missing
+   *   constraints in a single finding rather than one per missing constraint.
+   * - Indirect injection chain: requires a URL param IN the schema AND NLP
+   *   indicators in the tool description — avoids false positives on tools
+   *   that merely have "url" in a param like avatar_url or docs_url.
    */
   private analyzeTools(tools: McpTool[]): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
 
     for (const tool of tools) {
-      // Tool-level analysis for indirect injection chains
       const toolMatch = this.analyzeToolForIndirectInjection(tool);
 
       const schema = tool.inputSchema;
-      if (!schema || typeof schema !== 'object' || Array.isArray(schema)) {
-        // Tool with indirect injection indicators but no schema = high risk
-        if (toolMatch && toolMatch.category === 'indirect') {
-          findings.push(this.createIndirectInjectionFinding(tool, toolMatch));
-        }
-        continue;
-      }
+      const properties =
+        schema &&
+        typeof schema === "object" &&
+        !Array.isArray(schema) &&
+        typeof (schema as Record<string, unknown>).properties === "object"
+          ? ((schema as Record<string, unknown>).properties as Record<string, unknown>)
+          : null;
 
-      const properties = (schema as Record<string, unknown>).properties;
-      if (!properties || typeof properties !== 'object' || Array.isArray(properties)) {
-        if (toolMatch && toolMatch.category === 'indirect') {
-          findings.push(this.createIndirectInjectionFinding(tool, toolMatch));
-        }
-        continue;
-      }
+      // Track if any schema param is a URL — needed for chain detection
+      let hasUrlParam = false;
 
-      for (const [paramName, paramConfig] of Object.entries(properties)) {
-        const config = paramConfig as Record<string, JsonValue>;
+      if (properties) {
+        for (const [paramName, paramConfig] of Object.entries(properties)) {
+          const config = paramConfig as Record<string, JsonValue>;
+          if (config.type !== "string") continue;
 
-        // Only inspect string-typed parameters
-        if (config.type !== 'string') continue;
+          if (isUrlParam(paramName)) hasUrlParam = true;
 
-        const description = typeof config.description === 'string' ? config.description : '';
+          const description =
+            typeof config.description === "string" ? config.description : "";
 
-        // Enhanced risk analysis
-        const paramMatch = analyzeTextForRisk(paramName);
-        const descMatch = analyzeTextForRisk(description);
-        const match = paramMatch || descMatch;
+          const paramMatch = analyzeTextForRisk(paramName);
+          const descMatch = analyzeTextForRisk(description);
+          const match = paramMatch || descMatch;
 
-        // Skip parameters with no risk indicators
-        if (!match) continue;
+          if (!match) continue;
 
-        // Determine severity based on risk category
-        const { severity, isIndirect } = this.calculateRiskSeverity(match, toolMatch);
+          const { severity, isIndirect } = this.calculateRiskSeverity(match, toolMatch);
 
-        // ── MISSING maxLength ──────────────────────────────────────────
-        if (config.maxLength === undefined || config.maxLength === null) {
+          // Collect all missing constraints for this param
+          const missingConstraints: string[] = [];
+
+          if (config.maxLength === undefined || config.maxLength === null) {
+            missingConstraints.push(
+              `maxLength (recommended: ${this.getRecommendedMaxLength(match.category)})`,
+            );
+          }
+
+          if (config.pattern === undefined || config.pattern === null) {
+            const rec = this.getRecommendedPattern(match.category, isIndirect);
+            missingConstraints.push(`pattern — suggested: ${rec.description}`);
+          } else if (this.isWeakPattern(String(config.pattern))) {
+            missingConstraints.push(`stronger pattern (current pattern is too permissive)`);
+          }
+
+          if (missingConstraints.length === 0) continue;
+
+          // Single combined finding per param
           findings.push({
             ruleCode: this.code,
-            severity: severity,
-            message: t('finding_prompt_injection_no_limit', { param: paramName, tool: tool.name }),
+            severity,
+            message: t("finding_prompt_injection_no_limit", {
+              param: paramName,
+              tool: tool.name,
+            }),
             component: `tool:${tool.name}`,
-            location: { type: 'tool', name: tool.name, parameter: paramName },
+            location: { type: "tool", name: tool.name, parameter: paramName },
             evidence: {
               parameter: paramName,
               riskCategory: match.category,
               matchedKeyword: match.keyword,
               isIndirectVector: isIndirect,
-              risk: this.getRiskDescription(match, isIndirect)
+              missingConstraints,
+              risk: this.getRiskDescription(match, isIndirect),
             },
-            remediation: t('remediation_prompt_injection_limit_enterprise', {
-              maxLength: this.getRecommendedMaxLength(match.category)
-            })
-          });
-        }
-
-        // ── MISSING pattern - with specific regex recommendations ─────
-        if (config.pattern === undefined || config.pattern === null) {
-          const recommendedPattern = this.getRecommendedPattern(match.category, isIndirect);
-
-          findings.push({
-            ruleCode: this.code,
-            severity: severity === 'medium' ? 'low' : 'medium', // One level lower than no-limit
-            message: t('finding_prompt_injection_no_pattern', { param: paramName, tool: tool.name }),
-            component: `tool:${tool.name}`,
-            location: { type: 'tool', name: tool.name, parameter: paramName },
-            evidence: {
-              parameter: paramName,
-              riskCategory: match.category,
-              matchedKeyword: match.keyword,
-              suggestedPattern: recommendedPattern.pattern,
-              patternDescription: recommendedPattern.description
-            },
-            remediation: t('remediation_prompt_injection_pattern_specific', {
-              pattern: recommendedPattern.pattern,
-              description: recommendedPattern.description
-            })
-          });
-        }
-
-        // ── WEAK pattern (too permissive) ─────────────────────────────
-        if (config.pattern && this.isWeakPattern(String(config.pattern))) {
-          findings.push({
-            ruleCode: this.code,
-            severity: 'medium',
-            message: t('finding_prompt_injection_weak_pattern', { param: paramName, tool: tool.name }),
-            component: `tool:${tool.name}`,
-            location: { type: 'tool', name: tool.name, parameter: paramName },
-            evidence: {
-              parameter: paramName,
-              currentPattern: config.pattern,
-              weakness: 'Pattern allows injection control characters'
-            },
-            remediation: t('remediation_prompt_injection_strengthen_pattern')
+            remediation: t("remediation_prompt_injection_limit_enterprise", {
+              maxLength: this.getRecommendedMaxLength(match.category),
+            }),
           });
         }
       }
 
-      // Add tool-level indirect injection finding if applicable
-      if (toolMatch && toolMatch.category === 'indirect' && this.hasNLPProcessing(tool)) {
-        findings.push(this.createIndirectInjectionChainFinding(tool, toolMatch));
+      // Indirect injection chain: requires BOTH a URL param in schema AND
+      // NLP processing in the tool description. Without both signals, a tool
+      // named "read_contact" with "url" in a param would fire as critical.
+      if (hasUrlParam && this.hasNLPProcessing(tool)) {
+        findings.push(this.createIndirectInjectionChainFinding(tool, {
+          category: "indirect",
+          keyword: "url",
+          riskLevel: "critical",
+        }));
       }
     }
 
@@ -339,7 +349,7 @@ export class PromptInjectionRule implements ISecurityRule {
    * Analyzes tool description and name for indirect injection indicators
    */
   private analyzeToolForIndirectInjection(tool: McpTool): KeywordMatch | null {
-    const toolText = `${tool.name} ${tool.description || ''}`;
+    const toolText = `${tool.name} ${tool.description || ""}`;
     return analyzeTextForRisk(toolText);
   }
 
@@ -347,80 +357,97 @@ export class PromptInjectionRule implements ISecurityRule {
    * Checks if tool description suggests NLP/LLM processing
    */
   private hasNLPProcessing(tool: McpTool): boolean {
-    const text = `${tool.name} ${tool.description || ''}`.toLowerCase();
-    return NLP_PROCESSING_KEYWORDS.some(kw => text.includes(kw));
+    const text = `${tool.name} ${tool.description || ""}`.toLowerCase();
+    return NLP_PROCESSING_KEYWORDS.some((kw) => text.includes(kw));
   }
 
   /**
    * Calculates severity based on risk category and context
    */
-  private calculateRiskSeverity(match: KeywordMatch, toolMatch: KeywordMatch | null): {
-    severity: 'critical' | 'high' | 'medium' | 'low';
+  private calculateRiskSeverity(
+    match: KeywordMatch,
+    toolMatch: KeywordMatch | null,
+  ): {
+    severity: "critical" | "high" | "medium" | "low";
     isIndirect: boolean;
   } {
-    const isIndirect = match.category === 'indirect' || toolMatch?.category === 'indirect';
+    const isIndirect =
+      match.category === "indirect" || toolMatch?.category === "indirect";
 
     // Indirect injection combined with NLP processing = critical
-    if (isIndirect && toolMatch &&
-        (toolMatch.category === 'nlp' || match.category === 'nlp')) {
-      return { severity: 'critical', isIndirect: true };
+    if (
+      isIndirect &&
+      toolMatch &&
+      (toolMatch.category === "nlp" || match.category === "nlp")
+    ) {
+      return { severity: "critical", isIndirect: true };
     }
 
     // Direct prompt inputs without limits = high
-    if (match.category === 'direct') {
-      return { severity: 'high', isIndirect };
+    if (match.category === "direct") {
+      return { severity: "high", isIndirect };
     }
 
     // NLP processing inputs = high
-    if (match.category === 'nlp') {
-      return { severity: 'high', isIndirect };
+    if (match.category === "nlp") {
+      return { severity: "high", isIndirect };
     }
 
     // Indirect sources = medium (could be used for injection)
-    if (match.category === 'indirect') {
-      return { severity: 'medium', isIndirect: true };
+    if (match.category === "indirect") {
+      return { severity: "medium", isIndirect: true };
     }
 
     // Generic text inputs = medium
-    return { severity: 'medium', isIndirect };
+    return { severity: "medium", isIndirect };
   }
 
   /**
    * Creates a finding for indirect injection vulnerability
    */
-  private createIndirectInjectionFinding(tool: McpTool, match: KeywordMatch): SecurityFinding {
+  private createIndirectInjectionFinding(
+    tool: McpTool,
+    match: KeywordMatch,
+  ): SecurityFinding {
     return {
       ruleCode: this.code,
-      severity: 'high',
-      message: t('finding_prompt_injection_indirect', { tool: tool.name, keyword: match.keyword }),
+      severity: "high",
+      message: t("finding_prompt_injection_indirect", {
+        tool: tool.name,
+        keyword: match.keyword,
+      }),
       component: `tool:${tool.name}`,
-      location: { type: 'tool', name: tool.name },
+      location: { type: "tool", name: tool.name },
       evidence: {
-        riskCategory: 'indirect',
+        riskCategory: "indirect",
         matchedKeyword: match.keyword,
-        risk: 'Tool fetches external content that may contain malicious prompt injections'
+        risk: "Tool fetches external content that may contain malicious prompt injections",
       },
-      remediation: t('remediation_prompt_injection_indirect')
+      remediation: t("remediation_prompt_injection_indirect"),
     };
   }
 
   /**
    * Creates a finding for indirect injection chain (fetch + process)
    */
-  private createIndirectInjectionChainFinding(tool: McpTool, match: KeywordMatch): SecurityFinding {
+  private createIndirectInjectionChainFinding(
+    tool: McpTool,
+    match: KeywordMatch,
+  ): SecurityFinding {
     return {
       ruleCode: this.code,
-      severity: 'critical',
-      message: t('finding_prompt_injection_chain', { tool: tool.name }),
+      severity: "critical",
+      message: t("finding_prompt_injection_chain", { tool: tool.name }),
       component: `tool:${tool.name}`,
-      location: { type: 'tool', name: tool.name },
+      location: { type: "tool", name: tool.name },
       evidence: {
-        riskCategory: 'indirect-chain',
+        riskCategory: "indirect-chain",
         indirectKeyword: match.keyword,
-        risk: 'Tool fetches AND processes external content - high indirect injection risk',
-        attackScenario: 'Attacker embeds malicious instructions in fetched content (URL, file, email)'
+        risk: "Tool fetches AND processes external content - high indirect injection risk",
+        attackScenario:
+          "Attacker embeds malicious instructions in fetched content (URL, file, email)",
       },
-      remediation: t('remediation_prompt_injection_chain')
+      remediation: t("remediation_prompt_injection_chain"),
     };
   }
 
@@ -429,59 +456,73 @@ export class PromptInjectionRule implements ISecurityRule {
    */
   private getRecommendedMaxLength(category: string): number {
     switch (category) {
-      case 'direct': return 10000; // Prompts need reasonable length
-      case 'nlp': return 50000;    // Documents may be larger
-      case 'generic': return 5000; // General inputs
-      case 'indirect': return 1000; // URLs/paths should be short
-      default: return 5000;
+      case "direct":
+        return 10000; // Prompts need reasonable length
+      case "nlp":
+        return 50000; // Documents may be larger
+      case "generic":
+        return 5000; // General inputs
+      case "indirect":
+        return 1000; // URLs/paths should be short
+      default:
+        return 5000;
     }
   }
 
   /**
    * Returns recommended pattern based on risk category
    */
-  private getRecommendedPattern(category: string, isIndirect: boolean): {
+  private getRecommendedPattern(
+    category: string,
+    isIndirect: boolean,
+  ): {
     pattern: string;
     description: string;
   } {
     if (isIndirect) {
       return {
-        pattern: '^https?://[\\w\\-]+(\\.[\\w\\-]+)+(/[\\w\\-./]*)?$',
-        description: 'HTTPS URLs only, no query params (prevents data exfiltration)'
+        pattern: "^https?://[\\w\\-]+(\\.[\\w\\-]+)+(/[\\w\\-./]*)?$",
+        description:
+          "HTTPS URLs only, no query params (prevents data exfiltration)",
       };
     }
 
     switch (category) {
-      case 'direct':
+      case "direct":
         return {
           pattern: RECOMMENDED_PATTERNS.noInjectionMarkers,
-          description: 'Blocks common prompt injection markers ([INST], <<SYS>>, ###, etc.)'
+          description:
+            "Blocks common prompt injection markers ([INST], <<SYS>>, ###, etc.)",
         };
-      case 'nlp':
+      case "nlp":
         return {
           pattern: RECOMMENDED_PATTERNS.basic,
-          description: 'Alphanumeric + punctuation, no control characters'
+          description: "Alphanumeric + punctuation, no control characters",
         };
       default:
         return {
           pattern: RECOMMENDED_PATTERNS.strict,
-          description: 'Strict alphanumeric with minimal punctuation'
+          description: "Strict alphanumeric with minimal punctuation",
         };
     }
   }
 
   /**
-   * Checks if a pattern is too permissive (weak)
+   * Checks if a regex pattern is too permissive to provide any injection protection.
    */
   private isWeakPattern(pattern: string): boolean {
-    // Patterns that match everything or most things
     const weakPatterns = [
       /^\.\*$/,           // .*
       /^\.\+$/,           // .+
-      /^\[\^\]\*$/,       // [^]*
-      /^\\s\*\\S/,        // \s*\S (too permissive)
+      /^\.\{0,\}$/,       // .{0,}
+      /^\[\^]\*$/,        // [^]*
+      /^\[\\s\\S]\*$/,    // [\s\S]*
+      /^\(\.\*\)\*$/,     // (.*)*
+      /^\^\.\*\$$/,       // ^.*$
+      /^\^\[\\s\\S]\*\$$/, // ^[\s\S]*$
+      /^\\s\*\\S\+/,      // \s*\S+ (too permissive)
     ];
-    return weakPatterns.some(wp => wp.test(pattern));
+    return weakPatterns.some((wp) => wp.test(pattern));
   }
 
   /**
@@ -489,44 +530,89 @@ export class PromptInjectionRule implements ISecurityRule {
    */
   private getRiskDescription(match: KeywordMatch, isIndirect: boolean): string {
     if (isIndirect) {
-      return 'Indirect injection vector: external content may contain malicious instructions';
+      return "Indirect injection vector: external content may contain malicious instructions";
     }
 
     switch (match.category) {
-      case 'direct':
-        return 'Direct prompt parameter - primary injection target';
-      case 'nlp':
-        return 'NLP processing indicator - text will be processed by LLM';
-      case 'generic':
-        return 'Generic text input - may be processed by downstream LLM';
+      case "direct":
+        return "Direct prompt parameter - primary injection target";
+      case "nlp":
+        return "NLP processing indicator - text will be processed by LLM";
+      case "generic":
+        return "Generic text input - may be processed by downstream LLM";
       default:
-        return 'Potential injection surface';
+        return "Potential injection surface";
     }
   }
 
   /**
-   * Checks whether any MCP Prompt definition exposes unvalidated arguments.
-   * Per the MCP spec (2024-11-05), prompt arguments carry no schema, so
-   * every argument is an implicit injection surface.
+   * Checks MCP Prompt definitions for injection risk.
+   * Per the MCP spec, prompt arguments carry no schema — every argument is
+   * an implicit injection surface. Severity scales with argument name risk:
+   * - Argument named "system_prompt", "instruction", etc. → high
+   * - Argument named "query", "text" → medium
+   * - Any other unvalidated argument → low
    */
-  private analyzePrompts(prompts: any[]): SecurityFinding[] {
+  private analyzePrompts(
+    prompts: Array<{ name: string; description?: string; arguments?: Array<{ name: string; description?: string; required?: boolean }> }>,
+  ): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
 
     for (const prompt of prompts) {
       const args = prompt.arguments;
       if (!Array.isArray(args) || args.length === 0) continue;
 
-      findings.push({
-        ruleCode: this.code,
-        severity: 'low',
-        message: t('finding_prompt_injection_prompt_args', { prompt: prompt.name }),
-        component: `prompt:${prompt.name}`,
-        evidence: {
+      // Check each argument individually for risk signals
+      const highRiskArgs: string[] = [];
+      const mediumRiskArgs: string[] = [];
+      const lowRiskArgs: string[] = [];
+
+      for (const arg of args) {
+        const match = analyzeTextForRisk(arg.name) ??
+          (arg.description ? analyzeTextForRisk(arg.description) : null);
+
+        if (!match) {
+          lowRiskArgs.push(arg.name);
+          continue;
+        }
+        if (match.category === "direct" || match.category === "indirect") {
+          highRiskArgs.push(arg.name);
+        } else {
+          mediumRiskArgs.push(arg.name);
+        }
+      }
+
+      // Emit one finding per risk tier that has args
+      if (highRiskArgs.length > 0) {
+        findings.push({
+          ruleCode: this.code,
+          severity: "high",
+          message: t("finding_prompt_injection_prompt_args", { prompt: prompt.name }),
+          component: `prompt:${prompt.name}`,
+          evidence: {
             promptName: prompt.name,
-            argumentCount: args.length
-        },
-        remediation: t('remediation_prompt_injection_prompt_args')
-      });
+            highRiskArguments: highRiskArgs,
+            risk: "Arguments named as direct prompt inputs have no schema validation",
+          },
+          remediation: t("remediation_prompt_injection_prompt_args"),
+        });
+      }
+
+      if (mediumRiskArgs.length > 0 || (highRiskArgs.length === 0 && lowRiskArgs.length > 0)) {
+        const allOtherArgs = [...mediumRiskArgs, ...(highRiskArgs.length > 0 ? [] : lowRiskArgs)];
+        findings.push({
+          ruleCode: this.code,
+          severity: mediumRiskArgs.length > 0 ? "medium" : "low",
+          message: t("finding_prompt_injection_prompt_args", { prompt: prompt.name }),
+          component: `prompt:${prompt.name}`,
+          evidence: {
+            promptName: prompt.name,
+            argumentCount: allOtherArgs.length,
+            arguments: allOtherArgs,
+          },
+          remediation: t("remediation_prompt_injection_prompt_args"),
+        });
+      }
     }
 
     return findings;

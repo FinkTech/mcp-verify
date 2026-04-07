@@ -17,9 +17,9 @@
  * - MCP_*: All MCP-related configuration (prefix pattern)
  */
 
-import fs from 'fs';
-import path from 'path';
-import { EnvironmentVars } from '../types/environment-vars';
+import fs from "fs";
+import path from "path";
+import { EnvironmentVars } from "../types/environment-vars";
 
 /**
  * Environment variables loader
@@ -27,15 +27,15 @@ import { EnvironmentVars } from '../types/environment-vars';
  */
 export class EnvironmentLoader {
   /** List of .env files to search for (in priority order) */
-  private static readonly ENV_FILES = ['.env.local', '.env'];
+  private static readonly ENV_FILES = [".env.local", ".env"];
 
   /** List of specific environment variables to extract */
   private static readonly KNOWN_VARS = [
-    'ANTHROPIC_API_KEY',
-    'OPENAI_API_KEY',
-    'GEMINI_API_KEY',
-    'DEBUG',
-    'NODE_ENV',
+    "ANTHROPIC_API_KEY",
+    "OPENAI_API_KEY",
+    "GEMINI_API_KEY",
+    "DEBUG",
+    "NODE_ENV",
   ];
 
   /**
@@ -51,7 +51,7 @@ export class EnvironmentLoader {
 
       if (fs.existsSync(envPath)) {
         try {
-          const content = fs.readFileSync(envPath, 'utf-8');
+          const content = fs.readFileSync(envPath, "utf-8");
           const parsed = EnvironmentLoader.parseEnvFile(content);
           return EnvironmentLoader.extractVars(parsed, envPath);
         } catch {
@@ -82,11 +82,11 @@ export class EnvironmentLoader {
   private static parseEnvFile(content: string): Record<string, string> {
     const result: Record<string, string> = {};
 
-    for (const line of content.split('\n')) {
+    for (const line of content.split("\n")) {
       const trimmed = line.trim();
 
       // Skip empty lines and comments
-      if (!trimmed || trimmed.startsWith('#')) {
+      if (!trimmed || trimmed.startsWith("#")) {
         continue;
       }
 
@@ -122,7 +122,7 @@ export class EnvironmentLoader {
    */
   private static extractVars(
     parsed: Record<string, string>,
-    sourceFile: string
+    sourceFile: string,
   ): EnvironmentVars {
     const result: EnvironmentVars = {
       mcpVars: {},
@@ -133,19 +133,19 @@ export class EnvironmentLoader {
     for (const key of EnvironmentLoader.KNOWN_VARS) {
       if (key in parsed) {
         switch (key) {
-          case 'ANTHROPIC_API_KEY':
+          case "ANTHROPIC_API_KEY":
             result.ANTHROPIC_API_KEY = parsed[key];
             break;
-          case 'OPENAI_API_KEY':
+          case "OPENAI_API_KEY":
             result.OPENAI_API_KEY = parsed[key];
             break;
-          case 'GEMINI_API_KEY':
+          case "GEMINI_API_KEY":
             result.GEMINI_API_KEY = parsed[key];
             break;
-          case 'DEBUG':
+          case "DEBUG":
             result.DEBUG = parsed[key];
             break;
-          case 'NODE_ENV':
+          case "NODE_ENV":
             result.NODE_ENV = parsed[key];
             break;
         }
@@ -154,7 +154,7 @@ export class EnvironmentLoader {
 
     // Extract all MCP_* prefixed variables
     for (const [key, value] of Object.entries(parsed)) {
-      if (key.startsWith('MCP_')) {
+      if (key.startsWith("MCP_")) {
         result.mcpVars[key] = value;
       }
     }
@@ -172,11 +172,11 @@ export class EnvironmentLoader {
   static getLoadedKeys(env: EnvironmentVars): string[] {
     const keys: string[] = [];
 
-    if (env.ANTHROPIC_API_KEY) keys.push('ANTHROPIC_API_KEY');
-    if (env.OPENAI_API_KEY) keys.push('OPENAI_API_KEY');
-    if (env.GEMINI_API_KEY) keys.push('GEMINI_API_KEY');
-    if (env.DEBUG) keys.push('DEBUG');
-    if (env.NODE_ENV) keys.push('NODE_ENV');
+    if (env.ANTHROPIC_API_KEY) keys.push("ANTHROPIC_API_KEY");
+    if (env.OPENAI_API_KEY) keys.push("OPENAI_API_KEY");
+    if (env.GEMINI_API_KEY) keys.push("GEMINI_API_KEY");
+    if (env.DEBUG) keys.push("DEBUG");
+    if (env.NODE_ENV) keys.push("NODE_ENV");
 
     // Add all MCP_* keys
     keys.push(...Object.keys(env.mcpVars).sort());

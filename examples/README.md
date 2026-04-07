@@ -19,6 +19,7 @@ cd regression-detection
 ## 🚀 Quick Start
 
 ### 1. Basic Validation
+
 ```bash
 # Validate a local server
 mcp-verify validate http://localhost:3000
@@ -28,6 +29,7 @@ mcp-verify validate http://localhost:3000 --html
 ```
 
 ### 2. Security Scan
+
 ```bash
 # Run full security audit
 mcp-verify validate http://localhost:3000 --html
@@ -40,6 +42,7 @@ mcp-verify validate http://localhost:3000 --html
 ```
 
 ### 3. Stress Testing
+
 ```bash
 # Light load test (5 users, 10 seconds)
 mcp-verify stress http://localhost:3000
@@ -54,6 +57,7 @@ mcp-verify stress http://localhost:3000 --users 50 --duration 60
 ```
 
 ### 4. Interactive Playground
+
 ```bash
 # Test tools interactively
 mcp-verify play http://localhost:3000
@@ -66,6 +70,7 @@ mcp-verify play http://localhost:3000
 ```
 
 ### 5. CI/CD Integration
+
 ```bash
 # Generate SARIF report for GitHub
 mcp-verify validate http://localhost:3000 --format sarif
@@ -78,6 +83,7 @@ mcp-verify validate http://localhost:3000 --format sarif
 ## 📁 Example Servers
 
 ### Test Against Dummy Server
+
 ```bash
 # Terminal 1: Start dummy server
 node examples/servers/dummy-server.js
@@ -87,6 +93,7 @@ mcp-verify validate http://localhost:3000
 ```
 
 ### Test Against Broken Server (for testing)
+
 ```bash
 # Terminal 1: Start broken server
 node examples/servers/broken-server.js
@@ -98,6 +105,7 @@ mcp-verify validate http://localhost:3000
 ## 🔧 Advanced Usage
 
 ### Fuzzing (Chaos Testing)
+
 ```bash
 # Run chaos tests to find edge cases
 mcp-verify validate http://localhost:3000 --fuzz
@@ -109,6 +117,7 @@ mcp-verify validate http://localhost:3000 --fuzz
 ```
 
 ### Proxy Mode (Security Gateway)
+
 ```bash
 # Start security proxy
 mcp-verify proxy http://localhost:3000 --port 8080
@@ -121,6 +130,7 @@ mcp-verify proxy http://localhost:3000 --port 8080
 ```
 
 ### Mock Server
+
 ```bash
 # Start a mock MCP server for testing
 mcp-verify mock --port 3000
@@ -134,6 +144,7 @@ mcp-verify mock --port 3000
 ## 📖 More Examples
 
 See the `use-cases/` directory for detailed examples:
+
 - [Basic Validation](./use-cases/basic-validation.md)
 - [Security Scanning](./use-cases/security-scan.md)
 - [Load Testing](./use-cases/stress-testing.md)
@@ -142,12 +153,14 @@ See the `use-cases/` directory for detailed examples:
 ## 🆘 Troubleshooting
 
 ### Connection Issues?
+
 ```bash
 # Diagnose connection problems
 mcp-verify doctor http://localhost:3000
 ```
 
 ### Need Help?
+
 ```bash
 # Interactive mode
 mcp-verify

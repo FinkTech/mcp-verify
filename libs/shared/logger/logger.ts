@@ -10,7 +10,7 @@ export enum LogLevel {
   INFO = 1,
   WARN = 2,
   ERROR = 3,
-  SILENT = 4
+  SILENT = 4,
 }
 
 export class Logger {
@@ -37,22 +37,26 @@ export class Logger {
    */
   private sanitizeAnsi(text: string): string {
     // Remove ANSI escape sequences: \x1b[...m, \x1b[...J, etc.
-    return text.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '');
+    return text.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, "");
   }
 
   debug(message: string, context?: unknown) {
     if (this.level <= LogLevel.DEBUG) {
       const sanitizedMsg = this.sanitizeAnsi(message);
-      const msg = context ? `[DEBUG] ${sanitizedMsg} ${JSON.stringify(context)}` : `[DEBUG] ${sanitizedMsg}`;
-      process.stderr.write(msg + '\n');
+      const msg = context
+        ? `[DEBUG] ${sanitizedMsg} ${JSON.stringify(context)}`
+        : `[DEBUG] ${sanitizedMsg}`;
+      process.stderr.write(msg + "\n");
     }
   }
 
   info(message: string, context?: unknown) {
     if (this.level <= LogLevel.INFO) {
       const sanitizedMsg = this.sanitizeAnsi(message);
-      const msg = context ? `[INFO] ${sanitizedMsg} ${JSON.stringify(context)}` : `[INFO] ${sanitizedMsg}`;
-      process.stderr.write(msg + '\n');
+      const msg = context
+        ? `[INFO] ${sanitizedMsg} ${JSON.stringify(context)}`
+        : `[INFO] ${sanitizedMsg}`;
+      process.stderr.write(msg + "\n");
     }
   }
 
@@ -66,9 +70,11 @@ export class Logger {
   error(message: string, error?: Error | unknown) {
     if (this.level <= LogLevel.ERROR) {
       const sanitizedMsg = this.sanitizeAnsi(message);
-      const errorStr = error ? this.sanitizeAnsi(String(error)) : '';
-      const msg = errorStr ? `[ERROR] ${sanitizedMsg} ${errorStr}` : `[ERROR] ${sanitizedMsg}`;
-      process.stderr.write(msg + '\n');
+      const errorStr = error ? this.sanitizeAnsi(String(error)) : "";
+      const msg = errorStr
+        ? `[ERROR] ${sanitizedMsg} ${errorStr}`
+        : `[ERROR] ${sanitizedMsg}`;
+      process.stderr.write(msg + "\n");
     }
   }
 }

@@ -15,11 +15,14 @@
  * - MCP server connection status (via testHandshake())
  */
 
-import chalk from 'chalk';
-import path from 'path';
-import type { ShellSession } from '../interactive/session';
-import { WorkspaceHealthChecker } from '../managers/workspace-health-checker';
-import type { WorkspaceHealth, ConnectionStatus } from '../types/workspace-health';
+import chalk from "chalk";
+import path from "path";
+import type { ShellSession } from "../interactive/session";
+import { WorkspaceHealthChecker } from "../managers/workspace-health-checker";
+import type {
+  WorkspaceHealth,
+  ConnectionStatus,
+} from "../types/workspace-health";
 
 /**
  * Display comprehensive workspace status
@@ -27,13 +30,13 @@ import type { WorkspaceHealth, ConnectionStatus } from '../types/workspace-healt
  * @param session - Shell session
  */
 export async function handleStatus(session: ShellSession): Promise<void> {
-  console.log(chalk.bold.white('\n  Workspace Status\n'));
+  console.log(chalk.bold.white("\n  Workspace Status\n"));
 
   // Perform health check
   const health = await WorkspaceHealthChecker.check(
     session.state.activeContextName,
     session.getActiveContext(),
-    session.state.environment
+    session.state.environment,
   );
 
   // Display each section
@@ -49,13 +52,13 @@ export async function handleStatus(session: ShellSession): Promise<void> {
  * Render context information section
  */
 function renderContextSection(health: WorkspaceHealth): void {
-  console.log(chalk.bold('  Context:'));
+  console.log(chalk.bold("  Context:"));
   console.log(`    Active:  ${chalk.cyan(health.context.name)}`);
 
   if (health.context.target) {
     console.log(`    Target:  ${chalk.dim(health.context.target)}`);
   } else {
-    console.log(`    Target:  ${chalk.dim('(not set)')}`);
+    console.log(`    Target:  ${chalk.dim("(not set)")}`);
   }
 
   console.log(`    Profile: ${chalk.yellow(health.context.profile)}`);
@@ -67,31 +70,37 @@ function renderContextSection(health: WorkspaceHealth): void {
  * SECURITY: Shows key names but never shows values (they're sensitive)
  */
 function renderEnvironmentSection(health: WorkspaceHealth): void {
-  console.log(chalk.bold('  Environment:'));
+  console.log(chalk.bold("  Environment:"));
 
   if (health.environment.loaded) {
     const sourceFileName = health.environment.sourceFile
       ? path.basename(health.environment.sourceFile)
-      : 'unknown';
+      : "unknown";
 
     console.log(`    Source:  ${chalk.green(sourceFileName)}`);
-    console.log(`    Keys:    ${chalk.dim(health.environment.keysFound.length + ' loaded')}`);
+    console.log(
+      `    Keys:    ${chalk.dim(health.environment.keysFound.length + " loaded")}`,
+    );
 
     if (health.environment.keysFound.length > 0) {
       // SECURITY: Only show key names, NEVER show values
       // Mask sensitive key names to make it clear they contain secrets
       const safeKeys = health.environment.keysFound.map((key) => {
-        if (key.includes('API_KEY') || key.includes('TOKEN') || key.includes('SECRET')) {
-          return `${key} ${chalk.yellow('[PROTECTED]')}`;
+        if (
+          key.includes("API_KEY") ||
+          key.includes("TOKEN") ||
+          key.includes("SECRET")
+        ) {
+          return `${key} ${chalk.yellow("[PROTECTED]")}`;
         }
         return key;
       });
-      const keys = safeKeys.join(', ');
+      const keys = safeKeys.join(", ");
       console.log(`      ${chalk.dim(keys)}`);
     }
   } else {
-    console.log(`    Source:  ${chalk.dim('(no .env file found)')}`);
-    console.log(`    Keys:    ${chalk.dim('0 loaded')}`);
+    console.log(`    Source:  ${chalk.dim("(no .env file found)")}`);
+    console.log(`    Keys:    ${chalk.dim("0 loaded")}`);
   }
 
   console.log();
@@ -101,7 +110,7 @@ function renderEnvironmentSection(health: WorkspaceHealth): void {
  * Render last report section
  */
 function renderLastReportSection(health: WorkspaceHealth): void {
-  console.log(chalk.bold('  Last Report:'));
+  console.log(chalk.bold("  Last Report:"));
 
   if (health.lastReport.exists) {
     console.log(`    Path:    ${chalk.cyan(health.lastReport.path)}`);
@@ -112,7 +121,7 @@ function renderLastReportSection(health: WorkspaceHealth): void {
       console.log(`    Time:    ${chalk.dim(formatted)}`);
     }
   } else {
-    console.log(`    ${chalk.dim('(no reports found)')}`);
+    console.log(`    ${chalk.dim("(no reports found)")}`);
   }
 
   console.log();
@@ -122,7 +131,7 @@ function renderLastReportSection(health: WorkspaceHealth): void {
  * Render MCP server connection section
  */
 async function renderConnectionSection(health: WorkspaceHealth): Promise<void> {
-  console.log(chalk.bold('  Target Connection:'));
+  console.log(chalk.bold("  Target Connection:"));
 
   const { connection } = health;
 
@@ -132,7 +141,7 @@ async function renderConnectionSection(health: WorkspaceHealth): Promise<void> {
 
   // Render additional details based on status
   switch (connection.status) {
-    case 'connected':
+    case "connected":
       if (connection.serverName) {
         console.log(`    Server:  ${chalk.dim(connection.serverName)}`);
       }
@@ -140,28 +149,34 @@ async function renderConnectionSection(health: WorkspaceHealth): Promise<void> {
         console.log(`    Version: ${chalk.dim(connection.protocolVersion)}`);
       }
       if (connection.responseTime !== undefined) {
-        console.log(`    Time:    ${chalk.dim(connection.responseTime + 'ms')}`);
+        console.log(
+          `    Time:    ${chalk.dim(connection.responseTime + "ms")}`,
+        );
       }
       break;
 
-    case 'unreachable':
+    case "unreachable":
       if (connection.error) {
         console.log(`    Error:   ${chalk.dim(connection.error)}`);
       }
       if (connection.responseTime !== undefined) {
-        console.log(`    Time:    ${chalk.dim(connection.responseTime + 'ms')}`);
+        console.log(
+          `    Time:    ${chalk.dim(connection.responseTime + "ms")}`,
+        );
       }
       break;
 
-    case 'protocol_mismatch':
-      console.log(`    ${chalk.yellow('Server responded but protocol is not valid MCP')}`);
+    case "protocol_mismatch":
+      console.log(
+        `    ${chalk.yellow("Server responded but protocol is not valid MCP")}`,
+      );
       if (connection.error) {
         console.log(`    Error:   ${chalk.dim(connection.error)}`);
       }
       break;
 
-    case 'not_configured':
-      console.log(`    ${chalk.dim('No target configured')}`);
+    case "not_configured":
+      console.log(`    ${chalk.dim("No target configured")}`);
       console.log(`    ${chalk.dim('Use "set target <path>" to configure')}`);
       break;
   }
@@ -177,19 +192,19 @@ async function renderConnectionSection(health: WorkspaceHealth): Promise<void> {
  */
 function renderConnectionStatus(status: ConnectionStatus): string {
   switch (status) {
-    case 'connected':
-      return chalk.green('● Connected');
+    case "connected":
+      return chalk.green("● Connected");
 
-    case 'unreachable':
-      return chalk.red('● Unreachable');
+    case "unreachable":
+      return chalk.red("● Unreachable");
 
-    case 'protocol_mismatch':
-      return chalk.yellow('⚠ Protocol Mismatch');
+    case "protocol_mismatch":
+      return chalk.yellow("⚠ Protocol Mismatch");
 
-    case 'not_configured':
-      return chalk.yellow('○ Not Configured');
+    case "not_configured":
+      return chalk.yellow("○ Not Configured");
 
     default:
-      return chalk.dim('○ Unknown');
+      return chalk.dim("○ Unknown");
   }
 }

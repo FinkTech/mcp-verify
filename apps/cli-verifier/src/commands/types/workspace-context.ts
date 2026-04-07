@@ -16,17 +16,17 @@
  */
 
 /** Language type for i18n support */
-export type Language = 'en' | 'es';
+export type Language = "en" | "es";
 
 /**
  * Security rule blocks for categorization
  */
-export type SecurityRuleBlock = 'OWASP' | 'MCP' | 'A' | 'B' | 'C' | 'D';
+export type SecurityRuleBlock = "OWASP" | "MCP" | "A" | "B" | "C" | "D";
 
 /**
  * Security profile preset names
  */
-export type SecurityProfilePreset = 'light' | 'balanced' | 'aggressive';
+export type SecurityProfilePreset = "light" | "balanced" | "aggressive";
 
 /**
  * Security profile configuration
@@ -90,7 +90,7 @@ export interface WorkspaceContext {
  * Stored in .mcp-verify/session.json
  */
 export interface WorkspaceContexts {
-  version: '1.0';
+  version: "1.0";
   activeContext: string;
   contexts: Record<string, WorkspaceContext>;
   savedAt: string;
@@ -128,10 +128,10 @@ export interface SessionState {
   contexts: Record<string, WorkspaceContext>;
 
   /** Global user configuration from ~/.mcp-verify/config.json */
-  globalConfig: import('./global-config').GlobalConfig;
+  globalConfig: import("./global-config").GlobalConfig;
 
   /** Environment variables loaded from .env (session-scoped) */
-  environment: import('./environment-vars').EnvironmentVars | undefined;
+  environment: import("./environment-vars").EnvironmentVars | undefined;
 
   // ── Legacy Compatibility Fields ──────────────────────────────────────
   target: string | undefined;

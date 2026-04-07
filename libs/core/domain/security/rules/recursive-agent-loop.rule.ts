@@ -30,24 +30,41 @@
  * - CWE-674: Uncontrolled Recursion
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class RecursiveAgentLoopRule implements ISecurityRule {
-  code = 'SEC-033';
-  name = 'Recursive Agent Loop Exploitation';
-  severity: 'high' = 'high';
+  code = "SEC-033";
+  name = "Recursive Agent Loop Exploitation";
+  severity: "high" = "high";
 
   private readonly RECURSIVE_KEYWORDS = [
-    'recursive', 'recurse', 'loop', 'iterate', 'repeat',
-    'retry', 'traverse', 'walk', 'nested', 'chain'
+    "recursive",
+    "recurse",
+    "loop",
+    "iterate",
+    "repeat",
+    "retry",
+    "traverse",
+    "walk",
+    "nested",
+    "chain",
   ];
 
   private readonly DEPTH_LIMIT_PARAMS = [
-    'max_depth', 'depth_limit', 'max_recursion', 'recursion_limit',
-    'max_iterations', 'iteration_limit', 'max_loops', 'loop_limit'
+    "max_depth",
+    "depth_limit",
+    "max_recursion",
+    "recursion_limit",
+    "max_iterations",
+    "iteration_limit",
+    "max_loops",
+    "loop_limit",
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -66,17 +83,17 @@ export class RecursiveAgentLoopRule implements ISecurityRule {
         if (!hasDepthLimit) {
           findings.push({
             severity: this.severity,
-            message: t('sec_033_recursive_loop', {
-              toolName: tool.name
+            message: t("sec_033_recursive_loop", {
+              toolName: tool.name,
             }),
             component: `tool:${tool.name}`,
             ruleCode: this.code,
-            remediation: t('sec_033_recommendation'),
+            remediation: t("sec_033_recommendation"),
             references: [
-              'Multi-Agent Security Framework (MASF) 2024 - Loop Prevention',
-              'CWE-674: Uncontrolled Recursion',
-              'OWASP - Denial of Service Prevention'
-            ]
+              "Multi-Agent Security Framework (MASF) 2024 - Loop Prevention",
+              "CWE-674: Uncontrolled Recursion",
+              "OWASP - Denial of Service Prevention",
+            ],
           });
         }
       }
@@ -86,16 +103,16 @@ export class RecursiveAgentLoopRule implements ISecurityRule {
     const circularChains = this.detectCircularChains(discovery.tools);
     if (circularChains.length > 0) {
       findings.push({
-        severity: 'high',
-        message: t('sec_033_circular_chain', {
-          chain: circularChains[0].join(' -> ')
+        severity: "high",
+        message: t("sec_033_circular_chain", {
+          chain: circularChains[0].join(" -> "),
         }),
-        component: 'tool-chain',
+        component: "tool-chain",
         ruleCode: this.code,
-        remediation: t('sec_033_chain_recommendation'),
+        remediation: t("sec_033_chain_recommendation"),
         references: [
-          'Multi-Agent Security Framework (MASF) 2024 - Loop Prevention'
-        ]
+          "Multi-Agent Security Framework (MASF) 2024 - Loop Prevention",
+        ],
       });
     }
 
@@ -104,10 +121,10 @@ export class RecursiveAgentLoopRule implements ISecurityRule {
 
   private hasRecursivePattern(tool: McpTool): boolean {
     const nameLower = tool.name.toLowerCase();
-    const descLower = tool.description?.toLowerCase() || '';
+    const descLower = tool.description?.toLowerCase() || "";
 
-    return this.RECURSIVE_KEYWORDS.some(keyword =>
-      nameLower.includes(keyword) || descLower.includes(keyword)
+    return this.RECURSIVE_KEYWORDS.some(
+      (keyword) => nameLower.includes(keyword) || descLower.includes(keyword),
     );
   }
 
@@ -116,11 +133,11 @@ export class RecursiveAgentLoopRule implements ISecurityRule {
       return false;
     }
 
-    const paramNames = Object.keys(tool.inputSchema.properties).map(p => p.toLowerCase());
-
-    return this.DEPTH_LIMIT_PARAMS.some(param =>
-      paramNames.includes(param)
+    const paramNames = Object.keys(tool.inputSchema.properties).map((p) =>
+      p.toLowerCase(),
     );
+
+    return this.DEPTH_LIMIT_PARAMS.some((param) => paramNames.includes(param));
   }
 
   private detectCircularChains(tools: McpTool[]): string[][] {
@@ -174,7 +191,10 @@ export class RecursiveAgentLoopRule implements ISecurityRule {
     return chains;
   }
 
-  private extractToolDependencies(tool: McpTool, allTools: McpTool[]): string[] {
+  private extractToolDependencies(
+    tool: McpTool,
+    allTools: McpTool[],
+  ): string[] {
     const dependencies: string[] = [];
 
     if (!tool.description) {

@@ -46,12 +46,12 @@ export interface NormalizedCommand {
 export function normalizeCommand(input: string | unknown): string {
   let str: string;
 
-  if (typeof input !== 'string') {
+  if (typeof input !== "string") {
     // For non-string inputs, stringify and then normalize
     try {
       str = JSON.stringify(input);
     } catch {
-      return '';
+      return "";
     }
   } else {
     str = input;
@@ -60,38 +60,47 @@ export function normalizeCommand(input: string | unknown): string {
   let normalized: string = str;
 
   // 1. Collapse whitespace (spaces, tabs, newlines, carriage returns)
-  normalized = normalized.replace(/[\s\t\n\r]+/g, ' ');
+  normalized = normalized.replace(/[\s\t\n\r]+/g, " ");
 
   // 2. Remove quotes (single, double, backticks)
-  normalized = normalized.replace(/['"`]/g, '');
+  normalized = normalized.replace(/['"`]/g, "");
 
   // 3. Expand shell variables
   // ${IFS} -> space (Internal Field Separator)
-  normalized = normalized.replace(/\$\{IFS\}/gi, ' ');
-  normalized = normalized.replace(/\$IFS/gi, ' ');
+  normalized = normalized.replace(/\$\{IFS\}/gi, " ");
+  normalized = normalized.replace(/\$IFS/gi, " ");
   // ${} empty variable expansion
-  normalized = normalized.replace(/\$\{\}/g, '');
+  normalized = normalized.replace(/\$\{\}/g, "");
 
   // 4. Decode hex escapes (\xNN)
-  normalized = normalized.replace(/\\x([0-9a-fA-F]{2})/g, (_: string, hex: string) => {
-    return String.fromCharCode(parseInt(hex, 16));
-  });
+  normalized = normalized.replace(
+    /\\x([0-9a-fA-F]{2})/g,
+    (_: string, hex: string) => {
+      return String.fromCharCode(parseInt(hex, 16));
+    },
+  );
 
   // 5. Decode unicode escapes (\uNNNN)
-  normalized = normalized.replace(/\\u([0-9a-fA-F]{4})/g, (_: string, hex: string) => {
-    return String.fromCharCode(parseInt(hex, 16));
-  });
+  normalized = normalized.replace(
+    /\\u([0-9a-fA-F]{4})/g,
+    (_: string, hex: string) => {
+      return String.fromCharCode(parseInt(hex, 16));
+    },
+  );
 
   // 6. Decode octal escapes (\NNN)
-  normalized = normalized.replace(/\\([0-7]{1,3})/g, (_: string, octal: string) => {
-    return String.fromCharCode(parseInt(octal, 8));
-  });
+  normalized = normalized.replace(
+    /\\([0-7]{1,3})/g,
+    (_: string, octal: string) => {
+      return String.fromCharCode(parseInt(octal, 8));
+    },
+  );
 
   // 7. Remove backslash escapes (e.g., r\m -> rm)
-  normalized = normalized.replace(/\\(.)/g, '$1');
+  normalized = normalized.replace(/\\(.)/g, "$1");
 
   // 8. Collapse multiple spaces again (after expansions)
-  normalized = normalized.replace(/\s+/g, ' ');
+  normalized = normalized.replace(/\s+/g, " ");
 
   // 9. Trim and lowercase
   normalized = normalized.trim().toLowerCase();
@@ -131,52 +140,52 @@ export function detectDangerousPatterns(normalized: string): string[] {
 
   // File system operations
   if (/(^|\s)(rm|rmdir|del|delete|format|mkfs)(\s|$)/.test(normalized)) {
-    detected.push('file_deletion');
+    detected.push("file_deletion");
   }
 
   // Disk operations
   if (/(^|\s)(dd|fdisk|parted)(\s|$)/.test(normalized)) {
-    detected.push('disk_operation');
+    detected.push("disk_operation");
   }
 
   // Database operations
   if (/(drop\s+(table|database)|truncate|delete\s+from)/.test(normalized)) {
-    detected.push('database_mutation');
+    detected.push("database_mutation");
   }
 
   // Network operations
   if (/(^|\s)(wget|curl|nc|netcat)(\s|$)/.test(normalized)) {
-    detected.push('network_request');
+    detected.push("network_request");
   }
 
   // Process manipulation
   if (/(kill|pkill|killall)/.test(normalized)) {
-    detected.push('process_kill');
+    detected.push("process_kill");
   }
 
   // System commands
   if (/(shutdown|reboot|halt|poweroff)/.test(normalized)) {
-    detected.push('system_control');
+    detected.push("system_control");
   }
 
   // Permission changes
   if (/(chmod|chown|chgrp|setfacl)/.test(normalized)) {
-    detected.push('permission_change');
+    detected.push("permission_change");
   }
 
   // Shell command injection patterns
   if (/[;&|`$()<>]/.test(normalized)) {
-    detected.push('shell_metacharacters');
+    detected.push("shell_metacharacters");
   }
 
   // Fork bombs and recursive patterns
   if (/:\(\)/.test(normalized)) {
-    detected.push('fork_bomb');
+    detected.push("fork_bomb");
   }
 
   // SQL injection patterns (basic)
   if (/(union\s+select|insert\s+into|update\s+.*\s+set)/.test(normalized)) {
-    detected.push('sql_injection');
+    detected.push("sql_injection");
   }
 
   return detected;
@@ -188,14 +197,16 @@ export function detectDangerousPatterns(normalized: string): string[] {
  * @param input - Command or payload to analyze
  * @returns Analysis result with normalized form and detected patterns
  */
-export function analyzeCommandSafety(input: string | unknown): NormalizedCommand {
-  const original = typeof input === 'string' ? input : JSON.stringify(input);
+export function analyzeCommandSafety(
+  input: string | unknown,
+): NormalizedCommand {
+  const original = typeof input === "string" ? input : JSON.stringify(input);
   const normalized = normalizeCommand(input);
   const detectedPatterns = detectDangerousPatterns(normalized);
 
   return {
     original,
     normalized,
-    detectedPatterns
+    detectedPatterns,
   };
 }

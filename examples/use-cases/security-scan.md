@@ -12,27 +12,32 @@ MCP Verify includes **4 security detection rules**:
 ## Example: Detecting Path Traversal
 
 ### Vulnerable Server Example
+
 ```typescript
 // ⚠️ BAD: Path parameter without validation
-tools: [{
-  name: 'read_file',
-  inputSchema: {
-    properties: {
-      path: {
-        type: 'string'
-        // ❌ NO pattern validation!
-      }
-    }
-  }
-}]
+tools: [
+  {
+    name: "read_file",
+    inputSchema: {
+      properties: {
+        path: {
+          type: "string",
+          // ❌ NO pattern validation!
+        },
+      },
+    },
+  },
+];
 ```
 
 ### Running Security Scan
+
 ```bash
 mcp-verify validate http://localhost:3000 --html
 ```
 
 ### Output
+
 ```
 Security Audit:
 Score: 60/100 (High Risk)
@@ -41,6 +46,7 @@ Score: 60/100 (High Risk)
 ```
 
 ### HTML Report Shows
+
 ```
 Finding: SEC-001
 Severity: CRITICAL
@@ -57,26 +63,31 @@ Remediation:
 ## Fix the Vulnerability
 
 ### ✅ GOOD: Add validation pattern
+
 ```typescript
-tools: [{
-  name: 'read_file',
-  inputSchema: {
-    properties: {
-      path: {
-        type: 'string',
-        pattern: '^[a-zA-Z0-9_-]+\\.[a-z]{2,4}$'  // ✅ Safe!
-      }
-    }
-  }
-}]
+tools: [
+  {
+    name: "read_file",
+    inputSchema: {
+      properties: {
+        path: {
+          type: "string",
+          pattern: "^[a-zA-Z0-9_-]+\\.[a-z]{2,4}$", // ✅ Safe!
+        },
+      },
+    },
+  },
+];
 ```
 
 ### Verify the Fix
+
 ```bash
 mcp-verify validate http://localhost:3000
 ```
 
 ### New Output
+
 ```
 Security Audit:
 Score: 95/100 (Low Risk)
@@ -86,27 +97,32 @@ Score: 95/100 (Low Risk)
 ## Example: Command Injection
 
 ### Vulnerable Tool
+
 ```typescript
-tools: [{
-  name: 'execute_command',
-  inputSchema: {
-    properties: {
-      cmd: {
-        type: 'string'
-        // ❌ Allows shell metacharacters!
-      }
-    }
-  }
-}]
+tools: [
+  {
+    name: "execute_command",
+    inputSchema: {
+      properties: {
+        cmd: {
+          type: "string",
+          // ❌ Allows shell metacharacters!
+        },
+      },
+    },
+  },
+];
 ```
 
 ### Detection
+
 ```
 • [CRITICAL] Potential Command Injection: Parameter "cmd" lacks validation
   Remediation: Use whitelist regex like ^[a-zA-Z0-9]+$ to prevent shell metacharacters
 ```
 
 ### Fix
+
 ```typescript
 {
   cmd: {
@@ -119,27 +135,32 @@ tools: [{
 ## Example: SSRF Detection
 
 ### Vulnerable Tool
+
 ```typescript
-tools: [{
-  name: 'fetch_url',
-  inputSchema: {
-    properties: {
-      url: {
-        type: 'string'
-        // ❌ No domain restrictions!
-      }
-    }
-  }
-}]
+tools: [
+  {
+    name: "fetch_url",
+    inputSchema: {
+      properties: {
+        url: {
+          type: "string",
+          // ❌ No domain restrictions!
+        },
+      },
+    },
+  },
+];
 ```
 
 ### Detection
+
 ```
 • [HIGH] Potential SSRF: Parameter "url" accepts URLs but lacks domain validation
   Remediation: Restrict to specific domains: ^https://api\\.example\\.com/
 ```
 
 ### Fix
+
 ```typescript
 {
   url: {
@@ -152,14 +173,18 @@ tools: [{
 ## Example: Data Leakage
 
 ### Vulnerable Resource
+
 ```typescript
-resources: [{
-  name: 'env-vars',
-  uri: 'file:///app/.env'  // ❌ Exposes secrets!
-}]
+resources: [
+  {
+    name: "env-vars",
+    uri: "file:///app/.env", // ❌ Exposes secrets!
+  },
+];
 ```
 
 ### Detection
+
 ```
 • [CRITICAL] Resource "env-vars" exposes a potentially sensitive file
   Evidence: Risky file extension/name (.env)
@@ -177,6 +202,7 @@ Score: < 50 → Multiple critical issues (High Risk)
 ```
 
 ### Score Calculation
+
 - Start at 100 points
 - Deduct for each finding:
   - Critical: -40 points
@@ -187,6 +213,7 @@ Score: < 50 → Multiple critical issues (High Risk)
 ## Best Practices
 
 ### ✅ DO:
+
 - **Always validate path parameters** with strict regex
 - **Whitelist commands** instead of blacklisting
 - **Lock down URLs** to specific domains
@@ -194,6 +221,7 @@ Score: < 50 → Multiple critical issues (High Risk)
 - **Use environment variables** for secrets, not tool parameters
 
 ### ❌ DON'T:
+
 - Use `.*` or overly permissive patterns
 - Allow arbitrary file paths
 - Accept any URL without validation
@@ -203,6 +231,7 @@ Score: < 50 → Multiple critical issues (High Risk)
 ## CI/CD Integration
 
 ### GitHub Actions
+
 ```yaml
 - name: Security Scan
   run: |
@@ -211,6 +240,7 @@ Score: < 50 → Multiple critical issues (High Risk)
 ```
 
 ### Pre-commit Hook
+
 ```bash
 #!/bin/bash
 mcp-verify validate http://localhost:3000
@@ -223,38 +253,44 @@ fi
 ## Real-World Example
 
 ### Before Security Scan
+
 ```typescript
 // Filesystem MCP Server (vulnerable)
-tools: [{
-  name: 'write_file',
-  inputSchema: {
-    properties: {
-      path: { type: 'string' },  // ❌ No validation
-      content: { type: 'string' }
-    }
-  }
-}]
+tools: [
+  {
+    name: "write_file",
+    inputSchema: {
+      properties: {
+        path: { type: "string" }, // ❌ No validation
+        content: { type: "string" },
+      },
+    },
+  },
+];
 ```
 
 **Score: 55/100 (High Risk)**
 
 ### After Hardening
+
 ```typescript
-tools: [{
-  name: 'write_file',
-  inputSchema: {
-    properties: {
-      path: {
-        type: 'string',
-        pattern: '^/safe-dir/[a-zA-Z0-9_-]+\\.txt$'  // ✅ Restricted
+tools: [
+  {
+    name: "write_file",
+    inputSchema: {
+      properties: {
+        path: {
+          type: "string",
+          pattern: "^/safe-dir/[a-zA-Z0-9_-]+\\.txt$", // ✅ Restricted
+        },
+        content: {
+          type: "string",
+          maxLength: 10000, // ✅ Size limit
+        },
       },
-      content: {
-        type: 'string',
-        maxLength: 10000  // ✅ Size limit
-      }
-    }
-  }
-}]
+    },
+  },
+];
 ```
 
 **Score: 90/100 (Low Risk)**
@@ -270,6 +306,7 @@ tools: [{
 ## Get Help
 
 If you see a security finding you don't understand:
+
 ```bash
 # Open the HTML report - it has detailed explanations
 open ./reportes/mcp-report-*.html

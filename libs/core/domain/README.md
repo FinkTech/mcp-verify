@@ -104,19 +104,22 @@ libs/core/domain/
 **Purpose**: Detect security vulnerabilities in MCP servers
 
 **Responsibilities**:
+
 - Analyze tool definitions for security risks
 - Apply 12 OWASP rules
 - Calculate security scores (0-100)
 - Generate findings with severity levels
 
 **Key Files**:
+
 - `security-scanner.ts` - Main orchestrator
 - `rules/*.rule.ts` - Individual security rules
 - `mcpignore-parser.ts` - Exclusion rules
 
 **Example**:
+
 ```typescript
-import { SecurityScanner } from './security/security-analyzer';
+import { SecurityScanner } from "./security/security-analyzer";
 
 const scanner = new SecurityScanner();
 const securityReport = await scanner.scan(discovery);
@@ -134,21 +137,24 @@ const findings = securityReport.findings;
 **Purpose**: Semantic analysis using LLMs
 
 **Responsibilities**:
+
 - Analyze tool quality (descriptions, schemas)
 - Detect ambiguous descriptions
 - Check schema completeness
 - Support multiple LLM providers (Anthropic, Ollama, OpenAI)
 
 **Key Files**:
+
 - `llm-semantic-analyzer.ts` - LLM orchestrator
 - `providers/*.ts` - Provider implementations
 - `semantic-analyzer.ts` - Quality scoring
 
 **Example**:
-```typescript
-import { LLMSemanticAnalyzer } from './quality/llm-semantic-analyzer';
 
-const analyzer = new LLMSemanticAnalyzer('anthropic:claude-haiku-4-5-20251001');
+```typescript
+import { LLMSemanticAnalyzer } from "./quality/llm-semantic-analyzer";
+
+const analyzer = new LLMSemanticAnalyzer("anthropic:claude-haiku-4-5-20251001");
 const issues = await analyzer.analyzeTools(tools);
 
 // issues: [
@@ -163,17 +169,20 @@ const issues = await analyzer.analyzeTools(tools);
 **Purpose**: Protocol compliance checking
 
 **Responsibilities**:
+
 - Validate JSON-RPC 2.0 format
 - Check MCP protocol version
 - Verify message structure
 - Detect protocol violations
 
 **Key Files**:
+
 - `protocol-validator.ts` - JSON-RPC validator
 
 **Example**:
+
 ```typescript
-import { ProtocolValidator } from './validation/protocol-validator';
+import { ProtocolValidator } from "./validation/protocol-validator";
 
 const validator = new ProtocolValidator();
 const result = validator.validate(message);
@@ -188,13 +197,15 @@ const result = validator.validate(message);
 **Purpose**: Structured validation rules
 
 **Layers**:
+
 - **Protocol Layer**: JSON-RPC 2.0 compliance
 - **Schema Layer**: JSON Schema validation
 - **Semantic Layer**: Business rule validation
 
 **Example**:
+
 ```typescript
-import { ProtocolLayerRules } from './validation-rules/protocol-layer';
+import { ProtocolLayerRules } from "./validation-rules/protocol-layer";
 
 const rules = new ProtocolLayerRules();
 const violations = rules.check(tools);
@@ -207,6 +218,7 @@ const violations = rules.check(tools);
 **Purpose**: Generate human-readable reports
 
 **Responsibilities**:
+
 - Generate HTML reports (with CSS, graphs)
 - Generate Markdown reports
 - Generate SARIF reports (GitHub Security)
@@ -214,16 +226,18 @@ const violations = rules.check(tools);
 - Internationalization (i18n)
 
 **Key Files**:
+
 - `html-generator.ts` - Rich HTML reports
 - `markdown-generator.ts` - CLI-friendly markdown
 - `sarif-generator.ts` - GitHub integration
 - `i18n.ts` - 2 languages (English, Spanish)
 
 **Example**:
-```typescript
-import { HtmlReportGenerator } from './reporting/html-generator';
 
-const html = HtmlReportGenerator.generate(report, 'en');
+```typescript
+import { HtmlReportGenerator } from "./reporting/html-generator";
+
+const html = HtmlReportGenerator.generate(report, "en");
 // Returns: <html>...</html> with embedded CSS
 ```
 
@@ -234,20 +248,23 @@ const html = HtmlReportGenerator.generate(report, 'en');
 **Purpose**: Compare reports over time (regression detection)
 
 **Responsibilities**:
+
 - Save baseline reports
 - Compare current vs. baseline
 - Detect score degradation
 - Track new/fixed findings
 
 **Key Files**:
+
 - `baseline-manager.ts` - Comparison logic
 
 **Example**:
+
 ```typescript
-import { BaselineManager } from './baseline/baseline-manager';
+import { BaselineManager } from "./baseline/baseline-manager";
 
 // Save baseline
-BaselineManager.saveBaseline(report, './baseline.json');
+BaselineManager.saveBaseline(report, "./baseline.json");
 
 // Compare
 const comparison = BaselineManager.compare(currentReport, baseline);
@@ -261,17 +278,20 @@ const comparison = BaselineManager.compare(currentReport, baseline);
 **Purpose**: Track scans over time
 
 **Responsibilities**:
+
 - Store historical scan results
 - Detect regressions
 - Trend analysis
 
 **Key Files**:
+
 - `scan-history-manager.ts` - Storage
 - `regression-detector.ts` - Regression logic
 
 **Example**:
+
 ```typescript
-import { ScanHistoryManager } from './scan-history/scan-history-manager';
+import { ScanHistoryManager } from "./scan-history/scan-history-manager";
 
 const history = new ScanHistoryManager();
 history.addScan(report);
@@ -286,10 +306,12 @@ const regressions = history.detectRegressions();
 **Purpose**: Stress testing domain models
 
 **Responsibilities**:
+
 - Define stress test result types
 - Performance metrics entities
 
 **Key Files**:
+
 - `entities/stress-result.types.ts` - Result types
 
 ---
@@ -299,19 +321,22 @@ const regressions = history.detectRegressions();
 **Purpose**: Configuration loading and validation
 
 **Responsibilities**:
+
 - Load `.mcpverify.json` config
 - Validate config structure
 - Provide defaults
 
 **Key Files**:
+
 - `config-loader.ts` - Load and parse
 - `config.types.ts` - TypeScript types
 
 **Example**:
-```typescript
-import { ConfigLoader } from './config/config-loader';
 
-const config = ConfigLoader.load('.mcpverify.json');
+```typescript
+import { ConfigLoader } from "./config/config-loader";
+
+const config = ConfigLoader.load(".mcpverify.json");
 // config: { security: { ignoreRules: ['SEC-001'] } }
 ```
 
@@ -322,6 +347,7 @@ const config = ConfigLoader.load('.mcpverify.json');
 **Purpose**: Domain entities for MCP servers
 
 **Submodules**:
+
 - `entities/` - Domain models (Tool, Resource, Prompt)
 - `events/` - Domain events
 - `repositories/` - Repository interfaces (no implementation)
@@ -336,6 +362,7 @@ const config = ConfigLoader.load('.mcpverify.json');
 **Note**: Interface only, implementation in `infrastructure/`
 
 **Key Files**:
+
 - `sandbox.interface.ts` - Contract for sandboxes
 
 ---
@@ -345,11 +372,12 @@ const config = ConfigLoader.load('.mcpverify.json');
 ### ✅ YES - Domain Layer
 
 **Business Rules**:
+
 ```typescript
 // ✅ GOOD: Pure business logic
 export class SqlInjectionRule implements ISecurityRule {
-  readonly code = 'SEC-003';
-  readonly name = 'SQL Injection';
+  readonly code = "SEC-003";
+  readonly name = "SQL Injection";
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
@@ -357,9 +385,9 @@ export class SqlInjectionRule implements ISecurityRule {
       if (this.hasSqlPatterns(tool.inputSchema)) {
         findings.push({
           ruleCode: this.code,
-          severity: 'critical',
-          message: 'SQL injection risk detected',
-          component: tool.name
+          severity: "critical",
+          message: "SQL injection risk detected",
+          component: tool.name,
         });
       }
     }
@@ -374,24 +402,26 @@ export class SqlInjectionRule implements ISecurityRule {
 ```
 
 **Calculations**:
+
 ```typescript
 // ✅ GOOD: Pure calculation
 export function calculateSecurityScore(findings: SecurityFinding[]): number {
   let score = 100;
-  findings.forEach(finding => {
-    score -= finding.severity === 'critical' ? 20 : 10;
+  findings.forEach((finding) => {
+    score -= finding.severity === "critical" ? 20 : 10;
   });
   return Math.max(0, score);
 }
 ```
 
 **Validation Logic**:
+
 ```typescript
 // ✅ GOOD: Business rule validation
 export class ProtocolValidator {
   validate(message: any): ValidationResult {
-    if (!message.jsonrpc || message.jsonrpc !== '2.0') {
-      return { valid: false, error: 'Invalid JSON-RPC version' };
+    if (!message.jsonrpc || message.jsonrpc !== "2.0") {
+      return { valid: false, error: "Invalid JSON-RPC version" };
     }
     return { valid: true };
   }
@@ -403,29 +433,32 @@ export class ProtocolValidator {
 ### ❌ NO - Not Domain Layer
 
 **File I/O**:
+
 ```typescript
 // ❌ BAD: File system access
 export class SecurityScanner {
   scan(toolsFile: string) {
-    const content = fs.readFileSync(toolsFile);  // NO! Use infrastructure
+    const content = fs.readFileSync(toolsFile); // NO! Use infrastructure
     return this.scanTools(JSON.parse(content));
   }
 }
 
 // ✅ GOOD: Delegate I/O to caller
 export class SecurityScanner {
-  scan(discovery: DiscoveryResult) {  // Accept DiscoveryResult
+  scan(discovery: DiscoveryResult) {
+    // Accept DiscoveryResult
     return this.scanInternal(discovery);
   }
 }
 ```
 
 **Network Calls**:
+
 ```typescript
 // ❌ BAD: HTTP request in domain
 export class LLMAnalyzer {
   async analyze(tool: McpTool) {
-    const response = await fetch('https://api.anthropic.com/...');  // NO!
+    const response = await fetch("https://api.anthropic.com/..."); // NO!
     return response.json();
   }
 }
@@ -435,12 +468,15 @@ export class LLMAnalyzer {
   constructor(private provider: ILLMProvider) {}
 
   async analyze(tool: McpTool) {
-    return this.provider.complete([/* messages */]);  // Provider handles HTTP
+    return this.provider.complete([
+      /* messages */
+    ]); // Provider handles HTTP
   }
 }
 ```
 
 **Framework Dependencies**:
+
 ```typescript
 // ❌ BAD: Express in domain
 import express from 'express';
@@ -487,6 +523,7 @@ Does it contain business logic?
 See [libs/core/README.md - Task 1](../README.md#task-1-add-a-new-security-rule-30-minutes) for complete tutorial.
 
 **Summary**:
+
 1. Create `security/rules/my-rule.rule.ts`
 2. Implement `ISecurityRule` interface
 3. Register in `security-scanner.ts`
@@ -516,7 +553,7 @@ export interface PromptArgument {
 export class PromptValidator {
   static validate(prompt: Prompt): ValidationResult {
     if (!prompt.name) {
-      return { valid: false, error: 'Prompt name is required' };
+      return { valid: false, error: "Prompt name is required" };
     }
     return { valid: true };
   }
@@ -539,7 +576,7 @@ export class ToolNameValidator {
     if (!this.VALID_PATTERN.test(name)) {
       return {
         valid: false,
-        error: 'Tool name must be lowercase snake_case'
+        error: "Tool name must be lowercase snake_case",
       };
     }
     return { valid: true };
@@ -556,36 +593,38 @@ export class ToolNameValidator {
 **No mocks needed** - Pure functions, deterministic output
 
 ```typescript
-import { describe, it, expect } from 'vitest';
-import { SqlInjectionRule } from './security/rules/sql-injection.rule';
+import { describe, it, expect } from "vitest";
+import { SqlInjectionRule } from "./security/rules/sql-injection.rule";
 
-describe('SqlInjectionRule', () => {
-  it('should detect SQL injection patterns', () => {
+describe("SqlInjectionRule", () => {
+  it("should detect SQL injection patterns", () => {
     const rule = new SqlInjectionRule();
     const tool = {
-      name: 'execute_query',
+      name: "execute_query",
       inputSchema: {
         properties: {
-          query: { type: 'string' }  // Dangerous!
-        }
-      }
+          query: { type: "string" }, // Dangerous!
+        },
+      },
     };
 
     const findings = rule.evaluate({
-      tools: [{
-        name: 'execute_query',
-        inputSchema: {
-          properties: {
-            query: { type: 'string' }  // Dangerous!
-          }
-        }
-      }],
+      tools: [
+        {
+          name: "execute_query",
+          inputSchema: {
+            properties: {
+              query: { type: "string" }, // Dangerous!
+            },
+          },
+        },
+      ],
       resources: [],
-      prompts: []
+      prompts: [],
     });
 
     expect(findings).toHaveLength(1);
-    expect(findings[0].severity).toBe('critical');
+    expect(findings[0].severity).toBe("critical");
   });
 });
 ```
@@ -619,14 +658,14 @@ graph TD
 export class ReportGenerator {
   generate(report: Report) {
     const html = this.toHtml(report);
-    fs.writeFileSync('./report.html', html);  // NO!
+    fs.writeFileSync("./report.html", html); // NO!
   }
 }
 
 // ✅ GOOD
 export class ReportGenerator {
   generate(report: Report): string {
-    return this.toHtml(report);  // Return string, let caller write
+    return this.toHtml(report); // Return string, let caller write
   }
 }
 ```
@@ -637,10 +676,11 @@ export class ReportGenerator {
 
 ```typescript
 // ❌ BAD
-import { Request, Response } from 'express';
+import { Request, Response } from "express";
 
 export class SecurityScanner {
-  analyze(req: Request, res: Response) {  // Coupled to Express!
+  analyze(req: Request, res: Response) {
+    // Coupled to Express!
     const tools = req.body.tools;
     // ...
   }
@@ -648,7 +688,8 @@ export class SecurityScanner {
 
 // ✅ GOOD
 export class SecurityScanner {
-  scan(discovery: DiscoveryResult): SecurityFinding[] {  // Pure domain types
+  scan(discovery: DiscoveryResult): SecurityFinding[] {
+    // Pure domain types
     // ...
   }
 }
@@ -665,9 +706,9 @@ export class SecurityScanner {
     const findings = this.findIssues(tools);
 
     // NO! Reporting is separate concern
-    console.log('Security Analysis Report');
-    console.log('======================');
-    findings.forEach(f => console.log(f.message));
+    console.log("Security Analysis Report");
+    console.log("======================");
+    findings.forEach((f) => console.log(f.message));
 
     return findings;
   }
@@ -676,7 +717,7 @@ export class SecurityScanner {
 // ✅ GOOD
 export class SecurityScanner {
   scan(discovery: DiscoveryResult): SecurityFinding[] {
-    return this.findIssues(tools);  // Just return data
+    return this.findIssues(tools); // Just return data
   }
 }
 ```
@@ -725,6 +766,7 @@ export class LLMAnalyzer {
 ```
 
 Implementation lives in `infrastructure/`:
+
 ```typescript
 // infrastructure/llm/anthropic-provider.ts
 export class AnthropicProvider implements ILLMProvider {
@@ -746,7 +788,6 @@ export function generateReport(data: Report): string {
 
 // ❌ BAD: Side effect
 export function generateReport(data: Report): void {
-  fs.writeFileSync('report.html', `<html>${data.score}</html>`);
+  fs.writeFileSync("report.html", `<html>${data.score}</html>`);
 }
 ```
-

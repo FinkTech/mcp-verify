@@ -16,12 +16,14 @@
 - ❌ Able to detect all types of vulnerabilities
 
 **What mcp-verify CAN do**:
+
 - ✅ Detect common OWASP vulnerabilities (SQL injection, command injection, etc.)
 - ✅ Validate MCP protocol compliance
 - ✅ Check documentation quality
 - ✅ Track security trends over time
 
 **What mcp-verify CANNOT detect**:
+
 - ❌ Business logic flaws
 - ❌ Race conditions
 - ❌ Complex authentication/authorization bugs
@@ -100,12 +102,12 @@ HTML: ./reportes/html/mcp-report-2026-02-04.html
 
 ### Interpretation
 
-| Metric | Value | Meaning |
-|--------|-------|---------|
-| **Status: Valid** | ✓ | Server responds to MCP protocol (does NOT guarantee security) |
-| **Security: 75** | 🟡 Good | **May have issues**, requires deeper analysis |
-| **Quality: 88** | 🟢 Excellent | Well-documented tools |
-| **Protocol: 2024-11-05** | ✓ | Latest MCP specification |
+| Metric                   | Value        | Meaning                                                       |
+| ------------------------ | ------------ | ------------------------------------------------------------- |
+| **Status: Valid**        | ✓            | Server responds to MCP protocol (does NOT guarantee security) |
+| **Security: 75**         | 🟡 Good      | **May have issues**, requires deeper analysis                 |
+| **Quality: 88**          | 🟢 Excellent | Well-documented tools                                         |
+| **Protocol: 2024-11-05** | ✓            | Latest MCP specification                                      |
 
 **⚠️ Important**: A "Valid" status only means the server **responds correctly to the MCP protocol**. It does **NOT** mean the server is secure or production-ready.
 
@@ -183,6 +185,7 @@ mcp-verify validate "npx -y @modelcontextprotocol/server-github" \
 **High Issues**: 2 (Potential SSRF + Token exposure patterns)
 
 **Important**: These are **potential** vulnerabilities based on static code analysis. They may be:
+
 - ✅ True positives (real vulnerabilities)
 - ❌ False positives (acceptable patterns in context)
 - ⚠️ Incomplete (may miss complex vulnerabilities)
@@ -240,6 +243,7 @@ LLM Semantic Analysis Results:
 ```
 
 **⚠️ LLM Limitations**: LLM analysis provides suggestions based on code patterns but:
+
 - May generate false positives
 - Cannot execute code or test runtime behavior
 - Depends on LLM model quality
@@ -272,6 +276,7 @@ mcp-verify validate "npx -y @modelcontextprotocol/server-github" \
 ```
 
 **Upload to GitHub**:
+
 - Navigate to: Repository → Security → Code Scanning
 - Upload: `audit-reports/sarif/mcp-report-*.sarif`
 - View findings directly in GitHub UI
@@ -349,7 +354,7 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    - cron: '0 0 * * 0'  # Weekly audit
+    - cron: "0 0 * * 0" # Weekly audit
 
 jobs:
   validate-mcp-server:
@@ -361,7 +366,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Install mcp-verify
         run: |
@@ -392,6 +397,7 @@ jobs:
 ```
 
 **What this provides**:
+
 - ✅ Automated regression detection
 - ✅ GitHub Security tab integration
 - ❌ Does NOT replace manual security review
@@ -402,13 +408,13 @@ jobs:
 
 ### Decision Matrix
 
-| Metric | Value | Production Guidance | Status |
-|--------|-------|---------------------|---------|
-| Security Score | 85/100 | ≥ 90 recommended | ⚠️ REVIEW |
-| Critical Issues | 0 | Must be 0 | ✅ PASS |
-| High Issues | 2 | Should be 0 | ⚠️ REVIEW |
-| Medium Issues | 2 | ≤ 5 acceptable | ✅ PASS |
-| Quality Score | 90/100 | ≥ 80 recommended | ✅ PASS |
+| Metric          | Value  | Production Guidance | Status    |
+| --------------- | ------ | ------------------- | --------- |
+| Security Score  | 85/100 | ≥ 90 recommended    | ⚠️ REVIEW |
+| Critical Issues | 0      | Must be 0           | ✅ PASS   |
+| High Issues     | 2      | Should be 0         | ⚠️ REVIEW |
+| Medium Issues   | 2      | ≤ 5 acceptable      | ✅ PASS   |
+| Quality Score   | 90/100 | ≥ 80 recommended    | ✅ PASS   |
 
 **⚠️ Important Decision Criteria**:
 
@@ -471,11 +477,11 @@ mcp-verify validate "node server.js" \
 
 ### By Environment (Guidelines, NOT Guarantees)
 
-| Environment | Min Score | Critical | High | Medium | Additional Required |
-|-------------|-----------|----------|------|--------|---------------------|
-| Development | 50+ | Any | Any | Any | Code review |
-| Staging | 70+ | 0 | ≤ 3 | ≤ 10 | Manual testing |
-| Production | 90+ | 0 | 0 | ≤ 2 | **Professional security audit** |
+| Environment | Min Score | Critical | High | Medium | Additional Required             |
+| ----------- | --------- | -------- | ---- | ------ | ------------------------------- |
+| Development | 50+       | Any      | Any  | Any    | Code review                     |
+| Staging     | 70+       | 0        | ≤ 3  | ≤ 10   | Manual testing                  |
+| Production  | 90+       | 0        | 0    | ≤ 2    | **Professional security audit** |
 
 **Note**: These are **minimum** suggestions. A score of 90+ does **NOT** mean "production-ready". Always conduct professional security audits.
 
@@ -518,6 +524,7 @@ Even with a perfect score (100/100), mcp-verify **cannot** detect:
 ### Issue: High score but server still vulnerable
 
 **Reality**: mcp-verify uses static analysis with limited scope. A high score means:
+
 - ✅ No common OWASP patterns detected
 - ❌ Does NOT mean "no vulnerabilities exist"
 
@@ -526,6 +533,7 @@ Even with a perfect score (100/100), mcp-verify **cannot** detect:
 ### Issue: Low score but server is actually safe
 
 **Reality**: False positives happen, especially with:
+
 - Admin tools with intentional elevated permissions
 - Test fixtures
 - Legitimate use cases that pattern-match vulnerabilities
@@ -611,4 +619,3 @@ mcp-verify validate "node server.js" \
 💼 LinkedIn: [Ariel Fink](https://linkedin.com/in/ariel-fink)
 🐙 GitHub: [@FinkTech](https://github.com/FinkTech)
 🐛 Issues: [mcp-verify Issues](https://github.com/FinkTech/mcp-verify/issues)
-

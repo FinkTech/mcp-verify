@@ -27,13 +27,16 @@
  * - CWE-209: Information Exposure Through Error Messages
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
 
 export class InsufficientErrorGranularityRule implements ISecurityRule {
-  code = 'SEC-045';
-  name = 'Insufficient Error Granularity';
-  severity: 'medium' = 'medium';
+  code = "SEC-045";
+  name = "Insufficient Error Granularity";
+  severity: "medium" = "medium";
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
@@ -44,63 +47,69 @@ export class InsufficientErrorGranularityRule implements ISecurityRule {
 
     // Keywords indicating verbose error messages that reveal implementation details
     const VERBOSE_ERROR_KEYWORDS = [
-      'database error',
-      'stack trace',
-      'line',
-      'file path',
-      'sql error',
-      'exception',
-      'implementation details',
-      'detalles de implementación',
-      'error at line',
-      'error en línea'
+      "database error",
+      "stack trace",
+      "line",
+      "file path",
+      "sql error",
+      "exception",
+      "implementation details",
+      "detalles de implementación",
+      "error at line",
+      "error en línea",
     ];
 
     // Keywords indicating too generic errors
     const GENERIC_ERROR_KEYWORDS = [
-      'generic error',
-      'error code only',
-      'no message',
-      'error genérico',
-      'solo código'
+      "generic error",
+      "error code only",
+      "no message",
+      "error genérico",
+      "solo código",
     ];
 
     for (const tool of discovery.tools) {
-      const toolText = `${tool.name} ${tool.description || ''}`.toLowerCase();
+      const toolText = `${tool.name} ${tool.description || ""}`.toLowerCase();
 
       // Check for verbose errors
-      const hasVerboseErrors = VERBOSE_ERROR_KEYWORDS.some(kw => toolText.includes(kw));
+      const hasVerboseErrors = VERBOSE_ERROR_KEYWORDS.some((kw) =>
+        toolText.includes(kw),
+      );
 
       if (hasVerboseErrors) {
         findings.push({
           ruleCode: this.code,
-          severity: 'medium',
+          severity: "medium",
           message: `Tool "${tool.name}" may expose implementation details in error messages`,
           component: `tool:${tool.name}`,
-          location: { type: 'tool', name: tool.name },
+          location: { type: "tool", name: tool.name },
           evidence: {
-            risk: 'Verbose errors reveal internal paths, versions, and system architecture to attackers',
-            detectedPattern: 'Error messages revealing implementation details'
+            risk: "Verbose errors reveal internal paths, versions, and system architecture to attackers",
+            detectedPattern: "Error messages revealing implementation details",
           },
-          remediation: 'Use generic error messages for users, log detailed errors server-side only'
+          remediation:
+            "Use generic error messages for users, log detailed errors server-side only",
         });
       }
 
       // Check for too generic errors
-      const hasGenericErrors = GENERIC_ERROR_KEYWORDS.some(kw => toolText.includes(kw));
+      const hasGenericErrors = GENERIC_ERROR_KEYWORDS.some((kw) =>
+        toolText.includes(kw),
+      );
 
       if (hasGenericErrors) {
         findings.push({
           ruleCode: this.code,
-          severity: 'low',
+          severity: "low",
           message: `Tool "${tool.name}" may use overly generic error messages`,
           component: `tool:${tool.name}`,
-          location: { type: 'tool', name: tool.name },
+          location: { type: "tool", name: tool.name },
           evidence: {
-            risk: 'Too generic errors make debugging impossible for legitimate users',
-            detectedPattern: 'Error codes without explanatory messages'
+            risk: "Too generic errors make debugging impossible for legitimate users",
+            detectedPattern: "Error codes without explanatory messages",
           },
-          remediation: 'Balance between security and usability - provide meaningful but safe error messages'
+          remediation:
+            "Balance between security and usability - provide meaningful but safe error messages",
         });
       }
     }

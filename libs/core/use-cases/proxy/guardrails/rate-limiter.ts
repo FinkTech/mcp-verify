@@ -20,9 +20,9 @@
  * @module libs/core/use-cases/proxy/guardrails/rate-limiter
  */
 
-import { t } from '@mcp-verify/shared';
-import type { IGuardrail, InterceptResult } from '../proxy.types';
-import type { JsonValue } from '../../../domain/shared/common.types';
+import { t } from "@mcp-verify/shared";
+import type { IGuardrail, InterceptResult } from "../proxy.types";
+import type { JsonValue } from "../../../domain/shared/common.types";
 
 interface RateLimitConfig {
   perMinute: number;
@@ -37,16 +37,16 @@ interface RequestLog {
 }
 
 export class RateLimiter implements IGuardrail {
-  name = t('guardrail_rate_limiting');
+  name = t("guardrail_rate_limiting");
 
   /**
    * Default limits
    */
   private defaultLimits: RateLimitConfig = {
-    perMinute: 60,    // 60 requests per minute
-    perHour: 1000,    // 1000 requests per hour
-    burstSize: 10,    // Allow burst of 10 requests
-    enabled: true
+    perMinute: 60, // 60 requests per minute
+    perHour: 1000, // 1000 requests per hour
+    burstSize: 10, // Allow burst of 10 requests
+    enabled: true,
   };
 
   /**
@@ -81,18 +81,20 @@ export class RateLimiter implements IGuardrail {
   inspectRequest(message: JsonValue): InterceptResult {
     // console.log('InspectRequest:', JSON.stringify(message));
     if (!this.defaultLimits.enabled) {
-      return { action: 'allow' };
+      return { action: "allow" };
     }
 
     // Type guard: ensure message is an object with expected properties
-    if (!message || typeof message !== 'object' || Array.isArray(message)) {
-      return { action: 'allow' };
+    if (!message || typeof message !== "object" || Array.isArray(message)) {
+      return { action: "allow" };
     }
 
     const msgObj = message as Record<string, unknown>;
-    const method = (typeof msgObj.method === 'string' ? msgObj.method : 'unknown');
+    const method =
+      typeof msgObj.method === "string" ? msgObj.method : "unknown";
     const params = msgObj.params as Record<string, unknown> | undefined;
-    const toolName = (params && typeof params.name === 'string' ? params.name : method);
+    const toolName =
+      params && typeof params.name === "string" ? params.name : method;
     const key = this.getKey(method, toolName);
 
     // Get applicable limits
@@ -100,7 +102,7 @@ export class RateLimiter implements IGuardrail {
 
     // If rate limiting is disabled for this tool, allow
     if (!limits.enabled) {
-      return { action: 'allow' };
+      return { action: "allow" };
     }
 
     // Check rate limits
@@ -114,8 +116,11 @@ export class RateLimiter implements IGuardrail {
     const recentRequests = this.countRequestsInWindow(log, 1000); // Last 1 second
     if (recentRequests > limits.burstSize) {
       return {
-        action: 'block',
-        reason: t('guardrail_rate_burst', { current: recentRequests, limit: limits.burstSize })
+        action: "block",
+        reason: t("guardrail_rate_burst", {
+          current: recentRequests,
+          limit: limits.burstSize,
+        }),
       };
     }
 
@@ -123,8 +128,11 @@ export class RateLimiter implements IGuardrail {
     const requestsPerMinute = this.countRequestsInWindow(log, 60 * 1000);
     if (requestsPerMinute > limits.perMinute) {
       return {
-        action: 'block',
-        reason: t('guardrail_rate_minute', { current: requestsPerMinute, limit: limits.perMinute })
+        action: "block",
+        reason: t("guardrail_rate_minute", {
+          current: requestsPerMinute,
+          limit: limits.perMinute,
+        }),
       };
     }
 
@@ -132,23 +140,28 @@ export class RateLimiter implements IGuardrail {
     const requestsPerHour = this.countRequestsInWindow(log, 60 * 60 * 1000);
     if (requestsPerHour > limits.perHour) {
       return {
-        action: 'block',
-        reason: t('guardrail_rate_hour', { current: requestsPerHour, limit: limits.perHour })
+        action: "block",
+        reason: t("guardrail_rate_hour", {
+          current: requestsPerHour,
+          limit: limits.perHour,
+        }),
       };
     }
 
-    return { action: 'allow' };
+    return { action: "allow" };
   }
 
   inspectResponse(message: JsonValue): InterceptResult {
-    return { action: 'allow' };
+    return { action: "allow" };
   }
 
   /**
    * Set custom limits for a specific tool
    */
   setToolLimits(toolName: string, limits: Partial<RateLimitConfig>) {
-    const existingLimits = this.toolLimits.get(toolName) || { ...this.defaultLimits };
+    const existingLimits = this.toolLimits.get(toolName) || {
+      ...this.defaultLimits,
+    };
     this.toolLimits.set(toolName, { ...existingLimits, ...limits });
   }
 
@@ -175,7 +188,7 @@ export class RateLimiter implements IGuardrail {
     if (!log) {
       log = {
         timestamps: [],
-        lastCleanup: Date.now()
+        lastCleanup: Date.now(),
       };
       this.requestLogs.set(key, log);
     }
@@ -191,7 +204,7 @@ export class RateLimiter implements IGuardrail {
     const cutoff = now - windowMs;
 
     // Filter timestamps within window
-    return log.timestamps.filter(ts => ts >= cutoff).length;
+    return log.timestamps.filter((ts) => ts >= cutoff).length;
   }
 
   /**
@@ -203,7 +216,7 @@ export class RateLimiter implements IGuardrail {
 
     for (const [key, log] of this.requestLogs.entries()) {
       // Remove timestamps older than maxAge
-      log.timestamps = log.timestamps.filter(ts => now - ts < maxAge);
+      log.timestamps = log.timestamps.filter((ts) => now - ts < maxAge);
 
       // Remove empty logs
       if (log.timestamps.length === 0) {
@@ -250,22 +263,24 @@ export class RateLimiter implements IGuardrail {
     const perToolStats = [];
 
     for (const [key, log] of this.requestLogs.entries()) {
-      const toolName = key.split(':')[1];
+      const toolName = key.split(":")[1];
       const limits = this.getLimitsForTool(toolName);
 
       perToolStats.push({
         key,
         requestsLastMinute: this.countRequestsInWindow(log, 60 * 1000),
         requestsLastHour: this.countRequestsInWindow(log, 60 * 60 * 1000),
-        limits
+        limits,
       });
     }
 
     return {
       totalKeys: this.requestLogs.size,
-      totalRequests: Array.from(this.requestLogs.values())
-        .reduce((sum, log) => sum + log.timestamps.length, 0),
-      perToolStats
+      totalRequests: Array.from(this.requestLogs.values()).reduce(
+        (sum, log) => sum + log.timestamps.length,
+        0,
+      ),
+      perToolStats,
     };
   }
 

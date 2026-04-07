@@ -9,7 +9,7 @@
  * MCP Verify - Views Index
  */
 
-export { ResultsTreeProvider } from './results-tree';
-export { ServersTreeProvider } from './servers-tree';
-export { ToolsTreeProvider } from './tools-tree';
-export { HistoryTreeProvider } from './history-tree';
+export { ResultsTreeProvider } from "./results-tree";
+export { ServersTreeProvider } from "./servers-tree";
+export { ToolsTreeProvider } from "./tools-tree";
+export { HistoryTreeProvider } from "./history-tree";

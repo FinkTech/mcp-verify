@@ -27,5 +27,5 @@ export const PREFIX_PATTERNS = [
   /^sk-ant-/,
   /^sk-proj-/,
   /^pat_/,
-  /^Bearer\s+/i
+  /^Bearer\s+/i,
 ];

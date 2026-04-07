@@ -32,30 +32,54 @@
  * - OWASP API Security - Excessive Data Exposure
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class ExcessiveDataDisclosureRule implements ISecurityRule {
-  code = 'SEC-030';
-  name = 'Excessive Data Disclosure to LLM';
-  severity: 'high' = 'high';
+  code = "SEC-030";
+  name = "Excessive Data Disclosure to LLM";
+  severity: "high" = "high";
 
   private readonly EXCESSIVE_DATA_PATTERNS = [
-    /get.*all/i, /fetch.*all/i, /retrieve.*all/i,
-    /list.*all/i, /dump/i, /export.*all/i,
-    /get.*everything/i, /fetch.*everything/i
+    /get.*all/i,
+    /fetch.*all/i,
+    /retrieve.*all/i,
+    /list.*all/i,
+    /dump/i,
+    /export.*all/i,
+    /get.*everything/i,
+    /fetch.*everything/i,
   ];
 
   private readonly PAGINATION_PARAMS = [
-    'limit', 'offset', 'page', 'page_size', 'per_page',
-    'max_results', 'count', 'top', 'skip', 'take'
+    "limit",
+    "offset",
+    "page",
+    "page_size",
+    "per_page",
+    "max_results",
+    "count",
+    "top",
+    "skip",
+    "take",
   ];
 
   private readonly FILTER_PARAMS = [
-    'filter', 'where', 'query', 'search', 'criteria',
-    'conditions', 'select', 'fields', 'include', 'exclude'
+    "filter",
+    "where",
+    "query",
+    "search",
+    "criteria",
+    "conditions",
+    "select",
+    "fields",
+    "include",
+    "exclude",
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -74,24 +98,24 @@ export class ExcessiveDataDisclosureRule implements ISecurityRule {
         const isExcessivePattern = this.hasExcessiveDataPattern(tool);
 
         if (isExcessivePattern || (!hasPagination && !hasFiltering)) {
-          const severity = isExcessivePattern ? 'high' : 'medium';
+          const severity = isExcessivePattern ? "high" : "medium";
 
           findings.push({
             severity,
-            message: t('sec_030_excessive_disclosure', {
+            message: t("sec_030_excessive_disclosure", {
               toolName: tool.name,
               reason: isExcessivePattern
-                ? 'Tool pattern suggests retrieving all data'
-                : 'Missing pagination and filtering parameters'
+                ? "Tool pattern suggests retrieving all data"
+                : "Missing pagination and filtering parameters",
             }),
             component: `tool:${tool.name}`,
             ruleCode: this.code,
-            remediation: t('sec_030_recommendation'),
+            remediation: t("sec_030_recommendation"),
             references: [
-              'OWASP LLM Top 10 2025 - LLM06: Sensitive Information Disclosure',
-              'GDPR Art. 5 - Data minimization',
-              'OWASP API Security - API3:2023 Excessive Data Exposure'
-            ]
+              "OWASP LLM Top 10 2025 - LLM06: Sensitive Information Disclosure",
+              "GDPR Art. 5 - Data minimization",
+              "OWASP API Security - API3:2023 Excessive Data Exposure",
+            ],
           });
         }
       }
@@ -102,26 +126,35 @@ export class ExcessiveDataDisclosureRule implements ISecurityRule {
 
   private isDataRetrievalTool(tool: McpTool): boolean {
     const nameLower = tool.name.toLowerCase();
-    const descLower = tool.description?.toLowerCase() || '';
+    const descLower = tool.description?.toLowerCase() || "";
 
     const retrievalKeywords = [
-      'get', 'fetch', 'retrieve', 'list', 'show',
-      'query', 'search', 'find', 'read', 'load'
+      "get",
+      "fetch",
+      "retrieve",
+      "list",
+      "show",
+      "query",
+      "search",
+      "find",
+      "read",
+      "load",
     ];
 
-    return retrievalKeywords.some(keyword =>
-      nameLower.startsWith(keyword) ||
-      nameLower.includes(`_${keyword}`) ||
-      descLower.includes(keyword)
+    return retrievalKeywords.some(
+      (keyword) =>
+        nameLower.startsWith(keyword) ||
+        nameLower.includes(`_${keyword}`) ||
+        descLower.includes(keyword),
     );
   }
 
   private hasExcessiveDataPattern(tool: McpTool): boolean {
     const nameLower = tool.name.toLowerCase();
-    const descLower = tool.description?.toLowerCase() || '';
+    const descLower = tool.description?.toLowerCase() || "";
 
-    return this.EXCESSIVE_DATA_PATTERNS.some(pattern =>
-      pattern.test(nameLower) || pattern.test(descLower)
+    return this.EXCESSIVE_DATA_PATTERNS.some(
+      (pattern) => pattern.test(nameLower) || pattern.test(descLower),
     );
   }
 
@@ -130,11 +163,11 @@ export class ExcessiveDataDisclosureRule implements ISecurityRule {
       return false;
     }
 
-    const paramNames = Object.keys(tool.inputSchema.properties).map(p => p.toLowerCase());
-
-    return this.PAGINATION_PARAMS.some(param =>
-      paramNames.includes(param)
+    const paramNames = Object.keys(tool.inputSchema.properties).map((p) =>
+      p.toLowerCase(),
     );
+
+    return this.PAGINATION_PARAMS.some((param) => paramNames.includes(param));
   }
 
   private hasFilteringParams(tool: McpTool): boolean {
@@ -142,10 +175,10 @@ export class ExcessiveDataDisclosureRule implements ISecurityRule {
       return false;
     }
 
-    const paramNames = Object.keys(tool.inputSchema.properties).map(p => p.toLowerCase());
-
-    return this.FILTER_PARAMS.some(param =>
-      paramNames.includes(param)
+    const paramNames = Object.keys(tool.inputSchema.properties).map((p) =>
+      p.toLowerCase(),
     );
+
+    return this.FILTER_PARAMS.some((param) => paramNames.includes(param));
   }
 }

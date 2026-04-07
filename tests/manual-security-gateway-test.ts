@@ -20,17 +20,17 @@
  * If any test fails, review the implementation before running Jest tests.
  */
 
-import { McpProxyServer } from '../libs/core/use-cases/proxy/proxy-server';
-import { DEFAULT_CONFIG } from '../libs/core/domain/config/config.types';
-import { setTimeout } from 'timers/promises';
+import { McpProxyServer } from "../libs/core/use-cases/proxy/proxy-server";
+import { DEFAULT_CONFIG } from "../libs/core/domain/config/config.types";
+import { setTimeout } from "timers/promises";
 
 // Colors for terminal output
 const colors = {
-  green: '\x1b[32m',
-  red: '\x1b[31m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  reset: '\x1b[0m',
+  green: "\x1b[32m",
+  red: "\x1b[31m",
+  yellow: "\x1b[33m",
+  blue: "\x1b[34m",
+  reset: "\x1b[0m",
 };
 
 function log(emoji: string, message: string, color: string = colors.reset) {
@@ -38,8 +38,8 @@ function log(emoji: string, message: string, color: string = colors.reset) {
 }
 
 async function runManualTests() {
-  log('🚀', 'Starting Security Gateway Manual Tests...', colors.blue);
-  console.log('');
+  log("🚀", "Starting Security Gateway Manual Tests...", colors.blue);
+  console.log("");
 
   let proxyServer: McpProxyServer | null = null;
   const PROXY_PORT = 10099;
@@ -50,10 +50,10 @@ async function runManualTests() {
     // ─────────────────────────────────────────────────────────────────────────
     // Step 1: Initialize Proxy
     // ─────────────────────────────────────────────────────────────────────────
-    log('📦', 'Initializing proxy server...', colors.blue);
+    log("📦", "Initializing proxy server...", colors.blue);
 
     proxyServer = new McpProxyServer({
-      targetUrl: 'http://mock-server/sse',
+      targetUrl: "http://mock-server/sse",
       port: PROXY_PORT,
       blockCritical: true,
       maskPii: false,
@@ -64,66 +64,66 @@ async function runManualTests() {
     await proxyServer.start();
     await setTimeout(1000);
 
-    log('✅', 'Proxy started on port ' + PROXY_PORT, colors.green);
-    console.log('');
+    log("✅", "Proxy started on port " + PROXY_PORT, colors.green);
+    console.log("");
 
     // ─────────────────────────────────────────────────────────────────────────
     // Test 1: Layer 1 should block SQL Injection
     // ─────────────────────────────────────────────────────────────────────────
-    log('🧪', 'Test 1: Layer 1 SQL Injection Detection', colors.yellow);
+    log("🧪", "Test 1: Layer 1 SQL Injection Detection", colors.yellow);
 
     try {
       const response = await fetch(`http://localhost:${PROXY_PORT}/message`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          jsonrpc: '2.0',
+          jsonrpc: "2.0",
           id: 1,
-          method: 'tools/call',
+          method: "tools/call",
           params: {
-            name: 'execute_query',
-            arguments: { query: "SELECT * FROM users WHERE id = 1 OR 1=1 --" }
-          }
-        })
+            name: "execute_query",
+            arguments: { query: "SELECT * FROM users WHERE id = 1 OR 1=1 --" },
+          },
+        }),
       });
 
       const json = await response.json();
 
       if (json.error && json.error.code === -32001) {
-        log('✅', 'Layer 1 blocked SQL injection', colors.green);
-        log('   ', `Rule: ${json.error.data?.ruleId}`, colors.reset);
-        log('   ', `Latency: ${json.error.data?.latencyMs}ms`, colors.reset);
+        log("✅", "Layer 1 blocked SQL injection", colors.green);
+        log("   ", `Rule: ${json.error.data?.ruleId}`, colors.reset);
+        log("   ", `Latency: ${json.error.data?.latencyMs}ms`, colors.reset);
         testsPassed++;
       } else {
-        log('❌', 'Layer 1 did NOT block SQL injection', colors.red);
-        console.log('Response:', JSON.stringify(json, null, 2));
+        log("❌", "Layer 1 did NOT block SQL injection", colors.red);
+        console.log("Response:", JSON.stringify(json, null, 2));
         testsFailed++;
       }
     } catch (error) {
-      log('❌', 'Test 1 failed with error: ' + error, colors.red);
+      log("❌", "Test 1 failed with error: " + error, colors.red);
       testsFailed++;
     }
 
-    console.log('');
+    console.log("");
 
     // ─────────────────────────────────────────────────────────────────────────
     // Test 2: Layer 2 should detect suspicious tools
     // ─────────────────────────────────────────────────────────────────────────
-    log('🧪', 'Test 2: Layer 2 Suspicious Tool Detection', colors.yellow);
+    log("🧪", "Test 2: Layer 2 Suspicious Tool Detection", colors.yellow);
 
     try {
       const response = await fetch(`http://localhost:${PROXY_PORT}/message`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          jsonrpc: '2.0',
+          jsonrpc: "2.0",
           id: 2,
-          method: 'tools/call',
+          method: "tools/call",
           params: {
-            name: 'execute_dangerous_operation',
-            arguments: { action: 'test' }
-          }
-        })
+            name: "execute_dangerous_operation",
+            arguments: { action: "test" },
+          },
+        }),
       });
 
       const json = await response.json();
@@ -131,93 +131,101 @@ async function runManualTests() {
       // Layer 2 may or may not block depending on rules
       // We just verify it was analyzed
       if (json.error) {
-        log('✅', 'Layer 2 analyzed suspicious tool', colors.green);
-        log('   ', `Error code: ${json.error.code}`, colors.reset);
+        log("✅", "Layer 2 analyzed suspicious tool", colors.green);
+        log("   ", `Error code: ${json.error.code}`, colors.reset);
         if (json.error.code === -32002) {
-          log('   ', 'Blocked by Layer 2!', colors.green);
+          log("   ", "Blocked by Layer 2!", colors.green);
         }
         testsPassed++;
       } else {
-        log('⚠️ ', 'Suspicious tool passed (no Layer 2 rules triggered)', colors.yellow);
+        log(
+          "⚠️ ",
+          "Suspicious tool passed (no Layer 2 rules triggered)",
+          colors.yellow,
+        );
         testsPassed++; // Still valid if no rules matched
       }
     } catch (error) {
-      log('❌', 'Test 2 failed with error: ' + error, colors.red);
+      log("❌", "Test 2 failed with error: " + error, colors.red);
       testsFailed++;
     }
 
-    console.log('');
+    console.log("");
 
     // ─────────────────────────────────────────────────────────────────────────
     // Test 3: Cache should work for identical requests
     // ─────────────────────────────────────────────────────────────────────────
-    log('🧪', 'Test 3: Layer 1 Cache Behavior', colors.yellow);
+    log("🧪", "Test 3: Layer 1 Cache Behavior", colors.yellow);
 
     try {
       const message = {
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         id: 3,
-        method: 'tools/call',
+        method: "tools/call",
         params: {
-          name: 'safe_operation',
-          arguments: { id: 999 }
-        }
+          name: "safe_operation",
+          arguments: { id: 999 },
+        },
       };
 
       // First request (cache miss)
       const start1 = Date.now();
       await fetch(`http://localhost:${PROXY_PORT}/message`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(message)
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(message),
       });
       const latency1 = Date.now() - start1;
 
       // Second request (cache hit)
       const start2 = Date.now();
       await fetch(`http://localhost:${PROXY_PORT}/message`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(message)
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(message),
       });
       const latency2 = Date.now() - start2;
 
       if (latency2 <= latency1 + 10) {
-        log('✅', 'Cache hit detected (second request faster or equal)', colors.green);
-        log('   ', `First request: ${latency1}ms`, colors.reset);
-        log('   ', `Second request: ${latency2}ms`, colors.reset);
+        log(
+          "✅",
+          "Cache hit detected (second request faster or equal)",
+          colors.green,
+        );
+        log("   ", `First request: ${latency1}ms`, colors.reset);
+        log("   ", `Second request: ${latency2}ms`, colors.reset);
         testsPassed++;
       } else {
-        log('⚠️ ', 'Cache behavior unclear (timing variance)', colors.yellow);
-        log('   ', `First request: ${latency1}ms`, colors.reset);
-        log('   ', `Second request: ${latency2}ms`, colors.reset);
+        log("⚠️ ", "Cache behavior unclear (timing variance)", colors.yellow);
+        log("   ", `First request: ${latency1}ms`, colors.reset);
+        log("   ", `Second request: ${latency2}ms`, colors.reset);
         testsPassed++; // Accept timing variance
       }
     } catch (error) {
-      log('❌', 'Test 3 failed with error: ' + error, colors.red);
+      log("❌", "Test 3 failed with error: " + error, colors.red);
       testsFailed++;
     }
 
-    console.log('');
+    console.log("");
 
     // ─────────────────────────────────────────────────────────────────────────
     // Test 4: Explainable blocking should have complete metadata
     // ─────────────────────────────────────────────────────────────────────────
-    log('🧪', 'Test 4: Explainable Blocking Metadata', colors.yellow);
+    log("🧪", "Test 4: Explainable Blocking Metadata", colors.yellow);
 
     try {
       const response = await fetch(`http://localhost:${PROXY_PORT}/message`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          jsonrpc: '2.0',
+          jsonrpc: "2.0",
           id: 4,
-          method: 'tools/call',
+          method: "tools/call",
           params: {
-            name: 'run_command',
-            arguments: { cmd: "ls; rm -rf /" }
-          }
-        })
+            name: "run_command",
+            arguments: { cmd: "ls; rm -rf /" },
+          },
+        }),
       });
 
       const json = await response.json();
@@ -232,111 +240,121 @@ async function runManualTests() {
           data.timestamp;
 
         if (hasRequiredFields) {
-          log('✅', 'Explainable blocking has complete metadata', colors.green);
-          log('   ', `Rule ID: ${data.ruleId}`, colors.reset);
-          log('   ', `Severity: ${data.severity}`, colors.reset);
-          log('   ', `Layer: ${data.layer}`, colors.reset);
-          log('   ', `Latency: ${data.latencyMs}ms`, colors.reset);
-          log('   ', `Timestamp: ${data.timestamp}`, colors.reset);
+          log("✅", "Explainable blocking has complete metadata", colors.green);
+          log("   ", `Rule ID: ${data.ruleId}`, colors.reset);
+          log("   ", `Severity: ${data.severity}`, colors.reset);
+          log("   ", `Layer: ${data.layer}`, colors.reset);
+          log("   ", `Latency: ${data.latencyMs}ms`, colors.reset);
+          log("   ", `Timestamp: ${data.timestamp}`, colors.reset);
           testsPassed++;
         } else {
-          log('❌', 'Missing metadata fields', colors.red);
-          console.log('Data:', JSON.stringify(data, null, 2));
+          log("❌", "Missing metadata fields", colors.red);
+          console.log("Data:", JSON.stringify(data, null, 2));
           testsFailed++;
         }
       } else {
-        log('❌', 'No error.data in blocked response', colors.red);
-        console.log('Response:', JSON.stringify(json, null, 2));
+        log("❌", "No error.data in blocked response", colors.red);
+        console.log("Response:", JSON.stringify(json, null, 2));
         testsFailed++;
       }
     } catch (error) {
-      log('❌', 'Test 4 failed with error: ' + error, colors.red);
+      log("❌", "Test 4 failed with error: " + error, colors.red);
       testsFailed++;
     }
 
-    console.log('');
+    console.log("");
 
     // ─────────────────────────────────────────────────────────────────────────
     // Test 5: Audit events should be emitted
     // ─────────────────────────────────────────────────────────────────────────
-    log('🧪', 'Test 5: Audit Event Emission', colors.yellow);
+    log("🧪", "Test 5: Audit Event Emission", colors.yellow);
 
     try {
       const auditEvents: any[] = [];
-      proxyServer.on('audit', (event) => auditEvents.push(event));
+      proxyServer.on("audit", (event) => auditEvents.push(event));
 
       await fetch(`http://localhost:${PROXY_PORT}/message`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          jsonrpc: '2.0',
+          jsonrpc: "2.0",
           id: 5,
-          method: 'tools/call',
-          params: { name: 'test', arguments: {} }
-        })
+          method: "tools/call",
+          params: { name: "test", arguments: {} },
+        }),
       });
 
       // Wait for events to be emitted
       await setTimeout(100);
 
-      const securityEvent = auditEvents.find(e => e.type === 'security-analysis');
+      const securityEvent = auditEvents.find(
+        (e) => e.type === "security-analysis",
+      );
 
       if (securityEvent) {
-        log('✅', 'security-analysis audit event emitted', colors.green);
-        log('   ', `Result: ${securityEvent.result}`, colors.reset);
-        log('   ', `Layer: ${securityEvent.layer}`, colors.reset);
+        log("✅", "security-analysis audit event emitted", colors.green);
+        log("   ", `Result: ${securityEvent.result}`, colors.reset);
+        log("   ", `Layer: ${securityEvent.layer}`, colors.reset);
         testsPassed++;
       } else {
-        log('❌', 'security-analysis event NOT emitted', colors.red);
-        console.log('Events:', auditEvents.map(e => e.type));
+        log("❌", "security-analysis event NOT emitted", colors.red);
+        console.log(
+          "Events:",
+          auditEvents.map((e) => e.type),
+        );
         testsFailed++;
       }
 
-      proxyServer.removeAllListeners('audit');
+      proxyServer.removeAllListeners("audit");
     } catch (error) {
-      log('❌', 'Test 5 failed with error: ' + error, colors.red);
+      log("❌", "Test 5 failed with error: " + error, colors.red);
       testsFailed++;
     }
 
-    console.log('');
-
+    console.log("");
   } catch (error) {
-    log('❌', 'Fatal error: ' + error, colors.red);
+    log("❌", "Fatal error: " + error, colors.red);
     process.exit(1);
   } finally {
     // Cleanup
     if (proxyServer) {
       await proxyServer.stop();
-      log('🛑', 'Proxy stopped', colors.blue);
+      log("🛑", "Proxy stopped", colors.blue);
     }
   }
 
   // ───────────────────────────────────────────────────────────────────────────
   // Summary
   // ───────────────────────────────────────────────────────────────────────────
-  console.log('');
-  console.log('═══════════════════════════════════════════════════════════════');
-  console.log('');
-  log('📊', 'Test Summary:', colors.blue);
-  log('✅', `Passed: ${testsPassed}`, colors.green);
-  log('❌', `Failed: ${testsFailed}`, colors.red);
-  console.log('');
+  console.log("");
+  console.log(
+    "═══════════════════════════════════════════════════════════════",
+  );
+  console.log("");
+  log("📊", "Test Summary:", colors.blue);
+  log("✅", `Passed: ${testsPassed}`, colors.green);
+  log("❌", `Failed: ${testsFailed}`, colors.red);
+  console.log("");
 
   if (testsFailed === 0) {
-    log('🎉', 'All manual tests passed!', colors.green);
-    log('➡️ ', 'You can now run the full Jest test suite:', colors.blue);
-    log('   ', 'npm test -- tests/integration/security-gateway.spec.ts', colors.reset);
-    console.log('');
+    log("🎉", "All manual tests passed!", colors.green);
+    log("➡️ ", "You can now run the full Jest test suite:", colors.blue);
+    log(
+      "   ",
+      "npm test -- tests/integration/security-gateway.spec.ts",
+      colors.reset,
+    );
+    console.log("");
     process.exit(0);
   } else {
-    log('⚠️ ', 'Some tests failed. Review the implementation.', colors.yellow);
-    console.log('');
+    log("⚠️ ", "Some tests failed. Review the implementation.", colors.yellow);
+    console.log("");
     process.exit(1);
   }
 }
 
 // Run tests
-runManualTests().catch(error => {
-  console.error('Unhandled error:', error);
+runManualTests().catch((error) => {
+  console.error("Unhandled error:", error);
   process.exit(1);
 });

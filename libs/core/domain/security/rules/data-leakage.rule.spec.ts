@@ -7,574 +7,608 @@
  */
 /**
  * Data Leakage Detection Rule Tests (SEC-004)
- * 
+ *
  * Comprehensive tests for Data Leakage vulnerability detection.
  * Tests cover all SENSITIVE_KEYWORDS and RISKY_RESOURCE_EXTENSIONS.
  */
 
-import { DataLeakageRule } from './data-leakage.rule';
-import { DiscoveryResult } from '../../mcp-server/entities/validation.types';
+import { DataLeakageRule } from "./data-leakage.rule";
+import { DiscoveryResult } from "../../mcp-server/entities/validation.types";
 
-describe('DataLeakageRule', () => {
+describe("DataLeakageRule", () => {
   let rule: DataLeakageRule;
 
   beforeEach(() => {
     rule = new DataLeakageRule();
   });
 
-  describe('Rule Metadata', () => {
-    it('should have correct code SEC-008', () => {
-      expect(rule.code).toBe('SEC-008');
+  describe("Rule Metadata", () => {
+    it("should have correct code SEC-008", () => {
+      expect(rule.code).toBe("SEC-008");
     });
 
-    it('should have valid tags for CWE and OWASP mapping', () => {
-      expect(rule.tags).toContain('CWE-200');
-      expect(rule.tags).toContain('OWASP-A01:2021');
-      expect(rule.tags).toContain('Information Disclosure');
+    it("should have valid tags for CWE and OWASP mapping", () => {
+      expect(rule.tags).toContain("CWE-200");
+      expect(rule.tags).toContain("OWASP-A01:2021");
+      expect(rule.tags).toContain("Information Disclosure");
     });
 
-    it('should have a helpUri pointing to OWASP resource', () => {
-      expect(rule.helpUri).toContain('owasp.org');
+    it("should have a helpUri pointing to OWASP resource", () => {
+      expect(rule.helpUri).toContain("owasp.org");
     });
   });
 
-  describe('Tool Input Leakage Detection', () => {
-    it('should detect tools requesting API keys (Medium)', () => {
+  describe("Tool Input Leakage Detection", () => {
+    it("should detect tools requesting API keys (Medium)", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'login_service',
+            name: "login_service",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                api_key: { type: 'string', description: 'Your service API Token' }
-              }
-            }
-          }
+                api_key: {
+                  type: "string",
+                  description: "Your service API Token",
+                },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBeGreaterThan(0);
-      expect(findings[0].severity).toBe('medium');
-      expect(findings[0].message).toContain('accepts sensitive data');
-      expect(findings[0].message).toContain('api_key');
+      expect(findings[0].severity).toBe("medium");
+      expect(findings[0].message).toContain("accepts sensitive data");
+      expect(findings[0].message).toContain("api_key");
     });
 
-    it('should detect password parameters (Medium)', () => {
+    it("should detect password parameters (Medium)", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'authenticate',
+            name: "authenticate",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                username: { type: 'string' },
-                password: { type: 'string', description: 'User password' }
-              }
-            }
-          }
+                username: { type: "string" },
+                password: { type: "string", description: "User password" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
-      const passwordFinding = findings.find(f => f.message.includes('password'));
+      const passwordFinding = findings.find((f) =>
+        f.message.includes("password"),
+      );
       expect(passwordFinding).toBeDefined();
-      expect(passwordFinding!.severity).toBe('medium');
+      expect(passwordFinding!.severity).toBe("medium");
     });
 
-    it('should detect secret parameters (Medium)', () => {
+    it("should detect secret parameters (Medium)", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'send_notification',
+            name: "send_notification",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                client_secret: { type: 'string' }
-              }
-            }
-          }
+                client_secret: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(1);
-      expect(findings[0].message).toContain('client_secret');
+      expect(findings[0].message).toContain("client_secret");
     });
 
-    it('should detect token parameters (Medium)', () => {
+    it("should detect token parameters (Medium)", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'refresh_session',
+            name: "refresh_session",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                refresh_token: { type: 'string', description: 'OAuth refresh token' }
-              }
-            }
-          }
+                refresh_token: {
+                  type: "string",
+                  description: "OAuth refresh token",
+                },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(1);
-      expect(findings[0].message).toContain('refresh_token');
+      expect(findings[0].message).toContain("refresh_token");
     });
 
-    it('should detect access_key parameters (Medium)', () => {
+    it("should detect access_key parameters (Medium)", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'aws_operation',
+            name: "aws_operation",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                access_key: { type: 'string' },
-                secret_key: { type: 'string' }
-              }
-            }
-          }
+                access_key: { type: "string" },
+                secret_key: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(2); // access_key AND secret (from secret_key)
     });
 
-    it('should detect private_key parameters (Medium)', () => {
+    it("should detect private_key parameters (Medium)", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'sign_document',
+            name: "sign_document",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                private_key: { type: 'string', description: 'PEM encoded private key' }
-              }
-            }
-          }
+                private_key: {
+                  type: "string",
+                  description: "PEM encoded private key",
+                },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(1);
-      expect(findings[0].component).toBe('tool:sign_document');
+      expect(findings[0].component).toBe("tool:sign_document");
     });
 
-    it('should detect credential parameters (Medium)', () => {
+    it("should detect credential parameters (Medium)", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'database_connect',
+            name: "database_connect",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                db_credentials: { type: 'string', description: 'Connection string with credentials' }
-              }
-            }
-          }
+                db_credentials: {
+                  type: "string",
+                  description: "Connection string with credentials",
+                },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(1);
-      expect(findings[0].message).toContain('db_credentials');
+      expect(findings[0].message).toContain("db_credentials");
     });
 
-    it('should detect PII like SSN (Medium)', () => {
+    it("should detect PII like SSN (Medium)", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'verify_identity',
+            name: "verify_identity",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                social_security_number: { type: 'string', description: 'User SSN for verification' }
-              }
-            }
-          }
+                social_security_number: {
+                  type: "string",
+                  description: "User SSN for verification",
+                },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(1);
-      expect(findings[0].evidence).toEqual({ parameter: 'social_security_number' });
+      expect(findings[0].evidence).toEqual({
+        parameter: "social_security_number",
+      });
     });
 
-    it('should detect credit_card parameters (Medium)', () => {
+    it("should detect credit_card parameters (Medium)", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'process_payment',
+            name: "process_payment",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                credit_card: { type: 'string' },
-                cvv: { type: 'string' }
-              }
-            }
-          }
+                credit_card: { type: "string" },
+                cvv: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
-      const ccFinding = findings.find(f => f.message.includes('credit_card'));
+      const ccFinding = findings.find((f) => f.message.includes("credit_card"));
       expect(ccFinding).toBeDefined();
     });
 
-    it('should detect sensitive keywords in description even if param name is safe', () => {
+    it("should detect sensitive keywords in description even if param name is safe", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'generic_update',
+            name: "generic_update",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                value: { type: 'string', description: 'Enter your password here' }
-              }
-            }
-          }
+                value: {
+                  type: "string",
+                  description: "Enter your password here",
+                },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(1);
-      expect(findings[0].message).toContain('value');
+      expect(findings[0].message).toContain("value");
     });
 
-    it('should provide proper remediation advice', () => {
+    it("should provide proper remediation advice", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'set_api_key',
+            name: "set_api_key",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                apikey: { type: 'string' }
-              }
-            }
-          }
+                apikey: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
-      expect(findings[0].remediation).toContain('environment variables');
-      expect(findings[0].remediation).toContain('MCP resource templates');
+      expect(findings[0].remediation).toContain("environment variables");
+      expect(findings[0].remediation).toContain("MCP resource templates");
     });
   });
 
-  describe('Resource Leakage Detection', () => {
-    it('should detect .env files as critical (Critical)', () => {
+  describe("Resource Leakage Detection", () => {
+    it("should detect .env files as critical (Critical)", () => {
       const discovery: DiscoveryResult = {
         tools: [],
         resources: [
           {
-            name: 'Environment Config',
-            uri: 'file:///app/.env',
-            mimeType: 'text/plain'
-          }
+            name: "Environment Config",
+            uri: "file:///app/.env",
+            mimeType: "text/plain",
+          },
         ],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(1);
-      expect(findings[0].severity).toBe('critical');
-      expect(findings[0].message).toContain('exposes potentially sensitive file');
+      expect(findings[0].severity).toBe("critical");
+      expect(findings[0].message).toContain(
+        "exposes potentially sensitive file",
+      );
     });
 
-    it('should detect .key files as critical', () => {
+    it("should detect .key files as critical", () => {
       const discovery: DiscoveryResult = {
         tools: [],
         resources: [
           {
-            name: 'SSL Private Key',
-            uri: 'file:///etc/ssl/private/server.key',
-            mimeType: 'application/x-pem-file'
-          }
+            name: "SSL Private Key",
+            uri: "file:///etc/ssl/private/server.key",
+            mimeType: "application/x-pem-file",
+          },
         ],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(1);
-      expect(findings[0].severity).toBe('critical');
+      expect(findings[0].severity).toBe("critical");
     });
 
-    it('should detect .pem files as critical', () => {
+    it("should detect .pem files as critical", () => {
       const discovery: DiscoveryResult = {
         tools: [],
         resources: [
           {
-            name: 'Certificate Chain',
-            uri: 'file:///certs/private.pem',
-            mimeType: 'application/x-pem-file'
-          }
+            name: "Certificate Chain",
+            uri: "file:///certs/private.pem",
+            mimeType: "application/x-pem-file",
+          },
         ],
-        prompts: []
-      };
-
-      const findings = rule.evaluate(discovery);
-      expect(findings.length).toBe(1);
-    });
-
-    it('should detect .p12/.pfx files (PKCS#12)', () => {
-      const discovery: DiscoveryResult = {
-        tools: [],
-        resources: [
-          {
-            name: 'Key Store',
-            uri: 'file:///keys/signing.p12',
-            mimeType: 'application/x-pkcs12'
-          }
-        ],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(1);
     });
 
-    it('should detect .kdbx (KeePass database) files', () => {
+    it("should detect .p12/.pfx files (PKCS#12)", () => {
       const discovery: DiscoveryResult = {
         tools: [],
         resources: [
           {
-            name: 'Password Database',
-            uri: 'file:///data/passwords.kdbx',
-            mimeType: 'application/octet-stream'
-          }
+            name: "Key Store",
+            uri: "file:///keys/signing.p12",
+            mimeType: "application/x-pkcs12",
+          },
         ],
-        prompts: []
-      };
-
-      const findings = rule.evaluate(discovery);
-      expect(findings.length).toBe(1);
-      expect(findings[0].evidence).toHaveProperty('uri');
-    });
-
-    it('should detect id_rsa files (SSH keys)', () => {
-      const discovery: DiscoveryResult = {
-        tools: [],
-        resources: [
-          {
-            name: 'SSH Key',
-            uri: 'file:///home/user/.ssh/id_rsa',
-            mimeType: 'text/plain'
-          }
-        ],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(1);
     });
 
-    it('should detect config.json files (potential secrets)', () => {
+    it("should detect .kdbx (KeePass database) files", () => {
       const discovery: DiscoveryResult = {
         tools: [],
         resources: [
           {
-            name: 'App Configuration',
-            uri: 'file:///app/config.json',
-            mimeType: 'application/json'
-          }
+            name: "Password Database",
+            uri: "file:///data/passwords.kdbx",
+            mimeType: "application/octet-stream",
+          },
         ],
-        prompts: []
+        prompts: [],
+      };
+
+      const findings = rule.evaluate(discovery);
+      expect(findings.length).toBe(1);
+      expect(findings[0].evidence).toHaveProperty("uri");
+    });
+
+    it("should detect id_rsa files (SSH keys)", () => {
+      const discovery: DiscoveryResult = {
+        tools: [],
+        resources: [
+          {
+            name: "SSH Key",
+            uri: "file:///home/user/.ssh/id_rsa",
+            mimeType: "text/plain",
+          },
+        ],
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(1);
     });
 
-    it('should detect settings.xml files (Maven credentials)', () => {
+    it("should detect config.json files (potential secrets)", () => {
       const discovery: DiscoveryResult = {
         tools: [],
         resources: [
           {
-            name: 'Maven Settings',
-            uri: 'file:///home/user/.m2/settings.xml',
-            mimeType: 'application/xml'
-          }
+            name: "App Configuration",
+            uri: "file:///app/config.json",
+            mimeType: "application/json",
+          },
         ],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(1);
     });
 
-    it('should detect risky extensions in resource name (not just URI)', () => {
+    it("should detect settings.xml files (Maven credentials)", () => {
       const discovery: DiscoveryResult = {
         tools: [],
         resources: [
           {
-            name: 'production.env',
-            uri: 'resource:///configs/prod',
-            mimeType: 'text/plain'
-          }
+            name: "Maven Settings",
+            uri: "file:///home/user/.m2/settings.xml",
+            mimeType: "application/xml",
+          },
         ],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(1);
     });
 
-    it('should provide proper remediation for resource leakage', () => {
+    it("should detect risky extensions in resource name (not just URI)", () => {
       const discovery: DiscoveryResult = {
         tools: [],
         resources: [
           {
-            name: 'secrets',
-            uri: 'file:///secrets/.env',
-            mimeType: 'text/plain'
-          }
+            name: "production.env",
+            uri: "resource:///configs/prod",
+            mimeType: "text/plain",
+          },
         ],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
-      expect(findings[0].remediation).toContain('Do not expose configuration files');
-      expect(findings[0].remediation).toContain('scoped data access');
+      expect(findings.length).toBe(1);
     });
 
-    it('should detect multiple risky resources', () => {
+    it("should provide proper remediation for resource leakage", () => {
       const discovery: DiscoveryResult = {
         tools: [],
         resources: [
-          { name: 'env_file', uri: 'file:///app/.env', mimeType: 'text/plain' },
-          { name: 'ssh_key', uri: 'file:///home/.ssh/id_rsa', mimeType: 'text/plain' },
-          { name: 'ssl_cert', uri: 'file:///certs/server.pem', mimeType: 'text/plain' }
+          {
+            name: "secrets",
+            uri: "file:///secrets/.env",
+            mimeType: "text/plain",
+          },
         ],
-        prompts: []
+        prompts: [],
+      };
+
+      const findings = rule.evaluate(discovery);
+      expect(findings[0].remediation).toContain(
+        "Do not expose configuration files",
+      );
+      expect(findings[0].remediation).toContain("scoped data access");
+    });
+
+    it("should detect multiple risky resources", () => {
+      const discovery: DiscoveryResult = {
+        tools: [],
+        resources: [
+          { name: "env_file", uri: "file:///app/.env", mimeType: "text/plain" },
+          {
+            name: "ssh_key",
+            uri: "file:///home/.ssh/id_rsa",
+            mimeType: "text/plain",
+          },
+          {
+            name: "ssl_cert",
+            uri: "file:///certs/server.pem",
+            mimeType: "text/plain",
+          },
+        ],
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(3);
-      findings.forEach(f => expect(f.severity).toBe('critical'));
+      findings.forEach((f) => expect(f.severity).toBe("critical"));
     });
   });
 
-  describe('Safe Implementations (No Findings Expected)', () => {
-    it('should ignore safe tool inputs', () => {
+  describe("Safe Implementations (No Findings Expected)", () => {
+    it("should ignore safe tool inputs", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'search',
+            name: "search",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                query: { type: 'string', description: 'Search term' }
-              }
-            }
-          }
+                query: { type: "string", description: "Search term" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(0);
     });
 
-    it('should ignore safe resource URIs', () => {
+    it("should ignore safe resource URIs", () => {
       const discovery: DiscoveryResult = {
         tools: [],
         resources: [
           {
-            name: 'Public Document',
-            uri: 'file:///docs/readme.md',
-            mimeType: 'text/markdown'
+            name: "Public Document",
+            uri: "file:///docs/readme.md",
+            mimeType: "text/markdown",
           },
           {
-            name: 'API Data',
-            uri: 'https://api.example.com/data',
-            mimeType: 'application/json'
-          }
+            name: "API Data",
+            uri: "https://api.example.com/data",
+            mimeType: "application/json",
+          },
         ],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(0);
     });
 
-    it('should handle tools without inputSchema properties', () => {
+    it("should handle tools without inputSchema properties", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'simple_tool',
-            inputSchema: { type: 'object' } // No properties defined
-          }
+            name: "simple_tool",
+            inputSchema: { type: "object" }, // No properties defined
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(0);
     });
 
-    it('should handle tools with empty properties', () => {
+    it("should handle tools with empty properties", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'empty_tool',
+            name: "empty_tool",
             inputSchema: {
-              type: 'object',
-              properties: {}
-            }
-          }
+              type: "object",
+              properties: {},
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(0);
     });
 
-    it('should handle empty discovery result', () => {
+    it("should handle empty discovery result", () => {
       const discovery: DiscoveryResult = {
         tools: [],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(0);
     });
 
-    it('should handle undefined tools and resources', () => {
+    it("should handle undefined tools and resources", () => {
       const discovery = {
         tools: undefined,
         resources: undefined,
-        prompts: []
+        prompts: [],
       } as unknown as DiscoveryResult;
 
       const findings = rule.evaluate(discovery);
@@ -582,61 +616,65 @@ describe('DataLeakageRule', () => {
     });
   });
 
-  describe('Combined Tool and Resource Leakage', () => {
-    it('should detect issues in both tools and resources', () => {
+  describe("Combined Tool and Resource Leakage", () => {
+    it("should detect issues in both tools and resources", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'api_client',
+            name: "api_client",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                api_key: { type: 'string' }
-              }
-            }
-          }
+                api_key: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [
           {
-            name: 'Config',
-            uri: 'file:///app/.env',
-            mimeType: 'text/plain'
-          }
+            name: "Config",
+            uri: "file:///app/.env",
+            mimeType: "text/plain",
+          },
         ],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(2);
 
-      const toolFinding = findings.find(f => f.component === 'tool:api_client');
-      const resourceFinding = findings.find(f => f.component === 'resource:Config');
+      const toolFinding = findings.find(
+        (f) => f.component === "tool:api_client",
+      );
+      const resourceFinding = findings.find(
+        (f) => f.component === "resource:Config",
+      );
 
       expect(toolFinding).toBeDefined();
-      expect(toolFinding!.severity).toBe('medium');
+      expect(toolFinding!.severity).toBe("medium");
 
       expect(resourceFinding).toBeDefined();
-      expect(resourceFinding!.severity).toBe('critical');
+      expect(resourceFinding!.severity).toBe("critical");
     });
   });
 
-  describe('Edge Cases', () => {
-    it('should be case-insensitive for keyword detection', () => {
+  describe("Edge Cases", () => {
+    it("should be case-insensitive for keyword detection", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'mixed_case',
+            name: "mixed_case",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                USER_PASSWORD: { type: 'string' },
-                ApiKey: { type: 'string' }
-              }
-            }
-          }
+                USER_PASSWORD: { type: "string" },
+                ApiKey: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
@@ -644,17 +682,17 @@ describe('DataLeakageRule', () => {
       expect(findings.length).toBe(2);
     });
 
-    it('should handle resource with empty uri gracefully', () => {
+    it("should handle resource with empty uri gracefully", () => {
       const discovery: DiscoveryResult = {
         tools: [],
         resources: [
           {
-            name: 'Empty URI Resource',
-            uri: '',
-            mimeType: 'text/plain'
-          }
+            name: "Empty URI Resource",
+            uri: "",
+            mimeType: "text/plain",
+          },
         ],
-        prompts: []
+        prompts: [],
       };
 
       // Should not throw
@@ -662,59 +700,61 @@ describe('DataLeakageRule', () => {
       expect(findings.length).toBe(0);
     });
 
-    it('should handle resource with empty name gracefully', () => {
+    it("should handle resource with empty name gracefully", () => {
       const discovery: DiscoveryResult = {
         tools: [],
         resources: [
           {
-            name: '',
-            uri: 'file:///app/.env',
-            mimeType: 'text/plain'
-          }
+            name: "",
+            uri: "file:///app/.env",
+            mimeType: "text/plain",
+          },
         ],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(1);
     });
 
-    it('should include proper location metadata for findings', () => {
+    it("should include proper location metadata for findings", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'test_tool',
+            name: "test_tool",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                secret: { type: 'string' }
-              }
-            }
-          }
+                secret: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [
           {
-            name: 'test_resource',
-            uri: 'file:///test.env',
-            mimeType: 'text/plain'
-          }
+            name: "test_resource",
+            uri: "file:///test.env",
+            mimeType: "text/plain",
+          },
         ],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
 
-      const toolFinding = findings.find(f => f.component?.includes('tool'));
+      const toolFinding = findings.find((f) => f.component?.includes("tool"));
       expect(toolFinding!.location).toEqual({
-        type: 'tool',
-        name: 'test_tool',
-        parameter: 'secret'
+        type: "tool",
+        name: "test_tool",
+        parameter: "secret",
       });
 
-      const resourceFinding = findings.find(f => f.component?.includes('resource'));
+      const resourceFinding = findings.find((f) =>
+        f.component?.includes("resource"),
+      );
       expect(resourceFinding!.location).toEqual({
-        type: 'resource',
-        uri: 'file:///test.env'
+        type: "resource",
+        uri: "file:///test.env",
       });
     });
   });

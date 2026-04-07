@@ -5,13 +5,13 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import { t } from '@mcp-verify/shared';
-import type { ITransport } from '../../domain/transport';
+import { t } from "@mcp-verify/shared";
+import type { ITransport } from "../../domain/transport";
 
 export interface ProtocolIssue {
   code: string;
   message: string;
-  severity: 'error' | 'warning';
+  severity: "error" | "warning";
 }
 
 export interface ProtocolComplianceReport {
@@ -33,16 +33,16 @@ export class ProtocolComplianceTester {
     // Test 1: Method Not Found (-32601)
     try {
       await this.transport.send({
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         id: 99999,
-        method: 'non_existent_method_test_123',
-        params: {}
+        method: "non_existent_method_test_123",
+        params: {},
       });
       // If it doesn't throw, it might have returned a result, which is wrong for non-existent method
       issues.push({
-        code: 'RPC-001',
-        message: t('rpc_001'),
-        severity: 'error'
+        code: "RPC-001",
+        message: t("rpc_001"),
+        severity: "error",
       });
     } catch (e: unknown) {
       // We expect an error. Ideally we check the code.
@@ -51,7 +51,11 @@ export class ProtocolComplianceTester {
       // For now, we assume if it failed, it's good, unless the error suggests a crash.
       const msg = e instanceof Error ? e.message : String(e);
       if (!msg) {
-        issues.push({ code: 'RPC-002', message: t('rpc_002'), severity: 'warning' });
+        issues.push({
+          code: "RPC-002",
+          message: t("rpc_002"),
+          severity: "warning",
+        });
       }
     }
 
@@ -59,25 +63,25 @@ export class ProtocolComplianceTester {
     try {
       await this.transport.send({
         id: 99998,
-        method: 'initialize',
-        params: {}
+        method: "initialize",
+        params: {},
         // missing jsonrpc: '2.0'
       });
       issues.push({
-        code: 'RPC-003',
-        message: t('rpc_003'),
-        severity: 'warning' // Some leniency allowed
+        code: "RPC-003",
+        message: t("rpc_003"),
+        severity: "warning", // Some leniency allowed
       });
     } catch (e) {
       // Good, it rejected it
     }
 
-    const score = Math.max(0, 100 - (issues.length * 20));
+    const score = Math.max(0, 100 - issues.length * 20);
 
     return {
-      passed: issues.filter(i => i.severity === 'error').length === 0,
+      passed: issues.filter((i) => i.severity === "error").length === 0,
       score,
-      issues
+      issues,
     };
   }
 }

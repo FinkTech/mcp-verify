@@ -23,12 +23,12 @@ Contributors who submit features that violate these principles will have their P
 
 ### 1. Read the Navigation Guides
 
-| Document | Purpose | Read Time |
-|----------|---------|-----------|
-| **[CODE_MAP.md](CODE_MAP.md)** | "I want to..." quick reference | 2 min |
-| **[CLAUDE.md](./CLAUDE.md)** | Project overview & architecture | 5 min |
-| **[ARCHITECTURE.md](./ARCHITECTURE.md)** | System design & patterns | 10 min |
-| **[DEVELOPMENT.md](./DEVELOPMENT.md)** | Local setup & testing | 10 min |
+| Document                                 | Purpose                         | Read Time |
+| ---------------------------------------- | ------------------------------- | --------- |
+| **[CODE_MAP.md](CODE_MAP.md)**           | "I want to..." quick reference  | 2 min     |
+| **[CLAUDE.md](./CLAUDE.md)**             | Project overview & architecture | 5 min     |
+| **[ARCHITECTURE.md](./ARCHITECTURE.md)** | System design & patterns        | 10 min    |
+| **[DEVELOPMENT.md](./DEVELOPMENT.md)**   | Local setup & testing           | 10 min    |
 
 ### 2. Use CLAUDE.md Files for Module Navigation
 
@@ -45,6 +45,7 @@ cat libs/fuzzer/CLAUDE.md        # Fuzzer architecture
 ```
 
 **Why?** These files reduce context exploration by ~90% and provide:
+
 - File/function location reference
 - Common patterns & conventions
 - Module-specific architecture
@@ -52,6 +53,7 @@ cat libs/fuzzer/CLAUDE.md        # Fuzzer architecture
 ### 3. Find "Where to Change" Using CODE_MAP.md
 
 **Example workflows:**
+
 ```
 "I want to add a new security rule"
 → CODE_MAP.md → libs/core/domain/security/rules/
@@ -66,6 +68,7 @@ cat libs/fuzzer/CLAUDE.md        # Fuzzer architecture
 ### 4. Check Existing Patterns
 
 Before writing code, review similar implementations:
+
 ```bash
 # Adding a new security rule?
 cat libs/core/domain/security/rules/sql-injection.rule.ts
@@ -115,6 +118,7 @@ We use **Git Flow** for branch management. See [docs/BRANCHING.md](./docs/BRANCH
 11. If approved → Squash merge to `develop`
 
 **Important:**
+
 - Always target **`develop`** branch for PRs (not `main`)
 - Use branch naming: `feature/*`, `bugfix/*`, `docs/*`
 - All commits must have DCO sign-off (`-s` flag)
@@ -145,6 +149,7 @@ Signed-off-by: Your Name <your.email@example.com>
 ```
 
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -153,6 +158,7 @@ Signed-off-by: Your Name <your.email@example.com>
 - `chore`: Maintenance tasks
 
 **Examples:**
+
 ```bash
 git commit -s -m "feat(security): add SEC-013 prompt injection detection"
 git commit -s -m "fix(cli): handle spaces in server paths"
@@ -234,6 +240,7 @@ mcp-verify/
 ```
 
 **Key Documentation Files:**
+
 - **CLAUDE.md files**: Navigation guides in every major directory
 - **CODE_MAP.md**: Quick "where to find X" reference
 - **ARCHITECTURE.md**: Hexagonal architecture deep dive

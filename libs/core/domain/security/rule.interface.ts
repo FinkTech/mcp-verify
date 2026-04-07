@@ -5,7 +5,10 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import { DiscoveryResult, SecurityFinding } from '../mcp-server/entities/validation.types';
+import {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../mcp-server/entities/validation.types";
 
 /**
  * Represents a security rule that can evaluate an MCP server discovery result.
@@ -40,7 +43,7 @@ export interface ISecurityRule {
 
   /**
    * Evaluates the discovery result against this security rule.
-   * 
+   *
    * @param discovery - The result of the MCP server discovery phase, containing tools, resources, and prompts.
    * @returns An array of security findings. Returns empty array if no vulnerabilities are found.
    */
@@ -64,4 +67,5 @@ export interface ISecurityRuleMetadata {
 /**
  * Composite interface combining rule logic and metadata.
  */
-export interface ISecurityRuleWithMetadata extends ISecurityRule, ISecurityRuleMetadata { }
+export interface ISecurityRuleWithMetadata
+  extends ISecurityRule, ISecurityRuleMetadata {}

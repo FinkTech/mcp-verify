@@ -22,7 +22,7 @@
  * @module libs/core/use-cases/fuzzer/mutation-engine
  */
 
-import { AttackPayload } from './payloads';
+import { AttackPayload } from "./payloads";
 
 export interface MutatedPayload extends AttackPayload {
   original: string;
@@ -38,7 +38,10 @@ export class MutationEngine {
     const strategies = this.getAllStrategies();
 
     // Select random strategies
-    const selectedStrategies = this.selectRandomStrategies(strategies, mutationCount);
+    const selectedStrategies = this.selectRandomStrategies(
+      strategies,
+      mutationCount,
+    );
 
     for (const strategy of selectedStrategies) {
       const mutated = strategy.mutate(payload.value);
@@ -48,7 +51,7 @@ export class MutationEngine {
         value: mutated,
         original: payload.value,
         mutationType: strategy.name,
-        description: `${payload.description} (${strategy.name})`
+        description: `${payload.description} (${strategy.name})`,
       });
     }
 
@@ -70,7 +73,7 @@ export class MutationEngine {
         value: mutated,
         original: payload.value,
         mutationType: strategy.name,
-        description: `${payload.description} (${strategy.name})`
+        description: `${payload.description} (${strategy.name})`,
       });
     }
 
@@ -104,14 +107,17 @@ export class MutationEngine {
 
       // Obfuscation mutations
       new CharacterConcatenationStrategy(),
-      new HexEncodingStrategy()
+      new HexEncodingStrategy(),
     ];
   }
 
   /**
    * Select random strategies
    */
-  private selectRandomStrategies(strategies: MutationStrategy[], count: number): MutationStrategy[] {
+  private selectRandomStrategies(
+    strategies: MutationStrategy[],
+    count: number,
+  ): MutationStrategy[] {
     const shuffled = [...strategies].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, Math.min(count, strategies.length));
   }
@@ -129,7 +135,7 @@ abstract class MutationStrategy {
  * URL Encoding
  */
 class UrlEncodingStrategy extends MutationStrategy {
-  name = 'URL Encoding';
+  name = "URL Encoding";
 
   mutate(value: string): string {
     return encodeURIComponent(value);
@@ -140,7 +146,7 @@ class UrlEncodingStrategy extends MutationStrategy {
  * Double URL Encoding
  */
 class DoubleUrlEncodingStrategy extends MutationStrategy {
-  name = 'Double URL Encoding';
+  name = "Double URL Encoding";
 
   mutate(value: string): string {
     return encodeURIComponent(encodeURIComponent(value));
@@ -151,20 +157,20 @@ class DoubleUrlEncodingStrategy extends MutationStrategy {
  * HTML Entity Encoding
  */
 class HtmlEntityEncodingStrategy extends MutationStrategy {
-  name = 'HTML Entity Encoding';
+  name = "HTML Entity Encoding";
 
   mutate(value: string): string {
     return value
-      .split('')
-      .map(char => {
+      .split("")
+      .map((char) => {
         const code = char.charCodeAt(0);
         // Encode special characters
-        if (code > 127 || ['<', '>', '"', "'", '&'].includes(char)) {
+        if (code > 127 || ["<", ">", '"', "'", "&"].includes(char)) {
           return `&#${code};`;
         }
         return char;
       })
-      .join('');
+      .join("");
   }
 }
 
@@ -172,19 +178,19 @@ class HtmlEntityEncodingStrategy extends MutationStrategy {
  * Unicode Encoding
  */
 class UnicodeEncodingStrategy extends MutationStrategy {
-  name = 'Unicode Encoding';
+  name = "Unicode Encoding";
 
   mutate(value: string): string {
     return value
-      .split('')
-      .map(char => {
+      .split("")
+      .map((char) => {
         const code = char.charCodeAt(0);
-        if (code > 127 || ['<', '>', '"', "'"].includes(char)) {
-          return `\\u${code.toString(16).padStart(4, '0')}`;
+        if (code > 127 || ["<", ">", '"', "'"].includes(char)) {
+          return `\\u${code.toString(16).padStart(4, "0")}`;
         }
         return char;
       })
-      .join('');
+      .join("");
   }
 }
 
@@ -192,7 +198,7 @@ class UnicodeEncodingStrategy extends MutationStrategy {
  * Uppercase
  */
 class UpperCaseStrategy extends MutationStrategy {
-  name = 'Uppercase';
+  name = "Uppercase";
 
   mutate(value: string): string {
     return value.toUpperCase();
@@ -203,7 +209,7 @@ class UpperCaseStrategy extends MutationStrategy {
  * Lowercase
  */
 class LowerCaseStrategy extends MutationStrategy {
-  name = 'Lowercase';
+  name = "Lowercase";
 
   mutate(value: string): string {
     return value.toLowerCase();
@@ -214,13 +220,13 @@ class LowerCaseStrategy extends MutationStrategy {
  * Alternating Case (CaMeLcAsE)
  */
 class AlternatingCaseStrategy extends MutationStrategy {
-  name = 'Alternating Case';
+  name = "Alternating Case";
 
   mutate(value: string): string {
     return value
-      .split('')
-      .map((char, i) => i % 2 === 0 ? char.toLowerCase() : char.toUpperCase())
-      .join('');
+      .split("")
+      .map((char, i) => (i % 2 === 0 ? char.toLowerCase() : char.toUpperCase()))
+      .join("");
   }
 }
 
@@ -228,10 +234,10 @@ class AlternatingCaseStrategy extends MutationStrategy {
  * Replace spaces with tabs
  */
 class SpaceToTabStrategy extends MutationStrategy {
-  name = 'Space to Tab';
+  name = "Space to Tab";
 
   mutate(value: string): string {
-    return value.replace(/ /g, '\t');
+    return value.replace(/ /g, "\t");
   }
 }
 
@@ -239,10 +245,10 @@ class SpaceToTabStrategy extends MutationStrategy {
  * Add extra spaces
  */
 class ExtraSpacesStrategy extends MutationStrategy {
-  name = 'Extra Spaces';
+  name = "Extra Spaces";
 
   mutate(value: string): string {
-    return value.replace(/ /g, '  ').replace(/([;|&])/g, '$1 ');
+    return value.replace(/ /g, "  ").replace(/([;|&])/g, "$1 ");
   }
 }
 
@@ -250,11 +256,11 @@ class ExtraSpacesStrategy extends MutationStrategy {
  * Insert newlines
  */
 class NewlineInsertionStrategy extends MutationStrategy {
-  name = 'Newline Insertion';
+  name = "Newline Insertion";
 
   mutate(value: string): string {
     // Insert newlines before special characters
-    return value.replace(/([;|&])/g, '\n$1');
+    return value.replace(/([;|&])/g, "\n$1");
   }
 }
 
@@ -262,13 +268,11 @@ class NewlineInsertionStrategy extends MutationStrategy {
  * Null byte injection
  */
 class NullByteInjectionStrategy extends MutationStrategy {
-  name = 'Null Byte Injection';
+  name = "Null Byte Injection";
 
   mutate(value: string): string {
     // Add null byte before extension or at end
-    return value.includes('.')
-      ? value.replace(/\./, '\x00.')
-      : value + '\x00';
+    return value.includes(".") ? value.replace(/\./, "\x00.") : value + "\x00";
   }
 }
 
@@ -276,17 +280,17 @@ class NullByteInjectionStrategy extends MutationStrategy {
  * Comment insertion (SQL/shell)
  */
 class CommentInsertionStrategy extends MutationStrategy {
-  name = 'Comment Insertion';
+  name = "Comment Insertion";
 
   mutate(value: string): string {
     // Insert SQL/shell comments
     if (value.includes("'")) {
       return value.replace(/'/, "'/**/");
     }
-    if (value.includes(';')) {
-      return value.replace(/;/, ';#');
+    if (value.includes(";")) {
+      return value.replace(/;/, ";#");
     }
-    return value + '/**/';
+    return value + "/**/";
   }
 }
 
@@ -294,15 +298,15 @@ class CommentInsertionStrategy extends MutationStrategy {
  * Character concatenation (SQL)
  */
 class CharacterConcatenationStrategy extends MutationStrategy {
-  name = 'Character Concatenation';
+  name = "Character Concatenation";
 
   mutate(value: string): string {
     // Convert "admin" to CHAR(97,100,109,105,110) or similar
     if (value.length > 10) return value; // Skip long strings
 
     // For SQL: 'admin' -> CONCAT(CHAR(97),CHAR(100),...)
-    const chars = value.split('').map(c => c.charCodeAt(0));
-    return `CONCAT(${chars.map(c => `CHAR(${c})`).join(',')})`;
+    const chars = value.split("").map((c) => c.charCodeAt(0));
+    return `CONCAT(${chars.map((c) => `CHAR(${c})`).join(",")})`;
   }
 }
 
@@ -310,16 +314,16 @@ class CharacterConcatenationStrategy extends MutationStrategy {
  * Hex encoding
  */
 class HexEncodingStrategy extends MutationStrategy {
-  name = 'Hex Encoding';
+  name = "Hex Encoding";
 
   mutate(value: string): string {
     return value
-      .split('')
-      .map(char => {
-        const hex = char.charCodeAt(0).toString(16).padStart(2, '0');
+      .split("")
+      .map((char) => {
+        const hex = char.charCodeAt(0).toString(16).padStart(2, "0");
         return `\\x${hex}`;
       })
-      .join('');
+      .join("");
   }
 }
 
@@ -336,7 +340,10 @@ export class BatchMutator {
   /**
    * Generate mutations for multiple payloads
    */
-  mutateBatch(payloads: AttackPayload[], mutationsPerPayload: number = 3): MutatedPayload[] {
+  mutateBatch(
+    payloads: AttackPayload[],
+    mutationsPerPayload: number = 3,
+  ): MutatedPayload[] {
     const allMutations: MutatedPayload[] = [];
 
     for (const payload of payloads) {
@@ -350,8 +357,12 @@ export class BatchMutator {
   /**
    * Generate targeted mutations for specific attack types
    */
-  mutateForType(payloads: AttackPayload[], type: string, mutationsPerPayload: number = 5): MutatedPayload[] {
-    const filtered = payloads.filter(p => p.type === type);
+  mutateForType(
+    payloads: AttackPayload[],
+    type: string,
+    mutationsPerPayload: number = 5,
+  ): MutatedPayload[] {
+    const filtered = payloads.filter((p) => p.type === type);
     return this.mutateBatch(filtered, mutationsPerPayload);
   }
 

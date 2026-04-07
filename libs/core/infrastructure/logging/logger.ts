@@ -28,8 +28,8 @@
  * @module libs/core/infrastructure/logging
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from "fs";
+import * as path from "path";
 
 // ---------------------------------------------------------------------------
 // Chalk lazy-loader type shim
@@ -61,7 +61,7 @@ type ChalkFn = ((text: string) => string) & ChalkInstance;
 /** Lazy-load chalk to avoid circular-dependency issues in the infra layer. */
 function getChalk(): ChalkInstance {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const c = require('chalk');
+  const c = require("chalk");
   // Handle ESM default export when bundled as CJS
   return (c.default || c) as ChalkInstance;
 }
@@ -79,22 +79,22 @@ export enum LogLevel {
 }
 
 export enum AuditEventType {
-  VALIDATION_STARTED = 'validation.started',
-  VALIDATION_COMPLETED = 'validation.completed',
-  VALIDATION_FAILED = 'validation.failed',
-  SECURITY_FINDING = 'security.finding',
-  SECURITY_CRITICAL = 'security.critical',
-  GUARDRAIL_BLOCKED = 'guardrail.blocked',
-  GUARDRAIL_MODIFIED = 'guardrail.modified',
-  FUZZING_STARTED = 'fuzzing.started',
-  FUZZING_COMPLETED = 'fuzzing.completed',
-  VULNERABILITY_DETECTED = 'vulnerability.detected',
-  PROXY_STARTED = 'proxy.started',
-  PROXY_STOPPED = 'proxy.stopped',
-  RATE_LIMIT_EXCEEDED = 'rate_limit.exceeded',
-  PII_REDACTED = 'pii.redacted',
-  CONFIG_CHANGED = 'config.changed',
-  ERROR_OCCURRED = 'error.occurred',
+  VALIDATION_STARTED = "validation.started",
+  VALIDATION_COMPLETED = "validation.completed",
+  VALIDATION_FAILED = "validation.failed",
+  SECURITY_FINDING = "security.finding",
+  SECURITY_CRITICAL = "security.critical",
+  GUARDRAIL_BLOCKED = "guardrail.blocked",
+  GUARDRAIL_MODIFIED = "guardrail.modified",
+  FUZZING_STARTED = "fuzzing.started",
+  FUZZING_COMPLETED = "fuzzing.completed",
+  VULNERABILITY_DETECTED = "vulnerability.detected",
+  PROXY_STARTED = "proxy.started",
+  PROXY_STOPPED = "proxy.stopped",
+  RATE_LIMIT_EXCEEDED = "rate_limit.exceeded",
+  PII_REDACTED = "pii.redacted",
+  CONFIG_CHANGED = "config.changed",
+  ERROR_OCCURRED = "error.occurred",
 }
 
 export interface LogContext {
@@ -126,11 +126,11 @@ export interface LogEntry {
 export interface AuditEntry {
   timestamp: string;
   eventType: AuditEventType;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   actor?: string;
   resource?: string;
   action: string;
-  result: 'success' | 'failure' | 'blocked';
+  result: "success" | "failure" | "blocked";
   context: LogContext;
   details?: Record<string, unknown>;
 }
@@ -166,40 +166,40 @@ const LEVEL_META: Record<
   { icon: string; badge: (t: string) => string; label: string }
 > = {
   [LogLevel.DEBUG]: {
-    icon: '⚙',
-    label: 'DEBUG',
+    icon: "⚙",
+    label: "DEBUG",
     badge: (t: string) => {
       const c = getChalk();
       return c.bgGray(c.white(` ${t} `));
     },
   },
   [LogLevel.INFO]: {
-    icon: 'ℹ',
-    label: 'INFO ',
+    icon: "ℹ",
+    label: "INFO ",
     badge: (t: string) => {
       const c = getChalk();
       return c.bgBlue(c.white(` ${t} `));
     },
   },
   [LogLevel.WARN]: {
-    icon: '⚠',
-    label: 'WARN ',
+    icon: "⚠",
+    label: "WARN ",
     badge: (t: string) => {
       const c = getChalk();
       return c.bgYellow(c.black(` ${t} `));
     },
   },
   [LogLevel.ERROR]: {
-    icon: '✖',
-    label: 'ERROR',
+    icon: "✖",
+    label: "ERROR",
     badge: (t: string) => {
       const c = getChalk();
       return c.bgRed(c.white(` ${t} `));
     },
   },
   [LogLevel.CRITICAL]: {
-    icon: '🛡',
-    label: 'CRIT ',
+    icon: "🛡",
+    label: "CRIT ",
     badge: (t: string) => {
       const c = getChalk();
       return c.bgMagenta(c.white(` ${t} `));
@@ -222,7 +222,7 @@ function renderComponentTag(component: string): string {
  */
 function renderOperation(operation: string): string {
   const c = getChalk();
-  return `${c.cyan('►')} ${c.cyan(operation)}`;
+  return `${c.cyan("►")} ${c.cyan(operation)}`;
 }
 
 /**
@@ -231,7 +231,7 @@ function renderOperation(operation: string): string {
  */
 function renderAuditBadge(): string {
   const c = getChalk();
-  return c.bgYellow(c.black(' ⚡ AUDIT '));
+  return c.bgYellow(c.black(" ⚡ AUDIT "));
 }
 
 /**
@@ -250,22 +250,22 @@ function renderDuration(ms: number): string {
  *      at Object.<anonymous> (/path/to/file.ts:12:5)
  */
 function renderErrorBlock(
-  error: NonNullable<LogEntry['error']>,
-  includeStack: boolean
+  error: NonNullable<LogEntry["error"]>,
+  includeStack: boolean,
 ): string {
   const c = getChalk();
-  const prefix = c.red('  └─ ');
+  const prefix = c.red("  └─ ");
   const name = c.red(c.bold(error.name));
   const msg = c.red(error.message);
-  const codeSuffix = error.code != null ? c.dim(` [${error.code}]`) : '';
+  const codeSuffix = error.code != null ? c.dim(` [${error.code}]`) : "";
   let block = `\n${prefix}${name}: ${msg}${codeSuffix}`;
 
   if (includeStack && error.stack != null) {
     const stackLines = error.stack
-      .split('\n')
+      .split("\n")
       .slice(1) // skip the first line (already captured in message)
       .map((l) => `     ${c.dim(l.trim())}`)
-      .join('\n');
+      .join("\n");
     if (stackLines.length > 0) {
       block += `\n${stackLines}`;
     }
@@ -294,29 +294,29 @@ export class Logger {
   }> = [
     {
       pattern: /\b\d{3}-\d{2}-\d{4}\b/g,
-      replacement: '***-**-****',
-      name: 'SSN',
+      replacement: "***-**-****",
+      name: "SSN",
     },
     {
       pattern: /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g,
-      replacement: '****-****-****-****',
-      name: 'Credit Card',
+      replacement: "****-****-****-****",
+      name: "Credit Card",
     },
     {
       pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g,
-      replacement: '***@***.***',
-      name: 'Email',
+      replacement: "***@***.***",
+      name: "Email",
     },
     {
       pattern:
         /\b(?:\+?1[-.]?)?\(?([0-9]{3})\)?[-.]?([0-9]{3})[-.]?([0-9]{4})\b/g,
-      replacement: '***-***-****',
-      name: 'Phone',
+      replacement: "***-***-****",
+      name: "Phone",
     },
     {
       pattern: /\b(?:Bearer|Token|API[_-]?Key)\s+[A-Za-z0-9_\-.]+/gi,
-      replacement: 'Bearer ***REDACTED***',
-      name: 'API Token',
+      replacement: "Bearer ***REDACTED***",
+      name: "API Token",
     },
   ];
 
@@ -330,7 +330,7 @@ export class Logger {
       includeStackTrace: false,
       prettyPrint: false,
       maxMessageLength: 5000,
-      fileDirectory: '.mcp-verify/logs',
+      fileDirectory: ".mcp-verify/logs",
       maxFileSize: 10485760, // 10 MB
       maxFiles: 5,
       colorize: true,
@@ -363,7 +363,10 @@ export class Logger {
 
     // Re-initialize log directory if enableFile changed or directory changed
     if (this.config.enableFile) {
-      if (!wasFileLoggingEnabled || oldDirectory !== this.config.fileDirectory) {
+      if (
+        !wasFileLoggingEnabled ||
+        oldDirectory !== this.config.fileDirectory
+      ) {
         this.initializeLogDirectory();
       }
     }
@@ -418,9 +421,9 @@ export class Logger {
 
     this.audit({
       eventType: AuditEventType.SECURITY_CRITICAL,
-      severity: 'critical',
-      action: 'critical_event',
-      result: 'success',
+      severity: "critical",
+      action: "critical_event",
+      result: "success",
       context: context ?? {},
       details: { message },
     });
@@ -430,7 +433,7 @@ export class Logger {
   // Audit logging
   // -------------------------------------------------------------------------
 
-  audit(entry: Omit<AuditEntry, 'timestamp'>): void {
+  audit(entry: Omit<AuditEntry, "timestamp">): void {
     if (!this.config.enableAudit) return;
 
     const auditEntry: AuditEntry = {
@@ -498,7 +501,7 @@ export class Logger {
         : JSON.stringify(entry);
 
     // SECURITY & CI/CD: Write to stderr to keep stdout clean for data output
-    process.stderr.write(output + '\n');
+    process.stderr.write(output + "\n");
   }
 
   // -------------------------------------------------------------------------
@@ -526,7 +529,7 @@ export class Logger {
    * Format: mcp-verify-YYYY-MM-DD.log
    */
   private getCurrentLogFilePath(): string {
-    const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const date = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
     return path.join(this.config.fileDirectory, `mcp-verify-${date}.log`);
   }
 
@@ -537,7 +540,7 @@ export class Logger {
   private rotateLogFiles(currentFile: string): void {
     try {
       // Get all rotated versions of this file
-      const baseName = path.basename(currentFile, '.log');
+      const baseName = path.basename(currentFile, ".log");
       const dirName = path.dirname(currentFile);
 
       // Move existing rotated files: file.3 -> file.4, file.2 -> file.3, etc.
@@ -604,13 +607,13 @@ export class Logger {
       }
 
       // Format entry as JSON Line (JSONL format)
-      const jsonLine = JSON.stringify(entry) + '\n';
+      const jsonLine = JSON.stringify(entry) + "\n";
 
       // Append to file atomically
-      fs.appendFileSync(logFilePath, jsonLine, 'utf8');
+      fs.appendFileSync(logFilePath, jsonLine, "utf8");
 
       // Update current size
-      this.currentLogSize += Buffer.byteLength(jsonLine, 'utf8');
+      this.currentLogSize += Buffer.byteLength(jsonLine, "utf8");
     } catch (error) {
       // If file write fails, fall back to console only
       console.error(`Failed to write to log file: ${error}`);
@@ -641,7 +644,7 @@ export class Logger {
     // 1. Timestamp  (soft gray)
     // ------------------------------------------------------------------
     const timestamp = c.gray(
-      new Date(entry.timestamp).toLocaleTimeString('en-US', { hour12: false })
+      new Date(entry.timestamp).toLocaleTimeString("en-US", { hour12: false }),
     );
 
     // ------------------------------------------------------------------
@@ -655,31 +658,31 @@ export class Logger {
     // 3. Component tag  (coloured block, optional)
     // ------------------------------------------------------------------
     const componentTag =
-      typeof entry.context.component === 'string' &&
+      typeof entry.context.component === "string" &&
       entry.context.component.length > 0
         ? ` ${renderComponentTag(entry.context.component)}`
-        : '';
+        : "";
 
     // ------------------------------------------------------------------
     // 4. Operation  (arrow + cyan text, optional)
     // ------------------------------------------------------------------
     const operationStr =
-      typeof entry.context.operation === 'string' &&
+      typeof entry.context.operation === "string" &&
       entry.context.operation.length > 0
         ? `  ${renderOperation(entry.context.operation)}`
-        : '';
+        : "";
 
     // ------------------------------------------------------------------
     // 5. AUDIT badge  (prepended when message starts with [AUDIT])
     // ------------------------------------------------------------------
-    const isAudit = entry.message.startsWith('[AUDIT]');
-    const auditBadge = isAudit ? ` ${renderAuditBadge()}` : '';
+    const isAudit = entry.message.startsWith("[AUDIT]");
+    const auditBadge = isAudit ? ` ${renderAuditBadge()}` : "";
 
     // ------------------------------------------------------------------
     // 6. Message text  (colorized based on level, audit prefix stripped)
     // ------------------------------------------------------------------
     const rawMessage = isAudit
-      ? entry.message.replace(/^\[AUDIT\]\s*/, '')
+      ? entry.message.replace(/^\[AUDIT\]\s*/, "")
       : entry.message;
 
     const messageText = this.colorizeMessage(entry.level, rawMessage);
@@ -688,9 +691,9 @@ export class Logger {
     // 7. Duration suffix  (dim, optional)
     // ------------------------------------------------------------------
     const durationStr =
-      typeof entry.context.duration === 'number'
+      typeof entry.context.duration === "number"
         ? `  ${renderDuration(entry.context.duration)}`
-        : '';
+        : "";
 
     // ------------------------------------------------------------------
     // 8. Error block  (indented branch, optional)
@@ -698,7 +701,7 @@ export class Logger {
     const errorBlock =
       entry.error != null
         ? renderErrorBlock(entry.error, this.config.includeStackTrace)
-        : '';
+        : "";
 
     // ------------------------------------------------------------------
     // Assemble
@@ -720,12 +723,18 @@ export class Logger {
   private colorizeIcon(level: LogLevel, icon: string): string {
     const c = getChalk();
     switch (level) {
-      case LogLevel.DEBUG:    return c.gray(icon);
-      case LogLevel.INFO:     return c.blue(icon);
-      case LogLevel.WARN:     return c.yellow(icon);
-      case LogLevel.ERROR:    return c.red(icon);
-      case LogLevel.CRITICAL: return c.magenta(icon);
-      default:                return icon;
+      case LogLevel.DEBUG:
+        return c.gray(icon);
+      case LogLevel.INFO:
+        return c.blue(icon);
+      case LogLevel.WARN:
+        return c.yellow(icon);
+      case LogLevel.ERROR:
+        return c.red(icon);
+      case LogLevel.CRITICAL:
+        return c.magenta(icon);
+      default:
+        return icon;
     }
   }
 
@@ -735,12 +744,18 @@ export class Logger {
   private colorizeMessage(level: LogLevel, message: string): string {
     const c = getChalk();
     switch (level) {
-      case LogLevel.DEBUG:    return c.gray(message);
-      case LogLevel.INFO:     return c.white(message);
-      case LogLevel.WARN:     return c.yellow(message);
-      case LogLevel.ERROR:    return c.red(c.bold(message));
-      case LogLevel.CRITICAL: return c.magenta(c.bold(message));
-      default:                return message;
+      case LogLevel.DEBUG:
+        return c.gray(message);
+      case LogLevel.INFO:
+        return c.white(message);
+      case LogLevel.WARN:
+        return c.yellow(message);
+      case LogLevel.ERROR:
+        return c.red(c.bold(message));
+      case LogLevel.CRITICAL:
+        return c.magenta(c.bold(message));
+      default:
+        return message;
     }
   }
 
@@ -756,7 +771,7 @@ export class Logger {
 
     // 1. SECURITY: Remove ANSI escape sequences → prevents Log Spoofing attacks.
     //    Malicious MCP servers could inject terminal control codes to manipulate logs.
-    sanitized = sanitized.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '');
+    sanitized = sanitized.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, "");
 
     // 2. Redact PII patterns
     if (this.config.redactPII) {
@@ -769,7 +784,7 @@ export class Logger {
     if (sanitized.length > this.config.maxMessageLength) {
       sanitized =
         sanitized.substring(0, this.config.maxMessageLength) +
-        '... [truncated]';
+        "... [truncated]";
     }
 
     return sanitized;
@@ -781,11 +796,16 @@ export class Logger {
 
   private severityToLogLevel(severity: string): LogLevel {
     switch (severity) {
-      case 'critical': return LogLevel.CRITICAL;
-      case 'high':     return LogLevel.ERROR;
-      case 'medium':   return LogLevel.WARN;
-      case 'low':      return LogLevel.INFO;
-      default:         return LogLevel.INFO;
+      case "critical":
+        return LogLevel.CRITICAL;
+      case "high":
+        return LogLevel.ERROR;
+      case "medium":
+        return LogLevel.WARN;
+      case "low":
+        return LogLevel.INFO;
+      default:
+        return LogLevel.INFO;
     }
   }
 
@@ -794,15 +814,11 @@ export class Logger {
   // -------------------------------------------------------------------------
 
   getLogs(count?: number): LogEntry[] {
-    return count != null
-      ? this.logBuffer.slice(-count)
-      : [...this.logBuffer];
+    return count != null ? this.logBuffer.slice(-count) : [...this.logBuffer];
   }
 
   getAuditTrail(count?: number): AuditEntry[] {
-    return count != null
-      ? this.auditLog.slice(-count)
-      : [...this.auditLog];
+    return count != null ? this.auditLog.slice(-count) : [...this.auditLog];
   }
 
   getLogsByLevel(level: LogLevel, count?: number): LogEntry[] {
@@ -810,10 +826,7 @@ export class Logger {
     return count != null ? filtered.slice(-count) : filtered;
   }
 
-  getAuditByEventType(
-    eventType: AuditEventType,
-    count?: number
-  ): AuditEntry[] {
+  getAuditByEventType(eventType: AuditEventType, count?: number): AuditEntry[] {
     const filtered = this.auditLog.filter((e) => e.eventType === eventType);
     return count != null ? filtered.slice(-count) : filtered;
   }
@@ -828,9 +841,13 @@ export class Logger {
 
   exportLogs(): string {
     return JSON.stringify(
-      { logs: this.logBuffer, audit: this.auditLog, exportedAt: new Date().toISOString() },
+      {
+        logs: this.logBuffer,
+        audit: this.auditLog,
+        exportedAt: new Date().toISOString(),
+      },
       null,
-      2
+      2,
     );
   }
 
@@ -855,7 +872,7 @@ export class Logger {
       const files = fs.readdirSync(this.config.fileDirectory);
 
       for (const file of files) {
-        if (!file.startsWith('mcp-verify-') || !file.endsWith('.log')) {
+        if (!file.startsWith("mcp-verify-") || !file.endsWith(".log")) {
           continue;
         }
 
@@ -898,8 +915,7 @@ export class Logger {
     }
 
     for (const entry of this.auditLog) {
-      byEventType[entry.eventType] =
-        (byEventType[entry.eventType] ?? 0) + 1;
+      byEventType[entry.eventType] = (byEventType[entry.eventType] ?? 0) + 1;
     }
 
     // Gather file logging stats
@@ -909,7 +925,7 @@ export class Logger {
       try {
         const files = fs.readdirSync(this.config.fileDirectory);
         for (const file of files) {
-          if (file.startsWith('mcp-verify-') && file.endsWith('.log')) {
+          if (file.startsWith("mcp-verify-") && file.endsWith(".log")) {
             totalFiles++;
             const filePath = path.join(this.config.fileDirectory, file);
             const stats = fs.statSync(filePath);
@@ -926,7 +942,7 @@ export class Logger {
       totalAudit: this.auditLog.length,
       byLevel,
       byEventType,
-      criticalEvents: this.auditLog.filter((e) => e.severity === 'critical')
+      criticalEvents: this.auditLog.filter((e) => e.severity === "critical")
         .length,
       fileLogging: {
         enabled: this.config.enableFile,
@@ -949,7 +965,7 @@ export type ScopedLogger = {
   warn: (message: string, context?: LogContext) => void;
   error: (message: string, error?: Error, context?: LogContext) => void;
   critical: (message: string, context?: LogContext) => void;
-  audit: (entry: Omit<AuditEntry, 'timestamp'>) => void;
+  audit: (entry: Omit<AuditEntry, "timestamp">) => void;
 };
 
 /**
@@ -958,7 +974,7 @@ export type ScopedLogger = {
  */
 export function createScopedLogger(
   component: string,
-  defaultContext?: LogContext
+  defaultContext?: LogContext,
 ): ScopedLogger {
   const instance = Logger.getInstance();
   const scopedContext: LogContext = { ...defaultContext, component };

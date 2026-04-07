@@ -18,5 +18,5 @@ export {
   FingerprintEvidence,
   ServerLanguage,
   ServerFramework,
-  DatabaseType
-} from './fingerprinter';
+  DatabaseType,
+} from "./fingerprinter";

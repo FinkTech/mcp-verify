@@ -12,11 +12,14 @@
  * These disclaimers clarify the scope and limitations of the security analysis.
  */
 
-import type { ReportDisclaimer, ReportMetadata } from '../mcp-server/entities/validation.types';
-import { translations, Language } from './i18n';
+import type {
+  ReportDisclaimer,
+  ReportMetadata,
+} from "../mcp-server/entities/validation.types";
+import { translations, Language } from "./i18n";
 
 // Tool version - should match package.json
-const TOOL_VERSION = '1.0.0';
+const TOOL_VERSION = "1.0.0";
 
 export interface DisclaimerOptions {
   /** Language for disclaimer text */
@@ -24,28 +27,32 @@ export interface DisclaimerOptions {
   /** Whether LLM analysis was used */
   llmUsed?: boolean;
   /** LLM provider if used */
-  llmProvider?: 'anthropic' | 'openai' | 'ollama';
+  llmProvider?: "anthropic" | "openai" | "ollama";
   /** Which modules were executed */
-  modulesExecuted?: Array<'security' | 'quality' | 'fuzzing' | 'protocol'>;
+  modulesExecuted?: Array<"security" | "quality" | "fuzzing" | "protocol">;
 }
 
 /**
  * Generate report metadata
  */
-export function generateMetadata(options: DisclaimerOptions = {}): ReportMetadata {
+export function generateMetadata(
+  options: DisclaimerOptions = {},
+): ReportMetadata {
   return {
     toolVersion: TOOL_VERSION,
-    modulesExecuted: options.modulesExecuted ?? ['security', 'quality'],
+    modulesExecuted: options.modulesExecuted ?? ["security", "quality"],
     llmUsed: options.llmUsed ?? false,
-    llmProvider: options.llmProvider
+    llmProvider: options.llmProvider,
   };
 }
 
 /**
  * Generate report disclaimer with translations
  */
-export function generateDisclaimer(options: DisclaimerOptions = {}): ReportDisclaimer {
-  const lang = options.language ?? 'en';
+export function generateDisclaimer(
+  options: DisclaimerOptions = {},
+): ReportDisclaimer {
+  const lang = options.language ?? "en";
   const t = translations[lang];
 
   const disclaimer: ReportDisclaimer = {
@@ -54,20 +61,22 @@ export function generateDisclaimer(options: DisclaimerOptions = {}): ReportDiscl
       t.disclaimer_scope_1,
       t.disclaimer_scope_2,
       t.disclaimer_scope_3,
-      t.disclaimer_scope_4
+      t.disclaimer_scope_4,
     ],
     limitations: [
       t.disclaimer_limitations_1,
       t.disclaimer_limitations_2,
       t.disclaimer_limitations_3,
       t.disclaimer_limitations_4,
-      t.disclaimer_limitations_5
-    ]
+      t.disclaimer_limitations_5,
+    ],
   };
 
   // Add LLM notice if applicable
   if (options.llmUsed && options.llmProvider) {
-    disclaimer.llmNotice = (t.disclaimer_llm_notice || 'Analysis powered by {provider}').replace('{provider}', options.llmProvider);
+    disclaimer.llmNotice = (
+      t.disclaimer_llm_notice || "Analysis powered by {provider}"
+    ).replace("{provider}", options.llmProvider);
   }
 
   return disclaimer;
@@ -77,45 +86,50 @@ export function generateDisclaimer(options: DisclaimerOptions = {}): ReportDiscl
  * Generate full disclaimer text for CLI output
  */
 export function getDisclaimerText(options: DisclaimerOptions = {}): string {
-  const lang = options.language ?? 'en';
+  const lang = options.language ?? "en";
   const t = translations[lang];
 
   const lines: string[] = [
-    '',
+    "",
     `━━━ ${t.disclaimer_title} ━━━`,
-    '',
+    "",
     t.disclaimer_main_text,
-    '',
+    "",
     t.disclaimer_scope_title,
     `  • ${t.disclaimer_scope_1}`,
     `  • ${t.disclaimer_scope_2}`,
     `  • ${t.disclaimer_scope_3}`,
     `  • ${t.disclaimer_scope_4}`,
-    '',
+    "",
     t.disclaimer_limitations_title,
     `  • ${t.disclaimer_limitations_1}`,
     `  • ${t.disclaimer_limitations_2}`,
     `  • ${t.disclaimer_limitations_3}`,
     `  • ${t.disclaimer_limitations_4}`,
     `  • ${t.disclaimer_limitations_5}`,
-    ''
+    "",
   ];
 
   if (options.llmUsed && options.llmProvider) {
-    lines.push((t.disclaimer_llm_notice || 'Analysis powered by {provider}').replace('{provider}', options.llmProvider));
-    lines.push('');
+    lines.push(
+      (t.disclaimer_llm_notice || "Analysis powered by {provider}").replace(
+        "{provider}",
+        options.llmProvider,
+      ),
+    );
+    lines.push("");
   }
 
   lines.push(t.disclaimer_professional_audit);
-  lines.push('');
+  lines.push("");
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
  * Get short disclaimer for inline display
  */
-export function getShortDisclaimer(language: Language = 'en'): string {
+export function getShortDisclaimer(language: Language = "en"): string {
   const t = translations[language];
   return t.disclaimer_no_warranty;
 }
@@ -123,7 +137,13 @@ export function getShortDisclaimer(language: Language = 'en'): string {
 /**
  * Get LLM data sharing notice
  */
-export function getLlmNotice(provider: string, language: Language = 'en'): string {
+export function getLlmNotice(
+  provider: string,
+  language: Language = "en",
+): string {
   const t = translations[language];
-  return (t.disclaimer_llm_notice || 'Analysis powered by {provider}').replace('{provider}', provider);
+  return (t.disclaimer_llm_notice || "Analysis powered by {provider}").replace(
+    "{provider}",
+    provider,
+  );
 }

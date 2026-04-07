@@ -12,15 +12,21 @@
  */
 
 // Interfaces
-export * from './detector.interface';
+export * from "./detector.interface";
 
 // Implementations
-export { PromptLeakDetector, PromptLeakConfig } from './prompt-leak.detector';
-export { JailbreakDetector, JailbreakConfig } from './jailbreak.detector';
-export { ProtocolViolationDetector, ProtocolViolationConfig } from './protocol-violation.detector';
-export { PathTraversalDetector } from './path-traversal.detector';
-export { WeakIdDetector, WeakIdConfig } from './weak-id.detector';
-export { InformationDisclosureDetector, InfoDisclosureConfig } from './info-disclosure.detector';
-export { TimingDetector, TimingConfig } from './timing.detector';
-export { ErrorDetector, ErrorDetectorConfig } from './error.detector';
-export { XssDetector } from './xss.detector';
+export { PromptLeakDetector, PromptLeakConfig } from "./prompt-leak.detector";
+export { JailbreakDetector, JailbreakConfig } from "./jailbreak.detector";
+export {
+  ProtocolViolationDetector,
+  ProtocolViolationConfig,
+} from "./protocol-violation.detector";
+export { PathTraversalDetector } from "./path-traversal.detector";
+export { WeakIdDetector, WeakIdConfig } from "./weak-id.detector";
+export {
+  InformationDisclosureDetector,
+  InfoDisclosureConfig,
+} from "./info-disclosure.detector";
+export { TimingDetector, TimingConfig } from "./timing.detector";
+export { ErrorDetector, ErrorDetectorConfig } from "./error.detector";
+export { XssDetector } from "./xss.detector";

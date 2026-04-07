@@ -30,25 +30,41 @@
  * - OWASP LLM Top 10 - LLM01 (extended to multi-agent)
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class CrossAgentPromptInjectionRule implements ISecurityRule {
-  code = 'SEC-037';
-  name = 'Cross-Agent Prompt Injection';
-  severity: 'critical' = 'critical';
+  code = "SEC-037";
+  name = "Cross-Agent Prompt Injection";
+  severity: "critical" = "critical";
 
   private readonly FORWARDED_PARAM_KEYWORDS = [
-    'message', 'instruction', 'prompt', 'command', 'directive',
-    'user_input', 'query', 'request', 'content', 'text'
+    "message",
+    "instruction",
+    "prompt",
+    "command",
+    "directive",
+    "user_input",
+    "query",
+    "request",
+    "content",
+    "text",
   ];
 
   private readonly AGENT_COMMUNICATION_PATTERNS = [
-    /send.*to.*agent/i, /forward.*to/i, /relay.*to/i,
-    /notify.*agent/i, /message.*agent/i, /communicate.*with/i,
-    /pass.*to.*agent/i, /transmit.*to/i
+    /send.*to.*agent/i,
+    /forward.*to/i,
+    /relay.*to/i,
+    /notify.*agent/i,
+    /message.*agent/i,
+    /communicate.*with/i,
+    /pass.*to.*agent/i,
+    /transmit.*to/i,
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -67,18 +83,18 @@ export class CrossAgentPromptInjectionRule implements ISecurityRule {
         if (vulnerableParams.length > 0) {
           findings.push({
             severity: this.severity,
-            message: t('sec_037_cross_agent_injection', {
+            message: t("sec_037_cross_agent_injection", {
               toolName: tool.name,
-              params: vulnerableParams.join(', ')
+              params: vulnerableParams.join(", "),
             }),
             component: `tool:${tool.name}`,
             ruleCode: this.code,
-            remediation: t('sec_037_recommendation'),
+            remediation: t("sec_037_recommendation"),
             references: [
-              'Multi-Agent Security Framework (MASF) 2024 - Prompt Isolation',
-              'OWASP LLM Top 10 - LLM01: Prompt Injection (Multi-Agent)',
-              'CWE-74: Improper Neutralization of Special Elements'
-            ]
+              "Multi-Agent Security Framework (MASF) 2024 - Prompt Isolation",
+              "OWASP LLM Top 10 - LLM01: Prompt Injection (Multi-Agent)",
+              "CWE-74: Improper Neutralization of Special Elements",
+            ],
           });
         }
       }
@@ -89,21 +105,24 @@ export class CrossAgentPromptInjectionRule implements ISecurityRule {
 
   private forwardsToOtherAgents(tool: McpTool): boolean {
     // Check name pattern
-    const nameMatches = this.AGENT_COMMUNICATION_PATTERNS.some(pattern =>
-      pattern.test(tool.name)
+    const nameMatches = this.AGENT_COMMUNICATION_PATTERNS.some((pattern) =>
+      pattern.test(tool.name),
     );
     if (nameMatches) return true;
 
     // Check description
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
-      const descMatches = this.AGENT_COMMUNICATION_PATTERNS.some(pattern =>
-        pattern.test(descLower)
+      const descMatches = this.AGENT_COMMUNICATION_PATTERNS.some((pattern) =>
+        pattern.test(descLower),
       );
       if (descMatches) return true;
 
       // Check for mentions of other agents
-      const mentionsAgents = descLower.includes('agent') || descLower.includes('forward') || descLower.includes('relay');
+      const mentionsAgents =
+        descLower.includes("agent") ||
+        descLower.includes("forward") ||
+        descLower.includes("relay");
       if (mentionsAgents) return true;
     }
 
@@ -111,7 +130,11 @@ export class CrossAgentPromptInjectionRule implements ISecurityRule {
     if (tool.inputSchema?.properties) {
       for (const propName of Object.keys(tool.inputSchema.properties)) {
         const propLower = propName.toLowerCase();
-        if (propLower.includes('target_agent') || propLower.includes('recipient') || propLower.includes('to_agent')) {
+        if (
+          propLower.includes("target_agent") ||
+          propLower.includes("recipient") ||
+          propLower.includes("to_agent")
+        ) {
           return true;
         }
       }
@@ -127,7 +150,9 @@ export class CrossAgentPromptInjectionRule implements ISecurityRule {
       return vulnerable;
     }
 
-    for (const [propName, propSchema] of Object.entries(tool.inputSchema.properties)) {
+    for (const [propName, propSchema] of Object.entries(
+      tool.inputSchema.properties,
+    )) {
       const schema = propSchema as {
         type?: string;
         pattern?: string;
@@ -138,24 +163,34 @@ export class CrossAgentPromptInjectionRule implements ISecurityRule {
       };
 
       // Check if it's a string parameter that might be forwarded
-      if (schema.type === 'string') {
+      if (schema.type === "string") {
         const propLower = propName.toLowerCase();
 
-        const isForwardedParam = this.FORWARDED_PARAM_KEYWORDS.some(keyword =>
-          propLower.includes(keyword)
+        const isForwardedParam = this.FORWARDED_PARAM_KEYWORDS.some((keyword) =>
+          propLower.includes(keyword),
         );
 
         if (isForwardedParam) {
           // Check if it lacks sanitization constraints
           const hasPattern = Boolean(schema.pattern);
           const hasEnum = Boolean(schema.enum && schema.enum.length > 0);
-          const hasReasonableMaxLength = Boolean(schema.maxLength && schema.maxLength <= 500);
+          const hasReasonableMaxLength = Boolean(
+            schema.maxLength && schema.maxLength <= 500,
+          );
 
           // Additional check: does description mention sanitization?
-          const desc = schema.description?.toLowerCase() || '';
-          const mentionsSanitization = desc.includes('sanitize') || desc.includes('escape') || desc.includes('filter');
+          const desc = schema.description?.toLowerCase() || "";
+          const mentionsSanitization =
+            desc.includes("sanitize") ||
+            desc.includes("escape") ||
+            desc.includes("filter");
 
-          if (!hasPattern && !hasEnum && !hasReasonableMaxLength && !mentionsSanitization) {
+          if (
+            !hasPattern &&
+            !hasEnum &&
+            !hasReasonableMaxLength &&
+            !mentionsSanitization
+          ) {
             vulnerable.push(propName);
           }
         }

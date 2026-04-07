@@ -19,10 +19,10 @@
  * @module libs/core/domain/baseline/baseline-manager
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { t } from '@mcp-verify/shared';
-import type { Report } from '../mcp-server/entities/validation.types';
+import * as fs from "fs";
+import * as path from "path";
+import { t } from "@mcp-verify/shared";
+import type { Report } from "../mcp-server/entities/validation.types";
 
 export interface BaselineComparison {
   baseline: BaselineSnapshot;
@@ -34,7 +34,7 @@ export interface BaselineComparison {
     newHighFindings: number;
     fixedFindings: number;
   };
-  status: 'improved' | 'unchanged' | 'degraded' | 'critical_degradation';
+  status: "improved" | "unchanged" | "degraded" | "critical_degradation";
   message: string;
 }
 
@@ -85,17 +85,22 @@ export class BaselineManager {
     }
 
     try {
-      const content = fs.readFileSync(baselinePath, 'utf-8');
+      const content = fs.readFileSync(baselinePath, "utf-8");
       return JSON.parse(content) as BaselineSnapshot;
     } catch (error) {
-      throw new Error(t('baseline_parse_error', { error: (error as Error).message }));
+      throw new Error(
+        t("baseline_parse_error", { error: (error as Error).message }),
+      );
     }
   }
 
   /**
    * Compare current report against baseline
    */
-  static compare(report: Report, baseline: BaselineSnapshot): BaselineComparison {
+  static compare(
+    report: Report,
+    baseline: BaselineSnapshot,
+  ): BaselineComparison {
     const current = this.createSnapshot(report);
 
     // Calculate deltas
@@ -106,31 +111,51 @@ export class BaselineManager {
     const baselineHashes = new Set(baseline.findingHashes);
     const currentHashes = new Set(current.findingHashes);
 
-    const newFindings = current.findingHashes.filter(h => !baselineHashes.has(h));
-    const fixedFindings = baseline.findingHashes.filter(h => !currentHashes.has(h));
+    const newFindings = current.findingHashes.filter(
+      (h) => !baselineHashes.has(h),
+    );
+    const fixedFindings = baseline.findingHashes.filter(
+      (h) => !currentHashes.has(h),
+    );
 
     const newCriticalFindings = current.criticalCount - baseline.criticalCount;
     const newHighFindings = current.highCount - baseline.highCount;
 
     // Determine status
-    let status: BaselineComparison['status'] = 'unchanged';
-    let message = '';
+    let status: BaselineComparison["status"] = "unchanged";
+    let message = "";
 
     if (newCriticalFindings > 0) {
-      status = 'critical_degradation';
-      message = t('baseline_critical_degradation', { count: newCriticalFindings });
+      status = "critical_degradation";
+      message = t("baseline_critical_degradation", {
+        count: newCriticalFindings,
+      });
     } else if (securityDelta < -10 || qualityDelta < -10) {
-      status = 'degraded';
-      message = t('baseline_score_dropped', { sec: securityDelta.toFixed(1), qual: qualityDelta.toFixed(1) });
+      status = "degraded";
+      message = t("baseline_score_dropped", {
+        sec: securityDelta.toFixed(1),
+        qual: qualityDelta.toFixed(1),
+      });
     } else if (securityDelta < 0 || qualityDelta < 0 || newHighFindings > 0) {
-      status = 'degraded';
-      message = t('baseline_degraded', { sec: securityDelta.toFixed(1), qual: qualityDelta.toFixed(1) });
-    } else if (securityDelta > 5 || qualityDelta > 5 || fixedFindings.length > 0) {
-      status = 'improved';
-      message = t('baseline_improved', { sec: securityDelta.toFixed(1), qual: qualityDelta.toFixed(1), fixed: fixedFindings.length });
+      status = "degraded";
+      message = t("baseline_degraded", {
+        sec: securityDelta.toFixed(1),
+        qual: qualityDelta.toFixed(1),
+      });
+    } else if (
+      securityDelta > 5 ||
+      qualityDelta > 5 ||
+      fixedFindings.length > 0
+    ) {
+      status = "improved";
+      message = t("baseline_improved", {
+        sec: securityDelta.toFixed(1),
+        qual: qualityDelta.toFixed(1),
+        fixed: fixedFindings.length,
+      });
     } else {
-      status = 'unchanged';
-      message = t('baseline_no_changes');
+      status = "unchanged";
+      message = t("baseline_no_changes");
     }
 
     return {
@@ -141,10 +166,10 @@ export class BaselineManager {
         qualityScore: qualityDelta,
         newCriticalFindings: Math.max(0, newCriticalFindings),
         newHighFindings: Math.max(0, newHighFindings),
-        fixedFindings: fixedFindings.length
+        fixedFindings: fixedFindings.length,
       },
       status,
-      message
+      message,
     };
   }
 
@@ -153,8 +178,8 @@ export class BaselineManager {
    */
   private static createSnapshot(report: Report): BaselineSnapshot {
     // Create hash for each finding (for change detection)
-    const findingHashes = report.security.findings.map(f =>
-      this.hashFinding(f.ruleCode || '', f.component, f.severity)
+    const findingHashes = report.security.findings.map((f) =>
+      this.hashFinding(f.ruleCode || "", f.component, f.severity),
     );
 
     return {
@@ -170,20 +195,24 @@ export class BaselineManager {
       highCount: report.security.highCount || 0,
       mediumCount: report.security.mediumCount || 0,
       lowCount: report.security.lowCount || 0,
-      findings: report.security.findings.map(f => ({
-        ruleCode: f.ruleCode || 'UNKNOWN',
+      findings: report.security.findings.map((f) => ({
+        ruleCode: f.ruleCode || "UNKNOWN",
         message: f.message,
         severity: f.severity,
-        component: f.component
+        component: f.component,
       })),
-      findingHashes
+      findingHashes,
     };
   }
 
   /**
    * Create a simple hash for a finding
    */
-  private static hashFinding(ruleCode: string, component: string, severity: string): string {
+  private static hashFinding(
+    ruleCode: string,
+    component: string,
+    severity: string,
+  ): string {
     return `${ruleCode}:${component}:${severity}`;
   }
 
@@ -196,23 +225,25 @@ export class BaselineManager {
       failOnCritical?: boolean;
       failOnDegradation?: boolean;
       allowedScoreDrop?: number;
-    } = {}
+    } = {},
   ): boolean {
     const {
       failOnCritical = true,
       failOnDegradation = true,
-      allowedScoreDrop = 5
+      allowedScoreDrop = 5,
     } = options;
 
     // Always fail on critical degradation if enabled
-    if (failOnCritical && comparison.status === 'critical_degradation') {
+    if (failOnCritical && comparison.status === "critical_degradation") {
       return true;
     }
 
     // Fail on any degradation if strict mode
-    if (failOnDegradation && comparison.status === 'degraded') {
+    if (failOnDegradation && comparison.status === "degraded") {
       // But allow small score drops if configured
-      const securityDrop = Math.abs(Math.min(0, comparison.delta.securityScore));
+      const securityDrop = Math.abs(
+        Math.min(0, comparison.delta.securityScore),
+      );
       const qualityDrop = Math.abs(Math.min(0, comparison.delta.qualityScore));
 
       if (securityDrop > allowedScoreDrop || qualityDrop > allowedScoreDrop) {

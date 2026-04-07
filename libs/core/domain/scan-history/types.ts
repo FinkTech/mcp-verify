@@ -5,7 +5,7 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import { Report } from '../mcp-server/entities/validation.types';
+import { Report } from "../mcp-server/entities/validation.types";
 
 /**
  * Represents a saved scan in history
@@ -112,13 +112,13 @@ export interface RegressionReport {
   };
 
   /** Overall recommendation */
-  recommendation: 'safe_to_deploy' | 'review_required' | 'blocking_issues';
+  recommendation: "safe_to_deploy" | "review_required" | "blocking_issues";
 
   /** Human-readable summary */
   summary: string;
 
   /** Severity of the degradation */
-  degradation_severity: 'none' | 'info' | 'warning' | 'blocking';
+  degradation_severity: "none" | "info" | "warning" | "blocking";
 }
 
 /**
@@ -129,7 +129,7 @@ export interface CompareOptions {
   includeDetails?: boolean;
 
   /** Minimum severity to consider (e.g., 'high' ignores medium/low changes) */
-  minSeverity?: 'critical' | 'high' | 'medium' | 'low';
+  minSeverity?: "critical" | "high" | "medium" | "low";
 
   /** Score degradation threshold to trigger warning (default: 10) */
   scoreThreshold?: number;

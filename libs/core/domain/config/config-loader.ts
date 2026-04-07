@@ -27,12 +27,12 @@
  * ```
  */
 
-import fs from 'fs';
-import path from 'path';
-import { ZodError } from 'zod';
-import { deepMerge } from '@mcp-verify/shared';
-import type { McpVerifyConfig, PartialConfig } from './config.types';
-import { DEFAULT_CONFIG, validateConfig, ENV_MAPPING } from './config.types';
+import fs from "fs";
+import path from "path";
+import { ZodError } from "zod";
+import { deepMerge } from "@mcp-verify/shared";
+import type { McpVerifyConfig, PartialConfig } from "./config.types";
+import { DEFAULT_CONFIG, validateConfig, ENV_MAPPING } from "./config.types";
 
 /**
  * Options for loading configuration
@@ -122,18 +122,21 @@ export class ConfigLoader {
   /**
    * Load configuration from file
    */
-  private static loadFromFile(explicitPath?: string, silent = false): PartialConfig | null {
+  private static loadFromFile(
+    explicitPath?: string,
+    silent = false,
+  ): PartialConfig | null {
     const searchPaths = [
       explicitPath,
-      path.join(process.cwd(), 'mcp-verify.config.json'),
-      path.join(process.cwd(), '.mcp-verify.json'),
-      path.join(process.cwd(), '.mcp-verifyrc.json')
+      path.join(process.cwd(), "mcp-verify.config.json"),
+      path.join(process.cwd(), ".mcp-verify.json"),
+      path.join(process.cwd(), ".mcp-verifyrc.json"),
     ].filter((p): p is string => p !== undefined);
 
     for (const filePath of searchPaths) {
       if (fs.existsSync(filePath)) {
         try {
-          const raw = fs.readFileSync(filePath, 'utf-8');
+          const raw = fs.readFileSync(filePath, "utf-8");
           const parsed = JSON.parse(raw);
 
           // Validate with Zod
@@ -178,12 +181,12 @@ export class ConfigLoader {
    */
   private static parseEnvValue(value: string): unknown {
     // Boolean
-    if (value.toLowerCase() === 'true') return true;
-    if (value.toLowerCase() === 'false') return false;
+    if (value.toLowerCase() === "true") return true;
+    if (value.toLowerCase() === "false") return false;
 
     // Number
     const num = Number(value);
-    if (!isNaN(num) && value.trim() !== '') return num;
+    if (!isNaN(num) && value.trim() !== "") return num;
 
     // String
     return value;
@@ -192,8 +195,12 @@ export class ConfigLoader {
   /**
    * Set a value at a nested path in an object
    */
-  private static setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
-    const parts = path.split('.');
+  private static setNestedValue(
+    obj: Record<string, unknown>,
+    path: string,
+    value: unknown,
+  ): void {
+    const parts = path.split(".");
     let current = obj;
 
     for (let i = 0; i < parts.length - 1; i++) {
@@ -210,10 +217,13 @@ export class ConfigLoader {
   /**
    * Deep merge two configuration objects
    */
-  private static mergeConfigs(base: McpVerifyConfig, override: PartialConfig): McpVerifyConfig {
+  private static mergeConfigs(
+    base: McpVerifyConfig,
+    override: PartialConfig,
+  ): McpVerifyConfig {
     return deepMerge(
       base as unknown as Record<string, unknown>,
-      override as unknown as Record<string, unknown>
+      override as unknown as Record<string, unknown>,
     ) as unknown as McpVerifyConfig;
   }
 
@@ -222,30 +232,30 @@ export class ConfigLoader {
    */
   static generateSampleConfig(): string {
     const sample: PartialConfig = {
-      $schema: 'https://mcp-verify.dev/schema/config.json',
+      $schema: "https://mcp-verify.dev/schema/config.json",
       output: {
-        directory: './reports',
-        language: 'en',
-        html: true
+        directory: "./reports",
+        language: "en",
+        html: true,
       },
       security: {
         minScore: 70,
         failOnCritical: true,
-        failOnHigh: false
+        failOnHigh: false,
       },
       quality: {
-        minScore: 50
+        minScore: 50,
       },
       fuzzing: {
         timeout: 5000,
-        concurrency: 5
+        concurrency: 5,
       },
       network: {
-        requestTimeout: 30000
+        requestTimeout: 30000,
       },
       sandbox: {
-        enabled: false
-      }
+        enabled: false,
+      },
     };
 
     return JSON.stringify(sample, null, 2);
@@ -256,19 +266,21 @@ export class ConfigLoader {
    */
   static configFileExists(): boolean {
     const searchPaths = [
-      path.join(process.cwd(), 'mcp-verify.config.json'),
-      path.join(process.cwd(), '.mcp-verify.json'),
-      path.join(process.cwd(), '.mcp-verifyrc.json')
+      path.join(process.cwd(), "mcp-verify.config.json"),
+      path.join(process.cwd(), ".mcp-verify.json"),
+      path.join(process.cwd(), ".mcp-verifyrc.json"),
     ];
 
-    return searchPaths.some(p => fs.existsSync(p));
+    return searchPaths.some((p) => fs.existsSync(p));
   }
 }
 
 /**
  * Convenience function to get a specific config value
  */
-export function getConfig<K extends keyof McpVerifyConfig>(key: K): McpVerifyConfig[K] {
+export function getConfig<K extends keyof McpVerifyConfig>(
+  key: K,
+): McpVerifyConfig[K] {
   return ConfigLoader.get()[key];
 }
 

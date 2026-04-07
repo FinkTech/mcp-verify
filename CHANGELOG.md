@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.0] - 2026-03-26
+## [1.0.0] - 2026-04-07
 
 ### Added
 
@@ -28,6 +28,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Structural Attacks**: Tests missing required fields and prototype pollution (`__proto__`, `constructor`)
   - **Nested Object Support**: Recursively parses and attacks deeply nested schemas
   - Why it matters: Generic fuzzers have 90% rejection rate. Schema-aware fuzzing reaches actual business logic where real vulnerabilities exist.
+
+- **🔐 Secure API Key Management**: System Keychain integration for local API key persistence using OS Credential Manager (Windows/macOS/Linux).
+  - **Priority Fallback**: 1) Environment variable (CI/CD), 2) System Keychain (local dev)
+  - **No Re-entry Required**: API keys persist securely across sessions without manual input
+  - **OS-Native Security**: Uses Windows Credential Manager, macOS Keychain, Linux Secret Service
+  - Why it matters: Eliminates plain-text .env files for API keys while maintaining CI/CD compatibility.
+
+- **📦 Single Executable Application (SEA)**: Migrated from `pkg` to Node.js 20+ native SEA tooling.
+  - **Security Fix**: Eliminated moderate severity vulnerability (GHSA-22r3-9w55-cj54) from unmaintained `pkg` dependency
+  - **Native Binary Compilation**: Platform-specific builds (Linux, macOS, Windows) using `postject`
+  - **Smaller Binaries**: Optimized bundle size by excluding optional peer dependencies
+  - **Native Addon Support**: Seamless integration with `.node` files (@napi-rs/keyring)
+  - Why it matters: Secure, high-performance standalone binaries without third-party bundler vulnerabilities.
+
+- **📋 SECURITY_TESTING.md**: New comprehensive documentation on security rule blocks, test coverage status (~45% passing), and opt-in rules for Block D (AI Weaponization).
+  - Why it matters: Transparency on test maturity and ongoing improvements for community trust.
 
 - **Interactive CLI Shell**: Full-featured REPL with contextual autocomplete, persistent history, multi-context workspaces, and output redirection (>, >>).
   - **Multi-Context Support**: Manage dev/staging/prod configurations independently with `context create`, `context switch`
@@ -52,6 +68,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **⬆️ Node.js Requirement**: Updated minimum Node.js version from 18.0.0 to 20.0.0 for compatibility with native SEA tooling and modern native addons.
+
+- **🔒 Enhanced Security Rules**: Implemented and improved logic for critical security rules:
+  - **SEC-040 (Swarm Attack)**: Detects coordinated multi-agent attacks
+  - **SEC-045 (Error Granularity)**: Identifies information leakage through error messages
+  - **SEC-048 (Capability Negotiation)**: Validates proper MCP capability handling
+  - **SEC-049 (Timing Side Channel)**: Detects timing-based authentication attacks
+  - **SEC-054 (Endpoint Hijacking)**: Enhanced to detect both config and tool registration vulnerabilities
+  - **SEC-006 (Insecure Deserialization)**: Now detects generic string parameters without format validation
+  - **SEC-001 (Auth Bypass)**: Expanded keyword detection for administrative access patterns
+
+- **🎛️ Block D Opt-In**: Added `MCP_VERIFY_ENABLE_BLOCK_D` environment variable to enable AI Weaponization rules for testing/advanced use while keeping them disabled by default for safety.
+
+- **📧 Official Contact Channels**: Updated all security contact emails from placeholder addresses to official monitored channels:
+  - Replaced `security@your-domain.com` with `official.mcpverify@gmail.com`
+  - Updated appeal process contacts in responsible usage guidelines
+  - Ensures proper vulnerability reporting and user support
+
 - **⚡ Fuzzing Engine Architecture**: Complete refactoring of `FuzzerEngine` to prioritize schema-aware generation. When a tool schema is available, the engine now:
   1. Parses the schema to extract field descriptors with constraints
   2. Generates targeted attacks per field (type confusion, boundaries, enums, formats)
@@ -71,13 +105,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- **60 Security Rules implemented** across 6 specialized threat categories (SEC-001 to SEC-060):
+- **61 Security Rules** across 6 specialized threat categories (SEC-001 to SEC-061):
   - **Block OWASP (13 rules)**: SQL Injection, Command Injection, SSRF, Path Traversal, XXE, Prompt Injection, etc.
   - **Block MCP (8 rules)**: Dangerous Tool Chaining, Excessive Permissions, Exposed Endpoints, etc.
   - **Block A (9 rules)**: OWASP LLM Top 10 Aligned.
   - **Block B (11 rules)**: Multi-Agent & Agentic Attacks.
   - **Block C (9 rules)**: Operational & Enterprise Compliance.
-  - **Block D (10 rules)**: AI Weaponization & Supply Chain.
+  - **Block D (11 rules)**: AI Weaponization & Supply Chain.
+
+- **SEC-061: Homoglyph / Unicode Spoofing (NEW)**
+  - Detects Cyrillic, Greek, Fullwidth Latin, and zero-width characters mixed with ASCII in server names, tool names, and resource identifiers
+  - Only flags mixed ASCII + confusable Unicode — pure non-ASCII names (e.g. Japanese tool names) are not flagged
+  - Reports exact codepoint, Unicode block name, and position: `'Р' (U+0420 Cyrillic) at pos 4`
+  - Covers supply chain identity spoofing: a server named `"CRM Раrtner Suite"` (Cyrillic Р) is visually indistinguishable from the legitimate name but bypasses allowlist checks at the codepoint level
+
+- **SEC-024: Prompt Injection via Tool Inputs — major overhaul**
+  - Extended detection from parameter names only to all tool metadata surfaces: descriptions, default values, annotations (including `x-*` custom extension fields), resource descriptions, prompt template descriptions, and prompt argument descriptions
+  - Three-tier detection strategy to minimize false positives:
+    - Tier 1 (direct markers): `"SYSTEM:"`, `"ignore previous instructions"`, `"new instructions:"` — always fire
+    - Tier 2 (strong imperatives + any context): `"include a summary of all tools"`, `"when this tool is invoked"`, `"forward all retrieved"` — fire when combined with any session/context/history word
+    - Tier 3 (weak imperatives + specific exfiltration targets): `"when processing"`, `"forward all"` — only fire when combined with specific targets like `"system prompt"`, `"conversation history"`, `"all tools"`
+  - Added inflected verb forms to prevent substring-matching regressions (`"includes conversation metadata"` was previously missed because `"include conversation metadata"` doesn't match `"includes"`)
+  - Fixed severity: config was overriding rule severity from `"critical"` to `"high"` — corrected
+
+- **SEC-013: Prompt Injection — false positive reduction**
+  - Removed overly broad keywords from detection lists: `"generate"`, `"describe"`, `"explain"`, `"answer"`, `"respond"`, `"reply"`, `"data"`, `"request"`, `"body"`, `"content"`, `"input"`, `"read"`, `"load"`, `"file"`, `"document"`, `"import"`
+  - Parameter name matching now uses exact/word-boundary logic instead of substring
+  - Indirect injection chain now requires both URL parameter in schema AND NLP keyword in description (not just name-based matching)
+  - Deduplicated findings: one finding per parameter listing all missing constraints
 
 ### Other Features
 
@@ -93,6 +148,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Known Issues
 
 #### 🔴 Tests
+
 - **20 integration tests failing** (timeout + Deno dependency issues)
   - `transport.spec.ts`: Timeout in malformed JSON test (5000ms insufficient)
   - `deno-runner.spec.ts`: Assumes Deno installed globally
@@ -100,6 +156,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fix planned for v1.0.1: Increase timeout to 25000ms + conditional skip if Deno unavailable
 
 #### 🟡 Code Quality
+
 - **10 `JSON.parse()` calls without try-catch** (crash risk on corrupted files)
   - Locations: `scan-history-manager.ts` (3), `baseline-manager.ts` (2), `config-manager.ts` (5)
   - Risk: Application crash if JSON file is corrupted
@@ -111,49 +168,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fix planned for v1.0.1: Add preventive validation with regex `^[a-zA-Z0-9_-]+$`
 
 #### 🟡 VSCode Extension
+
 - ✅ **Command parsing fixed**: Migrated to `shell-quote` library.
 - ✅ **Marketplace assets added**: Included README.md, icon, and .vscodeignore.
 
 ### Performance
+
 - Simple validation: < 500ms
 - With security analysis: < 2s
 - With LLM analysis: < 5s (depends on provider)
 
 ### Testing
-- **549 unit tests passing** ✅
-- **20 integration tests failing** (non-blocking)
-- Coverage: ~70% overall
-  - Domain layer: 85%
-  - Use cases: 75%
-  - Infrastructure: 65%
-  - Applications: 55%
+
+- **61/61 security rule test files** present ✅
+- **100% critical OWASP rules (SEC-001 to SEC-013)** passing ✅
+- Broader rule coverage actively improving
+- **Flexible test assertions**: Using `ruleCode` detection to support localized finding messages
+- **Increased Jest timeout**: Global timeout raised to 300s for slow Windows integration tests
+- **Improved resource cleanup**: Enhanced TestServerManager to mitigate process leaks and ENOENT errors
+- Coverage: Production-ready CLI operations, evolving security rule test suite
 
 ---
 
-## [Unreleased]
-
-### Planned for v1.0.1 (Next 2 weeks)
-- [ ] Fix 20 failing integration tests
-- [ ] Add try-catch to all JSON.parse() calls
-- [ ] Add path traversal validation in scan-history-manager
-- [ ] NPM package publication
-
-### Planned for v1.1 (4 weeks)
-- [ ] GitHub Actions CI/CD pipeline
-- [ ] Automated npm publish workflow
-- [ ] VSCode: Quick pick for recent commands
-- [ ] VSCode: Persistent command history
-- [ ] Test coverage to 80%+
-
-### Planned for v1.2+ (2+ months)
-- [ ] VSCode: Marketplace publication
-- [ ] VSCode: Extension icon (128x128)
-- [ ] VSCode: Screenshots for marketplace
-- [ ] VSCode: E2E tests
-- [ ] Native binaries (Windows, Linux, macOS)
-- [ ] Custom rule engine
-- [ ] Pre-commit hooks
-- [ ] Historical trend dashboard
 
 ---
 

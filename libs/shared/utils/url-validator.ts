@@ -18,15 +18,15 @@
 
 export class URLValidator {
   private static readonly PRIVATE_IP_RANGES = [
-    /^10\./,                           // 10.0.0.0/8
-    /^172\.(1[6-9]|2[0-9]|3[01])\./,  // 172.16.0.0/12
-    /^192\.168\./,                     // 192.168.0.0/16
-    /^127\./,                          // 127.0.0.0/8 (loopback)
-    /^169\.254\./,                     // 169.254.0.0/16 (link-local)
-    /^0\.0\.0\.0$/,                    // 0.0.0.0 (any address)
-    /^localhost$/i,                    // localhost
-    /^\[::1\]$/,                       // IPv6 loopback
-    /^\[fe80:/i,                       // IPv6 link-local
+    /^10\./, // 10.0.0.0/8
+    /^172\.(1[6-9]|2[0-9]|3[01])\./, // 172.16.0.0/12
+    /^192\.168\./, // 192.168.0.0/16
+    /^127\./, // 127.0.0.0/8 (loopback)
+    /^169\.254\./, // 169.254.0.0/16 (link-local)
+    /^0\.0\.0\.0$/, // 0.0.0.0 (any address)
+    /^localhost$/i, // localhost
+    /^\[::1\]$/, // IPv6 loopback
+    /^\[fe80:/i, // IPv6 link-local
   ];
 
   /**
@@ -63,28 +63,28 @@ export class URLValidator {
       const hostname = parsed.hostname;
 
       if (/^10\./.test(hostname)) {
-        return 'Private network (10.0.0.0/8)';
+        return "Private network (10.0.0.0/8)";
       }
       if (/^172\.(1[6-9]|2[0-9]|3[01])\./.test(hostname)) {
-        return 'Private network (172.16.0.0/12)';
+        return "Private network (172.16.0.0/12)";
       }
       if (/^192\.168\./.test(hostname)) {
-        return 'Private network (192.168.0.0/16)';
+        return "Private network (192.168.0.0/16)";
       }
       if (/^127\./.test(hostname)) {
-        return 'Loopback address (localhost)';
+        return "Loopback address (localhost)";
       }
       if (/^169\.254\./.test(hostname)) {
-        return 'Link-local address (169.254.0.0/16)';
+        return "Link-local address (169.254.0.0/16)";
       }
       if (/^localhost$/i.test(hostname)) {
-        return 'Localhost';
+        return "Localhost";
       }
       if (/^\[::1\]$/.test(hostname)) {
-        return 'IPv6 loopback';
+        return "IPv6 loopback";
       }
       if (/^\[fe80:/i.test(hostname)) {
-        return 'IPv6 link-local';
+        return "IPv6 link-local";
       }
 
       return null;
@@ -98,6 +98,6 @@ export class URLValidator {
    * (HTTP/HTTPS URLs only, not STDIO commands)
    */
   static isURL(target: string): boolean {
-    return target.startsWith('http://') || target.startsWith('https://');
+    return target.startsWith("http://") || target.startsWith("https://");
   }
 }

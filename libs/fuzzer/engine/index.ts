@@ -21,5 +21,5 @@ export {
   FeedbackStats, // Exporting FeedbackStats
   ResponseAnalysis,
   InterestLevel,
-  InterestReason
-} from './fuzzer-engine';
+  InterestReason,
+} from "./fuzzer-engine";

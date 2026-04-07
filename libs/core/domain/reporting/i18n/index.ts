@@ -11,31 +11,41 @@
  * Sistema limpio de traducciones usando i18next
  */
 
-import i18next from 'i18next';
+import i18next from "i18next";
 
 // Por ahora importamos el viejo sistema
-import { translations as oldTranslations } from '../i18n.js';
+import { translations as oldTranslations } from "../i18n.js";
 
-export type Language = 'en' | 'es' | 'fr' | 'de' | 'pt' | 'it' | 'ja' | 'zh' | 'ko' | 'ru';
+export type Language =
+  | "en"
+  | "es"
+  | "fr"
+  | "de"
+  | "pt"
+  | "it"
+  | "ja"
+  | "zh"
+  | "ko"
+  | "ru";
 
 /**
  * Initialize i18next with translations
  */
-export async function initI18n(defaultLang: Language = 'en'): Promise<void> {
+export async function initI18n(defaultLang: Language = "en"): Promise<void> {
   await i18next.init({
     lng: defaultLang,
-    fallbackLng: 'en',
+    fallbackLng: "en",
     resources: {
       en: {
-        translation: oldTranslations.en || {}
+        translation: oldTranslations.en || {},
       },
       es: {
-        translation: oldTranslations.es || {}
-      }
+        translation: oldTranslations.es || {},
+      },
     },
     interpolation: {
-      escapeValue: false // React already escapes
-    }
+      escapeValue: false, // React already escapes
+    },
   });
 }
 
@@ -61,12 +71,12 @@ export function changeLanguage(lang: Language): Promise<any> {
  * Get current language
  */
 export function getCurrentLanguage(): Language {
-  return (i18next.language || 'en') as Language;
+  return (i18next.language || "en") as Language;
 }
 
 /**
  * Get available languages
  */
 export function getAvailableLanguages(): Language[] {
-  return ['en', 'es', 'fr', 'de', 'pt', 'it', 'ja', 'zh', 'ko', 'ru'];
+  return ["en", "es", "fr", "de", "pt", "it", "ja", "zh", "ko", "ru"];
 }

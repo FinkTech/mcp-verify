@@ -57,10 +57,17 @@ export interface ToolCallParams {
 /**
  * Type guard to check if message is a tool call request
  */
-export function isToolCall(message: JsonRpcMessage): message is JsonRpcRequest & { method: 'tools/call'; params: ToolCallParams } {
-  return message.method === 'tools/call' &&
-         typeof (message as JsonRpcRequest).params === 'object' &&
-         (message as JsonRpcRequest).params !== null;
+export function isToolCall(
+  message: JsonRpcMessage,
+): message is JsonRpcRequest & {
+  method: "tools/call";
+  params: ToolCallParams;
+} {
+  return (
+    message.method === "tools/call" &&
+    typeof (message as JsonRpcRequest).params === "object" &&
+    (message as JsonRpcRequest).params !== null
+  );
 }
 
 /**
@@ -71,7 +78,12 @@ export interface McpSchema {
   properties?: Record<string, JsonValue>;
   required?: string[];
   // Additional properties can be accessed via bracket notation
-  [key: string]: JsonValue | string | string[] | Record<string, JsonValue> | undefined;
+  [key: string]:
+    | JsonValue
+    | string
+    | string[]
+    | Record<string, JsonValue>
+    | undefined;
 }
 
 // Improved strict version
@@ -82,7 +94,12 @@ export interface McpTool {
     type: string;
     properties?: Record<string, JsonValue>;
     required?: string[];
-    [key: string]: JsonValue | string | string[] | Record<string, JsonValue> | undefined;
+    [key: string]:
+      | JsonValue
+      | string
+      | string[]
+      | Record<string, JsonValue>
+      | undefined;
   };
 }
 

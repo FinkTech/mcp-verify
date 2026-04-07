@@ -5,10 +5,15 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import { t } from '@mcp-verify/shared';
-import type { DiscoveryResult, QualityReport, QualityIssue, McpTool } from '../mcp-server/entities/validation.types';
-import { LLMSemanticAnalyzer } from './llm-semantic-analyzer';
-import type { LLMSemanticResult } from './llm-semantic-analyzer';
+import { t } from "@mcp-verify/shared";
+import type {
+  DiscoveryResult,
+  QualityReport,
+  QualityIssue,
+  McpTool,
+} from "../mcp-server/entities/validation.types";
+import { LLMSemanticAnalyzer } from "./llm-semantic-analyzer";
+import type { LLMSemanticResult } from "./llm-semantic-analyzer";
 
 export class SemanticAnalyzer {
   private llmAnalyzer?: LLMSemanticAnalyzer;
@@ -40,10 +45,10 @@ export class SemanticAnalyzer {
         totalItems++;
         if (!resource.mimeType) {
           issues.push({
-            severity: 'warning',
-            message: t('resource_missing_mimetype'),
+            severity: "warning",
+            message: t("resource_missing_mimetype"),
             component: `resource:${resource.name}`,
-            suggestion: t('quality_mimetype_suggestion')
+            suggestion: t("quality_mimetype_suggestion"),
           });
         } else {
           perfectItems++;
@@ -53,7 +58,8 @@ export class SemanticAnalyzer {
 
     // Calculate Score (Simple percentage of "perfect" items, penalized by issues)
     // If there are no items, score is 100 (neutral)
-    let score = totalItems === 0 ? 100 : Math.round((perfectItems / totalItems) * 100);
+    let score =
+      totalItems === 0 ? 100 : Math.round((perfectItems / totalItems) * 100);
 
     // Penalize score for warnings
     const warningPenalty = issues.length * 2;
@@ -63,7 +69,7 @@ export class SemanticAnalyzer {
     let llmResult: LLMSemanticResult | undefined;
     if (this.llmAnalyzer) {
       llmResult = await this.llmAnalyzer.analyze(discovery, {
-        llmProvider: this.llmProvider
+        llmProvider: this.llmProvider,
       });
 
       // Merge LLM findings into issues
@@ -80,11 +86,11 @@ export class SemanticAnalyzer {
           });
 
           // Apply additional penalty for critical/high LLM findings
-          if (finding.severity === 'critical') {
+          if (finding.severity === "critical") {
             score = Math.max(0, score - 15);
-          } else if (finding.severity === 'high') {
+          } else if (finding.severity === "high") {
             score = Math.max(0, score - 10);
-          } else if (finding.severity === 'medium') {
+          } else if (finding.severity === "medium") {
             score = Math.max(0, score - 5);
           }
         }
@@ -101,13 +107,15 @@ export class SemanticAnalyzer {
   /**
    * Map LLM severity to quality issue severity
    */
-  private mapLLMSeverity(llmSeverity: 'critical' | 'high' | 'medium' | 'low' | 'info'): 'warning' | 'info' {
-    if (llmSeverity === 'critical' || llmSeverity === 'high') {
-      return 'warning'; // Critical semantic issues are warnings (not blocking)
-    } else if (llmSeverity === 'medium') {
-      return 'warning';
+  private mapLLMSeverity(
+    llmSeverity: "critical" | "high" | "medium" | "low" | "info",
+  ): "warning" | "info" {
+    if (llmSeverity === "critical" || llmSeverity === "high") {
+      return "warning"; // Critical semantic issues are warnings (not blocking)
+    } else if (llmSeverity === "medium") {
+      return "warning";
     } else {
-      return 'info';
+      return "info";
     }
   }
 
@@ -117,10 +125,10 @@ export class SemanticAnalyzer {
     // 1. Description Existence
     if (!tool.description || tool.description.trim().length === 0) {
       issues.push({
-        severity: 'warning',
-        message: t('missing_description'),
+        severity: "warning",
+        message: t("missing_description"),
         component: `tool:${tool.name}`,
-        suggestion: t('add_a_clear_description_explaining_what_the_tool_d')
+        suggestion: t("add_a_clear_description_explaining_what_the_tool_d"),
       });
       return issues; // Can't check length if missing
     }
@@ -128,22 +136,24 @@ export class SemanticAnalyzer {
     // 2. Description Length (Too short)
     if (tool.description.length < 20) {
       issues.push({
-        severity: 'info',
-        message: t('description_is_very_short'),
+        severity: "info",
+        message: t("description_is_very_short"),
         component: `tool:${tool.name}`,
-        suggestion: t('expand_description_to_at_least_20_characters_to_pr')
+        suggestion: t("expand_description_to_at_least_20_characters_to_pr"),
       });
     }
 
     // 3. Parameter Descriptions
     if (tool.inputSchema?.properties) {
-      for (const [param, config] of Object.entries(tool.inputSchema.properties) as [string, any][]) {
+      for (const [param, config] of Object.entries(
+        tool.inputSchema.properties,
+      ) as [string, any][]) {
         if (!config.description) {
           issues.push({
-            severity: 'info',
-            message: t('quality_param_missing_desc', { param }),
+            severity: "info",
+            message: t("quality_param_missing_desc", { param }),
             component: `tool:${tool.name}`,
-            suggestion: t('quality_param_desc_suggestion', { param })
+            suggestion: t("quality_param_desc_suggestion", { param }),
           });
         }
       }

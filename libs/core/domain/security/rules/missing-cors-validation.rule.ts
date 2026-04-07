@@ -24,14 +24,17 @@
  * - CWE-352: Cross-Site Request Forgery
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import { t } from "@mcp-verify/shared";
 
 export class MissingCorsValidationRule implements ISecurityRule {
-  code = 'SEC-046';
-  name = 'Missing CORS / Origin Validation';
-  severity: 'high' = 'high';
+  code = "SEC-046";
+  name = "Missing CORS / Origin Validation";
+  severity: "high" = "high";
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
@@ -42,19 +45,21 @@ export class MissingCorsValidationRule implements ISecurityRule {
 
     if (discovery.serverInfo?.description) {
       const descLower = discovery.serverInfo.description.toLowerCase();
-      const mentionsCors = descLower.includes('cors') || descLower.includes('origin');
+      const mentionsCors =
+        descLower.includes("cors") || descLower.includes("origin");
 
       if (!mentionsCors) {
         // Conservative: only flag if server explicitly uses HTTP/network
-        const mentionsHttp = descLower.includes('http') || descLower.includes('sse');
+        const mentionsHttp =
+          descLower.includes("http") || descLower.includes("sse");
 
         if (mentionsHttp) {
           findings.push({
-            severity: 'medium', // Lowered since this is heuristic
-            message: t('sec_046_no_cors_mention'),
-            component: 'server',
+            severity: "medium", // Lowered since this is heuristic
+            message: t("sec_046_no_cors_mention"),
+            component: "server",
             ruleCode: this.code,
-            remediation: t('sec_046_recommendation')
+            remediation: t("sec_046_recommendation"),
           });
         }
       }

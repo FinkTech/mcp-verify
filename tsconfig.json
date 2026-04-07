@@ -26,5 +26,11 @@
     "resolveJsonModule": true
   },
   "include": ["apps/**/*", "libs/**/*", "tools/**/*"],
-  "exclude": ["node_modules", "dist", "apps/deno-sandbox-poc/**/*", "tests/**/*", "apps/cli-verifier/src/commands/temp/**/*"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "apps/deno-sandbox-poc/**/*",
+    "tests/**/*",
+    "apps/cli-verifier/src/commands/temp/**/*"
+  ]
 }

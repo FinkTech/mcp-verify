@@ -24,24 +24,40 @@
  * - Principle of Least Privilege
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class InsecureDefaultConfigurationRule implements ISecurityRule {
-  code = 'SEC-047';
-  name = 'Insecure Default Configuration';
-  severity: 'high' = 'high';
+  code = "SEC-047";
+  name = "Insecure Default Configuration";
+  severity: "high" = "high";
 
   private readonly DESTRUCTIVE_KEYWORDS = [
-    'delete', 'remove', 'wipe', 'drop', 'truncate',
-    'purge', 'erase', 'destroy', 'terminate', 'kill'
+    "delete",
+    "remove",
+    "wipe",
+    "drop",
+    "truncate",
+    "purge",
+    "erase",
+    "destroy",
+    "terminate",
+    "kill",
   ];
 
   private readonly OPT_IN_KEYWORDS = [
-    'enabled', 'enable', 'opt-in', 'opt_in', 'confirm',
-    'require_confirmation', 'disabled_by_default'
+    "enabled",
+    "enable",
+    "opt-in",
+    "opt_in",
+    "confirm",
+    "require_confirmation",
+    "disabled_by_default",
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -60,10 +76,10 @@ export class InsecureDefaultConfigurationRule implements ISecurityRule {
         if (!hasOptIn) {
           findings.push({
             severity: this.severity,
-            message: t('sec_047_destructive_no_optin', { toolName: tool.name }),
+            message: t("sec_047_destructive_no_optin", { toolName: tool.name }),
             component: `tool:${tool.name}`,
             ruleCode: this.code,
-            remediation: t('sec_047_recommendation')
+            remediation: t("sec_047_recommendation"),
           });
         }
       }
@@ -74,20 +90,22 @@ export class InsecureDefaultConfigurationRule implements ISecurityRule {
 
   private isDestructiveTool(tool: McpTool): boolean {
     const nameLower = tool.name.toLowerCase();
-    const descLower = tool.description?.toLowerCase() || '';
+    const descLower = tool.description?.toLowerCase() || "";
 
-    return this.DESTRUCTIVE_KEYWORDS.some(kw =>
-      nameLower.includes(kw) || descLower.includes(kw)
+    return this.DESTRUCTIVE_KEYWORDS.some(
+      (kw) => nameLower.includes(kw) || descLower.includes(kw),
     );
   }
 
   private hasOptInMechanism(tool: McpTool): boolean {
     // Check for opt-in parameter in inputSchema
     if (tool.inputSchema?.properties) {
-      const propertyNames = Object.keys(tool.inputSchema.properties).map(p => p.toLowerCase());
+      const propertyNames = Object.keys(tool.inputSchema.properties).map((p) =>
+        p.toLowerCase(),
+      );
 
-      const hasOptInParam = this.OPT_IN_KEYWORDS.some(kw =>
-        propertyNames.some(p => p.includes(kw))
+      const hasOptInParam = this.OPT_IN_KEYWORDS.some((kw) =>
+        propertyNames.some((p) => p.includes(kw)),
       );
 
       if (hasOptInParam) {
@@ -98,8 +116,8 @@ export class InsecureDefaultConfigurationRule implements ISecurityRule {
     // Check description for opt-in mention
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
-      const mentionsOptIn = this.OPT_IN_KEYWORDS.some(kw =>
-        descLower.includes(kw)
+      const mentionsOptIn = this.OPT_IN_KEYWORDS.some((kw) =>
+        descLower.includes(kw),
       );
 
       if (mentionsOptIn) {

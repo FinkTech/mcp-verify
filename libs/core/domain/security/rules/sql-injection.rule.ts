@@ -20,40 +20,84 @@
  * @module libs/core/domain/security/rules/sql-injection.rule
  */
 
-import { t, compileRegexSafe, isSafePattern } from '@mcp-verify/shared';
-import { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool, JsonValue } from '../../shared/common.types';
+import { t, compileRegexSafe, isSafePattern } from "@mcp-verify/shared";
+import { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool, JsonValue } from "../../shared/common.types";
 
 export class SQLInjectionRule implements ISecurityRule {
-  readonly code = 'SEC-003';
-  get name() { return t('sec_sql_injection_name'); }
-  get description() { return t('sec_sql_injection_desc'); }
-  readonly helpUri = 'https://owasp.org/www-community/attacks/SQL_Injection';
+  readonly code = "SEC-003";
+  get name() {
+    return t("sec_sql_injection_name");
+  }
+  get description() {
+    return t("sec_sql_injection_desc");
+  }
+  readonly helpUri = "https://owasp.org/www-community/attacks/SQL_Injection";
 
   /**
    * SQL metacharacters commonly used in injection attacks.
    */
   private readonly SQL_METACHARACTERS = [
-    "'", '"', ';', '--', '/*', '*/', 'xp_', 'sp_',
-    'UNION', 'SELECT', 'DROP', 'INSERT', 'UPDATE', 'DELETE'
+    "'",
+    '"',
+    ";",
+    "--",
+    "/*",
+    "*/",
+    "xp_",
+    "sp_",
+    "UNION",
+    "SELECT",
+    "DROP",
+    "INSERT",
+    "UPDATE",
+    "DELETE",
   ];
 
   /**
    * Keywords that strongly suggest a tool executes SQL queries.
    */
   private readonly SQL_KEYWORDS = [
-    'sql', 'query', 'database', 'db', 'mysql', 'postgres', 'postgresql',
-    'sqlite', 'mssql', 'oracle', 'select', 'insert', 'update', 'delete',
-    'execute', 'exec', 'stored_procedure', 'sp_', 'table', 'column'
+    "sql",
+    "query",
+    "database",
+    "db",
+    "mysql",
+    "postgres",
+    "postgresql",
+    "sqlite",
+    "mssql",
+    "oracle",
+    "select",
+    "insert",
+    "update",
+    "delete",
+    "execute",
+    "exec",
+    "stored_procedure",
+    "sp_",
+    "table",
+    "column",
   ];
 
   /**
    * Positive indicators that suggest the tool uses safe practices.
    */
   private readonly SAFE_INDICATORS = [
-    'prepared statement', 'parameterized', 'placeholder', 'bind parameter',
-    'orm', 'sequelize', 'typeorm', 'prisma', 'knex', 'drizzle'
+    "prepared statement",
+    "parameterized",
+    "placeholder",
+    "bind parameter",
+    "orm",
+    "sequelize",
+    "typeorm",
+    "prisma",
+    "knex",
+    "drizzle",
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -83,97 +127,120 @@ export class SQLInjectionRule implements ISecurityRule {
       // SQL tool with no input schema is unusual but might be safe (predefined queries)
       if (isSQLTool && !hasSafeIndicators) {
         findings.push({
-          severity: 'medium',
-          message: t('finding_sql_no_schema', { tool: tool.name }),
+          severity: "medium",
+          message: t("finding_sql_no_schema", { tool: tool.name }),
           component: `tool:${tool.name}`,
           ruleCode: this.code,
           evidence: {
             toolName: tool.name,
             description: tool.description || null,
-            reason: t('no_input_parameters_defined')
+            reason: t("no_input_parameters_defined"),
           },
-          remediation: t('if_the_tool_accepts_any_input_define_a_strict_inpu')
+          remediation: t("if_the_tool_accepts_any_input_define_a_strict_inpu"),
         });
       }
       return findings;
     }
 
     // Analyze each parameter
-    for (const [paramName, paramConfig] of Object.entries(tool.inputSchema.properties)) {
+    for (const [paramName, paramConfig] of Object.entries(
+      tool.inputSchema.properties,
+    )) {
       const config = paramConfig as Record<string, JsonValue>;
 
       // Parameters that might be used in SQL queries
       const isQueryParam = this.isQueryParameter(paramName, config);
 
-      if (isQueryParam && config.type === 'string') {
+      if (isQueryParam && config.type === "string") {
         // CRITICAL: No validation pattern
         if (!config.pattern) {
           findings.push({
-            severity: hasSafeIndicators ? 'medium' : 'critical',
-            message: t('finding_sql_potential', { param: paramName, tool: tool.name }),
+            severity: hasSafeIndicators ? "medium" : "critical",
+            message: t("finding_sql_potential", {
+              param: paramName,
+              tool: tool.name,
+            }),
             component: `tool:${tool.name}`,
             ruleCode: this.code,
-            location: { type: 'tool', name: tool.name, parameter: paramName },
+            location: { type: "tool", name: tool.name, parameter: paramName },
             evidence: {
-              risk: t('unsanitized_input_in_sql_query_context'),
+              risk: t("unsanitized_input_in_sql_query_context"),
               parameter: paramName,
-              hasSafePractices: hasSafeIndicators
+              hasSafePractices: hasSafeIndicators,
             },
             remediation: hasSafeIndicators
-              ? t('even_with_prepared_statements_implement_input_vali')
-              : t('use_prepared_statements_with_placeholders_and_impl')
+              ? t("even_with_prepared_statements_implement_input_vali")
+              : t("use_prepared_statements_with_placeholders_and_impl"),
           });
         } else {
           // Check if pattern allows SQL metacharacters
-          const weakResult = (typeof config.pattern === 'string') ? this.isWeakPattern(config.pattern) : null;
+          const weakResult =
+            typeof config.pattern === "string"
+              ? this.isWeakPattern(config.pattern)
+              : null;
           if (weakResult && weakResult.isWeak) {
             findings.push({
-              severity: 'critical',
-              message: t('finding_sql_potential', { param: paramName, tool: tool.name }), // Use consistent localized key
+              severity: "critical",
+              message: t("finding_sql_potential", {
+                param: paramName,
+                tool: tool.name,
+              }), // Use consistent localized key
               component: `tool:${tool.name}`,
               ruleCode: this.code,
-              location: { type: 'tool', name: tool.name, parameter: paramName },
+              location: { type: "tool", name: tool.name, parameter: paramName },
               evidence: {
                 pattern: config.pattern,
                 allowedSQLChars: weakResult.allowedChars,
-                hasSafePractices: hasSafeIndicators
+                hasSafePractices: hasSafeIndicators,
               },
-              remediation: t('strengthen_the_regex_to_strictly_exclude_sql_metac')
+              remediation: t(
+                "strengthen_the_regex_to_strictly_exclude_sql_metac",
+              ),
             });
           }
         }
       }
 
       // Check for numeric parameters without type enforcement
-      if (isQueryParam && (!config.type || config.type === 'string') && !config.pattern) {
-        if (paramName.toLowerCase().includes('id') || paramName.toLowerCase().includes('limit') || paramName.toLowerCase().includes('offset')) {
+      if (
+        isQueryParam &&
+        (!config.type || config.type === "string") &&
+        !config.pattern
+      ) {
+        if (
+          paramName.toLowerCase().includes("id") ||
+          paramName.toLowerCase().includes("limit") ||
+          paramName.toLowerCase().includes("offset")
+        ) {
           findings.push({
-            severity: 'medium',
-            message: t('finding_sql_type_mismatch', { param: paramName }),
+            severity: "medium",
+            message: t("finding_sql_type_mismatch", { param: paramName }),
             component: `tool:${tool.name}`,
             ruleCode: this.code,
-            location: { type: 'tool', name: tool.name, parameter: paramName },
+            location: { type: "tool", name: tool.name, parameter: paramName },
             evidence: {
-              currentType: config.type || 'any',
-              expectedType: 'integer or number'
+              currentType: config.type || "any",
+              expectedType: "integer or number",
             },
-            remediation: t('define_a_strict_input_schema_with_expected_types_i')
+            remediation: t(
+              "define_a_strict_input_schema_with_expected_types_i",
+            ),
           });
         }
       }
     }
 
     // Warn if SQL tool doesn't mention safe practices
-    if (!hasSafeIndicators && findings.some(f => f.severity === 'critical')) {
+    if (!hasSafeIndicators && findings.some((f) => f.severity === "critical")) {
       findings.push({
-        severity: 'high',
-        message: t('finding_sql_no_prepared', { tool: tool.name }),
+        severity: "high",
+        message: t("finding_sql_no_prepared", { tool: tool.name }),
         component: `tool:${tool.name}`,
         ruleCode: this.code,
         evidence: {
-          missingIndicators: this.SAFE_INDICATORS.join(', ')
+          missingIndicators: this.SAFE_INDICATORS.join(", "),
         },
-        remediation: t('update_tool_description_to_explicitly_state_use_of')
+        remediation: t("update_tool_description_to_explicitly_state_use_of"),
       });
     }
 
@@ -181,46 +248,63 @@ export class SQLInjectionRule implements ISecurityRule {
   }
 
   private isSQLTool(name: string, description?: string): boolean {
-    const text = `${name} ${description || ''}`.toLowerCase();
-    return this.SQL_KEYWORDS.some(kw => text.includes(kw));
+    const text = `${name} ${description || ""}`.toLowerCase();
+    return this.SQL_KEYWORDS.some((kw) => text.includes(kw));
   }
 
   private hasSafePractices(description?: string): boolean {
     if (!description) return false;
     const text = description.toLowerCase();
-    return this.SAFE_INDICATORS.some(indicator => text.includes(indicator));
+    return this.SAFE_INDICATORS.some((indicator) => text.includes(indicator));
   }
 
-  private isQueryParameter(name: string, config: Record<string, JsonValue>): boolean {
+  private isQueryParameter(
+    name: string,
+    config: Record<string, JsonValue>,
+  ): boolean {
     const queryParamNames = [
-      'query', 'sql', 'where', 'condition', 'filter', 'search',
-      'table', 'column', 'field', 'order', 'sort', 'limit', 'offset',
-      'id', 'username', 'email'
+      "query",
+      "sql",
+      "where",
+      "condition",
+      "filter",
+      "search",
+      "table",
+      "column",
+      "field",
+      "order",
+      "sort",
+      "limit",
+      "offset",
+      "id",
+      "username",
+      "email",
     ];
 
     const nameLower = name.toLowerCase();
-    const descLower = (typeof config.description === 'string' ? config.description : '').toLowerCase();
+    const descLower = (
+      typeof config.description === "string" ? config.description : ""
+    ).toLowerCase();
 
-    return queryParamNames.some(qp =>
-      nameLower.includes(qp) || descLower.includes(qp)
+    return queryParamNames.some(
+      (qp) => nameLower.includes(qp) || descLower.includes(qp),
     );
   }
 
-  private isWeakPattern(pattern: string): { isWeak: boolean; allowedChars: string[] } {
+  private isWeakPattern(pattern: string): {
+    isWeak: boolean;
+    allowedChars: string[];
+  } {
     // ReDoS Protection: Reject extremely long patterns
     if (pattern.length > 1000) {
-      return { isWeak: true, allowedChars: [t('evidence_redos_too_long')] };
+      return { isWeak: true, allowedChars: [t("evidence_redos_too_long")] };
     }
 
     // ReDoS Protection: Detect dangerous regex patterns
-    const redosPatterns = [
-      /(\w+\*)+/,
-      /(\w+)+\1/,
-      /(\w\|)+/
-    ];
+    const redosPatterns = [/(\w+\*)+/, /(\w+)+\1/, /(\w\|)+/];
     for (const redosPattern of redosPatterns) {
       if (redosPattern.test(pattern)) {
-        return { isWeak: true, allowedChars: [t('evidence_redos_pattern')] };
+        return { isWeak: true, allowedChars: [t("evidence_redos_pattern")] };
       }
     }
 
@@ -228,21 +312,23 @@ export class SQLInjectionRule implements ISecurityRule {
       // ReDoS Protection: Check pattern safety before compilation
       if (!isSafePattern(pattern)) {
         // Pattern contains dangerous constructs (nested quantifiers, etc.)
-        return { isWeak: true, allowedChars: [t('evidence_redos_vulnerable')] };
+        return { isWeak: true, allowedChars: [t("evidence_redos_vulnerable")] };
       }
 
       // Compile regex with timeout protection
-      const { regex, timedOut, error } = compileRegexSafe(pattern, undefined, { timeout: 100 });
+      const { regex, timedOut, error } = compileRegexSafe(pattern, undefined, {
+        timeout: 100,
+      });
 
       if (timedOut || !regex) {
         // Regex compilation or test took too long - mark as weak
-        return { isWeak: true, allowedChars: [t('evidence_redos_timeout')] };
+        return { isWeak: true, allowedChars: [t("evidence_redos_timeout")] };
       }
 
       const allowedChars: string[] = [];
 
       // Test dangerous SQL characters
-      const dangerousChars = ["'", '"', ';', '--', '/*'];
+      const dangerousChars = ["'", '"', ";", "--", "/*"];
 
       for (const char of dangerousChars) {
         if (regex.test(`test${char}test`) || regex.test(char)) {
@@ -251,7 +337,7 @@ export class SQLInjectionRule implements ISecurityRule {
       }
 
       // Test SQL keywords (simplified check)
-      const sqlKeywords = ['SELECT', 'UNION', 'DROP', 'INSERT'];
+      const sqlKeywords = ["SELECT", "UNION", "DROP", "INSERT"];
       for (const keyword of sqlKeywords) {
         if (regex.test(keyword)) {
           allowedChars.push(`keyword:${keyword}`);
@@ -260,7 +346,7 @@ export class SQLInjectionRule implements ISecurityRule {
 
       return {
         isWeak: allowedChars.length > 0,
-        allowedChars
+        allowedChars,
       };
     } catch (e) {
       return { isWeak: false, allowedChars: [] };

@@ -26,38 +26,69 @@
  * @module libs/core/domain/security/rules/insecure-uri-scheme.rule
  */
 
-import { t } from '@mcp-verify/shared';
-import { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpResource } from '../../shared/common.types';
+import { t } from "@mcp-verify/shared";
+import { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpResource } from "../../shared/common.types";
 
 export class InsecureURISchemeRule implements ISecurityRule {
-  readonly code = 'SEC-016';
-  get name() { return t('sec_insecure_uri_name'); }
-  get description() { return t('sec_insecure_uri_desc'); }
-  readonly helpUri = 'https://owasp.org/www-project-top-ten/2017/A6_2017-Security_Misconfiguration';
-  readonly tags = ['CWE-319', 'CWE-757', 'OWASP-A02:2021', 'Cleartext Transmission'];
+  readonly code = "SEC-016";
+  get name() {
+    return t("sec_insecure_uri_name");
+  }
+  get description() {
+    return t("sec_insecure_uri_desc");
+  }
+  readonly helpUri =
+    "https://owasp.org/www-project-top-ten/2017/A6_2017-Security_Misconfiguration";
+  readonly tags = [
+    "CWE-319",
+    "CWE-757",
+    "OWASP-A02:2021",
+    "Cleartext Transmission",
+  ];
 
   /**
    * Secure URI schemes that are acceptable
    */
   private readonly SECURE_SCHEMES = [
-    'https:',    // Encrypted HTTP
-    'mcp:',      // MCP protocol
-    'file:',     // Local file system (with caution)
-    'data:',     // Data URIs (embedded content)
+    "https:", // Encrypted HTTP
+    "mcp:", // MCP protocol
+    "file:", // Local file system (with caution)
+    "data:", // Data URIs (embedded content)
   ];
 
   /**
    * Insecure schemes with severity levels
    */
   private readonly INSECURE_SCHEMES = {
-    'http:': { severity: 'high' as const, risk: 'Man-in-the-Middle attack, unencrypted data transmission' },
-    'ftp:': { severity: 'critical' as const, risk: 'Credentials and data sent in plaintext' },
-    'telnet:': { severity: 'critical' as const, risk: 'Completely unencrypted, legacy protocol' },
-    'gopher:': { severity: 'high' as const, risk: 'Deprecated protocol with security vulnerabilities' },
-    'ldap:': { severity: 'high' as const, risk: 'Unencrypted LDAP, use ldaps:// instead' },
-    'ws:': { severity: 'high' as const, risk: 'Unencrypted WebSocket, use wss:// instead' },
+    "http:": {
+      severity: "high" as const,
+      risk: "Man-in-the-Middle attack, unencrypted data transmission",
+    },
+    "ftp:": {
+      severity: "critical" as const,
+      risk: "Credentials and data sent in plaintext",
+    },
+    "telnet:": {
+      severity: "critical" as const,
+      risk: "Completely unencrypted, legacy protocol",
+    },
+    "gopher:": {
+      severity: "high" as const,
+      risk: "Deprecated protocol with security vulnerabilities",
+    },
+    "ldap:": {
+      severity: "high" as const,
+      risk: "Unencrypted LDAP, use ldaps:// instead",
+    },
+    "ws:": {
+      severity: "high" as const,
+      risk: "Unencrypted WebSocket, use wss:// instead",
+    },
   };
 
   /**
@@ -93,78 +124,90 @@ export class InsecureURISchemeRule implements ISecurityRule {
       scheme = url.protocol;
 
       // Check if localhost
-      isLocalhost = this.LOCALHOST_PATTERNS.some(pattern => pattern.test(resource.uri));
+      isLocalhost = this.LOCALHOST_PATTERNS.some((pattern) =>
+        pattern.test(resource.uri),
+      );
     } catch (error) {
       // Invalid URI format
       findings.push({
-        severity: 'medium',
-        message: t('finding_insecure_uri_malformed', { resource: resource.name }),
+        severity: "medium",
+        message: t("finding_insecure_uri_malformed", {
+          resource: resource.name,
+        }),
         component: `resource:${resource.name}`,
         ruleCode: this.code,
         evidence: {
           uri: resource.uri,
-          error: 'Invalid URI format'
+          error: "Invalid URI format",
         },
-        remediation: t('remediation_insecure_uri_fix_format')
+        remediation: t("remediation_insecure_uri_fix_format"),
       });
       return findings;
     }
 
     // Check if scheme is insecure
     if (scheme in this.INSECURE_SCHEMES) {
-      const { severity, risk } = this.INSECURE_SCHEMES[scheme as keyof typeof this.INSECURE_SCHEMES];
+      const { severity, risk } =
+        this.INSECURE_SCHEMES[scheme as keyof typeof this.INSECURE_SCHEMES];
 
       // Reduce severity if localhost (development environment)
-      const finalSeverity = isLocalhost && severity === 'high' ? 'medium' : severity;
+      const finalSeverity =
+        isLocalhost && severity === "high" ? "medium" : severity;
 
       findings.push({
         severity: finalSeverity,
-        message: t('finding_insecure_uri_scheme', {
+        message: t("finding_insecure_uri_scheme", {
           resource: resource.name,
-          scheme: scheme.replace(':', '')
+          scheme: scheme.replace(":", ""),
         }),
         component: `resource:${resource.name}`,
         ruleCode: this.code,
-        location: { type: 'resource', name: resource.name },
+        location: { type: "resource", name: resource.name },
         evidence: {
           uri: resource.uri,
           scheme,
           risk,
-          isLocalhost
+          isLocalhost,
         },
-        remediation: t('remediation_insecure_uri_use_secure', { scheme: this.getSecureAlternative(scheme) })
+        remediation: t("remediation_insecure_uri_use_secure", {
+          scheme: this.getSecureAlternative(scheme),
+        }),
       });
     }
 
     // Warn about file:// scheme (potential path traversal)
-    if (scheme === 'file:') {
+    if (scheme === "file:") {
       findings.push({
-        severity: 'medium',
-        message: t('finding_insecure_uri_file_scheme', { resource: resource.name }),
+        severity: "medium",
+        message: t("finding_insecure_uri_file_scheme", {
+          resource: resource.name,
+        }),
         component: `resource:${resource.name}`,
         ruleCode: this.code,
-        location: { type: 'resource', name: resource.name },
+        location: { type: "resource", name: resource.name },
         evidence: {
           uri: resource.uri,
-          risk: t('risk_insecure_uri_file_traversal')
+          risk: t("risk_insecure_uri_file_traversal"),
         },
-        remediation: t('remediation_insecure_uri_file_validate')
+        remediation: t("remediation_insecure_uri_file_validate"),
       });
     }
 
     // Check for credentials in URI
     if (this.hasCredentialsInURI(resource.uri)) {
       findings.push({
-        severity: 'critical',
-        message: t('finding_insecure_uri_credentials', { resource: resource.name }),
+        severity: "critical",
+        message: t("finding_insecure_uri_credentials", {
+          resource: resource.name,
+        }),
         component: `resource:${resource.name}`,
         ruleCode: this.code,
-        location: { type: 'resource', name: resource.name },
+        location: { type: "resource", name: resource.name },
         evidence: {
           uri: this.redactCredentials(resource.uri),
-          risk: t('risk_insecure_uri_exposed_creds')
+          risk: t("risk_insecure_uri_exposed_creds"),
         },
-        remediation: t('remediation_insecure_uri_remove_creds')
+        remediation: t("remediation_insecure_uri_remove_creds"),
       });
     }
 
@@ -173,14 +216,14 @@ export class InsecureURISchemeRule implements ISecurityRule {
 
   private getSecureAlternative(insecureScheme: string): string {
     const alternatives: Record<string, string> = {
-      'http:': 'https://',
-      'ftp:': 'sftp:// or https://',
-      'telnet:': 'ssh://',
-      'ldap:': 'ldaps://',
-      'ws:': 'wss://',
+      "http:": "https://",
+      "ftp:": "sftp:// or https://",
+      "telnet:": "ssh://",
+      "ldap:": "ldaps://",
+      "ws:": "wss://",
     };
 
-    return alternatives[insecureScheme] || 'https://';
+    return alternatives[insecureScheme] || "https://";
   }
 
   private hasCredentialsInURI(uri: string): boolean {
@@ -190,6 +233,6 @@ export class InsecureURISchemeRule implements ISecurityRule {
 
   private redactCredentials(uri: string): string {
     // Redact credentials from URI for evidence
-    return uri.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@');
+    return uri.replace(/\/\/([^:]+):([^@]+)@/, "//***:***@");
   }
 }

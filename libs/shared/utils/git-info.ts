@@ -12,7 +12,7 @@
  * This enables GitHub Code Scanning to map findings to source code.
  */
 
-import { execSync } from 'child_process';
+import { execSync } from "child_process";
 
 export interface GitInfo {
   /** Repository URL (e.g., https://github.com/org/repo) */
@@ -31,9 +31,9 @@ function execGit(command: string, cwd?: string): string | null {
   try {
     const result = execSync(command, {
       cwd: cwd || process.cwd(),
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'], // Suppress stderr
-      timeout: 5000 // 5 second timeout
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"], // Suppress stderr
+      timeout: 5000, // 5 second timeout
     });
     return result.trim();
   } catch {
@@ -47,7 +47,7 @@ function execGit(command: string, cwd?: string): string | null {
  */
 function normalizeGitUrl(url: string): string {
   // Remove trailing .git
-  let normalized = url.replace(/\.git$/, '');
+  let normalized = url.replace(/\.git$/, "");
 
   // Convert SSH to HTTPS: git@github.com:org/repo -> https://github.com/org/repo
   const sshMatch = normalized.match(/^git@([^:]+):(.+)$/);
@@ -66,25 +66,25 @@ function normalizeGitUrl(url: string): string {
  */
 export function captureGitInfo(cwd?: string): GitInfo | null {
   // Check if we're in a git repository
-  const isGitRepo = execGit('git rev-parse --is-inside-work-tree', cwd);
-  if (isGitRepo !== 'true') {
+  const isGitRepo = execGit("git rev-parse --is-inside-work-tree", cwd);
+  if (isGitRepo !== "true") {
     return null;
   }
 
   // Get repository URL
-  const remoteUrl = execGit('git config --get remote.origin.url', cwd);
+  const remoteUrl = execGit("git config --get remote.origin.url", cwd);
   if (!remoteUrl) {
     return null; // No remote configured
   }
 
   // Get current commit SHA
-  const commitSha = execGit('git rev-parse HEAD', cwd);
+  const commitSha = execGit("git rev-parse HEAD", cwd);
   if (!commitSha) {
     return null;
   }
 
   // Get current branch name
-  const branch = execGit('git rev-parse --abbrev-ref HEAD', cwd);
+  const branch = execGit("git rev-parse --abbrev-ref HEAD", cwd);
   if (!branch) {
     return null;
   }
@@ -92,7 +92,7 @@ export function captureGitInfo(cwd?: string): GitInfo | null {
   return {
     repositoryUri: normalizeGitUrl(remoteUrl),
     revisionId: commitSha,
-    branch
+    branch,
   };
 }
 
@@ -100,6 +100,6 @@ export function captureGitInfo(cwd?: string): GitInfo | null {
  * Check if current directory is a git repository
  */
 export function isGitRepository(cwd?: string): boolean {
-  const result = execGit('git rev-parse --is-inside-work-tree', cwd);
-  return result === 'true';
+  const result = execGit("git rev-parse --is-inside-work-tree", cwd);
+  return result === "true";
 }

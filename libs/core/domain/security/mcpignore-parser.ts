@@ -38,7 +38,7 @@
  */
 
 export interface IgnoreRule {
-  type: 'global' | 'file' | 'specific';
+  type: "global" | "file" | "specific";
   ruleCode?: string;
   file?: string;
   line?: number;
@@ -51,13 +51,13 @@ export class McpIgnoreParser {
    */
   static parse(content: string): IgnoreRule[] {
     const rules: IgnoreRule[] = [];
-    const lines = content.split('\n');
+    const lines = content.split("\n");
 
     for (const line of lines) {
       const trimmed = line.trim();
 
       // Skip empty lines and comments
-      if (!trimmed || trimmed.startsWith('#')) {
+      if (!trimmed || trimmed.startsWith("#")) {
         continue;
       }
 
@@ -65,10 +65,10 @@ export class McpIgnoreParser {
       const specificMatch = trimmed.match(/^(.+):(\d+):([A-Z]+-\d+)$/);
       if (specificMatch) {
         rules.push({
-          type: 'specific',
+          type: "specific",
           file: specificMatch[1],
           line: parseInt(specificMatch[2], 10),
-          ruleCode: specificMatch[3]
+          ruleCode: specificMatch[3],
         });
         continue;
       }
@@ -77,8 +77,8 @@ export class McpIgnoreParser {
       const ruleMatch = trimmed.match(/^([A-Z]+-\d+)$/);
       if (ruleMatch) {
         rules.push({
-          type: 'global',
-          ruleCode: ruleMatch[1]
+          type: "global",
+          ruleCode: ruleMatch[1],
         });
         continue;
       }
@@ -87,9 +87,9 @@ export class McpIgnoreParser {
       // Convert glob pattern to regex
       const pattern = this.globToRegex(trimmed);
       rules.push({
-        type: 'file',
+        type: "file",
         file: trimmed,
-        pattern
+        pattern,
       });
     }
 
@@ -106,11 +106,11 @@ export class McpIgnoreParser {
   private static globToRegex(glob: string): RegExp {
     // Escape special regex characters except * and ?
     const pattern = glob
-      .replace(/[.+^${}()|[\]\\]/g, '\\$&')
-      .replace(/\*\*/g, '___DOUBLE_STAR___')
-      .replace(/\*/g, '[^/]*')
-      .replace(/___DOUBLE_STAR___/g, '.*')
-      .replace(/\?/g, '.');
+      .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+      .replace(/\*\*/g, "___DOUBLE_STAR___")
+      .replace(/\*/g, "[^/]*")
+      .replace(/___DOUBLE_STAR___/g, ".*")
+      .replace(/\?/g, ".");
 
     return new RegExp(`^${pattern}$`);
   }
@@ -126,16 +126,16 @@ export class McpIgnoreParser {
   static shouldIgnore(
     ruleCode: string,
     toolName: string | undefined,
-    ignoreRules: IgnoreRule[]
+    ignoreRules: IgnoreRule[],
   ): boolean {
     for (const rule of ignoreRules) {
       // Global rule ignore (e.g., SEC-001)
-      if (rule.type === 'global' && rule.ruleCode === ruleCode) {
+      if (rule.type === "global" && rule.ruleCode === ruleCode) {
         return true;
       }
 
       // File pattern ignore (e.g., *.test.js or server.js)
-      if (rule.type === 'file' && toolName && rule.pattern) {
+      if (rule.type === "file" && toolName && rule.pattern) {
         if (rule.pattern.test(toolName)) {
           return true;
         }
@@ -144,7 +144,7 @@ export class McpIgnoreParser {
       // Specific location ignore (e.g., server.js:45:SEC-001)
       // Note: We don't have line numbers in MCP tool definitions,
       // so we match by file + rule code only
-      if (rule.type === 'specific' && rule.ruleCode === ruleCode && toolName) {
+      if (rule.type === "specific" && rule.ruleCode === ruleCode && toolName) {
         if (rule.file === toolName) {
           return true;
         }

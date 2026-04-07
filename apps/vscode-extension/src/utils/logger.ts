@@ -9,50 +9,50 @@
  * MCP Verify - Output Channel Logger
  */
 
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
 export class OutputChannelLogger {
-    private channel: vscode.OutputChannel;
+  private channel: vscode.OutputChannel;
 
-    constructor(name: string) {
-        this.channel = vscode.window.createOutputChannel(name);
-    }
+  constructor(name: string) {
+    this.channel = vscode.window.createOutputChannel(name);
+  }
 
-    private timestamp(): string {
-        return new Date().toLocaleTimeString();
-    }
+  private timestamp(): string {
+    return new Date().toLocaleTimeString();
+  }
 
-    info(message: string): void {
-        this.channel.appendLine(`[${this.timestamp()}] INFO: ${message}`);
-    }
+  info(message: string): void {
+    this.channel.appendLine(`[${this.timestamp()}] INFO: ${message}`);
+  }
 
-    success(message: string): void {
-        this.channel.appendLine(`[${this.timestamp()}] OK: ${message}`);
-    }
+  success(message: string): void {
+    this.channel.appendLine(`[${this.timestamp()}] OK: ${message}`);
+  }
 
-    warn(message: string): void {
-        this.channel.appendLine(`[${this.timestamp()}] WARN: ${message}`);
-    }
+  warn(message: string): void {
+    this.channel.appendLine(`[${this.timestamp()}] WARN: ${message}`);
+  }
 
-    error(message: string, error?: unknown): void {
-        this.channel.appendLine(`[${this.timestamp()}] ERROR: ${message}`);
-        if (error instanceof Error) {
-            this.channel.appendLine(`  ${error.message}`);
-            if (error.stack) {
-                this.channel.appendLine(`  Stack: ${error.stack}`);
-            }
-        }
+  error(message: string, error?: unknown): void {
+    this.channel.appendLine(`[${this.timestamp()}] ERROR: ${message}`);
+    if (error instanceof Error) {
+      this.channel.appendLine(`  ${error.message}`);
+      if (error.stack) {
+        this.channel.appendLine(`  Stack: ${error.stack}`);
+      }
     }
+  }
 
-    show(): void {
-        this.channel.show();
-    }
+  show(): void {
+    this.channel.show();
+  }
 
-    dispose(): void {
-        this.channel.dispose();
-    }
+  dispose(): void {
+    this.channel.dispose();
+  }
 
-    getChannel(): vscode.OutputChannel {
-        return this.channel;
-    }
+  getChannel(): vscode.OutputChannel {
+    return this.channel;
+  }
 }

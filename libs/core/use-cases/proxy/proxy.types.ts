@@ -5,9 +5,9 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import type { JsonValue } from '../../domain/shared/common.types';
-import type { McpVerifyConfig } from '../../domain/config/config.types';
-import type { SecurityFinding } from '../../domain/mcp-server/entities/validation.types';
+import type { JsonValue } from "../../domain/shared/common.types";
+import type { McpVerifyConfig } from "../../domain/config/config.types";
+import type { SecurityFinding } from "../../domain/mcp-server/entities/validation.types";
 
 export interface ProxyConfig {
   targetUrl: string;
@@ -22,7 +22,7 @@ export interface ProxyConfig {
 }
 
 export interface InterceptResult {
-  action: 'allow' | 'block' | 'modify';
+  action: "allow" | "block" | "modify";
   modifiedMessage?: JsonValue;
   reason?: string;
   /** Security findings that triggered the action */

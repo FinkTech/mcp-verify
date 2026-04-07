@@ -17,7 +17,10 @@
  * - aggressive: Maximum testing (100 payloads, 5 mutations, maximum sensitivity)
  */
 
-import { SecurityProfile, SecurityProfilePreset } from '../types/workspace-context';
+import {
+  SecurityProfile,
+  SecurityProfilePreset,
+} from "../types/workspace-context";
 
 /**
  * Light security profile
@@ -26,9 +29,9 @@ import { SecurityProfile, SecurityProfilePreset } from '../types/workspace-conte
  * Enabled blocks: OWASP + MCP + Operational (C)
  */
 const LIGHT_PROFILE: SecurityProfile = {
-  name: 'light',
+  name: "light",
   isPreset: true,
-  enabledBlocks: ['OWASP', 'MCP', 'C'],  // Basic compliance + operational rules
+  enabledBlocks: ["OWASP", "MCP", "C"], // Basic compliance + operational rules
   fuzzing: {
     useMutations: false,
     mutationsPerPayload: 0,
@@ -60,9 +63,9 @@ const LIGHT_PROFILE: SecurityProfile = {
  * Enabled blocks: OWASP + MCP + OWASP LLM (A) + Multi-Agent (B) + Operational (C)
  */
 const BALANCED_PROFILE: SecurityProfile = {
-  name: 'balanced',
+  name: "balanced",
   isPreset: true,
-  enabledBlocks: ['OWASP', 'MCP', 'A', 'B', 'C'],  // All except AI Weaponization (D)
+  enabledBlocks: ["OWASP", "MCP", "A", "B", "C"], // All except AI Weaponization (D)
   fuzzing: {
     useMutations: true,
     mutationsPerPayload: 3,
@@ -94,9 +97,9 @@ const BALANCED_PROFILE: SecurityProfile = {
  * Enabled blocks: ALL (including AI Weaponization D)
  */
 const AGGRESSIVE_PROFILE: SecurityProfile = {
-  name: 'aggressive',
+  name: "aggressive",
   isPreset: true,
-  enabledBlocks: ['OWASP', 'MCP', 'A', 'B', 'C', 'D'],  // All blocks including AI Weaponization
+  enabledBlocks: ["OWASP", "MCP", "A", "B", "C", "D"], // All blocks including AI Weaponization
   fuzzing: {
     useMutations: true,
     mutationsPerPayload: 5,
@@ -124,7 +127,9 @@ const AGGRESSIVE_PROFILE: SecurityProfile = {
 /**
  * Map of preset names to profile configurations
  */
-export const SECURITY_PROFILES: Readonly<Record<SecurityProfilePreset, SecurityProfile>> = {
+export const SECURITY_PROFILES: Readonly<
+  Record<SecurityProfilePreset, SecurityProfile>
+> = {
   light: LIGHT_PROFILE,
   balanced: BALANCED_PROFILE,
   aggressive: AGGRESSIVE_PROFILE,
@@ -139,7 +144,7 @@ export const SECURITY_PROFILES: Readonly<Record<SecurityProfilePreset, SecurityP
  */
 export function getSecurityProfile(
   name: string,
-  customProfiles: Record<string, SecurityProfile> = {}
+  customProfiles: Record<string, SecurityProfile> = {},
 ): SecurityProfile {
   // Check if it's a preset
   if (name in SECURITY_PROFILES) {
@@ -162,7 +167,7 @@ export function getSecurityProfile(
  * @returns Array of profile names
  */
 export function getAvailableProfiles(
-  customProfiles: Record<string, SecurityProfile> = {}
+  customProfiles: Record<string, SecurityProfile> = {},
 ): string[] {
   const presets = Object.keys(SECURITY_PROFILES);
   const custom = Object.keys(customProfiles);

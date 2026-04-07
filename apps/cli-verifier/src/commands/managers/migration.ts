@@ -12,14 +12,14 @@
  * Includes version detection, backup creation, and safe migration
  */
 
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 import {
   WorkspaceContexts,
   LegacyWorkspaceSession,
   WorkspaceContext,
-} from '../types/workspace-context';
-import { SECURITY_PROFILES } from '../profiles/security-profiles';
+} from "../types/workspace-context";
+import { SECURITY_PROFILES } from "../profiles/security-profiles";
 
 /**
  * Detect the version of a session data object
@@ -27,32 +27,29 @@ import { SECURITY_PROFILES } from '../profiles/security-profiles';
  * @param data - Unknown session data loaded from file
  * @returns 'legacy' for old single-context format, 'v1' for new multi-context format, 'invalid' if unrecognizable
  */
-export function detectSessionVersion(data: unknown): 'legacy' | 'v1' | 'invalid' {
-  if (!data || typeof data !== 'object') {
-    return 'invalid';
+export function detectSessionVersion(
+  data: unknown,
+): "legacy" | "v1" | "invalid" {
+  if (!data || typeof data !== "object") {
+    return "invalid";
   }
 
   const obj = data as Record<string, unknown>;
 
   // v1.0 format has 'version' field set to '1.0'
-  if ('version' in obj && obj.version === '1.0') {
-    return 'v1';
+  if ("version" in obj && obj.version === "1.0") {
+    return "v1";
   }
 
   // Legacy format has target, lang, config, savedAt (but no 'version' or 'contexts')
-  if (
-    'target' in obj ||
-    'lang' in obj ||
-    'config' in obj ||
-    'savedAt' in obj
-  ) {
+  if ("target" in obj || "lang" in obj || "config" in obj || "savedAt" in obj) {
     // Ensure it doesn't have v1.0 fields
-    if (!('contexts' in obj) && !('activeContext' in obj)) {
-      return 'legacy';
+    if (!("contexts" in obj) && !("activeContext" in obj)) {
+      return "legacy";
     }
   }
 
-  return 'invalid';
+  return "invalid";
 }
 
 /**
@@ -64,13 +61,15 @@ export function detectSessionVersion(data: unknown): 'legacy' | 'v1' | 'invalid'
  * @param legacy - Legacy session data
  * @returns New v1.0 workspace contexts object
  */
-export function migrateSessionToV1(legacy: LegacyWorkspaceSession): WorkspaceContexts {
+export function migrateSessionToV1(
+  legacy: LegacyWorkspaceSession,
+): WorkspaceContexts {
   const now = new Date().toISOString();
 
   // Create default context from legacy data
   const defaultContext: WorkspaceContext = {
     target: legacy.target,
-    lang: legacy.lang ?? 'en',
+    lang: legacy.lang ?? "en",
     profile: SECURITY_PROFILES.balanced,
     config: legacy.config ?? {},
     createdAt: legacy.savedAt ?? now,
@@ -78,8 +77,8 @@ export function migrateSessionToV1(legacy: LegacyWorkspaceSession): WorkspaceCon
   };
 
   return {
-    version: '1.0',
-    activeContext: 'default',
+    version: "1.0",
+    activeContext: "default",
     contexts: {
       default: defaultContext,
     },
@@ -115,25 +114,27 @@ export function backupSession(sessionPath: string): boolean {
  * @param data - Data to validate
  * @returns True if data is valid v1.0 format
  */
-export function isValidWorkspaceContexts(data: unknown): data is WorkspaceContexts {
-  if (!data || typeof data !== 'object') {
+export function isValidWorkspaceContexts(
+  data: unknown,
+): data is WorkspaceContexts {
+  if (!data || typeof data !== "object") {
     return false;
   }
 
   const obj = data as Record<string, unknown>;
 
   // Must have version: '1.0'
-  if (obj.version !== '1.0') {
+  if (obj.version !== "1.0") {
     return false;
   }
 
   // Must have activeContext string
-  if (typeof obj.activeContext !== 'string') {
+  if (typeof obj.activeContext !== "string") {
     return false;
   }
 
   // Must have contexts object
-  if (!obj.contexts || typeof obj.contexts !== 'object') {
+  if (!obj.contexts || typeof obj.contexts !== "object") {
     return false;
   }
 
@@ -154,24 +155,24 @@ export function isValidWorkspaceContexts(data: unknown): data is WorkspaceContex
  * @returns Migrated data or undefined if file doesn't exist
  */
 export function migrateSessionFile(
-  sessionPath: string
+  sessionPath: string,
 ): WorkspaceContexts | LegacyWorkspaceSession | undefined {
   try {
     if (!fs.existsSync(sessionPath)) {
       return undefined;
     }
 
-    const content = fs.readFileSync(sessionPath, 'utf-8');
+    const content = fs.readFileSync(sessionPath, "utf-8");
     const data = JSON.parse(content) as unknown;
 
     const version = detectSessionVersion(data);
 
-    if (version === 'v1') {
+    if (version === "v1") {
       // Already migrated
       return data as WorkspaceContexts;
     }
 
-    if (version === 'legacy') {
+    if (version === "legacy") {
       // Create backup before migration
       backupSession(sessionPath);
 
@@ -183,7 +184,7 @@ export function migrateSessionFile(
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
-      fs.writeFileSync(sessionPath, JSON.stringify(migrated, null, 2), 'utf-8');
+      fs.writeFileSync(sessionPath, JSON.stringify(migrated, null, 2), "utf-8");
 
       return migrated;
     }

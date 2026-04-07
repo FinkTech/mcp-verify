@@ -11,19 +11,22 @@
  * Extracted from interactive.ts - Section 10
  */
 
-import readline from 'readline';
-import { runStressAction } from '../../stress';
-import { ShellParser } from '../parser';
-import type { ShellSession } from '../session';
-import { resolveTarget } from './shared';
+import readline from "readline";
+import { runStressAction } from "../../stress";
+import { ShellParser } from "../parser";
+import type { ShellSession } from "../session";
+import { resolveTarget } from "./shared";
 
 export async function handleStress(
   args: string[],
   session: ShellSession,
-  rl: readline.Interface
+  rl: readline.Interface,
 ): Promise<void> {
   const target = await resolveTarget(
-    args, session, rl, 'stress "node server.js" --users 10 --duration 30'
+    args,
+    session,
+    rl,
+    'stress "node server.js" --users 10 --duration 30',
   );
   if (!target) return;
 
@@ -31,14 +34,14 @@ export async function handleStress(
   const flags = ShellParser.extractFlags(args);
 
   const options: Record<string, string | true> = {
-    server:   target,
-    users:    '5',
-    duration: '10',
-    lang:     session.state.lang,
+    server: target,
+    users: "5",
+    duration: "10",
+    lang: session.state.lang,
     ...flags,
   };
 
-  console.log('');
+  console.log("");
   await runStressAction(target, options);
-  console.log('');
+  console.log("");
 }

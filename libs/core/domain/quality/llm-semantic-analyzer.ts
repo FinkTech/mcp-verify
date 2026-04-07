@@ -24,20 +24,23 @@
  * @module libs/core/domain/quality/llm-semantic-analyzer
  */
 
-import * as crypto from 'crypto';
-import { t } from '@mcp-verify/shared';
-import type { DiscoveryResult } from '../mcp-server/entities/validation.types';
-import type { McpTool, McpResource, McpPrompt } from '../shared/common.types';
-import type { ILLMProvider, LLMMessage } from './providers/llm-provider.interface';
-import { AnthropicProvider } from './providers/anthropic-provider';
-import { GeminiProvider } from './providers/gemini-provider';
-import { OllamaProvider } from './providers/ollama-provider';
-import { OpenAIProvider } from './providers/openai-provider';
+import * as crypto from "crypto";
+import { t } from "@mcp-verify/shared";
+import type { DiscoveryResult } from "../mcp-server/entities/validation.types";
+import type { McpTool, McpResource, McpPrompt } from "../shared/common.types";
+import type {
+  ILLMProvider,
+  LLMMessage,
+} from "./providers/llm-provider.interface";
+import { AnthropicProvider } from "./providers/anthropic-provider";
+import { GeminiProvider } from "./providers/gemini-provider";
+import { OllamaProvider } from "./providers/ollama-provider";
+import { OpenAIProvider } from "./providers/openai-provider";
 
 export interface LLMSemanticFinding {
-  type: 'tool' | 'resource' | 'prompt';
+  type: "tool" | "resource" | "prompt";
   name: string;
-  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+  severity: "critical" | "high" | "medium" | "low" | "info";
   issue: string;
   reasoning: string;
   recommendation?: string;
@@ -105,18 +108,18 @@ export class LLMSemanticAnalyzer {
    * @param providerSpec - Format: "provider:model" (e.g., "anthropic:claude-haiku-4-5")
    * @returns ILLMProvider instance or null if unavailable
    */
-  async initializeProvider(providerSpec?: string): Promise<ILLMProvider | null> {
+  async initializeProvider(
+    providerSpec?: string,
+  ): Promise<ILLMProvider | null> {
     if (!providerSpec) {
       return null;
     }
 
     // Parse provider specification
-    const [providerName, model] = providerSpec.split(':');
+    const [providerName, model] = providerSpec.split(":");
 
     if (!providerName || !model) {
-      throw new Error(
-        t('llm_invalid_spec', { spec: providerSpec })
-      );
+      throw new Error(t("llm_invalid_spec", { spec: providerSpec }));
     }
 
     // Create provider based on name
@@ -124,18 +127,20 @@ export class LLMSemanticAnalyzer {
       let provider: ILLMProvider;
 
       switch (providerName.toLowerCase()) {
-        case 'anthropic': {
+        case "anthropic": {
           const apiKey = process.env.ANTHROPIC_API_KEY;
 
           // Validate API key format
           if (!apiKey) {
-            throw new Error(t('llm_env_not_set', { provider: 'ANTHROPIC' }));
+            throw new Error(t("llm_env_not_set", { provider: "ANTHROPIC" }));
           }
-          if (!apiKey.startsWith('sk-ant-')) {
-            throw new Error(t('llm_key_invalid_format', { provider: 'ANTHROPIC' }));
+          if (!apiKey.startsWith("sk-ant-")) {
+            throw new Error(
+              t("llm_key_invalid_format", { provider: "ANTHROPIC" }),
+            );
           }
           if (apiKey.length < 20) {
-            throw new Error(t('llm_key_too_short', { provider: 'ANTHROPIC' }));
+            throw new Error(t("llm_key_too_short", { provider: "ANTHROPIC" }));
           }
 
           provider = new AnthropicProvider({
@@ -145,25 +150,27 @@ export class LLMSemanticAnalyzer {
           break;
         }
 
-        case 'ollama':
+        case "ollama":
           provider = new OllamaProvider({
-            baseUrl: process.env.OLLAMA_URL || 'http://localhost:11434',
+            baseUrl: process.env.OLLAMA_URL || "http://localhost:11434",
             model: model,
           });
           break;
 
-        case 'openai': {
+        case "openai": {
           const apiKey = process.env.OPENAI_API_KEY;
 
           // Validate API key format
           if (!apiKey) {
-            throw new Error(t('llm_env_not_set', { provider: 'OPENAI' }));
+            throw new Error(t("llm_env_not_set", { provider: "OPENAI" }));
           }
-          if (!apiKey.startsWith('sk-')) {
-            throw new Error(t('llm_key_invalid_format', { provider: 'OPENAI' }));
+          if (!apiKey.startsWith("sk-")) {
+            throw new Error(
+              t("llm_key_invalid_format", { provider: "OPENAI" }),
+            );
           }
           if (apiKey.length < 20) {
-            throw new Error(t('llm_key_too_short', { provider: 'OPENAI' }));
+            throw new Error(t("llm_key_too_short", { provider: "OPENAI" }));
           }
 
           provider = new OpenAIProvider({
@@ -173,19 +180,22 @@ export class LLMSemanticAnalyzer {
           break;
         }
 
-        case 'gemini':
-        case 'google': {
-          const apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
+        case "gemini":
+        case "google": {
+          const apiKey =
+            process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
 
           // Validate API key format
           if (!apiKey) {
-            throw new Error(t('llm_env_not_set', { provider: 'GOOGLE' }));
+            throw new Error(t("llm_env_not_set", { provider: "GOOGLE" }));
           }
-          if (!apiKey.startsWith('AIza')) {
-            throw new Error(t('llm_key_invalid_format', { provider: 'GOOGLE' }));
+          if (!apiKey.startsWith("AIza")) {
+            throw new Error(
+              t("llm_key_invalid_format", { provider: "GOOGLE" }),
+            );
           }
           if (apiKey.length < 20) {
-            throw new Error(t('llm_key_too_short', { provider: 'GOOGLE' }));
+            throw new Error(t("llm_key_too_short", { provider: "GOOGLE" }));
           }
 
           provider = new GeminiProvider({
@@ -197,7 +207,7 @@ export class LLMSemanticAnalyzer {
 
         default:
           throw new Error(
-            t('llm_unknown_provider', { provider: providerName })
+            t("llm_unknown_provider", { provider: providerName }),
           );
       }
 
@@ -210,8 +220,10 @@ export class LLMSemanticAnalyzer {
 
       this.provider = provider;
       return provider;
-    } catch (error: any) {
-      throw new Error(t('llm_init_failed', { provider: providerName, error: error.message }));
+    } catch (error: unknown) {
+      throw new Error(
+        t("llm_init_failed", { provider: providerName, error: (error as Error).message }),
+      );
     }
   }
 
@@ -238,7 +250,7 @@ export class LLMSemanticAnalyzer {
       })),
     });
 
-    return crypto.createHash('sha256').update(content).digest('hex');
+    return crypto.createHash("sha256").update(content).digest("hex");
   }
 
   /**
@@ -275,9 +287,14 @@ export class LLMSemanticAnalyzer {
    */
   async analyze(
     discovery: DiscoveryResult,
-    options: LLMAnalysisOptions = {}
+    options: LLMAnalysisOptions = {},
   ): Promise<LLMSemanticResult> {
-    const { maxTokens = 2000, temperature = 0.2, timeout = 30000, bypassCache = false } = options;
+    const {
+      maxTokens = 2000,
+      temperature = 0.2,
+      timeout = 30000,
+      bypassCache = false,
+    } = options;
 
     // Check cache first (unless bypassed)
     if (!bypassCache) {
@@ -292,11 +309,11 @@ export class LLMSemanticAnalyzer {
     if (options.llmProvider) {
       try {
         await this.initializeProvider(options.llmProvider);
-      } catch (error: any) {
+      } catch (error: unknown) {
         return {
           enabled: false,
           findings: [],
-          error: error.message,
+          error: (error as Error).message,
         };
       }
     }
@@ -306,7 +323,8 @@ export class LLMSemanticAnalyzer {
       return {
         enabled: false,
         findings: [],
-        error: t('llm_no_provider_specified') + '\n\n' + t('llm_examples_block'),
+        error:
+          t("llm_no_provider_specified") + "\n\n" + t("llm_examples_block"),
       };
     }
 
@@ -316,12 +334,12 @@ export class LLMSemanticAnalyzer {
 
       // Call LLM
       const response = await this.provider.complete(
-        [{ role: 'user', content: prompt }],
+        [{ role: "user", content: prompt }],
         {
           maxTokens,
           temperature,
           timeout,
-        }
+        },
       );
 
       // Parse findings
@@ -344,29 +362,31 @@ export class LLMSemanticAnalyzer {
       }
 
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle provider-specific errors gracefully
-      if (error.message.includes('timeout')) {
+      if ((error as Error).message.includes("timeout")) {
         return {
           enabled: false,
           findings: [],
-          error: t('llm_request_timeout'),
+          error: t("llm_request_timeout"),
         };
       }
 
-      if (error.message.includes('authentication') || error.message.includes('401')) {
+      const errorMessage = (error as Error).message;
+
+      if (errorMessage.includes("authentication") || errorMessage.includes("401")) {
         return {
           enabled: false,
           findings: [],
-          error: t('llm_api_key_invalid'),
+          error: t("llm_api_key_invalid"),
         };
       }
 
-      if (error.message.includes('rate limit') || error.message.includes('429')) {
+      if (errorMessage.includes("rate limit") || errorMessage.includes("429")) {
         return {
           enabled: false,
           findings: [],
-          error: t('llm_rate_limit'),
+          error: t("llm_rate_limit"),
         };
       }
 
@@ -374,7 +394,7 @@ export class LLMSemanticAnalyzer {
       return {
         enabled: false,
         findings: [],
-        error: t('llm_analysis_failed', { error: error.message }),
+        error: t("llm_analysis_failed", { error: errorMessage }),
       };
     }
   }
@@ -386,20 +406,22 @@ export class LLMSemanticAnalyzer {
     const toolsSection =
       discovery.tools && discovery.tools.length > 0
         ? this.formatTools(discovery.tools)
-        : t('llm_no_tools');
+        : t("llm_no_tools");
 
     const resourcesSection =
       discovery.resources && discovery.resources.length > 0
         ? this.formatResources(discovery.resources)
-        : t('llm_no_resources');
+        : t("llm_no_resources");
 
     const promptsSection =
       discovery.prompts && discovery.prompts.length > 0
         ? this.formatPrompts(discovery.prompts)
-        : t('llm_no_prompts');
+        : t("llm_no_prompts");
 
     // Detect potential tool chains for indirect injection analysis
-    const toolChainAnalysis = this.buildToolChainAnalysisSection(discovery.tools || []);
+    const toolChainAnalysis = this.buildToolChainAnalysisSection(
+      discovery.tools || [],
+    );
 
     return `You are a senior security engineer specialized in LLM security (OWASP LLM Top 10) reviewing an MCP (Model Context Protocol) server.
 
@@ -471,20 +493,41 @@ Begin your analysis:`;
    * Analyze tools for potential injection chains
    */
   private buildToolChainAnalysisSection(tools: McpTool[]): string {
-    if (tools.length === 0) return '';
+    if (tools.length === 0) return "";
 
     const fetchTools: string[] = [];
     const processTools: string[] = [];
     const combinedTools: string[] = [];
 
-    const fetchKeywords = ['fetch', 'read', 'load', 'download', 'get_url', 'scrape', 'crawl', 'import', 'email', 'file'];
-    const processKeywords = ['summarize', 'translate', 'analyze', 'extract', 'parse', 'respond', 'reply', 'generate', 'process'];
+    const fetchKeywords = [
+      "fetch",
+      "read",
+      "load",
+      "download",
+      "get_url",
+      "scrape",
+      "crawl",
+      "import",
+      "email",
+      "file",
+    ];
+    const processKeywords = [
+      "summarize",
+      "translate",
+      "analyze",
+      "extract",
+      "parse",
+      "respond",
+      "reply",
+      "generate",
+      "process",
+    ];
 
     for (const tool of tools) {
-      const text = `${tool.name} ${tool.description || ''}`.toLowerCase();
+      const text = `${tool.name} ${tool.description || ""}`.toLowerCase();
 
-      const hasFetch = fetchKeywords.some(kw => text.includes(kw));
-      const hasProcess = processKeywords.some(kw => text.includes(kw));
+      const hasFetch = fetchKeywords.some((kw) => text.includes(kw));
+      const hasProcess = processKeywords.some((kw) => text.includes(kw));
 
       if (hasFetch && hasProcess) {
         combinedTools.push(tool.name);
@@ -495,23 +538,28 @@ Begin your analysis:`;
       }
     }
 
-    if (combinedTools.length === 0 && (fetchTools.length === 0 || processTools.length === 0)) {
-      return '';
+    if (
+      combinedTools.length === 0 &&
+      (fetchTools.length === 0 || processTools.length === 0)
+    ) {
+      return "";
     }
 
-    let section = '## ⚠️ Potential Indirect Injection Vectors\n\n';
+    let section = "## ⚠️ Potential Indirect Injection Vectors\n\n";
 
     if (combinedTools.length > 0) {
       section += `**CRITICAL RISK - Combined Fetch+Process Tools:**\n`;
-      section += combinedTools.map(t => `- ${t}`).join('\n');
-      section += '\n\nThese tools BOTH fetch external content AND process it. High risk of indirect injection.\n\n';
+      section += combinedTools.map((t) => `- ${t}`).join("\n");
+      section +=
+        "\n\nThese tools BOTH fetch external content AND process it. High risk of indirect injection.\n\n";
     }
 
     if (fetchTools.length > 0 && processTools.length > 0) {
       section += `**HIGH RISK - Tool Chain:**\n`;
-      section += `- Fetch tools: ${fetchTools.join(', ')}\n`;
-      section += `- Process tools: ${processTools.join(', ')}\n`;
-      section += '\nIf these tools can be chained (output of fetch → input of process), indirect injection is possible.\n\n';
+      section += `- Fetch tools: ${fetchTools.join(", ")}\n`;
+      section += `- Process tools: ${processTools.join(", ")}\n`;
+      section +=
+        "\nIf these tools can be chained (output of fetch → input of process), indirect injection is possible.\n\n";
     }
 
     return section;
@@ -525,11 +573,11 @@ Begin your analysis:`;
       .map(
         (tool) => `
 **${tool.name}**
-Description: ${tool.description || t('llm_no_description')}
+Description: ${tool.description || t("llm_no_description")}
 Input Schema: ${JSON.stringify(tool.inputSchema || {}, null, 2)}
-`
+`,
       )
-      .join('\n---\n');
+      .join("\n---\n");
   }
 
   /**
@@ -541,11 +589,11 @@ Input Schema: ${JSON.stringify(tool.inputSchema || {}, null, 2)}
         (resource) => `
 **${resource.name}**
 URI: ${resource.uri}
-Description: ${resource.description || t('llm_no_description')}
-MIME Type: ${resource.mimeType || 'Not specified'}
-`
+Description: ${resource.description || t("llm_no_description")}
+MIME Type: ${resource.mimeType || "Not specified"}
+`,
       )
-      .join('\n---\n');
+      .join("\n---\n");
   }
 
   /**
@@ -556,60 +604,60 @@ MIME Type: ${resource.mimeType || 'Not specified'}
       .map(
         (prompt) => `
 **${prompt.name}**
-Description: ${prompt.description || t('llm_no_description')}
+Description: ${prompt.description || t("llm_no_description")}
 Arguments: ${JSON.stringify(prompt.arguments || [], null, 2)}
-`
+`,
       )
-      .join('\n---\n');
+      .join("\n---\n");
   }
 
   /**
    * Parse structured findings from LLM's response
    */
   private parseFindings(text: string): LLMSemanticFinding[] {
-    if (text.includes('NO_FINDINGS')) {
+    if (text.includes("NO_FINDINGS")) {
       return [];
     }
 
     const findings: LLMSemanticFinding[] = [];
-    const findingBlocks = text.split('FINDING:').slice(1); // Skip first empty split
+    const findingBlocks = text.split("FINDING:").slice(1); // Skip first empty split
 
     for (const block of findingBlocks) {
       try {
-        const lines = block.trim().split('\n');
+        const lines = block.trim().split("\n");
         const finding: Partial<LLMSemanticFinding> = {};
 
         for (const line of lines) {
-          const [key, ...valueParts] = line.split(':');
-          const value = valueParts.join(':').trim();
+          const [key, ...valueParts] = line.split(":");
+          const value = valueParts.join(":").trim();
 
           if (!key || !value) continue;
 
           const normalizedKey = key.trim().toLowerCase();
 
-          if (normalizedKey === 'type') {
+          if (normalizedKey === "type") {
             const type = value.toLowerCase();
-            if (type === 'tool' || type === 'resource' || type === 'prompt') {
+            if (type === "tool" || type === "resource" || type === "prompt") {
               finding.type = type;
             }
-          } else if (normalizedKey === 'name') {
+          } else if (normalizedKey === "name") {
             finding.name = value;
-          } else if (normalizedKey === 'severity') {
+          } else if (normalizedKey === "severity") {
             const severity = value.toLowerCase();
             if (
-              severity === 'critical' ||
-              severity === 'high' ||
-              severity === 'medium' ||
-              severity === 'low' ||
-              severity === 'info'
+              severity === "critical" ||
+              severity === "high" ||
+              severity === "medium" ||
+              severity === "low" ||
+              severity === "info"
             ) {
               finding.severity = severity;
             }
-          } else if (normalizedKey === 'issue') {
+          } else if (normalizedKey === "issue") {
             finding.issue = value;
-          } else if (normalizedKey === 'reasoning') {
+          } else if (normalizedKey === "reasoning") {
             finding.reasoning = value;
-          } else if (normalizedKey === 'recommendation') {
+          } else if (normalizedKey === "recommendation") {
             finding.recommendation = value;
           }
         }

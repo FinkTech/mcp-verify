@@ -33,30 +33,33 @@
  * - CWE-77: Command Injection
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class InsecureOutputHandlingRule implements ISecurityRule {
-  code = 'SEC-022';
-  name = 'Insecure Output Handling';
-  severity: 'high' = 'high';
+  code = "SEC-022";
+  name = "Insecure Output Handling";
+  severity: "high" = "high";
 
   /**
    * Keywords in tool descriptions that suggest this tool's output is consumed by others
    */
   private readonly OUTPUT_CONSUMER_KEYWORDS = [
-    'uses',
-    'from',
-    'based on',
-    'input from',
-    'data from',
-    'output of',
-    'result of',
-    'response from',
-    'fetches from',
-    'retrieves from'
+    "uses",
+    "from",
+    "based on",
+    "input from",
+    "data from",
+    "output of",
+    "result of",
+    "response from",
+    "fetches from",
+    "retrieves from",
   ];
 
   /**
@@ -70,7 +73,7 @@ export class InsecureOutputHandlingRule implements ISecurityRule {
     /query_/i,
     /search_/i,
     /list_/i,
-    /find_/i
+    /find_/i,
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -89,23 +92,26 @@ export class InsecureOutputHandlingRule implements ISecurityRule {
 
       if (hasInsecureOutput) {
         // Check if this tool is referenced by other tools (chain risk)
-        const isReferencedByOthers = this.isToolReferencedByOthers(tool, discovery.tools);
+        const isReferencedByOthers = this.isToolReferencedByOthers(
+          tool,
+          discovery.tools,
+        );
 
-        const severity = isReferencedByOthers ? 'high' : 'medium';
+        const severity = isReferencedByOthers ? "high" : "medium";
 
         findings.push({
           severity,
           message: isReferencedByOthers
-            ? t('sec_022_insecure_output_chained', { toolName: tool.name })
-            : t('sec_022_insecure_output_standalone', { toolName: tool.name }),
+            ? t("sec_022_insecure_output_chained", { toolName: tool.name })
+            : t("sec_022_insecure_output_standalone", { toolName: tool.name }),
           component: `tool:${tool.name}`,
           ruleCode: this.code,
-          remediation: t('sec_022_recommendation'),
+          remediation: t("sec_022_recommendation"),
           references: [
-            'OWASP LLM Top 10 2025 - LLM02: Insecure Output Handling',
-            'CWE-79: Cross-site Scripting (XSS)',
-            'CWE-77: Command Injection'
-          ]
+            "OWASP LLM Top 10 2025 - LLM02: Insecure Output Handling",
+            "CWE-79: Cross-site Scripting (XSS)",
+            "CWE-77: Command Injection",
+          ],
         });
       }
     }
@@ -117,10 +123,10 @@ export class InsecureOutputHandlingRule implements ISecurityRule {
    * Identify tools that likely produce data consumed by other tools/agents
    */
   private identifyDataSourceTools(tools: McpTool[]): McpTool[] {
-    return tools.filter(tool => {
+    return tools.filter((tool) => {
       // Check tool name against patterns
-      const matchesPattern = this.DATA_SOURCE_PATTERNS.some(pattern =>
-        pattern.test(tool.name)
+      const matchesPattern = this.DATA_SOURCE_PATTERNS.some((pattern) =>
+        pattern.test(tool.name),
       );
 
       if (matchesPattern) {
@@ -130,8 +136,17 @@ export class InsecureOutputHandlingRule implements ISecurityRule {
       // Check if description suggests data retrieval
       if (tool.description) {
         const descLower = tool.description.toLowerCase();
-        const keywords = ['retrieve', 'fetch', 'get', 'read', 'query', 'search', 'find', 'list'];
-        const matchesKeyword = keywords.some(kw => descLower.includes(kw));
+        const keywords = [
+          "retrieve",
+          "fetch",
+          "get",
+          "read",
+          "query",
+          "search",
+          "find",
+          "list",
+        ];
+        const matchesKeyword = keywords.some((kw) => descLower.includes(kw));
 
         if (matchesKeyword) {
           return true;
@@ -152,7 +167,9 @@ export class InsecureOutputHandlingRule implements ISecurityRule {
     }
 
     // Check if inputSchema has any properties (tools with no inputs likely return data)
-    const hasInputs = tool.inputSchema.properties && Object.keys(tool.inputSchema.properties).length > 0;
+    const hasInputs =
+      tool.inputSchema.properties &&
+      Object.keys(tool.inputSchema.properties).length > 0;
 
     if (!hasInputs) {
       // Tool with no inputs likely returns static/computed data
@@ -171,7 +188,10 @@ export class InsecureOutputHandlingRule implements ISecurityRule {
   /**
    * Check if a tool is referenced in other tools' descriptions (tool chaining)
    */
-  private isToolReferencedByOthers(sourceTool: McpTool, allTools: McpTool[]): boolean {
+  private isToolReferencedByOthers(
+    sourceTool: McpTool,
+    allTools: McpTool[],
+  ): boolean {
     const sourceToolName = sourceTool.name;
 
     for (const otherTool of allTools) {
@@ -191,8 +211,8 @@ export class InsecureOutputHandlingRule implements ISecurityRule {
       }
 
       // Check for generic references like "uses data from get_*"
-      const hasConsumerKeyword = this.OUTPUT_CONSUMER_KEYWORDS.some(keyword =>
-        descLower.includes(keyword)
+      const hasConsumerKeyword = this.OUTPUT_CONSUMER_KEYWORDS.some((keyword) =>
+        descLower.includes(keyword),
       );
 
       if (hasConsumerKeyword) {

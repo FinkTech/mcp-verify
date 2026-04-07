@@ -20,23 +20,23 @@
  * @module libs/core/use-cases/proxy/guardrails/https-enforcer
  */
 
-import { t } from '@mcp-verify/shared';
-import type { IGuardrail, InterceptResult } from '../proxy.types';
-import type { JsonValue } from '../../../domain/shared/common.types';
+import { t } from "@mcp-verify/shared";
+import type { IGuardrail, InterceptResult } from "../proxy.types";
+import type { JsonValue } from "../../../domain/shared/common.types";
 
 export class HttpsEnforcer implements IGuardrail {
-  name = t('guardrail_https_enforcement');
+  name = t("guardrail_https_enforcement");
 
   /**
    * Configuration
    */
   private config = {
     enabled: true,
-    autoUpgrade: false,        // Auto-convert http:// to https://
-    allowLocalhost: true,      // Allow http://localhost and http://127.0.0.1
+    autoUpgrade: false, // Auto-convert http:// to https://
+    allowLocalhost: true, // Allow http://localhost and http://127.0.0.1
     allowedHttpHosts: [] as string[], // Additional whitelisted hosts
-    blockMixedContent: true,   // Block if both HTTP and HTTPS URLs present
-    logViolations: true
+    blockMixedContent: true, // Block if both HTTP and HTTPS URLs present
+    logViolations: true,
   };
 
   /**
@@ -45,12 +45,12 @@ export class HttpsEnforcer implements IGuardrail {
   private patterns = {
     httpUrl: /https?:\/\/[^\s"'<>]+/gi,
     insecureHttp: /http:\/\/[^\s"'<>]+/gi,
-    localhost: /http:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|::1)(:\d+)?/gi
+    localhost: /http:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|::1)(:\d+)?/gi,
   };
 
   inspectRequest(message: JsonValue): InterceptResult {
     if (!this.config.enabled) {
-      return { action: 'allow' };
+      return { action: "allow" };
     }
 
     const result = this.analyzeMessage(message);
@@ -58,8 +58,8 @@ export class HttpsEnforcer implements IGuardrail {
     // Check for mixed content
     if (this.config.blockMixedContent && result.hasMixedContent) {
       return {
-        action: 'block',
-        reason: t('guardrail_mixed_content')
+        action: "block",
+        reason: t("guardrail_mixed_content"),
       };
     }
 
@@ -67,25 +67,29 @@ export class HttpsEnforcer implements IGuardrail {
       // If auto-upgrade is enabled, upgrade HTTP to HTTPS
       if (this.config.autoUpgrade) {
         return {
-          action: 'modify',
+          action: "modify",
           modifiedMessage: result.upgradedMessage,
-          reason: t('guardrail_auto_upgrade', { count: result.insecureUrls.length })
+          reason: t("guardrail_auto_upgrade", {
+            count: result.insecureUrls.length,
+          }),
         };
       }
 
       // Otherwise, block the request
       return {
-        action: 'block',
-        reason: t('guardrail_insecure_detected', { urls: result.insecureUrls.join(', ') })
+        action: "block",
+        reason: t("guardrail_insecure_detected", {
+          urls: result.insecureUrls.join(", "),
+        }),
       };
     }
 
-    return { action: 'allow' };
+    return { action: "allow" };
   }
 
   inspectResponse(message: JsonValue): InterceptResult {
     // We could also check responses for leaked HTTP URLs
-    return { action: 'allow' };
+    return { action: "allow" };
   }
 
   /**
@@ -104,9 +108,9 @@ export class HttpsEnforcer implements IGuardrail {
 
     // Classify URLs
     for (const url of allUrls) {
-      if (url.startsWith('https://')) {
+      if (url.startsWith("https://")) {
         secureUrls.push(url);
-      } else if (url.startsWith('http://')) {
+      } else if (url.startsWith("http://")) {
         // Check if it's whitelisted
         if (!this.isWhitelisted(url)) {
           insecureUrls.push(url);
@@ -118,20 +122,19 @@ export class HttpsEnforcer implements IGuardrail {
     let upgradedStr = messageStr;
     if (this.config.autoUpgrade && insecureUrls.length > 0) {
       for (const insecureUrl of insecureUrls) {
-        const secureUrl = insecureUrl.replace('http://', 'https://');
+        const secureUrl = insecureUrl.replace("http://", "https://");
         upgradedStr = upgradedStr.replace(insecureUrl, secureUrl);
       }
     }
 
-    const upgradedMessage = upgradedStr !== messageStr
-      ? JSON.parse(upgradedStr)
-      : message;
+    const upgradedMessage =
+      upgradedStr !== messageStr ? JSON.parse(upgradedStr) : message;
 
     return {
       hasInsecureUrls: insecureUrls.length > 0,
       insecureUrls,
       hasMixedContent: secureUrls.length > 0 && insecureUrls.length > 0,
-      upgradedMessage
+      upgradedMessage,
     };
   }
 
@@ -149,7 +152,7 @@ export class HttpsEnforcer implements IGuardrail {
     try {
       const hostname = new URL(url).hostname;
       for (const allowedHost of this.config.allowedHttpHosts) {
-        if (hostname === allowedHost || hostname.endsWith('.' + allowedHost)) {
+        if (hostname === allowedHost || hostname.endsWith("." + allowedHost)) {
           return true;
         }
       }
@@ -181,7 +184,9 @@ export class HttpsEnforcer implements IGuardrail {
    * Remove a host from the HTTP whitelist
    */
   disallowHttpHost(host: string) {
-    this.config.allowedHttpHosts = this.config.allowedHttpHosts.filter(h => h !== host);
+    this.config.allowedHttpHosts = this.config.allowedHttpHosts.filter(
+      (h) => h !== host,
+    );
   }
 
   /**

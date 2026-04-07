@@ -7,77 +7,77 @@
  */
 /**
  * Command Injection Detection Rule Tests (SEC-002)
- * 
+ *
  * Comprehensive tests for Command Injection vulnerability detection.
  * Tests cover EXECUTION_KEYWORDS, SHELL_CHARACTERS, and edge cases.
  */
 
-import { CommandInjectionRule } from './command-injection.rule';
-import { DiscoveryResult } from '../../mcp-server/entities/validation.types';
+import { CommandInjectionRule } from "./command-injection.rule";
+import { DiscoveryResult } from "../../mcp-server/entities/validation.types";
 
-describe('CommandInjectionRule', () => {
+describe("CommandInjectionRule", () => {
   let rule: CommandInjectionRule;
 
   beforeEach(() => {
     rule = new CommandInjectionRule();
   });
 
-  describe('Rule Metadata', () => {
-    it('should have correct code SEC-002', () => {
-      expect(rule.code).toBe('SEC-002');
+  describe("Rule Metadata", () => {
+    it("should have correct code SEC-002", () => {
+      expect(rule.code).toBe("SEC-002");
     });
 
-    it('should have valid tags for CWE and OWASP mapping', () => {
-      expect(rule.tags).toContain('CWE-78');
-      expect(rule.tags).toContain('OWASP-A03:2021');
-      expect(rule.tags).toContain('OS Command Injection');
+    it("should have valid tags for CWE and OWASP mapping", () => {
+      expect(rule.tags).toContain("CWE-78");
+      expect(rule.tags).toContain("OWASP-A03:2021");
+      expect(rule.tags).toContain("OS Command Injection");
     });
 
-    it('should have a helpUri pointing to OWASP resource', () => {
-      expect(rule.helpUri).toContain('owasp.org');
-      expect(rule.helpUri).toContain('Command_Injection');
+    it("should have a helpUri pointing to OWASP resource", () => {
+      expect(rule.helpUri).toContain("owasp.org");
+      expect(rule.helpUri).toContain("Command_Injection");
     });
   });
 
-  describe('Execution Keyword Detection', () => {
+  describe("Execution Keyword Detection", () => {
     it('should detect tools with "exec" in name (Critical)', () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'exec_command',
-            description: 'Executes a command',
+            name: "exec_command",
+            description: "Executes a command",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                cmd: { type: 'string' }
-              }
-            }
-          }
+                cmd: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBeGreaterThan(0);
-      expect(findings[0].severity).toBe('critical');
+      expect(findings[0].severity).toBe("critical");
     });
 
     it('should detect tools with "run" in name', () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'run_script',
+            name: "run_script",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                script: { type: 'string' }
-              }
-            }
-          }
+                script: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
@@ -88,18 +88,18 @@ describe('CommandInjectionRule', () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'do_operation',
-            description: 'Runs system commands on the server',
+            name: "do_operation",
+            description: "Runs system commands on the server",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                operation: { type: 'string' }
-              }
-            }
-          }
+                operation: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
@@ -110,17 +110,17 @@ describe('CommandInjectionRule', () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'spawn_process',
+            name: "spawn_process",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                args: { type: 'string' }
-              }
-            }
-          }
+                args: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
@@ -131,17 +131,17 @@ describe('CommandInjectionRule', () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'shell_exec',
+            name: "shell_exec",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                command: { type: 'string' }
-              }
-            }
-          }
+                command: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
@@ -152,18 +152,18 @@ describe('CommandInjectionRule', () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'bash_script',
-            description: 'Runs a bash script',
+            name: "bash_script",
+            description: "Runs a bash script",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                code: { type: 'string' }
-              }
-            }
-          }
+                code: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
@@ -174,17 +174,17 @@ describe('CommandInjectionRule', () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'invoke_powershell',
+            name: "invoke_powershell",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                script: { type: 'string' }
-              }
-            }
-          }
+                script: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
@@ -192,224 +192,224 @@ describe('CommandInjectionRule', () => {
     });
   });
 
-  describe('Parameter Validation Detection', () => {
-    it('should detect unvalidated parameters lacking pattern (Critical)', () => {
+  describe("Parameter Validation Detection", () => {
+    it("should detect unvalidated parameters lacking pattern (Critical)", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'execute_script',
-            description: 'Runs a bash script',
+            name: "execute_script",
+            description: "Runs a bash script",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                code: { type: 'string' } // No pattern
-              }
-            }
-          }
+                code: { type: "string" }, // No pattern
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBeGreaterThan(0);
-      expect(findings[0].severity).toBe('critical');
-      expect(findings[0].message).toContain('lacks validation pattern');
+      expect(findings[0].severity).toBe("critical");
+      expect(findings[0].message).toContain("lacks validation pattern");
     });
 
-    it('should detect weak patterns allowing shell metacharacters (Critical)', () => {
+    it("should detect weak patterns allowing shell metacharacters (Critical)", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'run_cmd',
+            name: "run_cmd",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
                 arg: {
-                  type: 'string',
-                  pattern: '.*' // Allows everything
-                }
-              }
-            }
-          }
+                  type: "string",
+                  pattern: ".*", // Allows everything
+                },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBeGreaterThan(0);
-      expect(findings[0].severity).toBe('critical');
+      expect(findings[0].severity).toBe("critical");
       expect(findings[0].evidence).toBeDefined();
       expect(findings[0].evidence!.allowedShellChars).toBeDefined();
       expect(Array.isArray(findings[0].evidence!.allowedShellChars)).toBe(true);
     });
 
-    it('should detect patterns allowing semicolon (;)', () => {
+    it("should detect patterns allowing semicolon (;)", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'exec_tool',
+            name: "exec_tool",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
                 input: {
-                  type: 'string',
-                  pattern: '^[a-z;]+$' // Allows semicolon
-                }
-              }
-            }
-          }
+                  type: "string",
+                  pattern: "^[a-z;]+$", // Allows semicolon
+                },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
-      const finding = findings.find(f =>
-        (f.evidence?.allowedShellChars as string[] | undefined)?.includes(';')
+      const finding = findings.find((f) =>
+        (f.evidence?.allowedShellChars as string[] | undefined)?.includes(";"),
       );
       expect(finding).toBeDefined();
     });
 
-    it('should detect patterns allowing pipe (|)', () => {
+    it("should detect patterns allowing pipe (|)", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'run_operation',
+            name: "run_operation",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
                 cmd: {
-                  type: 'string',
-                  pattern: '^[a-z|]+$' // Allows pipe
-                }
-              }
-            }
-          }
+                  type: "string",
+                  pattern: "^[a-z|]+$", // Allows pipe
+                },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBeGreaterThan(0);
     });
 
-    it('should detect patterns allowing ampersand (&)', () => {
+    it("should detect patterns allowing ampersand (&)", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'system_call',
+            name: "system_call",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
                 arg: {
-                  type: 'string',
-                  pattern: '^[a-z&]+$' // Allows ampersand
-                }
-              }
-            }
-          }
+                  type: "string",
+                  pattern: "^[a-z&]+$", // Allows ampersand
+                },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBeGreaterThan(0);
     });
 
-    it('should detect patterns allowing backtick (`)', () => {
+    it("should detect patterns allowing backtick (`)", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'execute',
+            name: "execute",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
                 command: {
-                  type: 'string',
-                  pattern: '^.+$' // Matches backtick
-                }
-              }
-            }
-          }
+                  type: "string",
+                  pattern: "^.+$", // Matches backtick
+                },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBeGreaterThan(0);
     });
 
-    it('should detect patterns allowing dollar sign ($)', () => {
+    it("should detect patterns allowing dollar sign ($)", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'shell_command',
+            name: "shell_command",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
                 input: {
-                  type: 'string',
-                  pattern: '.*' // Allows $
-                }
-              }
-            }
-          }
+                  type: "string",
+                  pattern: ".*", // Allows $
+                },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
-      const finding = findings.find(f =>
-        (f.evidence?.allowedShellChars as string[] | undefined)?.includes('$')
+      const finding = findings.find((f) =>
+        (f.evidence?.allowedShellChars as string[] | undefined)?.includes("$"),
       );
       expect(finding).toBeDefined();
     });
 
-    it('should provide proper remediation advice', () => {
+    it("should provide proper remediation advice", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'run_script',
+            name: "run_script",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                script: { type: 'string' }
-              }
-            }
-          }
+                script: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
-      expect(findings[0].remediation).toContain('whitelist');
-      expect(findings[0].remediation).toContain('metacharacter');
+      expect(findings[0].remediation).toContain("whitelist");
+      expect(findings[0].remediation).toContain("metacharacter");
     });
   });
 
-  describe('Argument Parameter Detection', () => {
+  describe("Argument Parameter Detection", () => {
     it('should detect "arg" parameter without validation', () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'process_data',
+            name: "process_data",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                arg: { type: 'string' }
-              }
-            }
-          }
+                arg: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
@@ -420,17 +420,17 @@ describe('CommandInjectionRule', () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'utility_tool',
+            name: "utility_tool",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                args: { type: 'string' }
-              }
-            }
-          }
+                args: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
@@ -441,17 +441,17 @@ describe('CommandInjectionRule', () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'dispatcher',
+            name: "dispatcher",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                command: { type: 'string' }
-              }
-            }
-          }
+                command: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
@@ -462,17 +462,17 @@ describe('CommandInjectionRule', () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'execute_task',
+            name: "execute_task",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                input: { type: 'string' }
-              }
-            }
-          }
+                input: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
@@ -483,17 +483,17 @@ describe('CommandInjectionRule', () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'run_automation',
+            name: "run_automation",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                script: { type: 'string' }
-              }
-            }
-          }
+                script: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
@@ -501,118 +501,118 @@ describe('CommandInjectionRule', () => {
     });
   });
 
-  describe('Safe Implementations (No Findings Expected)', () => {
-    it('should pass for strict alphanumeric patterns', () => {
+  describe("Safe Implementations (No Findings Expected)", () => {
+    it("should pass for strict alphanumeric patterns", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'run_cmd',
+            name: "run_cmd",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
                 arg: {
-                  type: 'string',
-                  pattern: '^[a-zA-Z0-9]+$' // Strict alphanumeric
-                }
-              }
-            }
-          }
+                  type: "string",
+                  pattern: "^[a-zA-Z0-9]+$", // Strict alphanumeric
+                },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(0);
     });
 
-    it('should pass for strict numeric patterns', () => {
+    it("should pass for strict numeric patterns", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'exec_job',
+            name: "exec_job",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
                 job_id: {
-                  type: 'string',
-                  pattern: '^[0-9]+$' // Only digits
-                }
-              }
-            }
-          }
+                  type: "string",
+                  pattern: "^[0-9]+$", // Only digits
+                },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(0);
     });
 
-    it('should pass for patterns with underscores and hyphens only', () => {
+    it("should pass for patterns with underscores and hyphens only", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'run_process',
+            name: "run_process",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
                 name: {
-                  type: 'string',
-                  pattern: '^[a-zA-Z0-9_-]+$' // Safe characters
-                }
-              }
-            }
-          }
+                  type: "string",
+                  pattern: "^[a-zA-Z0-9_-]+$", // Safe characters
+                },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(0);
     });
 
-    it('should ignore non-execution tools without risky parameters', () => {
+    it("should ignore non-execution tools without risky parameters", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'calculate_sum',
-            description: 'Adds two numbers',
+            name: "calculate_sum",
+            description: "Adds two numbers",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                a: { type: 'number' },
-                b: { type: 'number' }
-              }
-            }
-          }
+                a: { type: "number" },
+                b: { type: "number" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(0);
     });
 
-    it('should ignore non-string parameters', () => {
+    it("should ignore non-string parameters", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'exec_operation',
+            name: "exec_operation",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                count: { type: 'number' },
-                enabled: { type: 'boolean' }
-              }
-            }
-          }
+                count: { type: "number" },
+                enabled: { type: "boolean" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
@@ -620,36 +620,36 @@ describe('CommandInjectionRule', () => {
     });
   });
 
-  describe('Execution Tools Without Schema', () => {
-    it('should detect execution tools without inputSchema (Medium)', () => {
+  describe("Execution Tools Without Schema", () => {
+    it("should detect execution tools without inputSchema (Medium)", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'run_fixed_command',
-            description: 'Runs a predefined shell command'
+            name: "run_fixed_command",
+            description: "Runs a predefined shell command",
             // No inputSchema
-          } as any
+          } as any,
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBeGreaterThan(0);
-      expect(findings[0].severity).toBe('medium');
+      expect(findings[0].severity).toBe("medium");
     });
 
-    it('should not flag non-execution tools without schema', () => {
+    it("should not flag non-execution tools without schema", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'get_status',
-            description: 'Gets current status'
+            name: "get_status",
+            description: "Gets current status",
             // No inputSchema, but not an execution tool
-          } as any
+          } as any,
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
@@ -657,121 +657,122 @@ describe('CommandInjectionRule', () => {
     });
   });
 
-  describe('Edge Cases', () => {
-    it('should handle empty discovery result', () => {
+  describe("Edge Cases", () => {
+    it("should handle empty discovery result", () => {
       const discovery: DiscoveryResult = {
         tools: [],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(0);
     });
 
-    it('should handle undefined tools', () => {
+    it("should handle undefined tools", () => {
       const discovery = {
         tools: undefined,
         resources: [],
-        prompts: []
+        prompts: [],
       } as unknown as DiscoveryResult;
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(0);
     });
 
-    it('should handle tool with empty properties', () => {
+    it("should handle tool with empty properties", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'exec_empty',
-            description: 'Executes something',
+            name: "exec_empty",
+            description: "Executes something",
             inputSchema: {
-              type: 'object',
-              properties: {}
-            }
-          }
+              type: "object",
+              properties: {},
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBe(0);
     });
 
-    it('should include proper location metadata for findings', () => {
+    it("should include proper location metadata for findings", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'run_script',
+            name: "run_script",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                script: { type: 'string' }
-              }
-            }
-          }
+                script: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
       expect(findings[0].location).toEqual({
-        type: 'tool',
-        name: 'run_script',
-        parameter: 'script'
+        type: "tool",
+        name: "run_script",
+        parameter: "script",
       });
     });
 
-    it('should include component identifier in findings', () => {
+    it("should include component identifier in findings", () => {
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'shell_exec',
+            name: "shell_exec",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
-                cmd: { type: 'string' }
-              }
-            }
-          }
+                cmd: { type: "string" },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       const findings = rule.evaluate(discovery);
-      expect(findings[0].component).toBe('tool:shell_exec');
+      expect(findings[0].component).toBe("tool:shell_exec");
     });
 
-    it('should handle very long patterns gracefully (ReDoS protection)', () => {
-      const longPattern = 'a'.repeat(1001);
+    it("should handle very long patterns gracefully (ReDoS protection)", () => {
+      const longPattern = "a".repeat(1001);
       const discovery: DiscoveryResult = {
         tools: [
           {
-            name: 'exec_test',
+            name: "exec_test",
             inputSchema: {
-              type: 'object',
+              type: "object",
               properties: {
                 input: {
-                  type: 'string',
-                  pattern: longPattern
-                }
-              }
-            }
-          }
+                  type: "string",
+                  pattern: longPattern,
+                },
+              },
+            },
+          },
         ],
         resources: [],
-        prompts: []
+        prompts: [],
       };
 
       // Should not throw, should detect as weak
       const findings = rule.evaluate(discovery);
       expect(findings.length).toBeGreaterThan(0);
-      expect(findings[0].evidence?.allowedShellChars).toContain('Pattern too long (>500 chars)');
+      expect(findings[0].evidence?.allowedShellChars).toContain(
+        "Pattern too long (>500 chars)",
+      );
     });
   });
 });
-

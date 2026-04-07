@@ -9,26 +9,29 @@
 ## 📋 What is Local API Bridge?
 
 A **local HTTP/WebSocket server** that bridges:
+
 - **mcp-verify CLI** (validation engine) ↔️ **Web Dashboard** (visual UI)
 
 This is **different** from the current MCP Proxy (`libs/core/use-cases/proxy/`):
 
-| Component | Purpose | Ports | Status |
-|-----------|---------|-------|--------|
-| **MCP Proxy** | MCP→MCP security gateway | 8080 | ✅ v1.0 (implemented) |
-| **Local API Bridge** | REST API for Web Dashboard | 3000 | ❌ Future (planned) |
+| Component            | Purpose                    | Ports | Status                |
+| -------------------- | -------------------------- | ----- | --------------------- |
+| **MCP Proxy**        | MCP→MCP security gateway   | 8080  | ✅ v1.0 (implemented) |
+| **Local API Bridge** | REST API for Web Dashboard | 3000  | ❌ Future (planned)   |
 
 ---
 
 ## 🎯 Why Build This?
 
 ### Problem
+
 - CLI tools are powerful but lack visual analysis
 - JSON reports are hard to explore for teams
 - No historical tracking or trend analysis
 - Hard to share findings with non-technical stakeholders
 
 ### Solution
+
 ```
 ┌──────────────────────────────────────────────────┐
 │  Developer opens: http://localhost:3000          │
@@ -79,15 +82,15 @@ apps/local-api-bridge/
 
 ### Tech Stack
 
-| Layer | Technology | Reason |
-|-------|-----------|--------|
-| **Runtime** | Node.js 18+ | Same as CLI (consistency) |
-| **Server** | Express.js | Simple, battle-tested |
-| **WebSockets** | `ws` library | Lightweight, fast |
-| **File Watching** | `chokidar` | Detect new reports |
-| **Process Spawning** | `child_process` | Run CLI subprocess |
-| **Validation** | `zod` | Type-safe API schemas |
-| **CORS** | `cors` middleware | Allow localhost:* only |
+| Layer                | Technology        | Reason                    |
+| -------------------- | ----------------- | ------------------------- |
+| **Runtime**          | Node.js 18+       | Same as CLI (consistency) |
+| **Server**           | Express.js        | Simple, battle-tested     |
+| **WebSockets**       | `ws` library      | Lightweight, fast         |
+| **File Watching**    | `chokidar`        | Detect new reports        |
+| **Process Spawning** | `child_process`   | Run CLI subprocess        |
+| **Validation**       | `zod`             | Type-safe API schemas     |
+| **CORS**             | `cors` middleware | Allow localhost:\* only   |
 
 ---
 
@@ -96,6 +99,7 @@ apps/local-api-bridge/
 ### REST Endpoints
 
 #### 1. Start Validation
+
 ```http
 POST /api/validate
 Content-Type: application/json
@@ -118,6 +122,7 @@ Response 202 Accepted:
 ```
 
 #### 2. Get Validation Status
+
 ```http
 GET /api/validate/val_1f3d2a9b
 
@@ -137,6 +142,7 @@ Response 200 OK:
 ```
 
 #### 3. List Historical Validations
+
 ```http
 GET /api/validations?limit=50&status=completed
 
@@ -158,6 +164,7 @@ Response 200 OK:
 ```
 
 #### 4. Get Full Report
+
 ```http
 GET /api/reports/2026-02-03_10-30-00.json
 
@@ -172,6 +179,7 @@ Response 200 OK:
 ```
 
 #### 5. Cancel Validation
+
 ```http
 DELETE /api/validate/val_1f3d2a9b
 
@@ -184,6 +192,7 @@ Response 200 OK:
 ### WebSocket Protocol
 
 #### Client → Server
+
 ```json
 // Subscribe to validation logs
 {
@@ -199,6 +208,7 @@ Response 200 OK:
 ```
 
 #### Server → Client
+
 ```json
 // Log message
 {
@@ -249,40 +259,40 @@ Response 200 OK:
 
 ```typescript
 // src/server.ts
-import express from 'express';
-import cors from 'cors';
-import { WebSocketServer } from 'ws';
-import { validationRouter } from './controllers/validation.controller';
-import { reportsRouter } from './controllers/reports.controller';
+import express from "express";
+import cors from "cors";
+import { WebSocketServer } from "ws";
+import { validationRouter } from "./controllers/validation.controller";
+import { reportsRouter } from "./controllers/reports.controller";
 
 const app = express();
 const wss = new WebSocketServer({ port: 3001 });
 
 // Middleware
-app.use(cors({ origin: ['http://localhost:3000', 'http://127.0.0.1:3000'] }));
+app.use(cors({ origin: ["http://localhost:3000", "http://127.0.0.1:3000"] }));
 app.use(express.json());
 
 // Routes
-app.use('/api/validate', validationRouter);
-app.use('/api/reports', reportsRouter);
+app.use("/api/validate", validationRouter);
+app.use("/api/reports", reportsRouter);
 
 // Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', version: '1.1.0' });
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", version: "1.1.0" });
 });
 
 // Start server
 app.listen(3000, () => {
-  console.log('Local API Bridge running on http://localhost:3000');
+  console.log("Local API Bridge running on http://localhost:3000");
 });
 
 // WebSocket handler
-wss.on('connection', (ws) => {
-  console.log('Client connected to WebSocket');
+wss.on("connection", (ws) => {
+  console.log("Client connected to WebSocket");
 
-  ws.on('message', (data) => {
+  ws.on("message", (data) => {
     const msg = JSON.parse(data.toString());
-    if (msg.type === 'subscribe') {
+    if (msg.type === "subscribe") {
       // Attach to validation stream
       ValidationStreamService.subscribe(msg.validationId, ws);
     }
@@ -294,59 +304,59 @@ wss.on('connection', (ws) => {
 
 ```typescript
 // src/services/cli-executor.service.ts
-import { spawn } from 'child_process';
-import { v4 as uuidv4 } from 'uuid';
+import { spawn } from "child_process";
+import { v4 as uuidv4 } from "uuid";
 
 export class CLIExecutorService {
   private activeValidations = new Map<string, ChildProcess>();
 
   async startValidation(target: string, options: any): Promise<string> {
-    const validationId = `val_${uuidv4().split('-')[0]}`;
+    const validationId = `val_${uuidv4().split("-")[0]}`;
 
     // Build CLI command
-    const args = ['validate', target, '--json'];
-    if (options.security) args.push('--security');
-    if (options.sandbox) args.push('--sandbox');
-    if (options.lang) args.push('--lang', options.lang);
+    const args = ["validate", target, "--json"];
+    if (options.security) args.push("--security");
+    if (options.sandbox) args.push("--sandbox");
+    if (options.lang) args.push("--lang", options.lang);
 
     // Spawn CLI process
-    const proc = spawn('mcp-verify', args, {
-      stdio: ['ignore', 'pipe', 'pipe']
+    const proc = spawn("mcp-verify", args, {
+      stdio: ["ignore", "pipe", "pipe"],
     });
 
     // Stream stdout to WebSocket
-    proc.stdout.on('data', (data) => {
-      const lines = data.toString().split('\n');
+    proc.stdout.on("data", (data) => {
+      const lines = data.toString().split("\n");
       for (const line of lines) {
         if (line.trim()) {
           WebSocketService.broadcast(validationId, {
-            type: 'log',
-            level: 'info',
+            type: "log",
+            level: "info",
             message: line,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
         }
       }
     });
 
     // Handle stderr
-    proc.stderr.on('data', (data) => {
+    proc.stderr.on("data", (data) => {
       WebSocketService.broadcast(validationId, {
-        type: 'log',
-        level: 'error',
+        type: "log",
+        level: "error",
         message: data.toString(),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     });
 
     // Handle completion
-    proc.on('exit', (code) => {
+    proc.on("exit", (code) => {
       this.activeValidations.delete(validationId);
 
       WebSocketService.broadcast(validationId, {
-        type: 'complete',
+        type: "complete",
         validationId,
-        exitCode: code
+        exitCode: code,
       });
     });
 
@@ -359,7 +369,7 @@ export class CLIExecutorService {
   cancelValidation(validationId: string): boolean {
     const proc = this.activeValidations.get(validationId);
     if (proc) {
-      proc.kill('SIGTERM');
+      proc.kill("SIGTERM");
       this.activeValidations.delete(validationId);
       return true;
     }
@@ -372,12 +382,12 @@ export class CLIExecutorService {
 
 ```typescript
 // src/services/report-reader.service.ts
-import fs from 'fs';
-import path from 'path';
-import chokidar from 'chokidar';
+import fs from "fs";
+import path from "path";
+import chokidar from "chokidar";
 
 export class ReportReaderService {
-  private reportsDir = './reportes/json';
+  private reportsDir = "./reportes/json";
   private watcher: chokidar.FSWatcher | null = null;
 
   constructor() {
@@ -390,10 +400,10 @@ export class ReportReaderService {
   private startWatcher() {
     this.watcher = chokidar.watch(this.reportsDir, {
       persistent: true,
-      ignoreInitial: true
+      ignoreInitial: true,
     });
 
-    this.watcher.on('add', (filePath) => {
+    this.watcher.on("add", (filePath) => {
       console.log(`New report detected: ${filePath}`);
       // Could emit event to WebSocket clients
     });
@@ -403,24 +413,25 @@ export class ReportReaderService {
    * List all reports
    */
   listReports(options: { limit?: number; offset?: number } = {}): any[] {
-    const files = fs.readdirSync(this.reportsDir)
-      .filter(f => f.endsWith('.json'))
+    const files = fs
+      .readdirSync(this.reportsDir)
+      .filter((f) => f.endsWith(".json"))
       .sort()
       .reverse();
 
     const { limit = 50, offset = 0 } = options;
     const paginated = files.slice(offset, offset + limit);
 
-    return paginated.map(file => {
+    return paginated.map((file) => {
       const filePath = path.join(this.reportsDir, file);
-      const content = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      const content = JSON.parse(fs.readFileSync(filePath, "utf-8"));
 
       return {
         filename: file,
         target: content.metadata.target,
         score: content.summary.score,
         timestamp: content.metadata.timestamp,
-        path: filePath
+        path: filePath,
       };
     });
   }
@@ -432,10 +443,10 @@ export class ReportReaderService {
     const filePath = path.join(this.reportsDir, filename);
 
     if (!fs.existsSync(filePath)) {
-      throw new Error('Report not found');
+      throw new Error("Report not found");
     }
 
-    return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    return JSON.parse(fs.readFileSync(filePath, "utf-8"));
   }
 }
 ```
@@ -446,29 +457,30 @@ export class ReportReaderService {
 
 ### Threat Model
 
-| Threat | Impact | Mitigation |
-|--------|--------|------------|
-| **CSRF Attack** | Malicious site triggers validations | CSRF tokens for state-changing ops |
-| **XSS in Reports** | Injected scripts in server descriptions | Sanitize all HTML with DOMPurify |
-| **Path Traversal** | Read arbitrary files via `/api/reports/../../etc/passwd` | Validate filenames, use `PathValidator` |
-| **Command Injection** | Inject CLI args like `; rm -rf /` | Validate all inputs with Zod schemas |
-| **DoS via Mass Validations** | Spawn 1000 CLI processes | Rate limit: 10 validations/min |
-| **SSRF** | Bridge validates attacker-controlled URLs | Already handled by CLI's URLValidator |
-| **Unauth Access** | No authentication on API | Bind to localhost only (no remote access) |
+| Threat                       | Impact                                                   | Mitigation                                |
+| ---------------------------- | -------------------------------------------------------- | ----------------------------------------- |
+| **CSRF Attack**              | Malicious site triggers validations                      | CSRF tokens for state-changing ops        |
+| **XSS in Reports**           | Injected scripts in server descriptions                  | Sanitize all HTML with DOMPurify          |
+| **Path Traversal**           | Read arbitrary files via `/api/reports/../../etc/passwd` | Validate filenames, use `PathValidator`   |
+| **Command Injection**        | Inject CLI args like `; rm -rf /`                        | Validate all inputs with Zod schemas      |
+| **DoS via Mass Validations** | Spawn 1000 CLI processes                                 | Rate limit: 10 validations/min            |
+| **SSRF**                     | Bridge validates attacker-controlled URLs                | Already handled by CLI's URLValidator     |
+| **Unauth Access**            | No authentication on API                                 | Bind to localhost only (no remote access) |
 
 ### Security Implementation
 
 #### 1. CSRF Protection
+
 ```typescript
 // src/middleware/csrf.middleware.ts
-import csurf from 'csurf';
+import csurf from "csurf";
 
 export const csrfProtection = csurf({
   cookie: {
     httpOnly: true,
-    sameSite: 'strict',
-    secure: process.env.NODE_ENV === 'production'
-  }
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+  },
 });
 
 // GET /api/csrf-token → { token: "abc123" }
@@ -476,34 +488,39 @@ export const csrfProtection = csurf({
 ```
 
 #### 2. Rate Limiting
+
 ```typescript
 // src/middleware/rate-limit.middleware.ts
-import rateLimit from 'express-rate-limit';
+import rateLimit from "express-rate-limit";
 
 export const validationRateLimit = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 10, // 10 validations per minute
-  message: 'Too many validation requests. Please try again later.',
+  message: "Too many validation requests. Please try again later.",
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
 });
 ```
 
 #### 3. Input Validation
+
 ```typescript
 // src/schemas/validation.schema.ts
-import { z } from 'zod';
+import { z } from "zod";
 
 export const ValidationRequestSchema = z.object({
-  target: z.string()
+  target: z
+    .string()
     .url()
-    .or(z.string().startsWith('npx '))
-    .or(z.string().startsWith('node ')),
-  options: z.object({
-    security: z.boolean().optional(),
-    sandbox: z.boolean().optional(),
-    lang: z.enum(['en', 'es']).optional()
-  }).optional()
+    .or(z.string().startsWith("npx "))
+    .or(z.string().startsWith("node ")),
+  options: z
+    .object({
+      security: z.boolean().optional(),
+      sandbox: z.boolean().optional(),
+      lang: z.enum(["en", "es"]).optional(),
+    })
+    .optional(),
 });
 
 // Usage in controller:
@@ -511,20 +528,28 @@ const parsed = ValidationRequestSchema.parse(req.body);
 ```
 
 #### 4. Path Traversal Prevention
+
 ```typescript
 // src/controllers/reports.controller.ts
-import { PathValidator } from '../../../../libs/shared/utils/path-validator';
+import { PathValidator } from "../../../../libs/shared/utils/path-validator";
 
-app.get('/api/reports/:filename', (req, res) => {
+app.get("/api/reports/:filename", (req, res) => {
   const filename = req.params.filename;
 
   // Validate filename
-  if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
-    return res.status(400).json({ error: 'Invalid filename' });
+  if (
+    filename.includes("..") ||
+    filename.includes("/") ||
+    filename.includes("\\")
+  ) {
+    return res.status(400).json({ error: "Invalid filename" });
   }
 
   // Additional validation
-  const safePath = PathValidator.validateOutputPath(filename, './reportes/json');
+  const safePath = PathValidator.validateOutputPath(
+    filename,
+    "./reportes/json",
+  );
   const report = ReportReaderService.getReport(path.basename(safePath));
 
   res.json(report);
@@ -532,40 +557,43 @@ app.get('/api/reports/:filename', (req, res) => {
 ```
 
 #### 5. CORS Restrictions
+
 ```typescript
 // Only allow localhost origins
-app.use(cors({
-  origin: (origin, callback) => {
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://127.0.0.1:3000',
-      'http://[::1]:3000'
-    ];
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://[::1]:3000",
+      ];
 
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
-}));
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  }),
+);
 ```
 
 ---
 
 ## 📊 Comparison: Current MCP Proxy vs Local API Bridge
 
-| Feature        | MCP Proxy (v1.0)                              | Local API Bridge (Future)           |
-|----------------|-----------------------------------------------|-------------------------------------|
-| **Purpose**    | Security gateway for MCP servers              | REST API for Web Dashboard          |
-| **Input**      | JSON-RPC (MCP protocol)                       | HTTP REST + WebSocket               |
-| **Output**     | JSON-RPC (MCP protocol)                       | JSON + streaming logs               |
-| **Clients**    | Claude Desktop, MCP clients                   | Web browsers (React/Vue)            |
-| **Port**       | 8080                                          | 3000                                |
-| **Security**   | Guardrails (PII, rate limit, etc.)            | CSRF, CORS, rate limit              |
-| **Use Case**   | Runtime protection for untrusted servers      | Visual analysis & collaboration     |
-| **Status**     | ✅ Implemented                                | ❌ Planned                          |
+| Feature      | MCP Proxy (v1.0)                         | Local API Bridge (Future)       |
+| ------------ | ---------------------------------------- | ------------------------------- |
+| **Purpose**  | Security gateway for MCP servers         | REST API for Web Dashboard      |
+| **Input**    | JSON-RPC (MCP protocol)                  | HTTP REST + WebSocket           |
+| **Output**   | JSON-RPC (MCP protocol)                  | JSON + streaming logs           |
+| **Clients**  | Claude Desktop, MCP clients              | Web browsers (React/Vue)        |
+| **Port**     | 8080                                     | 3000                            |
+| **Security** | Guardrails (PII, rate limit, etc.)       | CSRF, CORS, rate limit          |
+| **Use Case** | Runtime protection for untrusted servers | Visual analysis & collaboration |
+| **Status**   | ✅ Implemented                           | ❌ Planned                      |
 
 ---
 
@@ -588,6 +616,7 @@ Want to build this? Here's how:
 4. **PR**: Submit with tests + documentation
 
 **Key Questions**:
+
 - Should Bridge be bundled with CLI or separate npm package?
 - Should it support remote access (not just localhost)?
 - How to handle authentication for team features?
@@ -606,6 +635,7 @@ Want to build this? Here's how:
 ## 📝 Decision Log
 
 **2026-02-03**: Decision to postpone Local API Bridge
+
 - **Rationale**: MCP Inspector already provides Web UI for MCP servers. Building a custom dashboard has unclear ROI. Better to focus on differentiating features (security analysis, Ollama support).
 - **Alternative**: Users can use MCP Inspector + mcp-verify CLI separately
 - **Revisit**: Q2 2026 if user demand increases

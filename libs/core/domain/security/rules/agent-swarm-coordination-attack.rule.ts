@@ -30,13 +30,16 @@
  * - CWE-362: Concurrent Execution using Shared Resource
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
 
 export class AgentSwarmCoordinationAttackRule implements ISecurityRule {
-  code = 'SEC-040';
-  name = 'Agent Swarm Coordination Attack';
-  severity: 'high' = 'high';
+  code = "SEC-040";
+  name = "Agent Swarm Coordination Attack";
+  severity: "high" = "high";
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
@@ -46,64 +49,106 @@ export class AgentSwarmCoordinationAttackRule implements ISecurityRule {
     }
 
     // Keywords indicating swarm/multi-agent coordination
-    const SWARM_KEYWORDS = ['swarm', 'coordinate', 'multi-agent', 'agent coordination', 'enjambre', 'coordinar'];
+    const SWARM_KEYWORDS = [
+      "swarm",
+      "coordinate",
+      "multi-agent",
+      "agent coordination",
+      "enjambre",
+      "coordinar",
+    ];
 
     // Keywords indicating attacks or lack of validation
-    const ATTACK_KEYWORDS = ['attack', 'without validation', 'without intent validation', 'sin validación', 'ataque'];
+    const ATTACK_KEYWORDS = [
+      "attack",
+      "without validation",
+      "without intent validation",
+      "sin validación",
+      "ataque",
+    ];
 
     // Keywords for rate limiting or safety controls
-    const SAFETY_KEYWORDS = ['rate limit', 'validation', 'intent validation', 'limit', 'throttle', 'validación'];
+    const SAFETY_KEYWORDS = [
+      "rate limit",
+      "validation",
+      "intent validation",
+      "limit",
+      "throttle",
+      "validación",
+    ];
 
     for (const tool of discovery.tools) {
-      const toolText = `${tool.name} ${tool.description || ''}`.toLowerCase();
+      const toolText = `${tool.name} ${tool.description || ""}`.toLowerCase();
 
       // Check if tool mentions swarm coordination
-      const hasSwarmCoordination = SWARM_KEYWORDS.some(kw => toolText.includes(kw));
+      const hasSwarmCoordination = SWARM_KEYWORDS.some((kw) =>
+        toolText.includes(kw),
+      );
 
       if (!hasSwarmCoordination) continue;
 
       // Check for attack indicators or lack of validation
-      const hasAttackIndicator = ATTACK_KEYWORDS.some(kw => toolText.includes(kw));
+      const hasAttackIndicator = ATTACK_KEYWORDS.some((kw) =>
+        toolText.includes(kw),
+      );
 
       // Check for safety controls
-      const hasSafetyControls = SAFETY_KEYWORDS.some(kw => toolText.includes(kw));
+      const hasSafetyControls = SAFETY_KEYWORDS.some((kw) =>
+        toolText.includes(kw),
+      );
 
       // Check input schema for agent_count without maximum
       let hasUnlimitedAgents = false;
-      if (tool.inputSchema && typeof tool.inputSchema === 'object') {
+      if (tool.inputSchema && typeof tool.inputSchema === "object") {
         const schema = tool.inputSchema as Record<string, any>;
         if (schema.properties) {
-          for (const [paramName, paramConfig] of Object.entries(schema.properties)) {
+          for (const [paramName, paramConfig] of Object.entries(
+            schema.properties,
+          )) {
             const config = paramConfig as Record<string, any>;
-            const paramText = `${paramName} ${config.description || ''}`.toLowerCase();
+            const paramText =
+              `${paramName} ${config.description || ""}`.toLowerCase();
 
-            if ((paramText.includes('agent') || paramText.includes('count')) &&
-                (paramText.includes('no limit') || paramText.includes('sin límite'))) {
+            if (
+              (paramText.includes("agent") || paramText.includes("count")) &&
+              (paramText.includes("no limit") ||
+                paramText.includes("sin límite"))
+            ) {
               hasUnlimitedAgents = true;
             }
 
             // Check if maximum is missing for agent count
-            if (paramText.includes('agent') && config.type === 'string' && !config.maximum && !config.maxLength) {
+            if (
+              paramText.includes("agent") &&
+              config.type === "string" &&
+              !config.maximum &&
+              !config.maxLength
+            ) {
               hasUnlimitedAgents = true;
             }
           }
         }
       }
 
-      if (hasAttackIndicator || (hasSwarmCoordination && !hasSafetyControls) || hasUnlimitedAgents) {
+      if (
+        hasAttackIndicator ||
+        (hasSwarmCoordination && !hasSafetyControls) ||
+        hasUnlimitedAgents
+      ) {
         findings.push({
           ruleCode: this.code,
-          severity: 'high',
+          severity: "high",
           message: `Tool "${tool.name}" enables agent swarm coordination without proper validation`,
           component: `tool:${tool.name}`,
-          location: { type: 'tool', name: tool.name },
+          location: { type: "tool", name: tool.name },
           evidence: {
-            risk: 'Multiple agents can collude to bypass security controls through synchronized actions',
-            detectedIssue: hasUnlimitedAgents ?
-              'Unlimited agent count without rate limiting' :
-              'Swarm coordination without intent validation'
+            risk: "Multiple agents can collude to bypass security controls through synchronized actions",
+            detectedIssue: hasUnlimitedAgents
+              ? "Unlimited agent count without rate limiting"
+              : "Swarm coordination without intent validation",
           },
-          remediation: 'Implement rate limiting, maximum agent count, and intent validation for coordinated operations'
+          remediation:
+            "Implement rate limiting, maximum agent count, and intent validation for coordinated operations",
         });
       }
     }

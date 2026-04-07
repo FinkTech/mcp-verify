@@ -57,7 +57,7 @@ export interface SafeRegexResult {
 export function compileRegexSafe(
   pattern: string,
   flags?: string,
-  options: SafeRegexOptions = {}
+  options: SafeRegexOptions = {},
 ): SafeRegexResult {
   const { timeout = 100, throwOnTimeout = false } = options;
 
@@ -71,14 +71,18 @@ export function compileRegexSafe(
 
     // Step 2: Test the regex with a simple string to detect catastrophic backtracking
     // We use a timeout to abort if the test takes too long
-    const testString = 'a'.repeat(50); // Simple test case
+    const testString = "a".repeat(50); // Simple test case
     const startTime = Date.now();
 
     // Attempt to execute regex.test() with timeout guard
     const testPromise = new Promise<boolean>((resolve, reject) => {
       const timer = setTimeout(() => {
         timedOut = true;
-        reject(new Error(`Regex test exceeded timeout of ${timeout}ms - possible ReDoS`));
+        reject(
+          new Error(
+            `Regex test exceeded timeout of ${timeout}ms - possible ReDoS`,
+          ),
+        );
       }, timeout);
 
       try {
@@ -101,14 +105,15 @@ export function compileRegexSafe(
       error = `Regex test exceeded timeout of ${timeout}ms`;
       regex = null;
     }
-
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
     regex = null;
   }
 
   if (timedOut && throwOnTimeout) {
-    throw new Error(`ReDoS protection: Regex compilation/test timed out (${timeout}ms)`);
+    throw new Error(
+      `ReDoS protection: Regex compilation/test timed out (${timeout}ms)`,
+    );
   }
 
   return { regex, timedOut, error };
@@ -134,10 +139,10 @@ export function isSafePattern(pattern: string): boolean {
   // 3. Unbounded repetition with wildcard: (.*)*
 
   const dangerousPatterns = [
-    /\([^)]*[+*]\)[+*]/,        // (a+)+ or (a*)* - nested quantifiers
-    /\([^)]*[+*]\)\{/,          // (a+){n,m} - quantifier on quantifier
-    /\(\.\*\)[+*]/,             // (.*)* - nested wildcard repetition
-    /\([^)]*\|[^)]*\)[+*]/      // (a|b)* where a and b might overlap
+    /\([^)]*[+*]\)[+*]/, // (a+)+ or (a*)* - nested quantifiers
+    /\([^)]*[+*]\)\{/, // (a+){n,m} - quantifier on quantifier
+    /\(\.\*\)[+*]/, // (.*)* - nested wildcard repetition
+    /\([^)]*\|[^)]*\)[+*]/, // (a|b)* where a and b might overlap
   ];
 
   for (const dangerous of dangerousPatterns) {
@@ -160,7 +165,7 @@ export function isSafePattern(pattern: string): boolean {
 export function testRegexSafe(
   regex: RegExp,
   input: string,
-  timeout: number = 100
+  timeout: number = 100,
 ): boolean | null {
   const startTime = Date.now();
 

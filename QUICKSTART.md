@@ -85,9 +85,7 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
   "mcpServers": {
     "mcp-verify": {
       "command": "node",
-      "args": [
-        "./apps/mcp-server/dist/apps/mcp-server/src/index.js"
-      ],
+      "args": ["./apps/mcp-server/dist/apps/mcp-server/src/index.js"],
       "cwd": "/absolute/path/to/mcp-verify"
     }
   }
@@ -108,11 +106,12 @@ Comprehensive validation (handshake, discovery, schema, security, quality, proto
 // In Claude
 validateServer({
   command: "node",
-  args: ["./tools/mocks/servers/simple-server.js"]
-})
+  args: ["./tools/mocks/servers/simple-server.js"],
+});
 ```
 
 **Response**:
+
 ```json
 {
   "status": "valid",
@@ -143,11 +142,12 @@ Security-only scan (faster, focused on vulnerabilities).
 ```typescript
 scanSecurity({
   command: "node",
-  args: ["./tools/mocks/servers/vulnerable-server.js"]
-})
+  args: ["./tools/mocks/servers/vulnerable-server.js"],
+});
 ```
 
 **Response**:
+
 ```json
 {
   "status": "success",
@@ -181,8 +181,8 @@ Quality-only analysis (documentation, naming, clarity).
 ```typescript
 analyzeQuality({
   command: "node",
-  args: ["./tools/mocks/servers/simple-server.js"]
-})
+  args: ["./tools/mocks/servers/simple-server.js"],
+});
 ```
 
 #### 4. generateReport
@@ -194,8 +194,8 @@ generateReport({
   command: "node",
   args: ["./tools/mocks/servers/simple-server.js"],
   format: "json",
-  outputPath: "./reports/my-server-report.json"
-})
+  outputPath: "./reports/my-server-report.json",
+});
 ```
 
 ---
@@ -242,6 +242,7 @@ mcp-verify proxy \
 ```
 
 **Options**:
+
 - `--target`: Command to start your MCP server (required)
 - `--port`: Proxy listening port (default: 3000)
 - `--rate-limit`: Max requests per minute per tool (default: 100)
@@ -258,10 +259,7 @@ Update your Claude Desktop config to point to the proxy instead of the direct se
   "mcpServers": {
     "my-protected-server": {
       "command": "node",
-      "args": [
-        "/path/to/stdio-proxy-client.js",
-        "http://localhost:3000"
-      ]
+      "args": ["/path/to/stdio-proxy-client.js", "http://localhost:3000"]
     }
   }
 }
@@ -273,23 +271,23 @@ Update your Claude Desktop config to point to the proxy instead of the direct se
 
 Requests pass through 3 progressive layers with early exit optimization:
 
-| Layer | Type | Latency | Detection Method | Cost (approx.) |
-|-------|------|---------|------------------|----------------|
-| **Layer 1: Fast Rules** | Static patterns | <10ms | Regex + hardcoded patterns (SQL, CMD injection) | $0 |
-| **Layer 2: Suspicious** | Heuristic analysis | <50ms | Scoring + anomaly detection | $0 |
-| **Layer 3: LLM** | Deep semantic | 500-2000ms | AI-powered context analysis (opt-in) | $5-$15 per 1K req* |
+| Layer                   | Type               | Latency    | Detection Method                                | Cost (approx.)      |
+| ----------------------- | ------------------ | ---------- | ----------------------------------------------- | ------------------- |
+| **Layer 1: Fast Rules** | Static patterns    | <10ms      | Regex + hardcoded patterns (SQL, CMD injection) | $0                  |
+| **Layer 2: Suspicious** | Heuristic analysis | <50ms      | Scoring + anomaly detection                     | $0                  |
+| **Layer 3: LLM**        | Deep semantic      | 500-2000ms | AI-powered context analysis (opt-in)            | $5-$15 per 1K req\* |
 
-*LLM costs vary by provider and usage patterns. Layer 3 is disabled by default.
+\*LLM costs vary by provider and usage patterns. Layer 3 is disabled by default.
 
 ### Panic Stop System (Anti-DoS)
 
 The proxy tracks rate limit errors per client and implements progressive backoff:
 
-| Strike | Backoff | Trigger | Behavior |
-|--------|---------|---------|----------|
-| **Strike 1** | 30 seconds | First 429 error | Client blocked for 30s, auto-resume after |
-| **Strike 2** | 60 seconds | Second 429 within session | Client blocked for 60s, warning logged |
-| **Strike 3** | Permanent | Third 429 within session | **PANIC MODE** - permanently blocked until proxy restart |
+| Strike       | Backoff    | Trigger                   | Behavior                                                 |
+| ------------ | ---------- | ------------------------- | -------------------------------------------------------- |
+| **Strike 1** | 30 seconds | First 429 error           | Client blocked for 30s, auto-resume after                |
+| **Strike 2** | 60 seconds | Second 429 within session | Client blocked for 60s, warning logged                   |
+| **Strike 3** | Permanent  | Third 429 within session  | **PANIC MODE** - permanently blocked until proxy restart |
 
 **Client Isolation**: Each client is tracked separately by ID (from `x-client-id` header or IP address), preventing one malicious client from affecting others.
 
@@ -304,6 +302,7 @@ mcp-verify proxy --target "node my-server.js" --port 3000
 ```
 
 **Request from Claude**:
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -319,6 +318,7 @@ mcp-verify proxy --target "node my-server.js" --port 3000
 ```
 
 **Proxy Response (blocked at Layer 1 in 8ms)**:
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -330,16 +330,18 @@ mcp-verify proxy --target "node my-server.js" --port 3000
       "blocked": true,
       "layer": 1,
       "latency_ms": 8,
-      "findings": [{
-        "ruleCode": "SEC-003",
-        "severity": "critical",
-        "message": "SQL injection detected in parameter 'filter'",
-        "cwe": "CWE-89",
-        "owasp": "A03:2021 - Injection",
-        "remediation": "Use parameterized queries instead of string concatenation",
-        "matchedPattern": "OR 1=1",
-        "affectedParameter": "filter"
-      }]
+      "findings": [
+        {
+          "ruleCode": "SEC-003",
+          "severity": "critical",
+          "message": "SQL injection detected in parameter 'filter'",
+          "cwe": "CWE-89",
+          "owasp": "A03:2021 - Injection",
+          "remediation": "Use parameterized queries instead of string concatenation",
+          "matchedPattern": "OR 1=1",
+          "affectedParameter": "filter"
+        }
+      ]
     }
   }
 }
@@ -381,8 +383,8 @@ Or with AI agent:
 ```typescript
 scanSecurity({
   command: "node",
-  args: ["my-server.js"]
-})
+  args: ["my-server.js"],
+});
 ```
 
 ### Workflow 2: CI/CD Integration
@@ -402,7 +404,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Install mcp-verify
         run: npm install -g mcp-verify
@@ -430,7 +432,7 @@ An AI agent validating another MCP server:
 // Agent A calls mcp-verify to validate Agent B
 const report = await validateServer({
   command: "node",
-  args: ["agent-b-server.js"]
+  args: ["agent-b-server.js"],
 });
 
 if (report.security.score < 70) {
@@ -475,6 +477,7 @@ jq -s 'group_by(.findings[].ruleCode) | map({rule: .[0].findings[0].ruleCode, co
 ```
 
 **Real-world scenario**: A client sends 3 SQL injection attempts:
+
 1. **Request 1** (Layer 1, 8ms): Blocked immediately, client receives detailed error
 2. **Request 2** (Cache hit, <1ms): Identical payload, served from cache
 3. **Request 3** (Layer 1, 9ms): Different payload, blocked again
@@ -541,6 +544,7 @@ Expected: maximum = 120
 ```
 
 **How to recognize false positives**:
+
 - Server returns an `error` object (not `result`)
 - Error message explicitly mentions validation failure
 - HTTP status code is 4xx (client error)
@@ -571,6 +575,7 @@ Expected: enum = ['user', 'guest']
 ```
 
 **How to recognize real vulnerabilities**:
+
 - Server returns a `result` object (not `error`)
 - Payload value appears in the response unchanged
 - HTTP status code is 2xx (success)
@@ -599,6 +604,7 @@ Payload: { url: 'http://169.254.169.254/latest/meta-data/' }
 ```
 
 **How to investigate ambiguous cases**:
+
 1. Check server logs for outbound HTTP requests
 2. Use `tcpdump` or Wireshark to monitor network traffic
 3. Test with a controlled endpoint (e.g., `https://webhook.site`)
@@ -618,11 +624,13 @@ Before reporting a finding as a vulnerability:
 ### When to Escalate
 
 **Escalate to security team if**:
+
 - ✅ Payload was accepted (server returned `result`, not `error`)
 - ✅ Manual reproduction confirms exploitability
 - ✅ Severity is CRITICAL or HIGH and impact is significant
 
 **Do NOT escalate if**:
+
 - ❌ Server returned a validation error
 - ❌ Payload was rejected with 4xx status code
 - ❌ You cannot reproduce the issue manually
@@ -707,6 +715,7 @@ jq -s 'group_by(.cacheHit) | map({cached: .[0].cacheHit, count: length})' ./logs
 ```
 
 **Expected latency**:
+
 - Layer 1+2 only: 10-50ms
 - Cache hits: <1ms
 - LLM layer enabled: 500-2000ms (only use in high-security environments)

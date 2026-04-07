@@ -16,8 +16,8 @@
  * Backwards-compatible: all new fields are optional.
  */
 
-export type DetectionSeverity   = 'low' | 'medium' | 'high' | 'critical';
-export type DetectionConfidence = 'low' | 'medium' | 'high' | 'definite';
+export type DetectionSeverity = "low" | "medium" | "high" | "critical";
+export type DetectionConfidence = "low" | "medium" | "high" | "definite";
 
 // ---------------------------------------------------------------------------
 // Engine Hint — carries feedback-loop signals from FuzzerEngine → Detectors
@@ -42,11 +42,11 @@ export interface EngineHint {
    * Mirrors `ResponseAnalysis.reasons` from fuzzer-engine.ts.
    */
   anomalyReasons?: ReadonlyArray<
-    | 'server_crash'
-    | 'timing_anomaly'
-    | 'structural_drift'
-    | 'error_pattern_match'
-    | 'empty_response'
+    | "server_crash"
+    | "timing_anomaly"
+    | "structural_drift"
+    | "error_pattern_match"
+    | "empty_response"
   >;
 
   /**

@@ -25,13 +25,12 @@
  * Result of ShellParser.parse(): clean token list + optional redirection target.
  */
 export interface ParseResult {
-  tokens:         string[];
-  redirectTo:     string | undefined;
+  tokens: string[];
+  redirectTo: string | undefined;
   redirectAppend: boolean;
 }
 
 export class ShellParser {
-
   /**
    * Entry point: tokenises the full input line and separates any redirection.
    *
@@ -50,29 +49,37 @@ export class ShellParser {
    */
   static tokenise(input: string): string[] {
     const tokens: string[] = [];
-    let   buf              = '';
-    let   i                = 0;
-    let   inQuote: '"' | "'" | null = null;
+    let buf = "";
+    let i = 0;
+    let inQuote: '"' | "'" | null = null;
 
     while (i < input.length) {
-      const ch   = input[i];
+      const ch = input[i];
       const next = input[i + 1];
 
       if (inQuote) {
-        if (ch === '\\' && next === inQuote) {
-          buf += inQuote; i += 2;     // escaped closing quote
+        if (ch === "\\" && next === inQuote) {
+          buf += inQuote;
+          i += 2; // escaped closing quote
         } else if (ch === inQuote) {
-          inQuote = null; i++;        // closing quote — end of segment
+          inQuote = null;
+          i++; // closing quote — end of segment
         } else {
-          buf += ch; i++;
+          buf += ch;
+          i++;
         }
       } else if (ch === '"' || ch === "'") {
-        inQuote = ch; i++;            // open quoted segment
-      } else if (ch === ' ' || ch === '\t') {
-        if (buf.length) { tokens.push(buf); buf = ''; }
+        inQuote = ch;
+        i++; // open quoted segment
+      } else if (ch === " " || ch === "\t") {
+        if (buf.length) {
+          tokens.push(buf);
+          buf = "";
+        }
         i++;
       } else {
-        buf += ch; i++;
+        buf += ch;
+        i++;
       }
     }
 
@@ -85,20 +92,21 @@ export class ShellParser {
    * separated form (`cmd > file`) and fused form (`cmd>file`).
    */
   private static extractRedirect(tokens: string[]): ParseResult {
-    const clean: string[]                = [];
-    let   redirectTo: string | undefined = undefined;
-    let   redirectAppend                  = false;
+    const clean: string[] = [];
+    let redirectTo: string | undefined = undefined;
+    let redirectAppend = false;
 
     let i = 0;
     while (i < tokens.length) {
       const tok = tokens[i];
 
       // ─ Standalone operator ─────────────────────────────────────────────
-      if (tok === '>>' || tok === '>') {
+      if (tok === ">>" || tok === ">") {
         const dest = tokens[i + 1];
-        if (!dest) throw new Error(`Redirect '${tok}' needs a destination file`);
-        redirectAppend = tok === '>>';
-        redirectTo     = dest;
+        if (!dest)
+          throw new Error(`Redirect '${tok}' needs a destination file`);
+        redirectAppend = tok === ">>";
+        redirectTo = dest;
         i += 2;
         continue;
       }
@@ -107,8 +115,8 @@ export class ShellParser {
       const fused = tok.match(/^(.*?)(>>?)(.+)$/);
       if (fused) {
         if (fused[1]) clean.push(fused[1]); // part before '>'
-        redirectAppend = fused[2] === '>>';
-        redirectTo     = fused[3];
+        redirectAppend = fused[2] === ">>";
+        redirectTo = fused[3];
         i++;
         continue;
       }
@@ -131,12 +139,12 @@ export class ShellParser {
 
     for (let i = 0; i < tokens.length; i++) {
       const tok = tokens[i];
-      if (!tok.startsWith('--')) continue;
+      if (!tok.startsWith("--")) continue;
       const key = tok.slice(2);
       if (!key) continue;
 
       const next = tokens[i + 1];
-      if (next !== undefined && !next.startsWith('--')) {
+      if (next !== undefined && !next.startsWith("--")) {
         flags[key] = next;
         i++;
       } else {
@@ -154,9 +162,9 @@ export class ShellParser {
     const pos: string[] = [];
     for (let i = 0; i < tokens.length; i++) {
       const tok = tokens[i];
-      if (tok.startsWith('--')) {
+      if (tok.startsWith("--")) {
         const next = tokens[i + 1];
-        if (next && !next.startsWith('--')) i++; // skip flag value
+        if (next && !next.startsWith("--")) i++; // skip flag value
       } else {
         pos.push(tok);
       }

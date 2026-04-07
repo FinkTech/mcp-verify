@@ -28,30 +28,38 @@
  *   --json              Generate JSON report
  */
 
-import chalk from 'chalk';
-import crypto from 'node:crypto';
-import fs from 'node:fs';
-import path from 'node:path';
-import dns from 'node:dns';
-import net from 'node:net';
+import chalk from "chalk";
+import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
+import dns from "node:dns";
+import net from "node:net";
 
-import { MCPValidator } from '@mcp-verify/core';
-import { DiagnosticRunner } from '@mcp-verify/core/infrastructure/diagnostics/diagnostic-runner';
+import { MCPValidator } from "@mcp-verify/core";
+import { DiagnosticRunner } from "@mcp-verify/core/infrastructure/diagnostics/diagnostic-runner";
 import {
   NodeRuntimeCheck,
   PythonRuntimeCheck,
   GitInstallationCheck,
   DenoRuntimeCheck,
-} from '@mcp-verify/core/infrastructure/diagnostics/checks/environment-checks';
-import { t, getCurrentLanguage, ReportingService, ReportFormat } from '@mcp-verify/shared';
-import { createTransport, detectTransportType } from '../utils/transport-factory';
-import { registerCleanup } from '../utils/cleanup-handlers';
+} from "@mcp-verify/core/infrastructure/diagnostics/checks/environment-checks";
+import {
+  t,
+  getCurrentLanguage,
+  ReportingService,
+  ReportFormat,
+} from "@mcp-verify/shared";
+import {
+  createTransport,
+  detectTransportType,
+} from "../utils/transport-factory";
+import { registerCleanup } from "../utils/cleanup-handlers";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-type CheckStatus = 'pass' | 'fail' | 'warn' | 'skip';
+type CheckStatus = "pass" | "fail" | "warn" | "skip";
 
 interface CheckResult {
   name: string;
@@ -92,7 +100,7 @@ interface DoctorOptions {
 // Visual helpers
 // ---------------------------------------------------------------------------
 
-const SEP = chalk.white.dim('─'.repeat(64));
+const SEP = chalk.white.dim("─".repeat(64));
 
 function sectionHeader(icon: string, title: string): string {
   return (
@@ -104,35 +112,50 @@ function sectionHeader(icon: string, title: string): string {
 
 function renderCheck(check: CheckResult): string {
   const { icon, color } = statusMeta(check.status);
-  const name  = chalk.white(check.name.padEnd(28));
-  const value = check.value ? chalk.cyan(check.value.padEnd(24)) : ''.padEnd(24);
-  const msg   = check.message ? color(check.message) : '';
+  const name = chalk.white(check.name.padEnd(28));
+  const value = check.value
+    ? chalk.cyan(check.value.padEnd(24))
+    : "".padEnd(24);
+  const msg = check.message ? color(check.message) : "";
   return `  ${icon}  ${name}  ${value}  ${msg}`;
 }
 
-function statusMeta(status: CheckStatus): { icon: string; color: (s: string) => string } {
+function statusMeta(status: CheckStatus): {
+  icon: string;
+  color: (s: string) => string;
+} {
   switch (status) {
-    case 'pass': return { icon: chalk.green('✔'),    color: chalk.green    };
-    case 'fail': return { icon: chalk.red('✖'),      color: chalk.red      };
-    case 'warn': return { icon: chalk.yellow('⚠'),   color: chalk.yellow   };
-    case 'skip': return { icon: chalk.cyan.dim('○'), color: chalk.cyan.dim };
+    case "pass":
+      return { icon: chalk.green("✔"), color: chalk.green };
+    case "fail":
+      return { icon: chalk.red("✖"), color: chalk.red };
+    case "warn":
+      return { icon: chalk.yellow("⚠"), color: chalk.yellow };
+    case "skip":
+      return { icon: chalk.cyan.dim("○"), color: chalk.cyan.dim };
   }
 }
 
 function scorecard(checks: CheckResult[]): string {
-  const pass = checks.filter(c => c.status === 'pass').length;
-  const warn = checks.filter(c => c.status === 'warn').length;
-  const fail = checks.filter(c => c.status === 'fail').length;
-  return chalk.green(`✔ ${pass}`) + '  ' + chalk.yellow(`⚠ ${warn}`) + '  ' + chalk.red(`✖ ${fail}`);
+  const pass = checks.filter((c) => c.status === "pass").length;
+  const warn = checks.filter((c) => c.status === "warn").length;
+  const fail = checks.filter((c) => c.status === "fail").length;
+  return (
+    chalk.green(`✔ ${pass}`) +
+    "  " +
+    chalk.yellow(`⚠ ${warn}`) +
+    "  " +
+    chalk.red(`✖ ${fail}`)
+  );
 }
 
 function printSection(section: SectionResult, verbose: boolean): void {
   console.log(sectionHeader(section.icon, section.title));
   console.log();
-  section.checks.forEach(c => console.log(renderCheck(c)));
+  section.checks.forEach((c) => console.log(renderCheck(c)));
   if (verbose && section.verboseLogs.length > 0) {
     console.log();
-    section.verboseLogs.forEach(log => console.log(log));
+    section.verboseLogs.forEach((log) => console.log(log));
   }
   console.log(`\n  ${scorecard(section.checks)}`);
 }
@@ -144,49 +167,64 @@ function printSection(section: SectionResult, verbose: boolean): void {
 async function checkBinaryIntegrity(verbose: boolean): Promise<SectionResult> {
   const checks: CheckResult[] = [];
   const logs: string[] = [];
-  const vlog = (msg: string) => logs.push(`    ${chalk.cyan.dim('•')} ${chalk.white.dim(msg)}`);
+  const vlog = (msg: string) =>
+    logs.push(`    ${chalk.cyan.dim("•")} ${chalk.white.dim(msg)}`);
 
   // Find project root (where .mcp-verify/ directory would be)
   const projectRoot = findProjectRoot();
-  const manifestPath = path.join(projectRoot, '.mcp-verify', 'integrity-history.json');
+  const manifestPath = path.join(
+    projectRoot,
+    ".mcp-verify",
+    "integrity-history.json",
+  );
 
   vlog(`Project root: ${chalk.cyan(projectRoot)}`);
   vlog(`Manifest path: ${chalk.cyan(manifestPath)}`);
 
   if (!fs.existsSync(manifestPath)) {
     checks.push({
-      name: t('integrity_manifest'),
-      status: 'warn',
-      message: 'Integrity manifest not found. Run build to generate it.'
+      name: t("integrity_manifest"),
+      status: "warn",
+      message: "Integrity manifest not found. Run build to generate it.",
     });
-    return { title: t('section_binary_integrity'), icon: '🔒', checks, verboseLogs: logs };
+    return {
+      title: t("section_binary_integrity"),
+      icon: "🔒",
+      checks,
+      verboseLogs: logs,
+    };
   }
 
   try {
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
     const currentBuild = manifest.current;
 
     if (!currentBuild || !currentBuild.binaries) {
       checks.push({
-        name: t('integrity_manifest'),
-        status: 'fail',
-        message: 'Invalid manifest format (missing binaries)'
+        name: t("integrity_manifest"),
+        status: "fail",
+        message: "Invalid manifest format (missing binaries)",
       });
-      return { title: t('section_binary_integrity'), icon: '🔒', checks, verboseLogs: logs };
+      return {
+        title: t("section_binary_integrity"),
+        icon: "🔒",
+        checks,
+        verboseLogs: logs,
+      };
     }
 
     checks.push({
-      name: t('integrity_manifest'),
-      status: 'pass',
+      name: t("integrity_manifest"),
+      status: "pass",
       value: `v${currentBuild.version} (${currentBuild.gitCommit})`,
-      message: t('integrity_manifest_found')
+      message: t("integrity_manifest_found"),
     });
 
     // Verify CLI binary
     if (currentBuild.binaries.cli) {
       const cliPath = path.join(projectRoot, currentBuild.binaries.cli.path);
       if (fs.existsSync(cliPath)) {
-        const actualHash = `sha256-${crypto.createHash('sha256').update(fs.readFileSync(cliPath)).digest('hex')}`;
+        const actualHash = `sha256-${crypto.createHash("sha256").update(fs.readFileSync(cliPath)).digest("hex")}`;
         const expectedHash = currentBuild.binaries.cli.hash;
         const match = actualHash === expectedHash;
 
@@ -195,25 +233,30 @@ async function checkBinaryIntegrity(verbose: boolean): Promise<SectionResult> {
         vlog(`Actual:   ${chalk.yellow(actualHash.slice(0, 20))}...`);
 
         checks.push({
-          name: 'CLI Binary',
-          status: match ? 'pass' : 'fail',
-          value: actualHash.slice(0, 20) + '...',
-          message: match ? t('integrity_hash_ok') : t('integrity_hash_mismatch')
+          name: "CLI Binary",
+          status: match ? "pass" : "fail",
+          value: actualHash.slice(0, 20) + "...",
+          message: match
+            ? t("integrity_hash_ok")
+            : t("integrity_hash_mismatch"),
         });
       } else {
         checks.push({
-          name: 'CLI Binary',
-          status: 'fail',
-          message: `Not found at ${currentBuild.binaries.cli.path}`
+          name: "CLI Binary",
+          status: "fail",
+          message: `Not found at ${currentBuild.binaries.cli.path}`,
         });
       }
     }
 
     // Verify Server binary
     if (currentBuild.binaries.server) {
-      const serverPath = path.join(projectRoot, currentBuild.binaries.server.path);
+      const serverPath = path.join(
+        projectRoot,
+        currentBuild.binaries.server.path,
+      );
       if (fs.existsSync(serverPath)) {
-        const actualHash = `sha256-${crypto.createHash('sha256').update(fs.readFileSync(serverPath)).digest('hex')}`;
+        const actualHash = `sha256-${crypto.createHash("sha256").update(fs.readFileSync(serverPath)).digest("hex")}`;
         const expectedHash = currentBuild.binaries.server.hash;
         const match = actualHash === expectedHash;
 
@@ -222,16 +265,18 @@ async function checkBinaryIntegrity(verbose: boolean): Promise<SectionResult> {
         vlog(`Actual:   ${chalk.yellow(actualHash.slice(0, 20))}...`);
 
         checks.push({
-          name: 'Server Binary',
-          status: match ? 'pass' : 'fail',
-          value: actualHash.slice(0, 20) + '...',
-          message: match ? t('integrity_hash_ok') : t('integrity_hash_mismatch')
+          name: "Server Binary",
+          status: match ? "pass" : "fail",
+          value: actualHash.slice(0, 20) + "...",
+          message: match
+            ? t("integrity_hash_ok")
+            : t("integrity_hash_mismatch"),
         });
       } else {
         checks.push({
-          name: 'Server Binary',
-          status: 'fail',
-          message: `Not found at ${currentBuild.binaries.server.path}`
+          name: "Server Binary",
+          status: "fail",
+          message: `Not found at ${currentBuild.binaries.server.path}`,
         });
       }
     }
@@ -240,11 +285,19 @@ async function checkBinaryIntegrity(verbose: boolean): Promise<SectionResult> {
     if (manifest.history && Array.isArray(manifest.history)) {
       vlog(`History: ${chalk.green(manifest.history.length)} builds tracked`);
     }
-
   } catch (e) {
-    checks.push({ name: t('integrity_manifest'), status: 'fail', message: String(e) });
+    checks.push({
+      name: t("integrity_manifest"),
+      status: "fail",
+      message: String(e),
+    });
   }
-  return { title: t('section_binary_integrity'), icon: '🔒', checks, verboseLogs: logs };
+  return {
+    title: t("section_binary_integrity"),
+    icon: "🔒",
+    checks,
+    verboseLogs: logs,
+  };
 }
 
 /**
@@ -253,7 +306,7 @@ async function checkBinaryIntegrity(verbose: boolean): Promise<SectionResult> {
 function findProjectRoot(): string {
   let currentDir = __dirname;
   while (currentDir !== path.dirname(currentDir)) {
-    if (fs.existsSync(path.join(currentDir, 'package.json'))) {
+    if (fs.existsSync(path.join(currentDir, "package.json"))) {
       return currentDir;
     }
     currentDir = path.dirname(currentDir);
@@ -267,45 +320,63 @@ function findProjectRoot(): string {
  */
 function showIntegrityHistory(): void {
   const projectRoot = findProjectRoot();
-  const manifestPath = path.join(projectRoot, '.mcp-verify', 'integrity-history.json');
+  const manifestPath = path.join(
+    projectRoot,
+    ".mcp-verify",
+    "integrity-history.json",
+  );
 
   if (!fs.existsSync(manifestPath)) {
-    console.log(chalk.yellow('\n⚠ No integrity manifest found.'));
-    console.log(chalk.dim('   Run build to generate integrity manifest.\n'));
+    console.log(chalk.yellow("\n⚠ No integrity manifest found."));
+    console.log(chalk.dim("   Run build to generate integrity manifest.\n"));
     return;
   }
 
   try {
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 
-    if (!manifest.history || !Array.isArray(manifest.history) || manifest.history.length === 0) {
-      console.log(chalk.yellow('\n⚠ No build history found.\n'));
+    if (
+      !manifest.history ||
+      !Array.isArray(manifest.history) ||
+      manifest.history.length === 0
+    ) {
+      console.log(chalk.yellow("\n⚠ No build history found.\n"));
       return;
     }
 
-    console.log(chalk.bold.cyan('\n🔒 Integrity History'));
+    console.log(chalk.bold.cyan("\n🔒 Integrity History"));
     console.log(SEP);
-    console.log(chalk.dim(`Found ${chalk.white(manifest.history.length)} builds\n`));
+    console.log(
+      chalk.dim(`Found ${chalk.white(manifest.history.length)} builds\n`),
+    );
 
     for (const build of manifest.history) {
       const date = new Date(build.timestamp).toLocaleString();
       const isCurrent = build.buildId === manifest.current?.buildId;
 
       console.log(
-        `${isCurrent ? chalk.green('●') : chalk.dim('○')} ${chalk.white(build.version)} ${chalk.dim(`(${build.gitCommit})`)} - ${chalk.cyan(date)}`
+        `${isCurrent ? chalk.green("●") : chalk.dim("○")} ${chalk.white(build.version)} ${chalk.dim(`(${build.gitCommit})`)} - ${chalk.cyan(date)}`,
       );
       console.log(chalk.dim(`   Build ID: ${build.buildId}`));
 
       if (build.binaries?.cli) {
-        console.log(chalk.dim(`   CLI:    ${build.binaries.cli.hash.slice(0, 20)}... (${formatBytes(build.binaries.cli.size)})`));
+        console.log(
+          chalk.dim(
+            `   CLI:    ${build.binaries.cli.hash.slice(0, 20)}... (${formatBytes(build.binaries.cli.size)})`,
+          ),
+        );
       }
       if (build.binaries?.server) {
-        console.log(chalk.dim(`   Server: ${build.binaries.server.hash.slice(0, 20)}... (${formatBytes(build.binaries.server.size)})`));
+        console.log(
+          chalk.dim(
+            `   Server: ${build.binaries.server.hash.slice(0, 20)}... (${formatBytes(build.binaries.server.size)})`,
+          ),
+        );
       }
-      console.log('');
+      console.log("");
     }
 
-    console.log(SEP + '\n');
+    console.log(SEP + "\n");
   } catch (e) {
     console.log(chalk.red(`\n✖ Failed to read history: ${e}\n`));
   }
@@ -316,42 +387,46 @@ function showIntegrityHistory(): void {
  */
 function fixIntegrity(): void {
   const projectRoot = findProjectRoot();
-  const manifestPath = path.join(projectRoot, '.mcp-verify', 'integrity-history.json');
+  const manifestPath = path.join(
+    projectRoot,
+    ".mcp-verify",
+    "integrity-history.json",
+  );
 
-  console.log(chalk.bold.cyan('\n🔧 Fixing Integrity'));
+  console.log(chalk.bold.cyan("\n🔧 Fixing Integrity"));
   console.log(SEP);
 
-  const cliPath = path.join(projectRoot, 'dist', 'mcp-verify.js');
-  const serverPath = path.join(projectRoot, 'dist', 'mcp-server.js');
+  const cliPath = path.join(projectRoot, "dist", "mcp-verify.js");
+  const serverPath = path.join(projectRoot, "dist", "mcp-server.js");
 
   if (!fs.existsSync(cliPath) && !fs.existsSync(serverPath)) {
-    console.log(chalk.red('✖ No binaries found in dist/'));
-    console.log(chalk.dim('   Run build first.\n'));
+    console.log(chalk.red("✖ No binaries found in dist/"));
+    console.log(chalk.dim("   Run build first.\n"));
     return;
   }
 
   try {
     let currentManifest: unknown = null;
     if (fs.existsSync(manifestPath)) {
-      currentManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+      currentManifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
     }
 
     const timestamp = new Date().toISOString();
     const buildId = `build-${Date.now()}`;
 
     // Read version from package.json
-    const pkgPath = path.join(projectRoot, 'package.json');
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    const pkgPath = path.join(projectRoot, "package.json");
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
     const version = pkg.version;
 
     // Get git commit
-    const { execSync } = require('child_process');
-    let gitCommit = 'unknown';
+    const { execSync } = require("child_process");
+    let gitCommit = "unknown";
     try {
-      gitCommit = execSync('git rev-parse --short HEAD', {
-        encoding: 'utf8',
+      gitCommit = execSync("git rev-parse --short HEAD", {
+        encoding: "utf8",
         cwd: projectRoot,
-        stdio: ['ignore', 'pipe', 'ignore']
+        stdio: ["ignore", "pipe", "ignore"],
       }).trim();
     } catch {
       // Git not available
@@ -360,25 +435,25 @@ function fixIntegrity(): void {
     const binaries: { cli?: unknown; server?: unknown } = {};
 
     if (fs.existsSync(cliPath)) {
-      const hash = `sha256-${crypto.createHash('sha256').update(fs.readFileSync(cliPath)).digest('hex')}`;
+      const hash = `sha256-${crypto.createHash("sha256").update(fs.readFileSync(cliPath)).digest("hex")}`;
       const stats = fs.statSync(cliPath);
       binaries.cli = {
         hash,
-        path: 'dist/mcp-verify.js',
-        size: stats.size
+        path: "dist/mcp-verify.js",
+        size: stats.size,
       };
-      console.log(chalk.green('✓ CLI binary hashed'));
+      console.log(chalk.green("✓ CLI binary hashed"));
     }
 
     if (fs.existsSync(serverPath)) {
-      const hash = `sha256-${crypto.createHash('sha256').update(fs.readFileSync(serverPath)).digest('hex')}`;
+      const hash = `sha256-${crypto.createHash("sha256").update(fs.readFileSync(serverPath)).digest("hex")}`;
       const stats = fs.statSync(serverPath);
       binaries.server = {
         hash,
-        path: 'dist/mcp-server.js',
-        size: stats.size
+        path: "dist/mcp-server.js",
+        size: stats.size,
       };
-      console.log(chalk.green('✓ Server binary hashed'));
+      console.log(chalk.green("✓ Server binary hashed"));
     }
 
     const newBuild = {
@@ -386,12 +461,17 @@ function fixIntegrity(): void {
       version,
       timestamp,
       gitCommit,
-      binaries
+      binaries,
     };
 
     // Preserve existing history
     let history: unknown[] = [];
-    if (currentManifest && typeof currentManifest === 'object' && 'history' in currentManifest && Array.isArray(currentManifest.history)) {
+    if (
+      currentManifest &&
+      typeof currentManifest === "object" &&
+      "history" in currentManifest &&
+      Array.isArray(currentManifest.history)
+    ) {
       history = currentManifest.history;
     }
     history.unshift(newBuild);
@@ -403,7 +483,7 @@ function fixIntegrity(): void {
 
     const newManifest = {
       current: newBuild,
-      history
+      history,
     };
 
     // Ensure directory exists
@@ -413,11 +493,15 @@ function fixIntegrity(): void {
     }
 
     // Write atomically
-    const tmpPath = manifestPath + '.tmp';
-    fs.writeFileSync(tmpPath, JSON.stringify(newManifest, null, 2) + '\n', 'utf8');
+    const tmpPath = manifestPath + ".tmp";
+    fs.writeFileSync(
+      tmpPath,
+      JSON.stringify(newManifest, null, 2) + "\n",
+      "utf8",
+    );
     fs.renameSync(tmpPath, manifestPath);
 
-    console.log(chalk.green('✓ Integrity manifest updated'));
+    console.log(chalk.green("✓ Integrity manifest updated"));
     console.log(chalk.dim(`   Path: ${manifestPath}`));
     console.log(chalk.dim(`   Build ID: ${buildId}\n`));
   } catch (e) {
@@ -430,21 +514,25 @@ function fixIntegrity(): void {
  */
 function cleanHistory(keepLast: number): void {
   const projectRoot = findProjectRoot();
-  const manifestPath = path.join(projectRoot, '.mcp-verify', 'integrity-history.json');
+  const manifestPath = path.join(
+    projectRoot,
+    ".mcp-verify",
+    "integrity-history.json",
+  );
 
-  console.log(chalk.bold.cyan('\n🧹 Cleaning History'));
+  console.log(chalk.bold.cyan("\n🧹 Cleaning History"));
   console.log(SEP);
 
   if (!fs.existsSync(manifestPath)) {
-    console.log(chalk.yellow('⚠ No integrity manifest found.\n'));
+    console.log(chalk.yellow("⚠ No integrity manifest found.\n"));
     return;
   }
 
   try {
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 
     if (!manifest.history || !Array.isArray(manifest.history)) {
-      console.log(chalk.yellow('⚠ No history to clean.\n'));
+      console.log(chalk.yellow("⚠ No history to clean.\n"));
       return;
     }
 
@@ -453,8 +541,8 @@ function cleanHistory(keepLast: number): void {
     const removedCount = originalCount - manifest.history.length;
 
     // Write atomically
-    const tmpPath = manifestPath + '.tmp';
-    fs.writeFileSync(tmpPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
+    const tmpPath = manifestPath + ".tmp";
+    fs.writeFileSync(tmpPath, JSON.stringify(manifest, null, 2) + "\n", "utf8");
     fs.renameSync(tmpPath, manifestPath);
 
     console.log(chalk.green(`✓ Removed ${removedCount} old entries`));
@@ -475,65 +563,147 @@ function formatBytes(bytes: number): string {
 
 async function checkEnvironment(verbose: boolean): Promise<SectionResult> {
   const logs: string[] = [];
-  const vlog = (msg: string) => logs.push(`    ${chalk.cyan.dim('•')} ${chalk.white.dim(msg)}`);
+  const vlog = (msg: string) =>
+    logs.push(`    ${chalk.cyan.dim("•")} ${chalk.white.dim(msg)}`);
   const runner = new DiagnosticRunner();
   runner.register(new NodeRuntimeCheck());
   runner.register(new PythonRuntimeCheck());
   runner.register(new GitInstallationCheck());
   runner.register(new DenoRuntimeCheck());
   const results = await runner.runAll();
-  const checks: CheckResult[] = results.map(res => {
+  const checks: CheckResult[] = results.map((res) => {
     vlog(`${res.name}: ${res.status}`);
-    return { name: res.name, status: res.status === 'pass' ? 'pass' : res.status === 'fail' ? 'fail' : 'warn', value: res.details ?? undefined, message: res.message };
+    return {
+      name: res.name,
+      status:
+        res.status === "pass"
+          ? "pass"
+          : res.status === "fail"
+            ? "fail"
+            : "warn",
+      value: res.details ?? undefined,
+      message: res.message,
+    };
   });
-  return { title: t('section_environment'), icon: '⚙', checks, verboseLogs: logs };
+  return {
+    title: t("section_environment"),
+    icon: "⚙",
+    checks,
+    verboseLogs: logs,
+  };
 }
 
-async function checkMcpServer(target: string, transportOverride: string | undefined, verbose: boolean): Promise<SectionResult> {
+async function checkMcpServer(
+  target: string,
+  transportOverride: string | undefined,
+  verbose: boolean,
+): Promise<SectionResult> {
   const checks: CheckResult[] = [];
   const logs: string[] = [];
-  const vlog = (msg: string) => logs.push(`    ${chalk.cyan.dim('•')} ${chalk.white.dim(msg)}`);
+  const vlog = (msg: string) =>
+    logs.push(`    ${chalk.cyan.dim("•")} ${chalk.white.dim(msg)}`);
 
   try {
     const transportType = transportOverride ?? detectTransportType(target);
-    const transport = createTransport(target, { transportType: transportType as 'stdio' | 'http' | 'sse', lang: getCurrentLanguage() });
+    const transport = createTransport(target, {
+      transportType: transportType as "stdio" | "http" | "sse",
+      lang: getCurrentLanguage(),
+    });
     const validator = new MCPValidator(transport, undefined, {});
     const result = await validator.testHandshake();
 
-    checks.push({ name: t('mcp_protocol'), status: result.success ? 'pass' : 'fail', value: result.protocolVersion || 'MCP', message: result.success ? t('handshake_successful') : t('handshake_failed') });
+    checks.push({
+      name: t("mcp_protocol"),
+      status: result.success ? "pass" : "fail",
+      value: result.protocolVersion || "MCP",
+      message: result.success
+        ? t("handshake_successful")
+        : t("handshake_failed"),
+    });
 
     // Discover capabilities separately
     const cap = await validator.discoverCapabilities();
     const tC = cap.tools?.length ?? 0;
     const rC = cap.resources?.length ?? 0;
     const pC = cap.prompts?.length ?? 0;
-    
-    checks.push({ name: t('mcp_tools'), status: tC > 0 ? 'pass' : 'warn', value: `${tC} ${t('found')}`, message: t('mcp_tools_detected', { count: String(tC) }) });
-    checks.push({ name: t('mcp_resources'), status: rC > 0 ? 'pass' : 'warn', value: `${rC} ${t('found')}`, message: t('mcp_resources_detected', { count: String(rC) }) });
-    checks.push({ name: t('mcp_prompts'), status: pC > 0 ? 'pass' : 'skip', value: `${pC} ${t('found')}`, message: pC > 0 ? t('mcp_prompts_detected', { count: String(pC) }) : t('na_label') });
-    
+
+    checks.push({
+      name: t("mcp_tools"),
+      status: tC > 0 ? "pass" : "warn",
+      value: `${tC} ${t("found")}`,
+      message: t("mcp_tools_detected", { count: String(tC) }),
+    });
+    checks.push({
+      name: t("mcp_resources"),
+      status: rC > 0 ? "pass" : "warn",
+      value: `${rC} ${t("found")}`,
+      message: t("mcp_resources_detected", { count: String(rC) }),
+    });
+    checks.push({
+      name: t("mcp_prompts"),
+      status: pC > 0 ? "pass" : "skip",
+      value: `${pC} ${t("found")}`,
+      message:
+        pC > 0
+          ? t("mcp_prompts_detected", { count: String(pC) })
+          : t("na_label"),
+    });
+
     await validator.cleanup();
   } catch (e) {
-    checks.push({ name: t('mcp_protocol'), status: 'fail', message: String(e) });
+    checks.push({
+      name: t("mcp_protocol"),
+      status: "fail",
+      message: String(e),
+    });
   }
-  return { title: t('section_mcp_server'), icon: '🔌', checks, verboseLogs: logs };
+  return {
+    title: t("section_mcp_server"),
+    icon: "🔌",
+    checks,
+    verboseLogs: logs,
+  };
 }
 
 function checkEnvironmentAudit(verbose: boolean): SectionResult {
   const checks: CheckResult[] = [];
   const logs: string[] = [];
-  const vlog = (msg: string) => logs.push(`    ${chalk.cyan.dim('•')} ${chalk.white.dim(msg)}`);
+  const vlog = (msg: string) =>
+    logs.push(`    ${chalk.cyan.dim("•")} ${chalk.white.dim(msg)}`);
   const envKeys = Object.keys(process.env);
-  const patterns = ['PASSWORD', 'SECRET', 'API_KEY', 'TOKEN', 'AUTH', 'ADMIN'];
-  const suspicious = envKeys.filter(k => patterns.some(p => k.toUpperCase().includes(p)));
-  
-  checks.push({ name: t('audit_total_env_vars'), status: 'pass', value: `${envKeys.length} ${t('found')}`, message: t('audit_env_scanned') });
+  const patterns = ["PASSWORD", "SECRET", "API_KEY", "TOKEN", "AUTH", "ADMIN"];
+  const suspicious = envKeys.filter((k) =>
+    patterns.some((p) => k.toUpperCase().includes(p)),
+  );
+
+  checks.push({
+    name: t("audit_total_env_vars"),
+    status: "pass",
+    value: `${envKeys.length} ${t("found")}`,
+    message: t("audit_env_scanned"),
+  });
   if (suspicious.length > 0) {
-    suspicious.forEach(k => checks.push({ name: t('audit_sensitive_names'), status: 'warn', value: k, message: t('audit_sensitive_var_warning') }));
+    suspicious.forEach((k) =>
+      checks.push({
+        name: t("audit_sensitive_names"),
+        status: "warn",
+        value: k,
+        message: t("audit_sensitive_var_warning"),
+      }),
+    );
   } else {
-    checks.push({ name: t('audit_sensitive_names'), status: 'pass', message: t('audit_no_sensitive_vars') });
+    checks.push({
+      name: t("audit_sensitive_names"),
+      status: "pass",
+      message: t("audit_no_sensitive_vars"),
+    });
   }
-  return { title: t('section_env_audit'), icon: '🛡', checks, verboseLogs: logs };
+  return {
+    title: t("section_env_audit"),
+    icon: "🛡",
+    checks,
+    verboseLogs: logs,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -541,61 +711,91 @@ function checkEnvironmentAudit(verbose: boolean): SectionResult {
 // ---------------------------------------------------------------------------
 
 function printSummary(sections: SectionResult[]): void {
-  const allChecks = sections.flatMap(s => s.checks);
-  const fails = allChecks.filter(c => c.status === 'fail').length;
-  const warns = allChecks.filter(c => c.status === 'warn').length;
+  const allChecks = sections.flatMap((s) => s.checks);
+  const fails = allChecks.filter((c) => c.status === "fail").length;
+  const warns = allChecks.filter((c) => c.status === "warn").length;
 
   console.log(`\n${SEP}`);
   if (fails > 0) {
-    console.log(`  ${chalk.bgRed(chalk.white(` ✖ ${t('summary_issues_found', { count: String(fails + warns) })} `))}  ${chalk.red(`${fails} ${t('summary_critical')}`)}, ${chalk.yellow(`${warns} ${t('summary_warnings')}`)}`);
+    console.log(
+      `  ${chalk.bgRed(chalk.white(` ✖ ${t("summary_issues_found", { count: String(fails + warns) })} `))}  ${chalk.red(`${fails} ${t("summary_critical")}`)}, ${chalk.yellow(`${warns} ${t("summary_warnings")}`)}`,
+    );
   } else if (warns > 0) {
-    console.log(`  ${chalk.bgYellow(chalk.black(` ⚠ ${warns} ${t('summary_warnings')} `))}  ${chalk.white.dim(t('summary_no_critical'))}`);
+    console.log(
+      `  ${chalk.bgYellow(chalk.black(` ⚠ ${warns} ${t("summary_warnings")} `))}  ${chalk.white.dim(t("summary_no_critical"))}`,
+    );
   } else {
-    console.log(`  ${chalk.bgGreen(chalk.black(` ✔ ${t('summary_all_ok')} `))}`);
+    console.log(
+      `  ${chalk.bgGreen(chalk.black(` ✔ ${t("summary_all_ok")} `))}`,
+    );
   }
-  console.log(SEP + '\n');
+  console.log(SEP + "\n");
 }
 
-async function runFullDiagnostic(target: string | undefined, transportOverride: string | undefined, options: DoctorOptions): Promise<void> {
+async function runFullDiagnostic(
+  target: string | undefined,
+  transportOverride: string | undefined,
+  options: DoctorOptions,
+): Promise<void> {
   const verbose = !!options.verbose;
-  
+
   if (!options.watch) {
-    console.log(chalk.bold('\n' + chalk.bgWhite(chalk.black('  🩺  mcp-verify doctor  ')) + '\n'));
+    console.log(
+      chalk.bold(
+        "\n" + chalk.bgWhite(chalk.black("  🩺  mcp-verify doctor  ")) + "\n",
+      ),
+    );
   }
-  
-  if (verbose) console.log(`  ${chalk.bgCyan(chalk.black(' VERBOSE '))}  ${chalk.white.dim(t('verbose_mode_active'))}`);
-  if (target) console.log(chalk.white.dim(t('target') + ':') + '  ' + chalk.cyan(target));
+
+  if (verbose)
+    console.log(
+      `  ${chalk.bgCyan(chalk.black(" VERBOSE "))}  ${chalk.white.dim(t("verbose_mode_active"))}`,
+    );
+  if (target)
+    console.log(chalk.white.dim(t("target") + ":") + "  " + chalk.cyan(target));
 
   const sections: SectionResult[] = [];
   sections.push(await checkBinaryIntegrity(verbose));
   sections.push(await checkEnvironment(verbose));
-  if (target) sections.push(await checkMcpServer(target, transportOverride, verbose));
+  if (target)
+    sections.push(await checkMcpServer(target, transportOverride, verbose));
   sections.push(checkEnvironmentAudit(verbose));
 
-  sections.forEach(s => printSection(s, verbose));
+  sections.forEach((s) => printSection(s, verbose));
   printSummary(sections);
 
   // Centralized Export
   if (options.md || options.html || options.json) {
     const formats: ReportFormat[] = [];
-    if (options.md) formats.push('markdown');
-    if (options.html) formats.push('html');
-    if (options.json) formats.push('json');
+    if (options.md) formats.push("markdown");
+    if (options.html) formats.push("html");
+    if (options.json) formats.push("json");
 
     const saved = await ReportingService.saveReport(
-      { kind: 'doctor', data: sections },
+      { kind: "doctor", data: sections },
       {
         outputDir: options.output,
         formats,
         language: getCurrentLanguage(),
-        filenamePrefix: 'doctor-diag'
-      }
+        filenamePrefix: "doctor-diag",
+      },
     );
 
-    console.log(chalk.white.dim('  📦 ' + t('comparison_saved_at').split(':')[0] + ':'));
-    if (saved.paths.markdown) console.log(chalk.green(`     • Markdown: ${chalk.cyan(saved.paths.markdown)}`));
-    if (saved.paths.html) console.log(chalk.green(`     • HTML:     ${chalk.cyan(saved.paths.html)}`));
-    if (saved.paths.json) console.log(chalk.green(`     • JSON:     ${chalk.cyan(saved.paths.json)}`));
+    console.log(
+      chalk.white.dim("  📦 " + t("comparison_saved_at").split(":")[0] + ":"),
+    );
+    if (saved.paths.markdown)
+      console.log(
+        chalk.green(`     • Markdown: ${chalk.cyan(saved.paths.markdown)}`),
+      );
+    if (saved.paths.html)
+      console.log(
+        chalk.green(`     • HTML:     ${chalk.cyan(saved.paths.html)}`),
+      );
+    if (saved.paths.json)
+      console.log(
+        chalk.green(`     • JSON:     ${chalk.cyan(saved.paths.json)}`),
+      );
   }
 }
 
@@ -610,16 +810,22 @@ const DOCTOR_BANNER = `
  |_____/ \\____/ \\_____|  |_|  \\____/|_|  \\_\\
 `;
 
-async function runWatchMode(target: string | undefined, transportOverride: string | undefined, options: DoctorOptions): Promise<void> {
+async function runWatchMode(
+  target: string | undefined,
+  transportOverride: string | undefined,
+  options: DoctorOptions,
+): Promise<void> {
   const REFRESH_RATE = 5; // seconds
   let secondsLeft = REFRESH_RATE;
 
   const printHeader = () => {
     console.log(chalk.cyan(DOCTOR_BANNER));
-    console.log(chalk.bold('  🩺  mcp-verify doctor dashboard'));
-    console.log(chalk.white.dim('  ' + '─'.repeat(64)));
+    console.log(chalk.bold("  🩺  mcp-verify doctor dashboard"));
+    console.log(chalk.white.dim("  " + "─".repeat(64)));
     if (target) {
-      console.log(chalk.white.dim('  ' + t('target') + ': ') + chalk.cyan(target));
+      console.log(
+        chalk.white.dim("  " + t("target") + ": ") + chalk.cyan(target),
+      );
     }
   };
 
@@ -635,18 +841,14 @@ async function runWatchMode(target: string | undefined, transportOverride: strin
     // 3. Print Timer (placeholder)
     // 4. Print Diagnostics
     // 5. Start Interval that overwrites Line X (Timer)
-    
     // Actually, simply putting the timer at the BOTTOM of the output is standard for CLIs to avoid messing with top content.
     // But the user liked it at the top.
-    
     // Let's implement the "Clear & Redraw All" approach but optimized.
     // No, that's heavy.
-    
     // Fix for "updating in place":
     // Use \r to overwrite the last line? No, user wants it at top.
-    
-    // Let's go with: Clean refresh every 5s. 
-    // And for the countdown: 
+    // Let's go with: Clean refresh every 5s.
+    // And for the countdown:
     // We will save the cursor position RIGHT AFTER the header, print the timer, then print the body.
     // Then periodically move cursor back to that saved position to update timer.
   };
@@ -654,15 +856,20 @@ async function runWatchMode(target: string | undefined, transportOverride: strin
   const refresh = async () => {
     console.clear();
     printHeader();
-    
+
     // Status bar line (Line ~10)
-    process.stdout.write(`  ${chalk.bgCyan(chalk.black(' ◉ ' + t('watch_live') + ' '))}  ${chalk.white.dim(t('watch_next_in', { seconds: String(secondsLeft) }))}\n`);
-    
+    process.stdout.write(
+      `  ${chalk.bgCyan(chalk.black(" ◉ " + t("watch_live") + " "))}  ${chalk.white.dim(t("watch_next_in", { seconds: String(secondsLeft) }))}\n`,
+    );
+
     // Separator or empty line
-    // console.log(''); 
+    // console.log('');
 
     // Run diagnostics (this prints multiple lines)
-    await runFullDiagnostic(target, transportOverride, { ...options, watch: false });
+    await runFullDiagnostic(target, transportOverride, {
+      ...options,
+      watch: false,
+    });
   };
 
   // Initial Run
@@ -679,30 +886,36 @@ async function runWatchMode(target: string | undefined, transportOverride: strin
       // Assuming header is ~10 lines.
       // \x1b[H moves to 0,0. \x1b[10B moves down 10 lines.
       // This is risky if terminal size changes.
-      
+
       // Fallback: Just update the bottom line with a countdown?
       // "Monitor en vivo - Actualizando en X..."
-      
+
       // Let's try the ANSI absolute positioning for the specific line we just wrote.
       // If we cleared screen, we are at 0,0.
       // Banner=7, Title=1, Sep=1, Target=1. Total=10 lines.
       // Timer is at line 11.
       const timerLine = target ? 12 : 11;
-      
+
       process.stdout.write(`\x1b[${timerLine};0H`); // Move to absolute line
       process.stdout.write(`\x1b[2K`); // Clear line
-      process.stdout.write(`  ${chalk.bgCyan(chalk.black(' ◉ ' + t('watch_live') + ' '))}  ${chalk.white.dim(t('watch_next_in', { seconds: String(secondsLeft) }))}`);
-      
-      // Move cursor back to bottom to not interfere? 
+      process.stdout.write(
+        `  ${chalk.bgCyan(chalk.black(" ◉ " + t("watch_live") + " "))}  ${chalk.white.dim(t("watch_next_in", { seconds: String(secondsLeft) }))}`,
+      );
+
+      // Move cursor back to bottom to not interfere?
       // Actually, we can just leave it there or move to end.
       process.stdout.write(`\x1b[100;0H`); // Move way down to be safe
     }
   }, 1000);
 }
 
-export async function runDoctorAction(target: string | undefined, options: DoctorOptions): Promise<void> {
+export async function runDoctorAction(
+  target: string | undefined,
+  options: DoctorOptions,
+): Promise<void> {
   let isVerbose = options.verbose === true;
-  if (!isVerbose && typeof options.opts === 'function') isVerbose = options.opts().verbose === true;
+  if (!isVerbose && typeof options.opts === "function")
+    isVerbose = options.opts().verbose === true;
   const mergedOptions: DoctorOptions = { ...options, verbose: isVerbose };
 
   // Handle new integrity-related options
@@ -723,7 +936,10 @@ export async function runDoctorAction(target: string | undefined, options: Docto
   }
 
   if (options.jsonStdout) {
-    const s = [await checkBinaryIntegrity(false), await checkEnvironment(false)];
+    const s = [
+      await checkBinaryIntegrity(false),
+      await checkEnvironment(false),
+    ];
     if (target) s.push(await checkMcpServer(target, options.transport, false));
     s.push(checkEnvironmentAudit(false));
     console.log(JSON.stringify(s, null, 2));

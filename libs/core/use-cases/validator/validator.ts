@@ -5,31 +5,52 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import { t } from '@mcp-verify/shared';
-import type { ITransport } from '../../domain/transport';
-import { SecurityScanner } from '../../domain/security/security-scanner';
-import { SemanticAnalyzer } from '../../domain/quality/semantic-analyzer';
-import { BadgeGenerator } from '../../domain/reporting/badge-generator';
-import { ProtocolComplianceTester } from '../../use-cases/compliance/protocol-tester';
-import type { ProtocolComplianceReport } from '../../use-cases/compliance/protocol-tester';
-import { ConfigLoader } from '../../domain/config/config-loader';
-import type { McpVerifyConfig, PartialConfig } from '../../domain/config/config.types';
-import { schemaValidator } from '../../domain/validation/schema-validator';
+import { t } from "@mcp-verify/shared";
+import type { ITransport } from "../../domain/transport";
+import { SecurityScanner } from "../../domain/security/security-scanner";
+import { SemanticAnalyzer } from "../../domain/quality/semantic-analyzer";
+import { BadgeGenerator } from "../../domain/reporting/badge-generator";
+import { ProtocolComplianceTester } from "../../use-cases/compliance/protocol-tester";
+import type { ProtocolComplianceReport } from "../../use-cases/compliance/protocol-tester";
+import { ConfigLoader } from "../../domain/config/config-loader";
+import type {
+  McpVerifyConfig,
+  PartialConfig,
+} from "../../domain/config/config.types";
+import { schemaValidator } from "../../domain/validation/schema-validator";
 import type {
   Report,
   HandshakeResult,
   DiscoveryResult,
   ValidationResult,
   SecurityReport,
-  FuzzingReport
-} from '../../domain/mcp-server/entities/validation.types';
-import type { McpTool, McpResource, McpPrompt, JsonValue } from '../../domain/shared/common.types';
+  FuzzingReport,
+} from "../../domain/mcp-server/entities/validation.types";
+import type {
+  McpTool,
+  McpResource,
+  McpPrompt,
+  JsonValue,
+} from "../../domain/shared/common.types";
 
 // Infrastructure Layer
-import { Logger, createScopedLogger, PerformanceTimer, AuditEventType } from '../../infrastructure/logging/logger';
-import { ErrorHandler, NetworkError, TimeoutError, AppError, MethodNotFoundError, ErrorCategory, ErrorSeverity } from '../../infrastructure/errors/error-handler';
-import { ConfigManager } from '../../infrastructure/config/config-manager';
-import { HealthMonitor } from '../../infrastructure/monitoring/health-check';
+import {
+  Logger,
+  createScopedLogger,
+  PerformanceTimer,
+  AuditEventType,
+} from "../../infrastructure/logging/logger";
+import {
+  ErrorHandler,
+  NetworkError,
+  TimeoutError,
+  AppError,
+  MethodNotFoundError,
+  ErrorCategory,
+  ErrorSeverity,
+} from "../../infrastructure/errors/error-handler";
+import { ConfigManager } from "../../infrastructure/config/config-manager";
+import { HealthMonitor } from "../../infrastructure/monitoring/health-check";
 
 export class MCPValidator {
   private transport: ITransport;
@@ -66,7 +87,7 @@ export class MCPValidator {
       rules?: string;
       excludeRules?: string;
       minSeverity?: string;
-    } = {}
+    } = {},
   ) {
     this.transport = transport;
     this.startTime = Date.now();
@@ -74,7 +95,7 @@ export class MCPValidator {
     this.llmProvider = options.llmProvider;
 
     // Initialize Infrastructure Layer
-    this.logger = createScopedLogger('MCPValidator');
+    this.logger = createScopedLogger("MCPValidator");
     this.errorHandler = ErrorHandler.getInstance();
     this.configManager = ConfigManager.getInstance();
     this.healthMonitor = HealthMonitor.getInstance();
@@ -83,13 +104,17 @@ export class MCPValidator {
     const overrides: PartialConfig = {
       quality: {
         enableSemanticAnalysis: options.enableSemanticCheck,
-        llmProvider: options.llmProvider as any
+        llmProvider: options.llmProvider as any,
       },
       security: {
-        disabledRules: options.excludeRules ? options.excludeRules.split(',') : undefined,
+        disabledRules: options.excludeRules
+          ? options.excludeRules.split(",")
+          : undefined,
         // Rules string might be block names or comma-separated IDs
-        enabledBlocks: options.rules ? (options.rules.split(',') as any) : undefined
-      }
+        enabledBlocks: options.rules
+          ? (options.rules.split(",") as any)
+          : undefined,
+      },
     };
 
     // Load Policy-as-Code
@@ -102,19 +127,26 @@ export class MCPValidator {
 
     // Initialize semantic analyzer with optional LLM integration
     if (this.enableSemanticCheck || this.llmProvider) {
-      const { LLMSemanticAnalyzer } = require('../../domain/quality/llm-semantic-analyzer');
+      const {
+        LLMSemanticAnalyzer,
+      } = require("../../domain/quality/llm-semantic-analyzer");
       const llmAnalyzer = new LLMSemanticAnalyzer();
-      this.semanticAnalyzer = new SemanticAnalyzer(llmAnalyzer, this.llmProvider);
-      this.logger.info('LLM semantic analysis enabled', { provider: this.llmProvider || 'not specified' });
+      this.semanticAnalyzer = new SemanticAnalyzer(
+        llmAnalyzer,
+        this.llmProvider,
+      );
+      this.logger.info("LLM semantic analysis enabled", {
+        provider: this.llmProvider || "not specified",
+      });
     } else {
       this.semanticAnalyzer = new SemanticAnalyzer();
     }
 
     this.protocolTester = new ProtocolComplianceTester(transport);
 
-    this.logger.info('MCPValidator initialized', {
+    this.logger.info("MCPValidator initialized", {
       metadata: {
-        configPath: configPath || 'default',
+        configPath: configPath || "default",
         transport: transport.constructor.name,
       },
     });
@@ -125,10 +157,16 @@ export class MCPValidator {
    */
   private createTimeout(ms: number, operation: string): Promise<never> {
     return new Promise((_, reject) =>
-      setTimeout(() => reject(new TimeoutError(
-        `${operation} timeout after ${ms}ms. ` +
-        `This may indicate a misconfigured or malicious server.`
-      )), ms)
+      setTimeout(
+        () =>
+          reject(
+            new TimeoutError(
+              `${operation} timeout after ${ms}ms. ` +
+                `This may indicate a misconfigured or malicious server.`,
+            ),
+          ),
+        ms,
+      ),
     );
   }
 
@@ -140,10 +178,10 @@ export class MCPValidator {
     if (result.tools && result.tools.length > this.MAX_TOOLS) {
       throw new AppError(
         `[Security] Server returned too many tools: ${result.tools.length} (max: ${this.MAX_TOOLS})\n` +
-        t('warn_dos_attempt'),
-        'DOS_PROTECTION_TOOLS_LIMIT',
+          t("warn_dos_attempt"),
+        "DOS_PROTECTION_TOOLS_LIMIT",
         ErrorCategory.SECURITY,
-        ErrorSeverity.CRITICAL
+        ErrorSeverity.CRITICAL,
       );
     }
 
@@ -151,10 +189,10 @@ export class MCPValidator {
     if (result.resources && result.resources.length > this.MAX_RESOURCES) {
       throw new AppError(
         `[Security] Server returned too many resources: ${result.resources.length} (max: ${this.MAX_RESOURCES})\n` +
-        t('warn_dos_attempt'),
-        'DOS_PROTECTION_RESOURCES_LIMIT',
+          t("warn_dos_attempt"),
+        "DOS_PROTECTION_RESOURCES_LIMIT",
         ErrorCategory.SECURITY,
-        ErrorSeverity.CRITICAL
+        ErrorSeverity.CRITICAL,
       );
     }
 
@@ -162,10 +200,10 @@ export class MCPValidator {
     if (result.prompts && result.prompts.length > this.MAX_PROMPTS) {
       throw new AppError(
         `[Security] Server returned too many prompts: ${result.prompts.length} (max: ${this.MAX_PROMPTS})\n` +
-        t('warn_dos_attempt'),
-        'DOS_PROTECTION_PROMPTS_LIMIT',
+          t("warn_dos_attempt"),
+        "DOS_PROTECTION_PROMPTS_LIMIT",
         ErrorCategory.SECURITY,
-        ErrorSeverity.CRITICAL
+        ErrorSeverity.CRITICAL,
       );
     }
 
@@ -176,20 +214,20 @@ export class MCPValidator {
       const maxMB = (this.MAX_RESPONSE_SIZE / 1024 / 1024).toFixed(2);
       throw new AppError(
         `[Security] Server response too large: ${sizeMB}MB (max: ${maxMB}MB)\n` +
-        t('warn_dos_attempt'),
-        'DOS_PROTECTION_SIZE_LIMIT',
+          t("warn_dos_attempt"),
+        "DOS_PROTECTION_SIZE_LIMIT",
         ErrorCategory.SECURITY,
-        ErrorSeverity.CRITICAL
+        ErrorSeverity.CRITICAL,
       );
     }
 
-    this.logger.debug('Discovery limits validation passed', {
+    this.logger.debug("Discovery limits validation passed", {
       metadata: {
         tools: result.tools?.length || 0,
         resources: result.resources?.length || 0,
         prompts: result.prompts?.length || 0,
-        sizeKB: (responseSize / 1024).toFixed(2)
-      }
+        sizeKB: (responseSize / 1024).toFixed(2),
+      },
     });
   }
 
@@ -197,7 +235,7 @@ export class MCPValidator {
    * Send JSON-RPC 2.0 message to MCP server via Transport
    */
   private async sendJsonRPC(method: string, params: unknown): Promise<unknown> {
-    const timer = new PerformanceTimer(`jsonrpc_${method}`, 'MCPValidator');
+    const timer = new PerformanceTimer(`jsonrpc_${method}`, "MCPValidator");
     const startTime = Date.now();
 
     try {
@@ -207,7 +245,7 @@ export class MCPValidator {
         async () => {
           try {
             return await this.transport.send({
-              jsonrpc: '2.0',
+              jsonrpc: "2.0",
               id: this.requestId++,
               method,
               // Convert undefined to null (JSON spec doesn't allow undefined)
@@ -219,13 +257,20 @@ export class MCPValidator {
               metadata: {
                 message: err.message,
                 name: err.name,
-                includesMethodNotFound: err.message?.includes('Method not found')
-              }
+                includesMethodNotFound:
+                  err.message?.includes("Method not found"),
+              },
             });
 
             // DETECT METHOD NOT FOUND to avoid retries
-            if (err.message && (err.message.includes('Method not found') || err.message.includes('-32601'))) {
-              this.logger.debug(`Converting to MethodNotFoundError for ${method}`);
+            if (
+              err.message &&
+              (err.message.includes("Method not found") ||
+                err.message.includes("-32601"))
+            ) {
+              this.logger.debug(
+                `Converting to MethodNotFoundError for ${method}`,
+              );
               throw new MethodNotFoundError(method, { originalError: err });
             }
             throw e;
@@ -235,7 +280,7 @@ export class MCPValidator {
           maxAttempts: this.configManager.getNetworkConfig().maxRetries,
           initialDelay: 1000,
           backoffMultiplier: 2,
-        }
+        },
       );
 
       const duration = Date.now() - startTime;
@@ -255,36 +300,37 @@ export class MCPValidator {
       timer.endWithError(error as Error);
 
       const cause = error as Error;
-      let errorMsg = t('jsonrpc_failed', { method });
+      let errorMsg = t("jsonrpc_failed", { method });
       if (cause?.message) {
         errorMsg += `: ${cause.message}`;
       }
 
-      throw new NetworkError(
-        errorMsg,
-        error as Error,
-        { method, params }
-      );
+      throw new NetworkError(errorMsg, error as Error, { method, params });
     }
   }
 
   async testHandshake(): Promise<HandshakeResult> {
-    const timer = new PerformanceTimer('testHandshake', 'MCPValidator');
+    const timer = new PerformanceTimer("testHandshake", "MCPValidator");
 
     try {
       await this.transport.connect();
-      this.logger.info(t('connected_to_transport'));
+      this.logger.info(t("connected_to_transport"));
 
-      const result = await this.sendJsonRPC('initialize', {
-        protocolVersion: '2024-11-05',
+      const result = (await this.sendJsonRPC("initialize", {
+        protocolVersion: "2024-11-05",
         capabilities: { roots: {}, sampling: {} },
-        clientInfo: { name: 'mcp-verify', version: '1.0.0' },
-      }) as Record<string, unknown> | undefined;
+        clientInfo: { name: "mcp-verify", version: "1.0.0" },
+      })) as Record<string, unknown> | undefined;
 
-      const protocolVersion = (result as Record<string, unknown>)?.protocolVersion as string | undefined;
-      const serverName = ((result as Record<string, unknown>)?.serverInfo as Record<string, unknown> | undefined)?.name as string | undefined;
+      const protocolVersion = (result as Record<string, unknown>)
+        ?.protocolVersion as string | undefined;
+      const serverName = (
+        (result as Record<string, unknown>)?.serverInfo as
+          | Record<string, unknown>
+          | undefined
+      )?.name as string | undefined;
 
-      this.logger.info('Handshake successful', {
+      this.logger.info("Handshake successful", {
         metadata: {
           protocolVersion,
           serverName,
@@ -295,23 +341,24 @@ export class MCPValidator {
 
       return {
         success: true,
-        protocolVersion: protocolVersion || '2024-11-05',
-        serverName: serverName || 'Unknown',
+        protocolVersion: protocolVersion || "2024-11-05",
+        serverName: serverName || "Unknown",
       };
     } catch (error) {
-      this.logger.error(t('handshake_failed_log'), error as Error);
-      this.errorHandler.handle(error as Error, 'MCPValidator.testHandshake');
+      this.logger.error(t("handshake_failed_log"), error as Error);
+      this.errorHandler.handle(error as Error, "MCPValidator.testHandshake");
       timer.endWithError(error as Error);
 
       return {
         success: false,
-        error: error instanceof Error ? error.message : t('connection_failed_msg'),
+        error:
+          error instanceof Error ? error.message : t("connection_failed_msg"),
       };
     }
   }
 
   async discoverCapabilities(): Promise<DiscoveryResult> {
-    const timer = new PerformanceTimer('discoverCapabilities', 'MCPValidator');
+    const timer = new PerformanceTimer("discoverCapabilities", "MCPValidator");
     const result: DiscoveryResult = {
       tools: [],
       resources: [],
@@ -322,7 +369,9 @@ export class MCPValidator {
       // SECURITY FIX: Wrap discovery in timeout to prevent DoS
       const discoveryPromise = (async () => {
         // List tools
-        const toolsResponse = await this.sendJsonRPC('tools/list', {}) as Record<string, unknown> | undefined;
+        const toolsResponse = (await this.sendJsonRPC("tools/list", {})) as
+          | Record<string, unknown>
+          | undefined;
         const tools = toolsResponse?.tools;
         if (tools && Array.isArray(tools)) {
           result.tools = tools as McpTool[];
@@ -331,7 +380,10 @@ export class MCPValidator {
 
         // List resources (Optional)
         try {
-          const resourcesResponse = await this.sendJsonRPC('resources/list', {}) as Record<string, unknown> | undefined;
+          const resourcesResponse = (await this.sendJsonRPC(
+            "resources/list",
+            {},
+          )) as Record<string, unknown> | undefined;
           const resources = resourcesResponse?.resources;
           if (resources && Array.isArray(resources)) {
             result.resources = resources as McpResource[];
@@ -339,15 +391,22 @@ export class MCPValidator {
           }
         } catch (error) {
           if (error instanceof MethodNotFoundError) {
-            this.logger.info('Server does not support resources/list (optional feature)');
+            this.logger.info(
+              "Server does not support resources/list (optional feature)",
+            );
           } else {
-            this.logger.warn(`Failed to list resources: ${(error as Error).message}`);
+            this.logger.warn(
+              `Failed to list resources: ${(error as Error).message}`,
+            );
           }
         }
 
         // List prompts (Optional)
         try {
-          const promptsResponse = await this.sendJsonRPC('prompts/list', {}) as Record<string, unknown> | undefined;
+          const promptsResponse = (await this.sendJsonRPC(
+            "prompts/list",
+            {},
+          )) as Record<string, unknown> | undefined;
           const prompts = promptsResponse?.prompts;
           if (prompts && Array.isArray(prompts)) {
             result.prompts = prompts as McpPrompt[];
@@ -355,9 +414,13 @@ export class MCPValidator {
           }
         } catch (error) {
           if (error instanceof MethodNotFoundError) {
-            this.logger.info('Server does not support prompts/list (optional feature)');
+            this.logger.info(
+              "Server does not support prompts/list (optional feature)",
+            );
           } else {
-            this.logger.warn(`Failed to list prompts: ${(error as Error).message}`);
+            this.logger.warn(
+              `Failed to list prompts: ${(error as Error).message}`,
+            );
           }
         }
 
@@ -367,7 +430,7 @@ export class MCPValidator {
       // Race between discovery and timeout
       await Promise.race([
         discoveryPromise,
-        this.createTimeout(this.DISCOVERY_TIMEOUT, 'Discovery')
+        this.createTimeout(this.DISCOVERY_TIMEOUT, "Discovery"),
       ]);
 
       // SECURITY FIX: Validate limits to prevent DoS
@@ -383,8 +446,11 @@ export class MCPValidator {
 
       return result;
     } catch (error) {
-      this.logger.error(t('discovery_failed'), error as Error);
-      this.errorHandler.handle(error as Error, 'MCPValidator.discoverCapabilities');
+      this.logger.error(t("discovery_failed"), error as Error);
+      this.errorHandler.handle(
+        error as Error,
+        "MCPValidator.discoverCapabilities",
+      );
       timer.endWithError(error as Error);
 
       // Re-throw DoS protection errors to fail fast
@@ -397,7 +463,7 @@ export class MCPValidator {
   }
 
   async validateSchema(): Promise<ValidationResult> {
-    const timer = new PerformanceTimer('validateSchema', 'MCPValidator');
+    const timer = new PerformanceTimer("validateSchema", "MCPValidator");
     const result: ValidationResult = {
       schemaValid: true,
       toolsValid: 0,
@@ -405,7 +471,7 @@ export class MCPValidator {
       resourcesValid: 0,
       resourcesInvalid: 0,
       promptsValid: 0,
-      promptsInvalid: 0
+      promptsInvalid: 0,
     };
 
     try {
@@ -428,11 +494,11 @@ export class MCPValidator {
           }
         }
 
-        this.logger.debug('Tool validation complete', {
+        this.logger.debug("Tool validation complete", {
           metadata: {
             valid: result.toolsValid,
             invalid: result.toolsInvalid,
-            invalidToolNames: invalidTools
+            invalidToolNames: invalidTools,
           },
         });
       }
@@ -450,11 +516,11 @@ export class MCPValidator {
           }
         }
 
-        this.logger.debug('Resource validation complete', {
+        this.logger.debug("Resource validation complete", {
           metadata: {
             valid: result.resourcesValid,
             invalid: result.resourcesInvalid,
-            invalidResourceNames: invalidResources
+            invalidResourceNames: invalidResources,
           },
         });
       }
@@ -472,11 +538,11 @@ export class MCPValidator {
           }
         }
 
-        this.logger.debug('Prompt validation complete', {
+        this.logger.debug("Prompt validation complete", {
           metadata: {
             valid: result.promptsValid,
             invalid: result.promptsInvalid,
-            invalidPromptNames: invalidPrompts
+            invalidPromptNames: invalidPrompts,
           },
         });
       }
@@ -490,22 +556,26 @@ export class MCPValidator {
       const validationDuration = Date.now() - validationStartTime;
       const cacheStats = schemaValidator.getCacheStats();
 
-      this.logger.info('Schema validation completed', {
+      this.logger.info("Schema validation completed", {
         metadata: {
           schemaValid: result.schemaValid,
-          totalValid: result.toolsValid + result.resourcesValid + result.promptsValid,
-          totalInvalid: result.toolsInvalid + result.resourcesInvalid + result.promptsInvalid,
+          totalValid:
+            result.toolsValid + result.resourcesValid + result.promptsValid,
+          totalInvalid:
+            result.toolsInvalid +
+            result.resourcesInvalid +
+            result.promptsInvalid,
           validationDurationMs: validationDuration,
-          cachedSchemas: cacheStats.size
-        }
+          cachedSchemas: cacheStats.size,
+        },
       });
 
       timer.end({ metadata: { schemaValid: result.schemaValid } });
 
       return result;
     } catch (error) {
-      this.logger.error('Schema validation failed', error as Error);
-      this.errorHandler.handle(error as Error, 'MCPValidator.validateSchema');
+      this.logger.error("Schema validation failed", error as Error);
+      this.errorHandler.handle(error as Error, "MCPValidator.validateSchema");
       timer.endWithError(error as Error);
       result.schemaValid = false;
       return result;
@@ -513,54 +583,70 @@ export class MCPValidator {
   }
 
   private isValidToolSchema(tool: McpTool): boolean {
-    if (!tool || !tool.name || typeof tool.name !== 'string') {
+    if (!tool || !tool.name || typeof tool.name !== "string") {
       this.logger.warn(`Tool missing name property`, { metadata: { tool } });
       return false;
     }
 
     if (!tool.inputSchema) {
-      this.logger.warn(`Tool ${tool.name} missing inputSchema`, { metadata: { tool: tool.name } });
+      this.logger.warn(`Tool ${tool.name} missing inputSchema`, {
+        metadata: { tool: tool.name },
+      });
       return false;
     }
 
     // STRICT SCHEMA VALIDATION
-    const validation = schemaValidator.validateSchema(tool.inputSchema, `tool:${tool.name}`, tool.name);
+    const validation = schemaValidator.validateSchema(
+      tool.inputSchema,
+      `tool:${tool.name}`,
+      tool.name,
+    );
 
     // Track slow schemas (potential DoS indicators)
     if (validation.metrics.durationMs > 50) {
-      this.logger.warn(`Slow schema validation detected for tool '${tool.name}'`, {
-        metadata: {
-          tool: tool.name,
-          durationMs: validation.metrics.durationMs,
-          timedOut: validation.metrics.timedOut,
-          draftVersion: validation.metrics.draftVersion
-        }
-      });
+      this.logger.warn(
+        `Slow schema validation detected for tool '${tool.name}'`,
+        {
+          metadata: {
+            tool: tool.name,
+            durationMs: validation.metrics.durationMs,
+            timedOut: validation.metrics.timedOut,
+            draftVersion: validation.metrics.draftVersion,
+          },
+        },
+      );
     }
 
     if (!validation.isValid) {
-      this.logger.error(`Invalid JSON Schema in tool '${tool.name}'`, undefined, {
-        metadata: {
-          tool: tool.name,
-          errors: validation.errors,
-          details: validation.details?.map(d => ({
-            keyword: d.keyword,
-            message: d.message,
-            params: d.params
-          })),
-          durationMs: validation.metrics.durationMs
-        }
-      });
+      this.logger.error(
+        `Invalid JSON Schema in tool '${tool.name}'`,
+        undefined,
+        {
+          metadata: {
+            tool: tool.name,
+            errors: validation.errors,
+            details: validation.details?.map((d) => ({
+              keyword: d.keyword,
+              message: d.message,
+              params: d.params,
+            })),
+            durationMs: validation.metrics.durationMs,
+          },
+        },
+      );
       return false;
     }
 
     // Check for sanitization warnings
-    if (validation.sanitizationWarnings && validation.sanitizationWarnings.length > 0) {
+    if (
+      validation.sanitizationWarnings &&
+      validation.sanitizationWarnings.length > 0
+    ) {
       this.logger.warn(`Sanitization warnings in tool '${tool.name}'`, {
         metadata: {
           tool: tool.name,
-          warnings: validation.sanitizationWarnings
-        }
+          warnings: validation.sanitizationWarnings,
+        },
       });
     }
 
@@ -571,21 +657,21 @@ export class MCPValidator {
     if (!resource || !resource.name || !resource.uri) {
       this.logger.warn(`Resource missing required fields`, {
         metadata: {
-          resource: resource?.name || 'unknown',
+          resource: resource?.name || "unknown",
           hasName: !!resource?.name,
-          hasUri: !!resource?.uri
-        }
+          hasUri: !!resource?.uri,
+        },
       });
       return false;
     }
 
-    if (typeof resource.name !== 'string' || typeof resource.uri !== 'string') {
+    if (typeof resource.name !== "string" || typeof resource.uri !== "string") {
       this.logger.warn(`Resource has invalid field types`, {
         metadata: {
           resource: resource.name,
           nameType: typeof resource.name,
-          uriType: typeof resource.uri
-        }
+          uriType: typeof resource.uri,
+        },
       });
       return false;
     }
@@ -597,13 +683,13 @@ export class MCPValidator {
   }
 
   private isValidPromptSchema(prompt: McpPrompt): boolean {
-    if (!prompt || !prompt.name || typeof prompt.name !== 'string') {
+    if (!prompt || !prompt.name || typeof prompt.name !== "string") {
       this.logger.warn(`Prompt missing or invalid name`, {
         metadata: {
-          prompt: prompt?.name || 'unknown',
+          prompt: prompt?.name || "unknown",
           hasName: !!prompt?.name,
-          nameType: typeof prompt?.name
-        }
+          nameType: typeof prompt?.name,
+        },
       });
       return false;
     }
@@ -614,12 +700,12 @@ export class MCPValidator {
     if (prompt.arguments && Array.isArray(prompt.arguments)) {
       for (const arg of prompt.arguments) {
         // Validate argument structure (name is required)
-        if (!arg.name || typeof arg.name !== 'string') {
+        if (!arg.name || typeof arg.name !== "string") {
           this.logger.warn(`Prompt argument missing name in '${prompt.name}'`, {
             metadata: {
               prompt: prompt.name,
-              argument: arg
-            }
+              argument: arg,
+            },
           });
           continue;
         }
@@ -638,7 +724,7 @@ export class MCPValidator {
   } {
     return {
       cacheStats: schemaValidator.getCacheStats(),
-      validatorConfig: schemaValidator.getConfig()
+      validatorConfig: schemaValidator.getConfig(),
     };
   }
 
@@ -650,54 +736,69 @@ export class MCPValidator {
   }): Promise<Report> {
     const duration = Date.now() - this.startTime;
 
-    const mapTools = (tools: McpTool[]) => tools.map(t => ({
-      name: t.name,
-      description: t.description,
-      inputSchema: t.inputSchema,
-      status: this.isValidToolSchema(t) ? 'valid' as const : 'invalid' as const
-    }));
+    const mapTools = (tools: McpTool[]) =>
+      tools.map((t) => ({
+        name: t.name,
+        description: t.description,
+        inputSchema: t.inputSchema,
+        status: this.isValidToolSchema(t)
+          ? ("valid" as const)
+          : ("invalid" as const),
+      }));
 
-    const mapResources = (resources: McpResource[]) => resources.map(r => ({
-      name: r.name,
-      uri: r.uri,
-      mimeType: r.mimeType,
-      status: this.isValidResourceSchema(r) ? 'valid' as const : 'invalid' as const
-    }));
+    const mapResources = (resources: McpResource[]) =>
+      resources.map((r) => ({
+        name: r.name,
+        uri: r.uri,
+        mimeType: r.mimeType,
+        status: this.isValidResourceSchema(r)
+          ? ("valid" as const)
+          : ("invalid" as const),
+      }));
 
-    const mapPrompts = (prompts: McpPrompt[]) => prompts.map(p => ({
-      name: p.name,
-      description: p.description,
-      status: this.isValidPromptSchema(p) ? 'valid' as const : 'invalid' as const
-    }));
+    const mapPrompts = (prompts: McpPrompt[]) =>
+      prompts.map((p) => ({
+        name: p.name,
+        description: p.description,
+        status: this.isValidPromptSchema(p)
+          ? ("valid" as const)
+          : ("invalid" as const),
+      }));
+
+    // Enrich discovery with serverInfo from handshake so rules like SEC-061
+    // (homoglyph spoofing) can access the server name provided at initialize time.
+    if (data.handshake.serverName && !data.discovery.serverInfo) {
+      data.discovery.serverInfo = { name: data.handshake.serverName };
+    }
 
     // Run Security Scan (if enabled in config)
     let security: SecurityReport;
 
     if (this.configManager.getSecurityConfig().enableSecurityScan) {
-      this.logger.info('Running security scan');
+      this.logger.info("Running security scan");
       security = this.securityScanner.scan(data.discovery);
     } else {
-      this.logger.info('Security scan disabled in configuration');
+      this.logger.info("Security scan disabled in configuration");
       security = {
         score: 100,
-        level: t('risk_level_low'),
-        findings: []
+        level: t("risk_level_low"),
+        findings: [],
       };
     }
 
     // Log security findings
     if (security.findings && security.findings.length > 0) {
       security.findings.forEach((finding) => {
-        if (finding.severity === 'critical' || finding.severity === 'high') {
+        if (finding.severity === "critical" || finding.severity === "high") {
           this.healthMonitor.recordSecurityFinding();
           Logger.getInstance().audit({
             eventType: AuditEventType.SECURITY_FINDING,
             severity: finding.severity,
-            action: 'security_scan',
-            result: 'failure',
+            action: "security_scan",
+            result: "failure",
             context: {
               metadata: {
-                ruleCode: finding.ruleCode || 'unknown',
+                ruleCode: finding.ruleCode || "unknown",
                 message: finding.message,
                 component: finding.component,
               },
@@ -708,26 +809,31 @@ export class MCPValidator {
     }
 
     // Run Quality Analysis
-    this.logger.info('Running quality analysis');
+    this.logger.info("Running quality analysis");
     const quality = await this.semanticAnalyzer.analyze(data.discovery);
 
     // Run Protocol Compliance Test (Active)
-    this.logger.info(t('running_protocol_tests'));
+    this.logger.info(t("running_protocol_tests"));
     const protocolCompliance = await this.protocolTester.test();
 
     // Determine overall status based on Policy-as-Code
     const securityConfig = this.config.security;
-    const isSecurityPass = !securityConfig.enableSecurityScan || (
-      security.score >= securityConfig.minScore &&
-      (!securityConfig.failOnCritical || !security.findings.some(f => f.severity === 'critical')) &&
-      (!securityConfig.failOnHigh || !security.findings.some(f => f.severity === 'high'))
-    );
+    const isSecurityPass =
+      !securityConfig.enableSecurityScan ||
+      (security.score >= securityConfig.minScore &&
+        (!securityConfig.failOnCritical ||
+          !security.findings.some((f) => f.severity === "critical")) &&
+        (!securityConfig.failOnHigh ||
+          !security.findings.some((f) => f.severity === "high")));
 
     const report: Report = {
-      server_name: data.handshake.serverName || 'Unknown',
-      url: 'transport',
-      status: (data.handshake.success && data.validation.schemaValid && isSecurityPass) ? 'valid' : 'invalid',
-      protocol_version: data.handshake.protocolVersion || '2024-11-05',
+      server_name: data.handshake.serverName || "Unknown",
+      url: "transport",
+      status:
+        data.handshake.success && data.validation.schemaValid && isSecurityPass
+          ? "valid"
+          : "invalid",
+      protocol_version: data.handshake.protocolVersion || "2024-11-05",
       security,
       quality,
       protocolCompliance,
@@ -736,22 +842,24 @@ export class MCPValidator {
         count: data.discovery.tools ? data.discovery.tools.length : 0,
         valid: data.validation.toolsValid,
         invalid: data.validation.toolsInvalid,
-        items: data.discovery.tools ? mapTools(data.discovery.tools) : []
+        items: data.discovery.tools ? mapTools(data.discovery.tools) : [],
       },
       resources: {
         count: data.discovery.resources ? data.discovery.resources.length : 0,
         valid: data.validation.resourcesValid,
         invalid: data.validation.resourcesInvalid,
-        items: data.discovery.resources ? mapResources(data.discovery.resources) : []
+        items: data.discovery.resources
+          ? mapResources(data.discovery.resources)
+          : [],
       },
       prompts: {
         count: data.discovery.prompts ? data.discovery.prompts.length : 0,
         valid: data.validation.promptsValid,
         invalid: data.validation.promptsInvalid,
-        items: data.discovery.prompts ? mapPrompts(data.discovery.prompts) : []
+        items: data.discovery.prompts ? mapPrompts(data.discovery.prompts) : [],
       },
       timestamp: new Date().toISOString(),
-      duration_ms: duration
+      duration_ms: duration,
     };
 
     // Badges
@@ -760,9 +868,9 @@ export class MCPValidator {
     // Audit log report generation
     Logger.getInstance().audit({
       eventType: AuditEventType.VALIDATION_COMPLETED,
-      severity: report.status === 'valid' ? 'low' : 'medium',
-      action: 'generate_report',
-      result: 'success',
+      severity: report.status === "valid" ? "low" : "medium",
+      action: "generate_report",
+      result: "success",
       context: {
         metadata: {
           serverName: report.server_name,
@@ -774,7 +882,7 @@ export class MCPValidator {
       },
     });
 
-    this.logger.info('Report generated successfully', {
+    this.logger.info("Report generated successfully", {
       metadata: {
         serverName: report.server_name,
         status: report.status,
@@ -807,7 +915,7 @@ export class MCPValidator {
   }
 
   cleanup() {
-    this.logger.info('Cleaning up MCPValidator resources');
+    this.logger.info("Cleaning up MCPValidator resources");
 
     try {
       this.transport.close();
@@ -815,9 +923,9 @@ export class MCPValidator {
       // Log final audit entry
       Logger.getInstance().audit({
         eventType: AuditEventType.VALIDATION_COMPLETED,
-        severity: 'low',
-        action: 'cleanup',
-        result: 'success',
+        severity: "low",
+        action: "cleanup",
+        result: "success",
         context: {
           metadata: {
             uptime: this.healthMonitor.getUptime(),
@@ -826,10 +934,10 @@ export class MCPValidator {
         },
       });
 
-      this.logger.info('Cleanup completed successfully');
+      this.logger.info("Cleanup completed successfully");
     } catch (error) {
-      this.logger.error('Error during cleanup', error as Error);
-      this.errorHandler.handle(error as Error, 'MCPValidator.cleanup');
+      this.logger.error("Error during cleanup", error as Error);
+      this.errorHandler.handle(error as Error, "MCPValidator.cleanup");
     }
   }
 }

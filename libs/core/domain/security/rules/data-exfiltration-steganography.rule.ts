@@ -31,30 +31,54 @@
  * - CWE-311: Missing Encryption of Sensitive Data
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class DataExfiltrationSteganographyRule implements ISecurityRule {
-  code = 'SEC-057';
-  name = 'Data Exfiltration via Steganography';
-  severity: 'high' = 'high';
+  code = "SEC-057";
+  name = "Data Exfiltration via Steganography";
+  severity: "high" = "high";
 
   private readonly STEGANOGRAPHY_KEYWORDS = [
-    'steganography', 'stego', 'lsb', 'least significant bit',
-    'embed.*data', 'hide.*data', 'conceal.*data',
-    'covert.*channel', 'hidden.*message', 'watermark'
+    "steganography",
+    "stego",
+    "lsb",
+    "least significant bit",
+    "embed.*data",
+    "hide.*data",
+    "conceal.*data",
+    "covert.*channel",
+    "hidden.*message",
+    "watermark",
   ];
 
   private readonly MEDIA_KEYWORDS = [
-    'image', 'audio', 'video', 'media', 'picture',
-    'photo', 'sound', 'png', 'jpg', 'jpeg', 'wav', 'mp3'
+    "image",
+    "audio",
+    "video",
+    "media",
+    "picture",
+    "photo",
+    "sound",
+    "png",
+    "jpg",
+    "jpeg",
+    "wav",
+    "mp3",
   ];
 
   private readonly ENCODING_PATTERNS = [
-    /encode.*in.*image/i, /hide.*in.*audio/i, /embed.*in.*media/i,
-    /conceal.*in.*file/i, /steg.*encode/i, /lsb.*encode/i
+    /encode.*in.*image/i,
+    /hide.*in.*audio/i,
+    /embed.*in.*media/i,
+    /conceal.*in.*file/i,
+    /steg.*encode/i,
+    /lsb.*encode/i,
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -70,17 +94,17 @@ export class DataExfiltrationSteganographyRule implements ISecurityRule {
       if (isSteganographyTool) {
         findings.push({
           severity: this.severity,
-          message: t('sec_057_steganography', {
-            toolName: tool.name
+          message: t("sec_057_steganography", {
+            toolName: tool.name,
           }),
           component: `tool:${tool.name}`,
           ruleCode: this.code,
-          remediation: t('sec_057_recommendation'),
+          remediation: t("sec_057_recommendation"),
           references: [
-            'NIST Data Loss Prevention (DLP)',
-            'Steganography Detection in Digital Forensics',
-            'CWE-311: Missing Encryption of Sensitive Data'
-          ]
+            "NIST Data Loss Prevention (DLP)",
+            "Steganography Detection in Digital Forensics",
+            "CWE-311: Missing Encryption of Sensitive Data",
+          ],
         });
       }
     }
@@ -90,17 +114,18 @@ export class DataExfiltrationSteganographyRule implements ISecurityRule {
 
   private isSteganographyCapable(tool: McpTool): boolean {
     // Check name pattern
-    const nameMatches = this.ENCODING_PATTERNS.some(pattern =>
-      pattern.test(tool.name)
+    const nameMatches = this.ENCODING_PATTERNS.some((pattern) =>
+      pattern.test(tool.name),
     );
     if (nameMatches) return true;
 
     // Check for steganography keywords in name
     const nameLower = tool.name.toLowerCase();
-    const nameHasStegoKeyword = this.STEGANOGRAPHY_KEYWORDS.some(keyword => {
-      const pattern = typeof keyword === 'string'
-        ? new RegExp(keyword.replace(/\.\*/g, '.*'), 'i')
-        : keyword;
+    const nameHasStegoKeyword = this.STEGANOGRAPHY_KEYWORDS.some((keyword) => {
+      const pattern =
+        typeof keyword === "string"
+          ? new RegExp(keyword.replace(/\.\*/g, ".*"), "i")
+          : keyword;
       return pattern.test(nameLower);
     });
     if (nameHasStegoKeyword) return true;
@@ -109,17 +134,20 @@ export class DataExfiltrationSteganographyRule implements ISecurityRule {
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
 
-      const descMatches = this.ENCODING_PATTERNS.some(pattern =>
-        pattern.test(descLower)
+      const descMatches = this.ENCODING_PATTERNS.some((pattern) =>
+        pattern.test(descLower),
       );
       if (descMatches) return true;
 
-      const descHasStegoKeyword = this.STEGANOGRAPHY_KEYWORDS.some(keyword => {
-        const pattern = typeof keyword === 'string'
-          ? new RegExp(keyword.replace(/\.\*/g, '.*'), 'i')
-          : keyword;
-        return pattern.test(descLower);
-      });
+      const descHasStegoKeyword = this.STEGANOGRAPHY_KEYWORDS.some(
+        (keyword) => {
+          const pattern =
+            typeof keyword === "string"
+              ? new RegExp(keyword.replace(/\.\*/g, ".*"), "i")
+              : keyword;
+          return pattern.test(descLower);
+        },
+      );
       if (descHasStegoKeyword) return true;
     }
 
@@ -131,12 +159,16 @@ export class DataExfiltrationSteganographyRule implements ISecurityRule {
       for (const propName of Object.keys(tool.inputSchema.properties)) {
         const propLower = propName.toLowerCase();
 
-        if (propLower.includes('data') || propLower.includes('payload') || propLower.includes('message')) {
+        if (
+          propLower.includes("data") ||
+          propLower.includes("payload") ||
+          propLower.includes("message")
+        ) {
           hasDataParam = true;
         }
 
-        const isMediaParam = this.MEDIA_KEYWORDS.some(media =>
-          propLower.includes(media)
+        const isMediaParam = this.MEDIA_KEYWORDS.some((media) =>
+          propLower.includes(media),
         );
         if (isMediaParam) {
           hasMediaParam = true;
@@ -146,10 +178,15 @@ export class DataExfiltrationSteganographyRule implements ISecurityRule {
       // If tool accepts both data and media, and involves encoding, it's suspicious
       if (hasDataParam && hasMediaParam) {
         const nameLower = tool.name.toLowerCase();
-        const descLower = tool.description?.toLowerCase() || '';
+        const descLower = tool.description?.toLowerCase() || "";
 
-        const involvesEncoding = nameLower.includes('encode') || nameLower.includes('embed') || nameLower.includes('hide') ||
-          descLower.includes('encode') || descLower.includes('embed') || descLower.includes('hide');
+        const involvesEncoding =
+          nameLower.includes("encode") ||
+          nameLower.includes("embed") ||
+          nameLower.includes("hide") ||
+          descLower.includes("encode") ||
+          descLower.includes("embed") ||
+          descLower.includes("hide");
 
         if (involvesEncoding) return true;
       }

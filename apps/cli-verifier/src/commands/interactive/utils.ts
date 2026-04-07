@@ -19,53 +19,67 @@
  * - getSimilarCommands: Command suggestions
  */
 
-import fs from 'fs';
-import path from 'path';
-import chalk from 'chalk';
-import { spawn } from 'child_process';
-import { t } from '@mcp-verify/shared';
-import { PersistenceManager } from './persistence';
-import type { ParseResult } from './types';
-import type { ShellSession } from './session';
-import { PRIMARY_COMMANDS } from './completer';
+import fs from "fs";
+import path from "path";
+import chalk from "chalk";
+import { spawn } from "child_process";
+import { t } from "@mcp-verify/shared";
+import { PersistenceManager } from "./persistence";
+import type { ParseResult } from "./types";
+import type { ShellSession } from "./session";
+import { PRIMARY_COMMANDS } from "./completer";
 
 /**
  * Executes `action()` with captured stdout/stderr if redirection exists.
  * Restores console.log/error/warn even if the action throws an exception.
  * Removes ANSI codes from text written to file.
  */
-export async function withRedirect<T>(parsed: ParseResult, action: () => Promise<T>): Promise<T> {
+export async function withRedirect<T>(
+  parsed: ParseResult,
+  action: () => Promise<T>,
+): Promise<T> {
   if (!parsed.redirectTo) return action();
 
   const captured: string[] = [];
-  const stripAnsi  = (s: string) => s.replace(/\x1b\[[0-9;]*m/g, '');
-  const origLog    = console.log.bind(console);
-  const origError  = console.error.bind(console);
-  const origWarn   = console.warn.bind(console);
-  const capture    = (...args: unknown[]) => captured.push(args.map(a => stripAnsi(String(a))).join(' '));
+  const stripAnsi = (s: string) => s.replace(/\x1b\[[0-9;]*m/g, "");
+  const origLog = console.log.bind(console);
+  const origError = console.error.bind(console);
+  const origWarn = console.warn.bind(console);
+  const capture = (...args: unknown[]) =>
+    captured.push(args.map((a) => stripAnsi(String(a))).join(" "));
 
-  console.log   = capture;
+  console.log = capture;
   console.error = capture;
-  console.warn  = capture;
+  console.warn = capture;
 
   let result: T;
   try {
     result = await action();
   } finally {
-    console.log   = origLog;
+    console.log = origLog;
     console.error = origError;
-    console.warn  = origWarn;
+    console.warn = origWarn;
   }
 
   try {
-    PersistenceManager.writeOutput(parsed.redirectTo, captured.join('\n'), parsed.redirectAppend);
-    const op = parsed.redirectAppend ? '>>' : '>';
-    origLog(chalk.green(
-      `  ✓ Output redirected: ${op} ${chalk.white(parsed.redirectTo)}` +
-      chalk.dim(` (${captured.length} lines)\n`)
-    ));
+    PersistenceManager.writeOutput(
+      parsed.redirectTo,
+      captured.join("\n"),
+      parsed.redirectAppend,
+    );
+    const op = parsed.redirectAppend ? ">>" : ">";
+    origLog(
+      chalk.green(
+        `  ✓ Output redirected: ${op} ${chalk.white(parsed.redirectTo)}` +
+          chalk.dim(` (${captured.length} lines)\n`),
+      ),
+    );
   } catch (e) {
-    origError(chalk.red(`  ✗ Redirect failed: ${e instanceof Error ? e.message : String(e)}\n`));
+    origError(
+      chalk.red(
+        `  ✗ Redirect failed: ${e instanceof Error ? e.message : String(e)}\n`,
+      ),
+    );
   }
 
   return result!;
@@ -80,18 +94,27 @@ export function buildPrompt(session: ShellSession): string {
   const contextName = session.state.activeContextName;
   const profileName = context.profile.name;
 
-  const wsPart = workspace ? chalk.dim.yellow(`[${workspace}] `) : '';
+  const wsPart = workspace ? chalk.dim.yellow(`[${workspace}] `) : "";
 
   // Show context:profile if not default, otherwise just profile
-  const contextPart = contextName !== 'default'
-    ? chalk.dim.cyan(`(${contextName}:${profileName}) `)
-    : chalk.dim.cyan(`(${profileName}) `);
+  const contextPart =
+    contextName !== "default"
+      ? chalk.dim.cyan(`(${contextName}:${profileName}) `)
+      : chalk.dim.cyan(`(${profileName}) `);
 
   const tPart = context.target
-    ? chalk.dim(`${context.target.length > 30 ? '…' + context.target.slice(-28) : context.target} `)
-    : '';
+    ? chalk.dim(
+        `${context.target.length > 30 ? "…" + context.target.slice(-28) : context.target} `,
+      )
+    : "";
 
-  return wsPart + chalk.bold.green('mcp-verify ') + contextPart + tPart + chalk.bold.green('> ');
+  return (
+    wsPart +
+    chalk.bold.green("mcp-verify ") +
+    contextPart +
+    tPart +
+    chalk.bold.green("> ")
+  );
 }
 
 /**
@@ -107,35 +130,52 @@ export function showSessionSummary(session: ShellSession): void {
   const remainingSeconds = seconds % 60;
   const formattedTime = `${minutes}m ${remainingSeconds}s`;
 
-  console.log(chalk.bold.white('\n  ── Session Summary ─────────────────────────\n'));
-  console.log(`  ${chalk.gray('Duration:')}   ${chalk.cyan(formattedTime)}`);
-  console.log(`  ${chalk.gray('Commands:')}   ${chalk.cyan(String(history.length))}`);
+  console.log(
+    chalk.bold.white("\n  ── Session Summary ─────────────────────────\n"),
+  );
+  console.log(`  ${chalk.gray("Duration:")}   ${chalk.cyan(formattedTime)}`);
+  console.log(
+    `  ${chalk.gray("Commands:")}   ${chalk.cyan(String(history.length))}`,
+  );
   if (target) {
-    console.log(`  ${chalk.gray('Target:')}     ${chalk.cyan(target)}`);
+    console.log(`  ${chalk.gray("Target:")}     ${chalk.cyan(target)}`);
   }
   const paths = PersistenceManager.getPaths();
   console.log(chalk.dim(`\n  History saved → ${paths.historyFile}`));
-  console.log(chalk.gray(`\n  ${t('goodbye')}\n`));
+  console.log(chalk.gray(`\n  ${t("goodbye")}\n`));
 }
 
 /**
  * Opens URL in default browser (cross-platform)
  */
 export function openUrl(url: string): void {
-  try { new URL(url); } catch {
-    console.log(chalk.red(`\n  Invalid URL: ${url}\n`)); return;
+  try {
+    new URL(url);
+  } catch {
+    console.log(chalk.red(`\n  Invalid URL: ${url}\n`));
+    return;
   }
 
-  console.log(chalk.gray(`\n  ${t('opening')}: ${chalk.cyan(url)}\n`));
+  console.log(chalk.gray(`\n  ${t("opening")}: ${chalk.cyan(url)}\n`));
 
   const [cmd, ...spawnArgs] =
-    process.platform === 'win32'  ? ['cmd',     '/c', 'start', '', url] :
-    process.platform === 'darwin' ? ['open',    url] :
-                                    ['xdg-open', url];
+    process.platform === "win32"
+      ? ["cmd", "/c", "start", "", url]
+      : process.platform === "darwin"
+        ? ["open", url]
+        : ["xdg-open", url];
 
-  const child = spawn(cmd, spawnArgs, { shell: false, stdio: 'ignore', detached: true });
-  child.on('error', () =>
-    console.log(chalk.yellow(`  Could not open browser. Visit manually: ${chalk.cyan(url)}\n`))
+  const child = spawn(cmd, spawnArgs, {
+    shell: false,
+    stdio: "ignore",
+    detached: true,
+  });
+  child.on("error", () =>
+    console.log(
+      chalk.yellow(
+        `  Could not open browser. Visit manually: ${chalk.cyan(url)}\n`,
+      ),
+    ),
   );
   child.unref();
 }
@@ -148,9 +188,10 @@ export function levenshteinDistance(a: string, b: string): number {
   for (let j = 1; j <= b.length; j++) {
     const curr = [j, ...new Array<number>(a.length).fill(0)];
     for (let i = 1; i <= a.length; i++) {
-      curr[i] = a[i - 1] === b[j - 1]
-        ? prev[i - 1]
-        : 1 + Math.min(prev[i - 1], prev[i], curr[i - 1]);
+      curr[i] =
+        a[i - 1] === b[j - 1]
+          ? prev[i - 1]
+          : 1 + Math.min(prev[i - 1], prev[i], curr[i - 1]);
     }
     prev = curr;
   }
@@ -163,7 +204,7 @@ export function levenshteinDistance(a: string, b: string): number {
 export function getSimilarCommands(input: string): string[] {
   const lc = input.toLowerCase();
   return (PRIMARY_COMMANDS as string[])
-    .map(c => ({ c, d: levenshteinDistance(lc, c) }))
+    .map((c) => ({ c, d: levenshteinDistance(lc, c) }))
     .filter(({ d }) => d <= 2)
     .sort((a, b) => a.d - b.d)
     .map(({ c }) => c);

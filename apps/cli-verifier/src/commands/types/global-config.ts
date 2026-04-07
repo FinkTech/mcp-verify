@@ -12,7 +12,11 @@
  * This configuration applies to all workspaces unless overridden by context-specific settings
  */
 
-import { Language, SecurityProfile, SecurityProfilePreset } from './workspace-context';
+import {
+  Language,
+  SecurityProfile,
+  SecurityProfilePreset,
+} from "./workspace-context";
 
 /**
  * Global user configuration
@@ -26,7 +30,7 @@ import { Language, SecurityProfile, SecurityProfilePreset } from './workspace-co
  */
 export interface GlobalConfig {
   /** Configuration format version */
-  version: '1.0';
+  version: "1.0";
 
   /** Default language for new contexts */
   defaultLanguage: Language;

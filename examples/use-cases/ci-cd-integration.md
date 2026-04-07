@@ -18,9 +18,9 @@ name: MCP Verification
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   verify:
@@ -32,7 +32,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Install Dependencies
         run: npm install
@@ -59,14 +59,14 @@ jobs:
 ### With SARIF Output (GitHub Code Scanning)
 
 ```yaml
-      - name: Run Security Scan
-        run: |
-          mcp-verify validate http://localhost:3000 --format sarif
+- name: Run Security Scan
+  run: |
+    mcp-verify validate http://localhost:3000 --format sarif
 
-      - name: Upload SARIF to GitHub
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: ./reportes/mcp-report-*.sarif
+- name: Upload SARIF to GitHub
+  uses: github/codeql-action/upload-sarif@v2
+  with:
+    sarif_file: ./reportes/mcp-report-*.sarif
 ```
 
 This will show security findings directly in GitHub's Security tab!
@@ -74,34 +74,34 @@ This will show security findings directly in GitHub's Security tab!
 ### Fail on Security Issues
 
 ```yaml
-      - name: Validate Server
-        run: |
-          mcp-verify validate http://localhost:3000 --html
+- name: Validate Server
+  run: |
+    mcp-verify validate http://localhost:3000 --html
 
-          # Parse security score from JSON report
-          SCORE=$(jq '.security.score' ./reportes/mcp-report-*.json | tail -1)
+    # Parse security score from JSON report
+    SCORE=$(jq '.security.score' ./reportes/mcp-report-*.json | tail -1)
 
-          if [ $SCORE -lt 70 ]; then
-            echo "❌ Security score too low: $SCORE/100 (minimum: 70)"
-            exit 1
-          fi
+    if [ $SCORE -lt 70 ]; then
+      echo "❌ Security score too low: $SCORE/100 (minimum: 70)"
+      exit 1
+    fi
 
-          echo "✅ Security score: $SCORE/100"
+    echo "✅ Security score: $SCORE/100"
 ```
 
 ### Performance Regression Check
 
 ```yaml
-      - name: Performance Test
-        run: |
-          mcp-verify stress http://localhost:3000 --users 10 --duration 30 > perf.txt
+- name: Performance Test
+  run: |
+    mcp-verify stress http://localhost:3000 --users 10 --duration 30 > perf.txt
 
-          P95=$(grep "P95:" perf.txt | awk '{print $3}')
+    P95=$(grep "P95:" perf.txt | awk '{print $3}')
 
-          if [ $P95 -gt 100 ]; then
-            echo "❌ Performance regression: P95 latency $P95ms (max: 100ms)"
-            exit 1
-          fi
+    if [ $P95 -gt 100 ]; then
+      echo "❌ Performance regression: P95 latency $P95ms (max: 100ms)"
+      exit 1
+    fi
 ```
 
 ## GitLab CI
@@ -170,7 +170,7 @@ CMD ["npm", "start"]
 ### Docker Compose for Testing
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   mcp-server:
@@ -198,6 +198,7 @@ services:
 ```
 
 Run with:
+
 ```bash
 docker-compose up --abort-on-container-exit
 ```
@@ -228,24 +229,24 @@ npx husky add .husky/pre-commit "npm run mcp-verify"
 ### `scripts/verify-server.js`
 
 ```javascript
-const { spawn } = require('child_process');
+const { spawn } = require("child_process");
 
-console.log('🔍 Validating MCP server before commit...\n');
+console.log("🔍 Validating MCP server before commit...\n");
 
 // Start server
-const server = spawn('npm', ['start'], {
+const server = spawn("npm", ["start"], {
   detached: true,
-  stdio: 'ignore'
+  stdio: "ignore",
 });
 
 setTimeout(() => {
   // Run validation
-  const verify = spawn('mcp-verify', ['validate', 'http://localhost:3000']);
+  const verify = spawn("mcp-verify", ["validate", "http://localhost:3000"]);
 
-  verify.stdout.on('data', (data) => console.log(data.toString()));
-  verify.stderr.on('data', (data) => console.error(data.toString()));
+  verify.stdout.on("data", (data) => console.log(data.toString()));
+  verify.stderr.on("data", (data) => console.error(data.toString()));
 
-  verify.on('close', (code) => {
+  verify.on("close", (code) => {
     server.kill();
     process.exit(code);
   });
@@ -374,18 +375,18 @@ spec:
   template:
     spec:
       containers:
-      - name: validator
-        image: node:18
-        command:
-          - sh
-          - -c
-          - |
-            npm install -g mcp-verify
-            mcp-verify validate http://mcp-server:3000
-            if [ $? -ne 0 ]; then
-              echo "❌ Validation failed - blocking deployment"
-              exit 1
-            fi
+        - name: validator
+          image: node:18
+          command:
+            - sh
+            - -c
+            - |
+              npm install -g mcp-verify
+              mcp-verify validate http://mcp-server:3000
+              if [ $? -ne 0 ]; then
+                echo "❌ Validation failed - blocking deployment"
+                exit 1
+              fi
       restartPolicy: Never
   backoffLimit: 3
 ```
@@ -411,6 +412,7 @@ cat report.json | jq -r '
 ### Grafana Dashboard
 
 Use the metrics to create dashboards showing:
+
 - Security score trends
 - Validation success rate
 - Performance metrics over time
@@ -432,9 +434,11 @@ mcp-verify validate http://localhost:3000 || {
 ## Best Practices
 
 ### 1. **Run on Every PR**
+
 Don't wait for main branch - catch issues early
 
 ### 2. **Cache Results**
+
 ```yaml
 - uses: actions/cache@v3
   with:
@@ -443,6 +447,7 @@ Don't wait for main branch - catch issues early
 ```
 
 ### 3. **Parallel Testing**
+
 ```yaml
 strategy:
   matrix:
@@ -450,6 +455,7 @@ strategy:
 ```
 
 ### 4. **Set Thresholds**
+
 ```bash
 # Fail if:
 - Security score < 70
@@ -458,6 +464,7 @@ strategy:
 ```
 
 ### 5. **Generate Badges**
+
 ```markdown
 ![MCP Verified](https://img.shields.io/badge/MCP-verified-green)
 ![Security Score](https://img.shields.io/badge/security-85%2F100-yellow)
@@ -466,6 +473,7 @@ strategy:
 ## Common Issues
 
 ### ❌ "Server not ready"
+
 **Solution:** Increase wait time or use health check
 
 ```bash
@@ -477,6 +485,7 @@ done
 ```
 
 ### ❌ "Port already in use"
+
 **Solution:** Kill existing process
 
 ```bash
@@ -486,6 +495,7 @@ npm start &
 ```
 
 ### ❌ "Report not found"
+
 **Solution:** Check output path
 
 ```bash

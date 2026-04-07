@@ -11,11 +11,11 @@
  * Extracted from interactive.ts - Section 10
  */
 
-import { runInitAction } from '../../init';
+import { runInitAction } from "../../init";
 
 export async function handleInit(args: string[]): Promise<void> {
   // Init action doesn't take parameters - it's interactive
-  console.log('');
+  console.log("");
   await runInitAction();
-  console.log('');
+  console.log("");
 }

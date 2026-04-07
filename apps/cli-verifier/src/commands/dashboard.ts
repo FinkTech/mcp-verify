@@ -5,19 +5,25 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import http from 'http';
-import chalk from 'chalk';
-import { translations, Language, ITransport } from '@mcp-verify/core';
-import { ToolExecutor } from '@mcp-verify/core/use-cases/playground/tool-executor';
-import { JsonObject, McpTool } from '@mcp-verify/core/domain/shared/common.types';
-import { t, getCurrentLanguage } from '@mcp-verify/shared';
-import { registerCleanup } from '../utils/cleanup-handlers';
-import { createTransport, detectTransportType } from '../utils/transport-factory';
+import http from "http";
+import chalk from "chalk";
+import { translations, Language, ITransport } from "@mcp-verify/core";
+import { ToolExecutor } from "@mcp-verify/core/use-cases/playground/tool-executor";
+import {
+  JsonObject,
+  McpTool,
+} from "@mcp-verify/core/domain/shared/common.types";
+import { t, getCurrentLanguage } from "@mcp-verify/shared";
+import { registerCleanup } from "../utils/cleanup-handlers";
+import {
+  createTransport,
+  detectTransportType,
+} from "../utils/transport-factory";
 
 function generateDashboardHTML(lang: Language): string {
-    const t = translations[lang];
+  const t = translations[lang];
 
-    return `
+  return `
 <!DOCTYPE html>
 <html lang="${lang}">
 <head>
@@ -513,186 +519,224 @@ function generateDashboardHTML(lang: Language): string {
 `;
 }
 
-export async function runDashboardAction(target: string, options: Record<string, unknown>) {
-    const port = parseInt(String(options.port || '8080'));
-    const lang = getCurrentLanguage();
-    const trans = translations[lang];
+export async function runDashboardAction(
+  target: string,
+  options: Record<string, unknown>,
+) {
+  const port = parseInt(String(options.port || "8080"));
+  const lang = getCurrentLanguage();
+  const trans = translations[lang];
 
-    console.log(chalk.cyan(`🚀 ${trans.dashboard_starting}`));
-    console.log(chalk.gray(`${trans.dashboard_target_server} ` + chalk.white(target)));
-    console.log(chalk.green(`👉 ${trans.dashboard_active_at} http://localhost:${port}`));
+  console.log(chalk.cyan(`🚀 ${trans.dashboard_starting}`));
+  console.log(
+    chalk.gray(`${trans.dashboard_target_server} ` + chalk.white(target)),
+  );
+  console.log(
+    chalk.green(`👉 ${trans.dashboard_active_at} http://localhost:${port}`),
+  );
 
-    const DASHBOARD_HTML = generateDashboardHTML(lang);
+  const DASHBOARD_HTML = generateDashboardHTML(lang);
 
-    // Initialize MCP connection for real tool execution
-    let toolExecutor: ToolExecutor | null = null;
-    let transport: ITransport | null = null;
-    let realTools: McpTool[] = [];
+  // Initialize MCP connection for real tool execution
+  let toolExecutor: ToolExecutor | null = null;
+  let transport: ITransport | null = null;
+  let realTools: McpTool[] = [];
 
-    try {
-        // Create transport and executor
-        const transportType = detectTransportType(target);
-        transport = createTransport(target, { transportType });
-        toolExecutor = new ToolExecutor(transport);
+  try {
+    // Create transport and executor
+    const transportType = detectTransportType(target);
+    transport = createTransport(target, { transportType });
+    toolExecutor = new ToolExecutor(transport);
 
-        // Connect to server
-        console.log(chalk.gray(trans.dashboard_connecting_server));
-        await toolExecutor.connect();
+    // Connect to server
+    console.log(chalk.gray(trans.dashboard_connecting_server));
+    await toolExecutor.connect();
 
-        // Fetch real tools
-        realTools = await toolExecutor.listTools();
-        console.log(chalk.green(trans.dashboard_connected_count.replace('{count}', String(realTools.length))));
-    } catch (error) {
-        console.log(chalk.yellow(trans.dashboard_error_connect));
-        console.log(chalk.gray(`   Error: ${error instanceof Error ? error.message : String(error)}`));
-        console.log(chalk.gray(trans.dashboard_mock_mode));
+    // Fetch real tools
+    realTools = await toolExecutor.listTools();
+    console.log(
+      chalk.green(
+        trans.dashboard_connected_count.replace(
+          "{count}",
+          String(realTools.length),
+        ),
+      ),
+    );
+  } catch (error) {
+    console.log(chalk.yellow(trans.dashboard_error_connect));
+    console.log(
+      chalk.gray(
+        `   Error: ${error instanceof Error ? error.message : String(error)}`,
+      ),
+    );
+    console.log(chalk.gray(trans.dashboard_mock_mode));
+  }
+
+  const server = http.createServer(async (req, res) => {
+    // CORS
+    res.setHeader("Access-Control-Allow-Origin", "*");
+
+    // 1. Serve Dashboard HTML
+    if (req.url === "/" || req.url === "/index.html") {
+      res.writeHead(200, { "Content-Type": "text/html" });
+      res.end(DASHBOARD_HTML);
+      return;
     }
 
-    const server = http.createServer(async (req, res) => {
-        // CORS
-        res.setHeader('Access-Control-Allow-Origin', '*');
+    // 2. SSE Endpoint
+    if (req.url === "/sse") {
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      });
 
-        // 1. Serve Dashboard HTML
-        if (req.url === '/' || req.url === '/index.html') {
-            res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.end(DASHBOARD_HTML);
-            return;
-        }
-
-        // 2. SSE Endpoint
-        if (req.url === '/sse') {
-            res.writeHead(200, {
-                'Content-Type': 'text/event-stream',
-                'Cache-Control': 'no-cache',
-                'Connection': 'keep-alive'
-            });
-            
-            // Send real tools if available, otherwise fallback to mock tools
-            const toolsToSend = realTools.length > 0 ? realTools : [
-                {
-                    name: 'calculator',
-                    description: trans.calculator_desc,
-                    inputSchema: { properties: { operation: {type:'string'}, a: {type:'number'}, b: {type:'number'} } }
+      // Send real tools if available, otherwise fallback to mock tools
+      const toolsToSend =
+        realTools.length > 0
+          ? realTools
+          : [
+              {
+                name: "calculator",
+                description: trans.calculator_desc,
+                inputSchema: {
+                  properties: {
+                    operation: { type: "string" },
+                    a: { type: "number" },
+                    b: { type: "number" },
+                  },
                 },
-                {
-                    name: 'get_weather',
-                    description: trans.get_weather_desc,
-                    inputSchema: { properties: { city: {type:'string'} } }
-                }
+              },
+              {
+                name: "get_weather",
+                description: trans.get_weather_desc,
+                inputSchema: { properties: { city: { type: "string" } } },
+              },
             ];
-            res.write(`event: tools\ndata: ${JSON.stringify(toolsToSend)}\n\n`);
+      res.write(`event: tools\ndata: ${JSON.stringify(toolsToSend)}\n\n`);
 
-            const interval = setInterval(() => res.write(': keep-alive\n\n'), 15000);
-            req.on('close', () => clearInterval(interval));
-            return;
-        }
-
-        // 3. API Execution Endpoint
-        if (req.url === '/api/execute' && req.method === 'POST') {
-            let body = '';
-            req.on('data', chunk => body += chunk);
-            req.on('end', async () => {
-                try {
-                    const reqData = JSON.parse(body);
-
-                    // Execute real tool if executor is available
-                    if (toolExecutor) {
-                        try {
-                            const result = await toolExecutor.executeTool(
-                                reqData.name,
-                                reqData.arguments || {}
-                            );
-
-                            if (result.success) {
-                                res.writeHead(200, { 'Content-Type': 'application/json' });
-                                res.end(JSON.stringify({
-                                    jsonrpc: "2.0",
-                                    id: 1,
-                                    result: result.result
-                                }));
-                            } else {
-                                res.writeHead(500, { 'Content-Type': 'application/json' });
-                                res.end(JSON.stringify({
-                                    jsonrpc: "2.0",
-                                    id: 1,
-                                    error: {
-                                        code: -32000,
-                                        message: result.error || trans.dashboard_exec_failed
-                                    }
-                                }));
-                            }
-                        } catch (execError) {
-                            res.writeHead(500, { 'Content-Type': 'application/json' });
-                            res.end(JSON.stringify({
-                                jsonrpc: "2.0",
-                                id: 1,
-                                error: {
-                                    code: -32000,
-                                    message: execError instanceof Error ? execError.message : trans.dashboard_unknown_exec_error
-                                }
-                            }));
-                        }
-                    } else {
-                        // Fallback to mock execution if no real connection
-                        const mockResponse = {
-                            jsonrpc: "2.0",
-                            id: 1,
-                            result: {
-                                content: [
-                                    {
-                                        type: "text",
-                                        text: `${trans.dashboard_mock_notice}\n\nTool: ${reqData.name}\nArguments: ${JSON.stringify(reqData.arguments, null, 2)}\n\n${trans.executed_successfully.replace('{tool}', reqData.name)}`
-                                    }
-                                ]
-                            }
-                        };
-                        res.writeHead(200, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify(mockResponse));
-                    }
-                } catch(e) {
-                    res.writeHead(500);
-                    res.end(JSON.stringify({
-                        error: e instanceof Error ? e.message : trans.execution_failed
-                    }));
-                }
-            });
-            return;
-        }
-
-        res.writeHead(404);
-        res.end(trans.not_found);
-    });
-
-    server.listen(port, () => {
-        // Optional: Auto open
-        // import('open').then(o => o.default(`http://localhost:${port}`));
-    });
-
-    // Handle auto-stop timeout if provided
-    const timeoutMs = options.timeout ? parseInt(String(options.timeout)) : 0;
-    if (timeoutMs > 0) {
-        console.log(chalk.gray(t('proxy_auto_stopping', { ms: timeoutMs })));
-        return new Promise<void>((resolve) => {
-            setTimeout(async () => {
-                console.log(chalk.yellow(`\n✅ ${t('goodbye')}`));
-                server.close();
-                if (toolExecutor) await toolExecutor.close();
-                if (transport) transport.close();
-                process.exit(0);
-            }, timeoutMs);
-        });
+      const interval = setInterval(() => res.write(": keep-alive\n\n"), 15000);
+      req.on("close", () => clearInterval(interval));
+      return;
     }
 
-    // Register cleanup handler
-    registerCleanup(async () => {
-        console.log(chalk.gray(`\n${trans.dashboard_closing}`));
-        if (toolExecutor) {
-            await toolExecutor.close();
+    // 3. API Execution Endpoint
+    if (req.url === "/api/execute" && req.method === "POST") {
+      let body = "";
+      req.on("data", (chunk) => (body += chunk));
+      req.on("end", async () => {
+        try {
+          const reqData = JSON.parse(body);
+
+          // Execute real tool if executor is available
+          if (toolExecutor) {
+            try {
+              const result = await toolExecutor.executeTool(
+                reqData.name,
+                reqData.arguments || {},
+              );
+
+              if (result.success) {
+                res.writeHead(200, { "Content-Type": "application/json" });
+                res.end(
+                  JSON.stringify({
+                    jsonrpc: "2.0",
+                    id: 1,
+                    result: result.result,
+                  }),
+                );
+              } else {
+                res.writeHead(500, { "Content-Type": "application/json" });
+                res.end(
+                  JSON.stringify({
+                    jsonrpc: "2.0",
+                    id: 1,
+                    error: {
+                      code: -32000,
+                      message: result.error || trans.dashboard_exec_failed,
+                    },
+                  }),
+                );
+              }
+            } catch (execError) {
+              res.writeHead(500, { "Content-Type": "application/json" });
+              res.end(
+                JSON.stringify({
+                  jsonrpc: "2.0",
+                  id: 1,
+                  error: {
+                    code: -32000,
+                    message:
+                      execError instanceof Error
+                        ? execError.message
+                        : trans.dashboard_unknown_exec_error,
+                  },
+                }),
+              );
+            }
+          } else {
+            // Fallback to mock execution if no real connection
+            const mockResponse = {
+              jsonrpc: "2.0",
+              id: 1,
+              result: {
+                content: [
+                  {
+                    type: "text",
+                    text: `${trans.dashboard_mock_notice}\n\nTool: ${reqData.name}\nArguments: ${JSON.stringify(reqData.arguments, null, 2)}\n\n${trans.executed_successfully.replace("{tool}", reqData.name)}`,
+                  },
+                ],
+              },
+            };
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(mockResponse));
+          }
+        } catch (e) {
+          res.writeHead(500);
+          res.end(
+            JSON.stringify({
+              error: e instanceof Error ? e.message : trans.execution_failed,
+            }),
+          );
         }
-        if (transport) {
-            transport.close();
-        }
+      });
+      return;
+    }
+
+    res.writeHead(404);
+    res.end(trans.not_found);
+  });
+
+  server.listen(port, () => {
+    // Optional: Auto open
+    // import('open').then(o => o.default(`http://localhost:${port}`));
+  });
+
+  // Handle auto-stop timeout if provided
+  const timeoutMs = options.timeout ? parseInt(String(options.timeout)) : 0;
+  if (timeoutMs > 0) {
+    console.log(chalk.gray(t("proxy_auto_stopping", { ms: timeoutMs })));
+    return new Promise<void>((resolve) => {
+      setTimeout(async () => {
+        console.log(chalk.yellow(`\n✅ ${t("goodbye")}`));
         server.close();
-        console.log(chalk.green(`${trans.dashboard_closed}`));
+        if (toolExecutor) await toolExecutor.close();
+        if (transport) transport.close();
+        process.exit(0);
+      }, timeoutMs);
     });
+  }
+
+  // Register cleanup handler
+  registerCleanup(async () => {
+    console.log(chalk.gray(`\n${trans.dashboard_closing}`));
+    if (toolExecutor) {
+      await toolExecutor.close();
+    }
+    if (transport) {
+      transport.close();
+    }
+    server.close();
+    console.log(chalk.green(`${trans.dashboard_closed}`));
+  });
 }

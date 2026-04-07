@@ -11,32 +11,33 @@
  * Extracted from interactive.ts - Section 10
  */
 
-import readline from 'readline';
-import { runDoctorAction } from '../../doctor';
-import { ShellParser } from '../parser';
-import type { ShellSession } from '../session';
-import { resolveTarget } from './shared';
+import readline from "readline";
+import { runDoctorAction } from "../../doctor";
+import { ShellParser } from "../parser";
+import type { ShellSession } from "../session";
+import { resolveTarget } from "./shared";
 
 export async function handleDoctor(
   args: string[],
   session: ShellSession,
-  rl: readline.Interface
+  rl: readline.Interface,
 ): Promise<void> {
-  const flags  = ShellParser.extractFlags(args);
+  const flags = ShellParser.extractFlags(args);
   // --server flag takes precedence over the first positional argument
-  const target = (typeof flags['server'] === 'string' ? flags['server'] : undefined)
-    ?? await resolveTarget(args, session, rl, 'doctor "node server.js"');
+  const target =
+    (typeof flags["server"] === "string" ? flags["server"] : undefined) ??
+    (await resolveTarget(args, session, rl, 'doctor "node server.js"'));
   if (!target) return;
 
   session.setTarget(target);
 
   const options: Record<string, string | true> = {
     server: target,
-    lang:   session.state.lang,
+    lang: session.state.lang,
     ...flags,
   };
 
-  console.log('');
+  console.log("");
   await runDoctorAction(target, options);
-  console.log('');
+  console.log("");
 }

@@ -5,15 +5,31 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import type { McpTool, McpResource, McpPrompt, JsonObject, JsonValue, JsonArray, JsonPrimitive } from '../../shared/common.types';
-export type { McpTool, McpResource, McpPrompt, JsonObject, JsonValue, JsonArray, JsonPrimitive };
+import type {
+  McpTool,
+  McpResource,
+  McpPrompt,
+  JsonObject,
+  JsonValue,
+  JsonArray,
+  JsonPrimitive,
+} from "../../shared/common.types";
+export type {
+  McpTool,
+  McpResource,
+  McpPrompt,
+  JsonObject,
+  JsonValue,
+  JsonArray,
+  JsonPrimitive,
+};
 
 /**
  * Represents a specific security vulnerability identified during analysis.
  */
 export interface SecurityFinding {
   /** The severity of the finding. */
-  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+  severity: "critical" | "high" | "medium" | "low" | "info";
   /** Descriptive message explaining the vulnerability. */
   message: string;
   /** The component where the issue was found (e.g., tool name). */
@@ -67,13 +83,13 @@ export interface SecurityReport {
  * Issue related to code quality, documentation, or best practices (non-security).
  */
 export interface QualityIssue {
-  severity: 'high' | 'medium' | 'low' | 'info' | 'warning';
+  severity: "high" | "medium" | "low" | "info" | "warning";
   message: string;
   component: string;
   /** Suggestion for improvement. */
   suggestion: string;
   /** Category of the quality issue. */
-  category?: 'naming' | 'documentation' | 'clarity';
+  category?: "naming" | "documentation" | "clarity";
 }
 
 /**
@@ -86,9 +102,9 @@ export interface QualityReport {
   llmAnalysis?: {
     enabled: boolean;
     findings?: Array<{
-      type: 'tool' | 'resource' | 'prompt';
+      type: "tool" | "resource" | "prompt";
       name: string;
-      severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+      severity: "critical" | "high" | "medium" | "low" | "info";
       issue: string;
       reasoning: string;
       recommendation?: string;
@@ -108,7 +124,7 @@ export interface QualityReport {
 export interface ProtocolIssue {
   code: string;
   message: string;
-  severity: 'error' | 'warning';
+  severity: "error" | "warning";
 }
 
 /**
@@ -139,10 +155,10 @@ export interface FuzzingResult {
   // v1.0: Vulnerability analysis
   vulnerabilityAnalysis?: {
     vulnerable: boolean;
-    confidence: 'high' | 'medium' | 'low';
+    confidence: "high" | "medium" | "low";
     findings: Array<{
       type: string;
-      severity: 'critical' | 'high' | 'medium' | 'low';
+      severity: "critical" | "high" | "medium" | "low";
       description: string;
       evidence: string;
       remediation: string;
@@ -166,7 +182,7 @@ export interface FuzzingReport {
     payloadType: string;
     findings: Array<{
       type: string;
-      severity: 'critical' | 'high' | 'medium' | 'low';
+      severity: "critical" | "high" | "medium" | "low";
       description: string;
       evidence: string;
       remediation: string;
@@ -224,15 +240,15 @@ export interface ValidationResult {
 
 // Reporting Types
 export interface ToolReportItem extends McpTool {
-  status: 'valid' | 'invalid';
+  status: "valid" | "invalid";
 }
 
 export interface ResourceReportItem extends McpResource {
-  status: 'valid' | 'invalid';
+  status: "valid" | "invalid";
 }
 
 export interface PromptReportItem extends McpPrompt {
-  status: 'valid' | 'invalid';
+  status: "valid" | "invalid";
 }
 
 export interface Badge {
@@ -248,11 +264,11 @@ export interface ReportMetadata {
   /** mcp-verify version that generated this report */
   toolVersion: string;
   /** Analysis modules that were executed */
-  modulesExecuted: Array<'security' | 'quality' | 'fuzzing' | 'protocol'>;
+  modulesExecuted: Array<"security" | "quality" | "fuzzing" | "protocol">;
   /** Whether LLM analysis was used (data sent to third-party API) */
   llmUsed: boolean;
   /** LLM provider if used */
-  llmProvider?: 'anthropic' | 'openai' | 'ollama';
+  llmProvider?: "anthropic" | "openai" | "ollama";
 }
 
 /**
@@ -275,8 +291,8 @@ export interface ReportDisclaimer {
 export interface Report {
   server_name: string;
   url: string;
-  status: 'valid' | 'invalid';
-  transport?: 'http' | 'stdio';
+  status: "valid" | "invalid";
+  transport?: "http" | "stdio";
   protocol_version: string;
 
   security: SecurityReport;

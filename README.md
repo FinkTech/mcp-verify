@@ -21,13 +21,13 @@
 
 > **⚖️ Responsible Usage:** MCP Verify is designed for **defensive security auditing**. Only scan systems you own or have explicit authorization to test. See [RESPONSIBLE_USAGE.md](RESPONSIBLE_USAGE.md) for ethical guidelines.
 
-> **🚀 v1.0.0 Early Release Status:** This is a **community-driven early release** with stable core functionality. While production-ready for CLI operations, fuzzing, and validation, security rule test coverage is actively being improved (**~45% passing**, ongoing keyword alignment work). We welcome feedback and contributions. See [SECURITY_TESTING.md](./SECURITY_TESTING.md) for detailed test status and [Known Limitations](#️-known-limitations) for transparency on current boundaries.
+> **🚀 v1.0.0:** Core static analysis (61 security rules), Smart Fuzzer, CLI, MCP Server integration, and reporting are stable and production-ready. The automated test suite covers all critical OWASP rules (SEC-001–013) with ongoing improvements to broader rule coverage. We welcome feedback and contributions — see [Known Limitations](#️-known-limitations) for full transparency.
 
 ---
 
 ## 📄 TL;DR
 
-**Enterprise-grade security toolkit for MCP servers** with 4 interfaces: Interactive Shell, CLI commands, MCP Server tool, and VSCode extension. Features **Smart Fuzzer v1.0** (feedback loop + 12 mutation strategies), **60 security rules** across 6 threat categories (OWASP Top 10, MCP-specific, OWASP LLM Top 10, Multi-Agent Attacks, Enterprise Compliance, AI Weaponization), multi-context workspaces (dev/staging/prod), security profiles (light/balanced/aggressive), and LLM semantic analysis (Gemini FREE tier). Outputs JSON/HTML/SARIF reports with scores (0-100). Production-ready for CI/CD with baseline comparison.
+**Enterprise-grade security toolkit for MCP servers** with 4 interfaces: Interactive Shell, CLI commands, MCP Server tool, and VSCode extension. Features **Smart Fuzzer v1.0** (feedback loop + 12 mutation strategies), **61 security rules** across 6 threat categories (OWASP Top 10, MCP-specific, OWASP LLM Top 10, Multi-Agent Attacks, Enterprise Compliance, AI Weaponization), multi-context workspaces (dev/staging/prod), security profiles (light/balanced/aggressive), and LLM semantic analysis (Gemini FREE tier). Outputs JSON/HTML/SARIF reports with scores (0-100). Production-ready for CI/CD with baseline comparison.
 
 ---
 
@@ -60,6 +60,7 @@ mcp-verify validate "node server.js"
 ```
 
 **Output:**
+
 ```
 ✓ Validation complete
 
@@ -76,6 +77,20 @@ JSON: ./reports/json/mcp-report-2026-02-03.json
 HTML: ./reports/html/mcp-report-2026-02-03.html
 ```
 
+```mermaid
+flowchart LR
+    A[MCP Server\nstdio / HTTP / SSE] --> B[Handshake\nprotocol version\nserver name]
+    B --> C[Discovery\ntools · resources · prompts]
+    C --> D[Schema Validation\nJSON-RPC 2.0\nMCP spec]
+    C --> E[Security Scan\n61 rules · 6 blocks]
+    C --> F[Smart Fuzzer\n12 mutation strategies]
+    C --> G[LLM Analysis\noptional · semantic]
+    D & E & F & G --> H[Report\nJSON · HTML · SARIF\nMarkdown · Badge]
+    H --> I{Score}
+    I -->|≥ threshold| J[✅ Pass\nexit 0]
+    I -->|< threshold| K[❌ Fail\nexit 2]
+```
+
 📚 **More Examples**: [guides/EXAMPLES.md](./guides/EXAMPLES.md)
 🎮 **Interactive Shell**: [See below](#-interactive-shell)
 🔧 **Setup LLM Analysis**: [guides/LLM_SETUP.md](./guides/LLM_SETUP.md)
@@ -87,56 +102,39 @@ HTML: ./reports/html/mcp-report-2026-02-03.html
 
 ### 🔍 Security Analysis
 
-| Feature | Description |
-|---------|-------------|
-| **💯 Technical Vulnerability Score** | Enterprise-grade scoring engine (0-100) combining 60 security rules, Smart Fuzzer v1.0, and LLM analysis |
-| **🛡️ 60 Security Rules** | OWASP Top 10 (13 rules) + MCP-specific (8) + OWASP LLM Top 10 (9) + Multi-agent (11) + Compliance (9) + AI weaponization (10) |
-| **🧬 Smart Fuzzer v1.0** | Intelligent payload generation with feedback loop, 12 mutation strategies, fingerprinting, timing detection |
-| **📜 Protocol Compliance** | JSON-RPC 2.0 and MCP 2024-11-05 specification validation |
-| **👤 Security Profiles** | `light` (fast CI/CD), `balanced` (default), `aggressive` (deep audits) + custom profiles |
+| Feature                              | Description                                                                                                                   |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| **💯 Technical Vulnerability Score** | Enterprise-grade scoring engine (0-100) combining 61 security rules, Smart Fuzzer v1.0, and LLM analysis                      |
+| **🛡️ 61 Security Rules**             | OWASP Top 10 (13 rules) + MCP-specific (8) + OWASP LLM Top 10 (9) + Multi-agent (11) + Compliance (9) + AI weaponization (11) |
+| **🧬 Smart Fuzzer v1.0**             | Intelligent payload generation with feedback loop, 12 mutation strategies, fingerprinting, timing detection                   |
+| **📜 Protocol Compliance**           | JSON-RPC 2.0 and MCP 2024-11-05 specification validation                                                                      |
+| **👤 Security Profiles**             | `light` (fast CI/CD), `balanced` (default), `aggressive` (deep audits) + custom profiles                                      |
 
 ### 🛠️ Tools & Interfaces
 
-| Feature | Description |
-|---------|-------------|
-| **🎮 Interactive Shell** | Full REPL with autocomplete, history, multi-context workspaces, output redirection |
-| **💻 CLI Commands** | 11 security tools (validate, fuzz, stress, doctor, proxy, play, dashboard, mock, init, examples, fingerprint) |
-| **🤖 MCP Server** | 7 MCP tools for AI agents (validateServer, scanSecurity, analyzeQuality, generateReport, listInstalledServers, selfAudit, compareServers) |
-| **📦 VSCode Extension** | Real-time scanning, 4 tree views, diagnostics, code actions, report panel |
-| **📊 Web Dashboard** | Real-time monitoring with live updates ([see docs](./apps/web-dashboard/README.md)) |
+| Feature                  | Description                                                                                                                               |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **🎮 Interactive Shell** | Full REPL with autocomplete, history, multi-context workspaces, output redirection                                                        |
+| **💻 CLI Commands**      | 11 security tools (validate, fuzz, stress, doctor, proxy, play, dashboard, mock, init, examples, fingerprint)                             |
+| **🤖 MCP Server**        | 7 MCP tools for AI agents (validateServer, scanSecurity, analyzeQuality, generateReport, listInstalledServers, selfAudit, compareServers) |
+| **📦 VSCode Extension**  | Real-time scanning, 4 tree views, diagnostics, code actions, report panel                                                                 |
+| **📊 Web Dashboard**     | Real-time monitoring with live updates ([see docs](./apps/web-dashboard/README.md))                                                       |
 
 ### 📊 Analysis & Reporting
 
-| Feature | Description |
-|---------|-------------|
-| **🧠 LLM Semantic Analysis** | Optional AI-powered deep checks (Gemini FREE tier, Anthropic, Ollama, OpenAI) |
-| **📄 Multiple Report Formats** | JSON (CI/CD), HTML (human), SARIF (GitHub), Markdown, SVG badges |
-| **📈 Baseline Comparison** | [Regression detection](./REGRESSION-DETECTION.md) with customizable score drop thresholds |
-| **🌍 Multi-Language** | English + Spanish (i18n system) |
-| **🚀 CI/CD Ready** | Exit codes (`0`=pass, `1`=warnings, `2`=critical) + GitHub Actions integration |
-
----
-
-## ⚠️ Security Advisory
-
-**Current Status (v1.0.0)**: This project is distributed as a secure, standalone **Single Executable Application (SEA)** using Node.js 20+ native APIs. This ensures high performance, small binary size, and maximum security by avoiding third-party bundlers like `pkg`.
-
-**Impact Assessment**:
-- Affects **local privilege escalation** during binary execution
-- Does NOT affect mcp-verify's security scanning capabilities
-- Only impacts standalone binaries (`.exe`/`.bin` files if compiled)
-- npm installation method is **unaffected** ✅
-
-**Mitigation Strategy**:
-- ✅ **Developers**: Use npm installation from source (recommended, no vulnerability)
-- ⚠️ **Standalone binaries**: Avoid using `npm run compile` until migration is complete
-- 🔄 **CI/CD**: Use npm installation or Docker container
+| Feature                        | Description                                                                               |
+| ------------------------------ | ----------------------------------------------------------------------------------------- |
+| **🧠 LLM Semantic Analysis**   | Optional AI-powered deep checks (Gemini FREE tier, Anthropic, Ollama, OpenAI)             |
+| **📄 Multiple Report Formats** | JSON (CI/CD), HTML (human), SARIF (GitHub), Markdown, SVG badges                          |
+| **📈 Baseline Comparison**     | [Regression detection](./REGRESSION-DETECTION.md) with customizable score drop thresholds |
+| **🌍 Multi-Language**          | English + Spanish (i18n system)                                                           |
+| **🚀 CI/CD Ready**             | Exit codes (`0`=pass, `1`=warnings, `2`=critical) + GitHub Actions integration            |
 
 ---
 
 ## 📦 Installation
 
-### Method 1: From Source (Recommended - No Vulnerability) ✅
+### Method 1: From Source (Recommended) ✅
 
 ```bash
 git clone https://github.com/FinkTech/mcp-verify.git
@@ -151,7 +149,7 @@ node dist/mcp-verify.js validate "node server.js"
 alias mcp-verify="node $(pwd)/dist/mcp-verify.js"
 ```
 
-### Method 2: NPM Package (Coming Soon - v1.0.1) ✅
+### Method 2: NPM Package ✅
 
 ```bash
 npm install -g mcp-verify
@@ -162,10 +160,13 @@ mcp-verify validate "node server.js"
 
 ```bash
 # High-performance native binary using Node SEA
-npm run compile  # Creates secure binaries in dist/bin/
+npm run compile        # Current platform only
+npm run compile:all    # All platforms (Linux, macOS, Windows)
 
 # Use the binary directly
-./dist/bin/mcp-verify-linux validate "node server.js"
+./dist/bin/linux/mcp-verify validate "node server.js"      # Linux
+./dist/bin/macos/mcp-verify validate "node server.js"      # macOS
+./dist/bin/windows/mcp-verify.exe validate "node server.js" # Windows
 ```
 
 ---
@@ -184,14 +185,14 @@ mcp-verify interactive
 
 ### Features
 
-| Feature | Description |
-|---------|-------------|
-| **Contextual Autocomplete** | Tab completion for commands, flags, file paths, and tool names |
-| **Persistent History** | Command history saved to `~/.mcp-verify/history.json` (cross-session) |
-| **Multi-Context Workspaces** | Manage dev/staging/prod contexts independently |
-| **Output Redirection** | Save command output: `validate > report.txt` or `fuzz >> results.log` |
-| **Secret Redaction** | Automatically redacts API keys from history |
-| **Session Persistence** | State saved to `.mcp-verify/session.json` (per-project) |
+| Feature                      | Description                                                           |
+| ---------------------------- | --------------------------------------------------------------------- |
+| **Contextual Autocomplete**  | Tab completion for commands, flags, file paths, and tool names        |
+| **Persistent History**       | Command history saved to `~/.mcp-verify/history.json` (cross-session) |
+| **Multi-Context Workspaces** | Manage dev/staging/prod contexts independently                        |
+| **Output Redirection**       | Save command output: `validate > report.txt` or `fuzz >> results.log` |
+| **Secret Redaction**         | Automatically redacts API keys from history                           |
+| **Session Persistence**      | State saved to `.mcp-verify/session.json` (per-project)               |
 
 ### Interactive Commands
 
@@ -281,6 +282,7 @@ Contexts (3):
 ### Context Isolation
 
 Each context has:
+
 - **Independent target** (stdio command or HTTP URL)
 - **Independent security profile** (light/balanced/aggressive/custom)
 - **Independent configuration** (timeouts, LLM settings, etc.)
@@ -296,11 +298,11 @@ Control fuzzing intensity and validation strictness with built-in or custom prof
 
 ### Built-in Profiles
 
-| Profile       | Use Case                  | Payloads | Mutations | Score Threshold | Fail On          |
-|---------------|---------------------------|----------|-----------|-----------------|------------------|
-| **light**     | Quick checks, CI/CD       | 25       | 0         | 60              | Critical         |
-| **balanced**  | Regular testing (default) | 50       | 3         | 70              | Critical         |
-| **aggressive**| Pre-production audits     | 100      | 5         | 90              | Critical + High  |
+| Profile        | Use Case                  | Payloads | Mutations | Score Threshold | Fail On         |
+| -------------- | ------------------------- | -------- | --------- | --------------- | --------------- |
+| **light**      | Quick checks, CI/CD       | 25       | 0         | 60              | Critical        |
+| **balanced**   | Regular testing (default) | 50       | 3         | 70              | Critical        |
+| **aggressive** | Pre-production audits     | 100      | 5         | 90              | Critical + High |
 
 ### Profile Comparison
 
@@ -338,6 +340,7 @@ mcp-verify
 **Storage**: Custom profiles saved to `~/.mcp-verify/config.json` (global, cross-project)
 
 📊 **Profile Details**: Each profile controls:
+
 - Payload count per tool
 - Mutation strategies (SQL depth, unicode bypass, timing probes, etc.)
 - Anomaly detection thresholds
@@ -388,20 +391,20 @@ mcp-verify mock --port 3000
 
 ### All Available Commands
 
-| Command | Purpose | Documentation |
-|---------|---------|---------------|
-| `validate` | Full security validation with 60 security rules across 6 threat categories | [EXAMPLES.md](./guides/EXAMPLES.md) |
-| `fuzz` | Smart fuzzer with feedback loop & mutations | [COMMANDS.md](./COMMANDS.md#fuzz) |
-| `stress` | Load/concurrency testing | [EXAMPLES.md](./guides/EXAMPLES.md) |
-| `doctor` | Diagnostics, environment checks & binary integrity verification | [Doctor Section](#-doctor--diagnostics--integrity) |
-| `proxy` | Transparent proxy with 5 security guardrails | [Proxy Section](#-security-proxy-with-guardrails) |
-| `play` | Interactive tool testing playground | Built-in help |
-| `dashboard` | Real-time terminal monitoring (blessed UI) | Built-in help |
-| `mock` | Mock MCP server for testing clients | Built-in help |
-| `init` | Scaffold new MCP server project | Built-in help |
-| `examples` | Interactive examples browser | Built-in help |
-| `fingerprint` | Server technology detection | Built-in help |
-| `interactive` | Start interactive shell (default mode) | [Interactive Shell](#-interactive-shell) |
+| Command       | Purpose                                                                    | Documentation                                      |
+| ------------- | -------------------------------------------------------------------------- | -------------------------------------------------- |
+| `validate`    | Full security validation with 60 security rules across 6 threat categories | [EXAMPLES.md](./guides/EXAMPLES.md)                |
+| `fuzz`        | Smart fuzzer with feedback loop & mutations                                | [COMMANDS.md](./COMMANDS.md#fuzz)                  |
+| `stress`      | Load/concurrency testing                                                   | [EXAMPLES.md](./guides/EXAMPLES.md)                |
+| `doctor`      | Diagnostics, environment checks & binary integrity verification            | [Doctor Section](#-doctor--diagnostics--integrity) |
+| `proxy`       | Transparent proxy with 5 security guardrails                               | [Proxy Section](#-security-proxy-with-guardrails)  |
+| `play`        | Interactive tool testing playground                                        | Built-in help                                      |
+| `dashboard`   | Real-time terminal monitoring (blessed UI)                                 | Built-in help                                      |
+| `mock`        | Mock MCP server for testing clients                                        | Built-in help                                      |
+| `init`        | Scaffold new MCP server project                                            | Built-in help                                      |
+| `examples`    | Interactive examples browser                                               | Built-in help                                      |
+| `fingerprint` | Server technology detection                                                | Built-in help                                      |
+| `interactive` | Start interactive shell (default mode)                                     | [Interactive Shell](#-interactive-shell)           |
 
 <p align="center">
   <img src="docs/assets/mascot/yogui-doctor.png" width="400" alt="Yogui Doctor">
@@ -439,12 +442,14 @@ mcp-verify doctor --clean-history 10
 ```
 
 **What Doctor Checks**:
+
 - ✅ Binary integrity (SHA-256 verification of CLI & Server)
 - ✅ Environment (Node.js, Python, Git, Deno runtimes)
 - ✅ MCP server connectivity & handshake
 - ✅ Sensitive environment variables audit
 
 **Integrity Features**:
+
 - Tracks both CLI and Server binaries separately
 - Maintains history of last 20 builds (configurable)
 - Git commit traceability for each build
@@ -461,13 +466,14 @@ mcp-verify doctor --clean-history 10
 
 mcp-verify uses standard exit codes for CI/CD integration:
 
-| Code | Meaning | Description |
-|------|---------|-------------|
-| **0** | ✅ Success | Server passed validation |
-| **1** | ⚠️ Warnings | Non-critical issues found |
+| Code  | Meaning     | Description                                      |
+| ----- | ----------- | ------------------------------------------------ |
+| **0** | ✅ Success  | Server passed validation                         |
+| **1** | ⚠️ Warnings | Non-critical issues found                        |
 | **2** | ❌ Critical | Security vulnerabilities or baseline degradation |
 
 **Usage in CI/CD**:
+
 ```yaml
 # GitHub Actions example
 - name: Validate MCP Server
@@ -481,119 +487,132 @@ mcp-verify uses standard exit codes for CI/CD integration:
 
 ## 🔐 Security Rules
 
-mcp-verify checks for **60 security vulnerabilities** across **6 threat categories**:
+mcp-verify checks for **61 security vulnerabilities** across **6 threat categories**:
+
+```mermaid
+block-beta
+    columns 3
+    OWASP["📦 Block OWASP\nSEC-001–013\n13 rules\nOWASP Top 10"]:1
+    MCP["🔌 Block MCP\nSEC-014–021\n8 rules\nMCP-Specific"]:1
+    A["🤖 Block A\nSEC-022–030\n9 rules\nOWASP LLM Top 10"]:1
+    B["🤝 Block B\nSEC-031–041\n11 rules\nMulti-Agent Attacks"]:1
+    C["🏢 Block C\nSEC-042–050\n9 rules\nEnterprise Compliance"]:1
+    D["⚔️ Block D\nSEC-051–061\n11 rules\nAI Weaponization"]:1
+```
 
 <details open>
 <summary><h3>📦 Block OWASP: OWASP Top 10 Aligned (SEC-001 to SEC-013)</h3></summary>
 
-| Rule | Severity | Description | OWASP Mapping |
-|------|----------|-------------|---------------|
-| SEC-001 | High | Authentication Bypass | A07:2021 |
-| SEC-002 | Critical | Command Injection | A03:2021 |
-| SEC-003 | High | SQL Injection | A03:2021 |
-| SEC-004 | High | Server-Side Request Forgery (SSRF) | A10:2021 |
-| SEC-005 | High | XML External Entity (XXE) Injection | A05:2021 |
-| SEC-006 | High | Insecure Deserialization | A08:2021 |
-| SEC-007 | High | Path Traversal | A01:2021 |
-| SEC-008 | Medium | Data Leakage | A01:2021 |
-| SEC-009 | High | Sensitive Data Exposure | A02:2021 |
-| SEC-010 | Medium | Missing Rate Limiting | A04:2021 |
-| SEC-011 | Medium | ReDoS (Regular Expression DoS) | A04:2021 |
-| SEC-012 | High | Weak Cryptography | A02:2021 |
-| SEC-013 | High | Prompt Injection | Emerging |
+| Rule    | Severity | Description                         | OWASP Mapping |
+| ------- | -------- | ----------------------------------- | ------------- |
+| SEC-001 | High     | Authentication Bypass               | A07:2021      |
+| SEC-002 | Critical | Command Injection                   | A03:2021      |
+| SEC-003 | High     | SQL Injection                       | A03:2021      |
+| SEC-004 | High     | Server-Side Request Forgery (SSRF)  | A10:2021      |
+| SEC-005 | High     | XML External Entity (XXE) Injection | A05:2021      |
+| SEC-006 | High     | Insecure Deserialization            | A08:2021      |
+| SEC-007 | High     | Path Traversal                      | A01:2021      |
+| SEC-008 | Medium   | Data Leakage                        | A01:2021      |
+| SEC-009 | High     | Sensitive Data Exposure             | A02:2021      |
+| SEC-010 | Medium   | Missing Rate Limiting               | A04:2021      |
+| SEC-011 | Medium   | ReDoS (Regular Expression DoS)      | A04:2021      |
+| SEC-012 | High     | Weak Cryptography                   | A02:2021      |
+| SEC-013 | High     | Prompt Injection                    | Emerging      |
 
 </details>
 
 <details open>
 <summary><h3>🔌 Block MCP: MCP-Specific Security (SEC-014 to SEC-021)</h3></summary>
 
-| Rule | Severity | Description | Category |
-|------|----------|-------------|----------|
-| SEC-014 | High | Exposed Network Endpoint | MCP Security |
-| SEC-015 | High | Missing Authentication | MCP Security |
-| SEC-016 | Medium | Insecure URI Scheme | MCP Security |
-| SEC-017 | Medium | Excessive Tool Permissions | MCP Security |
-| SEC-018 | Medium | Secrets in Descriptions | MCP Security |
-| SEC-019 | Medium | Missing Input Constraints | MCP Security |
-| SEC-020 | Medium | Dangerous Tool Chaining | MCP Security |
-| SEC-021 | High | Unencrypted Credentials | MCP Security |
+| Rule    | Severity | Description                | Category     |
+| ------- | -------- | -------------------------- | ------------ |
+| SEC-014 | High     | Exposed Network Endpoint   | MCP Security |
+| SEC-015 | High     | Missing Authentication     | MCP Security |
+| SEC-016 | Medium   | Insecure URI Scheme        | MCP Security |
+| SEC-017 | Medium   | Excessive Tool Permissions | MCP Security |
+| SEC-018 | Medium   | Secrets in Descriptions    | MCP Security |
+| SEC-019 | Medium   | Missing Input Constraints  | MCP Security |
+| SEC-020 | Medium   | Dangerous Tool Chaining    | MCP Security |
+| SEC-021 | High     | Unencrypted Credentials    | MCP Security |
 
 </details>
 
 <details>
 <summary><h3>🤖 Block A: OWASP LLM Top 10 in MCP Context (SEC-022 to SEC-030)</h3></summary>
 
-| Rule | Severity | Description | OWASP LLM |
-|------|----------|-------------|-----------|
-| SEC-022 | High | Excessive Agency | LLM01 |
-| SEC-023 | High | Prompt Injection via Tools | LLM01 |
-| SEC-024 | High | Insecure Output Handling | LLM02 |
-| SEC-025 | High | Supply Chain Tool Dependencies | LLM03 |
-| SEC-026 | Medium | Sensitive Data in Tool Responses | LLM06 |
-| SEC-027 | Medium | Training Data Poisoning | LLM03 |
-| SEC-028 | Medium | Model DoS via Tools | LLM04 |
-| SEC-029 | Medium | Insecure Plugin Design | LLM07 |
-| SEC-030 | Medium | Excessive Data Disclosure | LLM06 |
+| Rule    | Severity | Description                            | OWASP LLM |
+| ------- | -------- | -------------------------------------- | --------- |
+| SEC-022 | High     | Excessive Agency                       | LLM01     |
+| SEC-023 | High     | Prompt Injection via Tools             | LLM01     |
+| SEC-024 | Critical | Prompt Injection via Tool Inputs       | LLM01     |
+| SEC-025 | High     | Supply Chain Tool Dependencies         | LLM03     |
+| SEC-026 | Medium   | Sensitive Data in Tool Responses       | LLM06     |
+| SEC-027 | Medium   | Training Data Poisoning                | LLM03     |
+| SEC-028 | Medium   | Model DoS via Tools                    | LLM04     |
+| SEC-029 | Medium   | Insecure Plugin Design                 | LLM07     |
+| SEC-030 | Medium   | Excessive Data Disclosure              | LLM06     |
 
 </details>
 
 <details>
 <summary><h3>🤝 Block B: Multi-Agent & Agentic Attacks (SEC-031 to SEC-041)</h3></summary>
 
-| Rule | Severity | Description | Category |
-|------|----------|-------------|----------|
-| SEC-031 | High | Tool Result Tampering | Multi-Agent |
-| SEC-032 | High | Recursive Agent Loop | Multi-Agent |
-| SEC-033 | High | Multi-Agent Privilege Escalation | Multi-Agent |
-| SEC-034 | Medium | Agent State Poisoning | Multi-Agent |
-| SEC-035 | Medium | Distributed Agent DDoS | Multi-Agent |
-| SEC-036 | High | Agent Swarm Coordination Attack | Multi-Agent |
-| SEC-037 | High | Agent Identity Spoofing | Multi-Agent |
-| SEC-038 | High | Cross-Agent Prompt Injection | Multi-Agent |
-| SEC-039 | Medium | Agent Reputation Hijacking | Multi-Agent |
-| SEC-040 | Medium | Tool Chaining Path Traversal | Multi-Agent |
-| SEC-041 | Medium | Agent Memory Injection | Multi-Agent |
+| Rule    | Severity | Description                      | Category    |
+| ------- | -------- | -------------------------------- | ----------- |
+| SEC-031 | High     | Tool Result Tampering            | Multi-Agent |
+| SEC-032 | High     | Recursive Agent Loop             | Multi-Agent |
+| SEC-033 | High     | Multi-Agent Privilege Escalation | Multi-Agent |
+| SEC-034 | Medium   | Agent State Poisoning            | Multi-Agent |
+| SEC-035 | Medium   | Distributed Agent DDoS           | Multi-Agent |
+| SEC-036 | High     | Agent Swarm Coordination Attack  | Multi-Agent |
+| SEC-037 | High     | Agent Identity Spoofing          | Multi-Agent |
+| SEC-038 | High     | Cross-Agent Prompt Injection     | Multi-Agent |
+| SEC-039 | Medium   | Agent Reputation Hijacking       | Multi-Agent |
+| SEC-040 | Medium   | Tool Chaining Path Traversal     | Multi-Agent |
+| SEC-041 | Medium   | Agent Memory Injection           | Multi-Agent |
 
 </details>
 
 <details>
 <summary><h3>🏢 Block C: Operational & Enterprise Compliance (SEC-042 to SEC-050)</h3></summary>
 
-| Rule | Severity | Description | Category |
-|------|----------|-------------|----------|
-| SEC-042 | Medium | Missing Audit Logging | Compliance |
-| SEC-043 | Medium | Insecure Session Management | Compliance |
-| SEC-044 | Medium | Exposed Endpoint | Compliance |
-| SEC-045 | Low | Insecure Default Configuration | Compliance |
-| SEC-046 | Medium | Missing CORS Validation | Compliance |
-| SEC-047 | Low | Schema Versioning Absent | Compliance |
-| SEC-048 | Medium | Missing Capability Negotiation | Compliance |
-| SEC-049 | Medium | Timing Side-Channel in Auth | Compliance |
-| SEC-050 | Low | Insufficient Output Entropy | Compliance |
+| Rule    | Severity | Description                    | Category   |
+| ------- | -------- | ------------------------------ | ---------- |
+| SEC-042 | Medium   | Missing Audit Logging          | Compliance |
+| SEC-043 | Medium   | Insecure Session Management    | Compliance |
+| SEC-044 | Medium   | Exposed Endpoint               | Compliance |
+| SEC-045 | Low      | Insecure Default Configuration | Compliance |
+| SEC-046 | Medium   | Missing CORS Validation        | Compliance |
+| SEC-047 | Low      | Schema Versioning Absent       | Compliance |
+| SEC-048 | Medium   | Missing Capability Negotiation | Compliance |
+| SEC-049 | Medium   | Timing Side-Channel in Auth    | Compliance |
+| SEC-050 | Low      | Insufficient Output Entropy    | Compliance |
 
 </details>
 
 <details>
-<summary><h3>⚔️ Block D: AI Weaponization & Supply Chain (SEC-051 to SEC-060)</h3></summary>
+<summary><h3>⚔️ Block D: AI Weaponization & Supply Chain (SEC-051 to SEC-061)</h3></summary>
 
 > **⚠️ Note**: Most rules in this block are **disabled by default** due to their adversarial nature. Enable with caution in controlled environments only.
 
-| Rule | Severity | Description | Default | Category |
-|------|----------|-------------|---------|----------|
-| SEC-051 | High | Weaponized MCP Fuzzer | ❌ Disabled | Weaponization |
-| SEC-052 | Critical | Autonomous MCP Backdoor | ❌ Disabled | Weaponization |
-| SEC-053 | Critical | Malicious Config File | ❌ Disabled | Supply Chain |
-| SEC-054 | Critical | API Endpoint Hijacking (CVE-2026-21852) | ✅ Enabled | Supply Chain |
-| SEC-055 | High | Jailbreak-as-a-Service | ❌ Disabled | Weaponization |
-| SEC-056 | High | Phishing via MCP | ❌ Disabled | Weaponization |
-| SEC-057 | Medium | Data Exfiltration via Steganography | ❌ Disabled | Weaponization |
-| SEC-058 | Critical | Self-Replicating MCP | ❌ Disabled | Weaponization |
-| SEC-059 | High | Unvalidated Tool Authorization | ✅ Enabled | Authorization |
-| SEC-060 | Medium | Missing Transaction Semantics | ✅ Enabled | Reliability |
+| Rule    | Severity | Description                             | Default     | Category      |
+| ------- | -------- | --------------------------------------- | ----------- | ------------- |
+| SEC-051 | High     | Weaponized MCP Fuzzer                   | ❌ Disabled | Weaponization |
+| SEC-052 | Critical | Autonomous MCP Backdoor                 | ❌ Disabled | Weaponization |
+| SEC-053 | Critical | Malicious Config File                   | ❌ Disabled | Supply Chain  |
+| SEC-054 | Critical | API Endpoint Hijacking (CVE-2026-21852) | ✅ Enabled  | Supply Chain  |
+| SEC-055 | High     | Jailbreak-as-a-Service                  | ❌ Disabled | Weaponization |
+| SEC-056 | High     | Phishing via MCP                        | ❌ Disabled | Weaponization |
+| SEC-057 | Medium   | Data Exfiltration via Steganography     | ❌ Disabled | Weaponization |
+| SEC-058 | Critical | Self-Replicating MCP                    | ❌ Disabled | Weaponization |
+| SEC-059 | High     | Unvalidated Tool Authorization          | ✅ Enabled  | Authorization |
+| SEC-060 | Medium   | Missing Transaction Semantics           | ✅ Enabled  | Reliability   |
+| SEC-061 | High     | Homoglyph / Unicode Spoofing            | ✅ Enabled  | Supply Chain  |
 
 </details>
 
 **Acceptable Risk Levels**:
+
 - **Production**: Score ≥ 90 (Excellent)
 - **Staging**: Score ≥ 70 (Good)
 - **Internal Tools**: Score ≥ 50 (Fair)
@@ -608,25 +627,29 @@ The Smart Fuzzer is an **intelligent payload generation engine** that learns fro
 
 ### Key Features
 
-| Feature | Description |
-|---------|-------------|
-| **Feedback Loop** | Analyzes responses for anomalies (timing, crashes, errors) and generates mutations |
-| **12 Mutation Strategies** | SQL depth, null-byte injection, unicode bypass, timing probes, buffer stress, quote variation, etc. |
-| **Automatic Fingerprinting** | Detects server language/framework and disables irrelevant generators (saves 40-60% time) |
-| **9 Payload Generators** | Prompt injection, SQL/XSS/CMD injection, JWT attacks, prototype pollution, JSON-RPC violations, schema confusion |
-| **10 Vulnerability Detectors** | Timing anomalies, error disclosure, XSS, prompt leaks, jailbreaks, path traversal, weak IDs, info disclosure |
-| **Baseline Calibration** | Establishes clean timing/size baselines before anomaly detection |
+| Feature                        | Description                                                                                                      |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| **Feedback Loop**              | Analyzes responses for anomalies (timing, crashes, errors) and generates mutations                               |
+| **12 Mutation Strategies**     | SQL depth, null-byte injection, unicode bypass, timing probes, buffer stress, quote variation, etc.              |
+| **Automatic Fingerprinting**   | Detects server language/framework and disables irrelevant generators (saves 40-60% time)                         |
+| **9 Payload Generators**       | Prompt injection, SQL/XSS/CMD injection, JWT attacks, prototype pollution, JSON-RPC violations, schema confusion |
+| **10 Vulnerability Detectors** | Timing anomalies, error disclosure, XSS, prompt leaks, jailbreaks, path traversal, weak IDs, info disclosure     |
+| **Baseline Calibration**       | Establishes clean timing/size baselines before anomaly detection                                                 |
 
 ### How It Works
 
-```
-1. Initial Payloads → Execute baseline payloads (light/medium severity)
-2. Baseline Calibration → Measure normal response times & sizes
-3. Main Fuzzing Loop → Execute all payloads with concurrent execution
-4. Response Analysis → Detect timing anomalies, crashes, structural drift
-5. Feedback Loop → Generate mutations for interesting responses
-6. Mutation Queue → High-priority mutations processed first
-7. Detection → Run vulnerability detectors with engine hints
+```mermaid
+flowchart TD
+    A[MCP Server\nDiscovered Tools] --> B[Initial Payloads\nlight · medium severity]
+    B --> C[Baseline Calibration\nnormal timing & size]
+    C --> D[Main Fuzzing Loop\nconcurrent execution]
+    D --> E{Response\nAnalysis}
+    E -->|timing anomaly\ncrash · error| F[Feedback Loop\ngenerate mutations]
+    E -->|normal| G[Next Payload]
+    F --> H[Mutation Queue\nhigh-priority first]
+    H --> D
+    D --> I[Vulnerability Detectors\n10 detectors · engine hints]
+    I --> J[Findings Report\nSQL · XSS · Prompt · Timing\nPath Traversal · Jailbreak]
 ```
 
 ### Intelligent Mutations
@@ -700,13 +723,14 @@ The proxy command creates a **transparent MCP proxy** with **Security Gateway v1
 
 **Real-time threat detection with progressive analysis:**
 
-| Layer | Type | Latency | Detection Method | When Used |
-|-------|------|---------|------------------|-----------|
-| **Layer 1: Fast Rules** | Static patterns | <10ms | Regex + hardcoded patterns | Every request (SQL/CMD injection, path traversal) |
-| **Layer 2: Suspicious Rules** | Heuristic analysis | <50ms | Scoring + anomaly detection | If Layer 1 passes (tool chaining, excessive permissions) |
-| **Layer 3: LLM Rules** | Deep semantic | 500-2000ms | AI-powered context analysis | Opt-in only (semantic attacks, novel threats) |
+| Layer                         | Type               | Latency    | Detection Method            | When Used                                                |
+| ----------------------------- | ------------------ | ---------- | --------------------------- | -------------------------------------------------------- |
+| **Layer 1: Fast Rules**       | Static patterns    | <10ms      | Regex + hardcoded patterns  | Every request (SQL/CMD injection, path traversal)        |
+| **Layer 2: Suspicious Rules** | Heuristic analysis | <50ms      | Scoring + anomaly detection | If Layer 1 passes (tool chaining, excessive permissions) |
+| **Layer 3: LLM Rules**        | Deep semantic      | 500-2000ms | AI-powered context analysis | Opt-in only (semantic attacks, novel threats)            |
 
 **Key Features:**
+
 - **Explainable Blocking** - Every rejection includes: rule ID, severity, CWE, OWASP mapping, remediation steps
 - **Cache-First Strategy** - SHA-256 hashing with 60s TTL and LRU eviction (1000 entries)
 - **Client-Aware State** - Isolated panic tracking per client (prevents DoS from malicious actors)
@@ -715,13 +739,14 @@ The proxy command creates a **transparent MCP proxy** with **Security Gateway v1
 
 **Progressive backoff for HTTP 429 (rate limit) errors:**
 
-| Strike | Backoff | Trigger | Behavior |
-|--------|---------|---------|----------|
-| **Strike 1** | 30 seconds | First 429 error | Client blocked for 30s, auto-resume after |
-| **Strike 2** | 60 seconds | Second 429 within session | Client blocked for 60s, warning logged |
-| **Strike 3** | Permanent | Third 429 within session | **PANIC MODE** - client permanently blocked until proxy restart |
+| Strike       | Backoff    | Trigger                   | Behavior                                                        |
+| ------------ | ---------- | ------------------------- | --------------------------------------------------------------- |
+| **Strike 1** | 30 seconds | First 429 error           | Client blocked for 30s, auto-resume after                       |
+| **Strike 2** | 60 seconds | Second 429 within session | Client blocked for 60s, warning logged                          |
+| **Strike 3** | Permanent  | Third 429 within session  | **PANIC MODE** - client permanently blocked until proxy restart |
 
 **Client Identification Priority:**
+
 1. `x-client-id` header (explicit)
 2. `x-forwarded-for` header (proxy chain)
 3. `remoteAddress` (direct connection)
@@ -729,13 +754,13 @@ The proxy command creates a **transparent MCP proxy** with **Security Gateway v1
 
 ### 5 Built-in Guardrails
 
-| Guardrail | Protection | Example |
-|-----------|------------|---------|
-| **HTTPS Enforcer** | Upgrades HTTP → HTTPS for external requests | `http://api.com` → `https://api.com` |
-| **Input Sanitizer** | Strips malicious patterns from parameters | Removes `<script>`, SQL keywords, shell metacharacters |
-| **PII Redactor** | Redacts sensitive data from responses | Masks SSN, credit cards, API keys in logs |
-| **Rate Limiter** | Prevents abuse with token bucket algorithm | Max 100 requests/min per tool (configurable) |
-| **Sensitive Command Blocker** | Blocks dangerous MCP methods | Prevents `system.exec`, `file.delete`, `db.drop` |
+| Guardrail                     | Protection                                  | Example                                                |
+| ----------------------------- | ------------------------------------------- | ------------------------------------------------------ |
+| **HTTPS Enforcer**            | Upgrades HTTP → HTTPS for external requests | `http://api.com` → `https://api.com`                   |
+| **Input Sanitizer**           | Strips malicious patterns from parameters   | Removes `<script>`, SQL keywords, shell metacharacters |
+| **PII Redactor**              | Redacts sensitive data from responses       | Masks SSN, credit cards, API keys in logs              |
+| **Rate Limiter**              | Prevents abuse with token bucket algorithm  | Max 100 requests/min per tool (configurable)           |
+| **Sensitive Command Blocker** | Blocks dangerous MCP methods                | Prevents `system.exec`, `file.delete`, `db.drop`       |
 
 ### Usage
 
@@ -760,39 +785,35 @@ mcp-verify proxy "node server.js" \
 
 ### Proxy Flow with Security Gateway
 
-```
-Client Request (per client ID)
-    ↓
-┌─────────────────────────────────────┐
-│ Panic Stop Check                    │ → Verify client not in backoff/panic
-├─────────────────────────────────────┤
-│ Security Gateway Layer 1 (Fast)     │ → <10ms pattern matching
-├─────────────────────────────────────┤
-│ Security Gateway Layer 2 (Suspect)  │ → <50ms heuristic scoring
-├─────────────────────────────────────┤
-│ Security Gateway Layer 3 (LLM)*     │ → 500-2000ms AI analysis (opt-in)
-├─────────────────────────────────────┤
-│ HTTPS Enforcer                      │ → Upgrade insecure URLs
-├─────────────────────────────────────┤
-│ Rate Limiter                        │ → Check token bucket
-├─────────────────────────────────────┤
-│ Sensitive Command Blocker           │ → Reject dangerous methods
-├─────────────────────────────────────┤
-│ Input Sanitizer                     │ → Clean parameters
-├─────────────────────────────────────┤
-│ Forward to Upstream MCP Server      │
-├─────────────────────────────────────┤
-│ 429 Detection & Strike Tracking     │ → Increment strikes on rate limit
-├─────────────────────────────────────┤
-│ PII Redactor                        │ → Mask sensitive response data
-└─────────────────────────────────────┘
-    ↓
-Client Response (with security metadata)
+```mermaid
+flowchart TD
+    REQ([Client Request\nper client ID]) --> PS{Panic Stop\nCheck}
+    PS -->|blocked / panic| DENY1([❌ 429 Blocked])
+    PS -->|ok| L1{Layer 1\nFast Rules\n<10ms}
+    L1 -->|blocked| DENY2([❌ Rejected\nwith explanation])
+    L1 -->|pass| L2{Layer 2\nHeuristic\n<50ms}
+    L2 -->|blocked| DENY3([❌ Rejected\nwith explanation])
+    L2 -->|pass| L3{Layer 3\nLLM*\n500-2000ms}
+    L3 -->|blocked| DENY4([❌ Rejected\nwith explanation])
+    L3 -->|pass| GW[HTTPS Enforcer\nRate Limiter\nCommand Blocker\nInput Sanitizer]
+    GW --> UP[Upstream MCP Server]
+    UP --> STR[429 Strike Tracker]
+    STR -->|strike 3| PANIC([🚨 PANIC MODE\npermanent block])
+    STR -->|ok| PII[PII Redactor]
+    PII --> RES([✅ Client Response\n+ security metadata])
 
-* Layer 3 disabled by default (use --enable-llm-layer to activate)
+    style DENY1 fill:#ff4444,color:#fff
+    style DENY2 fill:#ff4444,color:#fff
+    style DENY3 fill:#ff4444,color:#fff
+    style DENY4 fill:#ff4444,color:#fff
+    style PANIC fill:#ff4444,color:#fff
+    style RES fill:#22aa44,color:#fff
 ```
+
+> \* Layer 3 (LLM) disabled by default — enable with `--enable-llm-layer`
 
 **Use Cases:**
+
 - **Production Security** - 3-layer defense for untrusted MCP servers
 - **DoS Prevention** - Client-aware panic stop prevents resource exhaustion
 - **Compliance Auditing** - Full audit trail with explainable blocking
@@ -807,15 +828,15 @@ mcp-verify includes a **full MCP server implementation** that exposes validation
 
 ### 7 Available Tools
 
-| Tool | Purpose | Input | Output |
-|------|---------|-------|--------|
-| `validateServer` | Full security validation | `{ serverPath: string }` | Validation report with scores |
-| `scanSecurity` | Security-only scan | `{ serverPath: string }` | Security findings array |
-| `analyzeQuality` | LLM semantic analysis | `{ serverPath, provider }` | Quality report |
-| `generateReport` | Custom report generation | `{ format, data }` | Formatted report (JSON/HTML/MD) |
-| `listInstalledServers` | Enumerate MCP servers | `{ configPath? }` | List of servers from config |
-| `selfAudit` | Validate mcp-verify itself | `{}` | Self-validation report |
-| `compareServers` | Baseline comparison | `{ current, baseline }` | Diff report |
+| Tool                   | Purpose                    | Input                      | Output                          |
+| ---------------------- | -------------------------- | -------------------------- | ------------------------------- |
+| `validateServer`       | Full security validation   | `{ serverPath: string }`   | Validation report with scores   |
+| `scanSecurity`         | Security-only scan         | `{ serverPath: string }`   | Security findings array         |
+| `analyzeQuality`       | LLM semantic analysis      | `{ serverPath, provider }` | Quality report                  |
+| `generateReport`       | Custom report generation   | `{ format, data }`         | Formatted report (JSON/HTML/MD) |
+| `listInstalledServers` | Enumerate MCP servers      | `{ configPath? }`          | List of servers from config     |
+| `selfAudit`            | Validate mcp-verify itself | `{}`                       | Self-validation report          |
+| `compareServers`       | Baseline comparison        | `{ current, baseline }`    | Diff report                     |
 
 ### Setup (Claude Desktop)
 
@@ -919,12 +940,14 @@ execute_query:45:SEC-001
 ```
 
 **Supported formats:**
+
 - `SEC-001` - Ignore rule globally
 - `*.test.js` - Ignore pattern (glob)
 - `tool_name` - Ignore all findings in tool
 - `tool_name:line:SEC-001` - Ignore specific location
 
 **Example use cases:**
+
 - ✅ Legitimate SQL/command execution tools
 - ✅ Test fixtures with intentional vulnerabilities
 - ✅ Admin tools with elevated permissions
@@ -956,6 +979,7 @@ mcp-verify validate "node server.js" --llm openai:gpt-4o-mini
 ```
 
 **LLM Analysis Detects**:
+
 - Ambiguous tool descriptions
 - Missing parameter documentation
 - Inconsistent naming conventions
@@ -969,14 +993,15 @@ mcp-verify validate "node server.js" --llm openai:gpt-4o-mini
 
 mcp-verify generates multiple report formats:
 
-| Format | Purpose | Location |
-|--------|---------|----------|
-| **JSON** | CI/CD, programmatic access | `./reportes/json/` |
-| **HTML** | Human-readable dashboard | `./reportes/html/` |
-| **Markdown** | Documentation, README | `./reportes/md/` |
-| **SARIF** | GitHub Code Scanning | `./reportes/sarif/` |
+| Format       | Purpose                    | Location                                   |
+| ------------ | -------------------------- | ------------------------------------------ |
+| **JSON**     | CI/CD, programmatic access | `./reports/YYYY-MM-DD/validate/json/`      |
+| **HTML**     | Human-readable dashboard   | `./reports/YYYY-MM-DD/validate/html/`      |
+| **Markdown** | Documentation, README      | `./reports/YYYY-MM-DD/validate/markdown/`  |
+| **SARIF**    | GitHub Code Scanning       | `./reports/YYYY-MM-DD/validate/sarif/`     |
 
 **Example HTML Report**:
+
 - Security score with visual indicators
 - Vulnerability list with severity colors
 - Quality metrics and recommendations
@@ -988,7 +1013,7 @@ mcp-verify generates multiple report formats:
 
 ### ✅ Stable (Production-Ready)
 
-- **Static Analysis** - 60 security rules across 6 threat categories (OWASP, MCP, LLM Top 10, Multi-Agent, Compliance, Weaponization)
+- **Static Analysis** - 61 security rules across 6 threat categories (OWASP, MCP, LLM Top 10, Multi-Agent, Compliance, Weaponization)
 - **Smart Fuzzer v1.0** - Feedback loop, 12 mutation strategies, fingerprinting
 - **Protocol Validation** - JSON-RPC 2.0 + MCP 2024-11-05 compliance
 - **Interactive Shell** - Multi-context workspaces, autocomplete, history, profiles
@@ -1007,6 +1032,7 @@ mcp-verify generates multiple report formats:
 - **Web Dashboard** - Real-time monitoring ([experimental](./apps/web-dashboard/README.md))
 
 Try experimental features:
+
 ```bash
 # Proxy with guardrails
 mcp-verify proxy "http://localhost:3000"
@@ -1026,6 +1052,7 @@ code --install-extension ./mcp-verify-1.0.0.vsix
 ### Common Issues
 
 **"Connection refused"**
+
 ```bash
 # Check if server is running
 ps aux | grep node
@@ -1035,6 +1062,7 @@ mcp-verify doctor "node server.js"
 ```
 
 **"ANTHROPIC_API_KEY not found"**
+
 ```bash
 # Set API key
 export ANTHROPIC_API_KEY=sk-ant-...
@@ -1045,6 +1073,7 @@ mcp-verify validate "node server.js" --llm ollama:llama3.2
 ```
 
 **"Deno not found" (for --sandbox)**
+
 ```bash
 # Install Deno
 curl -fsSL https://deno.land/install.sh | sh
@@ -1061,47 +1090,47 @@ mcp-verify validate "node server.js"  # Works without Deno
 
 ### For Users
 
-| Guide | Purpose |
-|-------|---------|
-| **[COMMANDS.md](./COMMANDS.md)** | **Full CLI Command Reference** (Flags, Options, Usage) |
-| **[Interactive Shell](#-interactive-shell)** | Shell features, autocomplete, history, contexts |
-| **[Multi-Context Workspaces](#-multi-context-workspaces)** | Managing dev/staging/prod configurations |
-| **[Security Profiles](#-security-profiles)** | light, balanced, aggressive profiles |
-| **[Smart Fuzzer](#-smart-fuzzer-v10)** | Feedback loop, mutations, fingerprinting |
-| **[Security Proxy](#-security-proxy-with-guardrails)** | 5 runtime guardrails |
-| **[MCP Server Tool](#-mcp-server-tool-for-ai-agents)** | 7 tools for AI agents like Claude |
-| **[guides/EXAMPLES.md](./guides/EXAMPLES.md)** | Copy-paste commands for all scenarios |
-| **[guides/PROFESSIONAL_VALIDATION.md](./guides/PROFESSIONAL_VALIDATION.md)** | Real-world validation example (enterprise guide) |
-| **[guides/LLM_SETUP.md](./guides/LLM_SETUP.md)** | Configure Gemini, Anthropic, Ollama, OpenAI |
-| **[guides/CI_CD.md](./guides/CI_CD.md)** | GitHub Actions, GitLab CI, CircleCI |
-| **[SECURITY_SCORING.md](./SECURITY_SCORING.md)** | Scoring algorithm & acceptable risk levels |
+| Guide                                                                        | Purpose                                                |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------ |
+| **[COMMANDS.md](./COMMANDS.md)**                                             | **Full CLI Command Reference** (Flags, Options, Usage) |
+| **[Interactive Shell](#-interactive-shell)**                                 | Shell features, autocomplete, history, contexts        |
+| **[Multi-Context Workspaces](#-multi-context-workspaces)**                   | Managing dev/staging/prod configurations               |
+| **[Security Profiles](#-security-profiles)**                                 | light, balanced, aggressive profiles                   |
+| **[Smart Fuzzer](#-smart-fuzzer-v10)**                                       | Feedback loop, mutations, fingerprinting               |
+| **[Security Proxy](#-security-proxy-with-guardrails)**                       | 5 runtime guardrails                                   |
+| **[MCP Server Tool](#-mcp-server-tool-for-ai-agents)**                       | 7 tools for AI agents like Claude                      |
+| **[guides/EXAMPLES.md](./guides/EXAMPLES.md)**                               | Copy-paste commands for all scenarios                  |
+| **[guides/PROFESSIONAL_VALIDATION.md](./guides/PROFESSIONAL_VALIDATION.md)** | Real-world validation example (enterprise guide)       |
+| **[guides/LLM_SETUP.md](./guides/LLM_SETUP.md)**                             | Configure Gemini, Anthropic, Ollama, OpenAI            |
+| **[guides/CI_CD.md](./guides/CI_CD.md)**                                     | GitHub Actions, GitLab CI, CircleCI                    |
+| **[SECURITY_SCORING.md](./SECURITY_SCORING.md)**                             | Scoring algorithm & acceptable risk levels             |
 
 ### For Contributors
 
-| Guide | Purpose |
-|-------|---------|
-| **[DEVELOPMENT.md](./DEVELOPMENT.md)** | Local setup, testing, debugging |
-| **[CODE_MAP.md](CODE_MAP.md)** | Codebase navigation & "I want to..." guide |
-| **[ARCHITECTURE.md](./ARCHITECTURE.md)** | System design & architecture decisions |
-| **[Project Structure](#-project-structure-monorepo)** | Monorepo organization (apps/ + libs/) |
-| **[CONTRIBUTING.md](./CONTRIBUTING.md)** | Contribution guidelines |
+| Guide                                                 | Purpose                                    |
+| ----------------------------------------------------- | ------------------------------------------ |
+| **[DEVELOPMENT.md](./DEVELOPMENT.md)**                | Local setup, testing, debugging            |
+| **[CODE_MAP.md](CODE_MAP.md)**                        | Codebase navigation & "I want to..." guide |
+| **[ARCHITECTURE.md](./ARCHITECTURE.md)**              | System design & architecture decisions     |
+| **[Project Structure](#-project-structure-monorepo)** | Monorepo organization (apps/ + libs/)      |
+| **[CONTRIBUTING.md](./CONTRIBUTING.md)**              | Contribution guidelines                    |
 
 ### Module Documentation (for AI Agents & Developers)
 
-| Module | Purpose | For |
-|--------|---------|-----|
-| **[CLAUDE.md](./CLAUDE.md)** | **Project overview** - Read this first! | AI Agents |
-| **[apps/CLAUDE.md](apps/CLAUDE.md)** | Apps overview (CLI, MCP Server, VSCode, Web) | AI Agents |
-| **[apps/cli-verifier/CLAUDE.md](./apps/cli-verifier/CLAUDE.md)** | Interactive shell architecture, commands | AI Agents |
-| **[apps/mcp-server/CLAUDE.md](./apps/mcp-server/CLAUDE.md)** | 7 MCP tools, LLM formatting | AI Agents |
-| **[apps/vscode-extension/CLAUDE.md](./apps/vscode-extension/CLAUDE.md)** | Extension architecture, providers, views | AI Agents |
-| **[libs/CLAUDE.md](./libs/CLAUDE.md)** | Libraries overview | AI Agents |
-| **[libs/core/CLAUDE.md](./libs/core/CLAUDE.md)** | Domain logic, 60 security rules, reporting | AI Agents |
-| **[libs/fuzzer/CLAUDE.md](./libs/fuzzer/CLAUDE.md)** | Smart Fuzzer v1.0 internals | AI Agents |
-| **[libs/shared/CLAUDE.md](libs/shared/CLAUDE.md)** | i18n, CLI helpers, utilities | AI Agents |
-| **[libs/README.md](./libs/README.md)** | Library architecture & dependency rules | Developers |
-| **[tools/README.md](./tools/README.md)** | Mock servers & development scripts | Developers |
-| **[apps/web-dashboard/README.md](./apps/web-dashboard/README.md)** | Web dashboard setup & usage | Developers |
+| Module                                                                   | Purpose                                      | For        |
+| ------------------------------------------------------------------------ | -------------------------------------------- | ---------- |
+| **[CLAUDE.md](./CLAUDE.md)**                                             | **Project overview** - Read this first!      | AI Agents  |
+| **[apps/CLAUDE.md](apps/CLAUDE.md)**                                     | Apps overview (CLI, MCP Server, VSCode, Web) | AI Agents  |
+| **[apps/cli-verifier/CLAUDE.md](./apps/cli-verifier/CLAUDE.md)**         | Interactive shell architecture, commands     | AI Agents  |
+| **[apps/mcp-server/CLAUDE.md](./apps/mcp-server/CLAUDE.md)**             | 7 MCP tools, LLM formatting                  | AI Agents  |
+| **[apps/vscode-extension/CLAUDE.md](./apps/vscode-extension/CLAUDE.md)** | Extension architecture, providers, views     | AI Agents  |
+| **[libs/CLAUDE.md](./libs/CLAUDE.md)**                                   | Libraries overview                           | AI Agents  |
+| **[libs/core/CLAUDE.md](./libs/core/CLAUDE.md)**                         | Domain logic, 60 security rules, reporting   | AI Agents  |
+| **[libs/fuzzer/CLAUDE.md](./libs/fuzzer/CLAUDE.md)**                     | Smart Fuzzer v1.0 internals                  | AI Agents  |
+| **[libs/shared/CLAUDE.md](libs/shared/CLAUDE.md)**                       | i18n, CLI helpers, utilities                 | AI Agents  |
+| **[libs/README.md](./libs/README.md)**                                   | Library architecture & dependency rules      | Developers |
+| **[tools/README.md](./tools/README.md)**                                 | Mock servers & development scripts           | Developers |
+| **[apps/web-dashboard/README.md](./apps/web-dashboard/README.md)**       | Web dashboard setup & usage                  | Developers |
 
 ---
 
@@ -1121,6 +1150,7 @@ mcp-verify validate "node server.js"  # Works without Deno
 ❌ **Advanced Cryptographic Issues** - Basic checks only
 
 mcp-verify is a **development tool** that helps catch vulnerabilities early. It is **not** a replacement for:
+
 - Security audits by professionals
 - Penetration testing
 - Runtime application security (RASP)
@@ -1168,13 +1198,13 @@ While mcp-verify automates detection of common technical vulnerabilities (SQL in
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ Layer 1: mcp-verify (Automated Technical Scanning)     │ ← You are here
+│ Layer 1: mcp-verify (Automated Technical Scanning)      │ ← You are here
 ├─────────────────────────────────────────────────────────┤
-│ Layer 2: Manual Code Review (Business Logic)           │
+│ Layer 2: Manual Code Review (Business Logic)            │
 ├─────────────────────────────────────────────────────────┤
-│ Layer 3: Penetration Testing (Attack Simulation)       │
+│ Layer 3: Penetration Testing (Attack Simulation)        │
 ├─────────────────────────────────────────────────────────┤
-│ Layer 4: Runtime Protection (WAF, RASP)                │
+│ Layer 4: Runtime Protection (WAF, RASP)                 │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -1197,17 +1227,20 @@ Response: { error: 'Unauthorized', code: 403 }
 ```
 
 **Skills Required**:
+
 - Understanding of OWASP Top 10 vulnerabilities
 - Ability to read JSON-RPC responses and identify error handling
 - Knowledge of attack vectors (SSRF, XSS, injection techniques)
 - Experience triaging security findings
 
 **Recommendation**:
+
 - Have a **security engineer review all CRITICAL findings** before escalating
 - Use mcp-verify in **CI/CD to block regressions**, not as final security approval
 - **Train your team** on common vulnerability patterns before deploying mcp-verify
 
 **Resources**:
+
 - [OWASP Web Security Testing Guide](https://owasp.org/www-project-web-security-testing-guide/)
 - [SECURITY_SCORING.md](./SECURITY_SCORING.md) - Understanding mcp-verify's scoring algorithm
 
@@ -1218,6 +1251,7 @@ Response: { error: 'Unauthorized', code: 403 }
 Despite built-in safety mechanisms (blacklist filtering, static analysis), mcp-verify executes **untrusted MCP servers** and sends **potentially malicious payloads**. Defense-in-depth requires isolation.
 
 **Risks Without Isolation**:
+
 - Malicious MCP server could access your filesystem
 - Compromised server could exfiltrate environment variables (API keys, credentials)
 - Fuzzing payloads could trigger unintended actions (if server has bugs)
@@ -1225,6 +1259,7 @@ Despite built-in safety mechanisms (blacklist filtering, static analysis), mcp-v
 **Recommended Isolation Strategies**:
 
 **Option 1: Docker (Recommended for CI/CD)**
+
 ```bash
 # Create isolated container
 docker run -it --rm \
@@ -1239,6 +1274,7 @@ mcp-verify validate "node server.js"
 ```
 
 **Option 2: Dedicated VM (Recommended for Manual Testing)**
+
 ```bash
 # Use throwaway cloud VM
 # AWS EC2, DigitalOcean Droplet, etc.
@@ -1246,6 +1282,7 @@ mcp-verify validate "node server.js"
 ```
 
 **Option 3: Deno Sandbox (Built-in, Limited)**
+
 ```bash
 # mcp-verify includes Deno sandbox (experimental)
 mcp-verify validate "node server.js" --sandbox
@@ -1255,12 +1292,14 @@ mcp-verify validate "node server.js" --sandbox
 ```
 
 **Minimum Isolation Requirements**:
+
 - ✅ Dedicated user account (non-root, limited permissions)
 - ✅ No sensitive environment variables (`AWS_SECRET_ACCESS_KEY`, etc.)
 - ✅ No access to production databases
 - ✅ Separate network segment (firewall rules)
 
 **CI/CD Example (GitHub Actions)**:
+
 ```yaml
 # Safe: Runs in ephemeral GitHub-hosted runner
 - name: Security Scan
@@ -1277,27 +1316,31 @@ mcp-verify validate "node server.js" --sandbox
 A score of **100/100 does NOT mean "perfectly secure"**. It means **"no known vulnerability patterns detected in static analysis"**.
 
 **What Scores Mean**:
+
 - **95-100**: Low attack surface (static analysis passed)
 - **70-94**: Some patterns detected (review findings)
 - **40-69**: Multiple issues (remediation needed)
 - **0-39**: Critical patterns (do NOT deploy)
 
 **Scores Cannot Detect**:
+
 - Runtime vulnerabilities (race conditions, memory leaks)
 - Business logic flaws (authorization bypass)
 - Zero-day exploits
 - Social engineering
 
 **Example**: A server with score 100 could still be vulnerable to:
+
 ```typescript
 // Business logic vulnerability (NOT detected by mcp-verify)
-if (user.role === 'analyst' && action === 'deleteAllUsers') {
+if (user.role === "analyst" && action === "deleteAllUsers") {
   // ❌ Analyst shouldn't have this permission
-  database.deleteAll('users');
+  database.deleteAll("users");
 }
 ```
 
 **Recommendation**: Treat scores as **trend indicators**:
+
 ```bash
 # Baseline: Score = 95
 mcp-verify validate "node server.js" --save-baseline baseline.json
@@ -1336,6 +1379,7 @@ mcp-verify validate "go run server.go" --no-sandbox
 **Impact**: Logs disappear after process exits unless you redirect stderr manually.
 
 **Workaround**:
+
 ```bash
 # Redirect stderr to file
 mcp-verify validate "node server.js" 2> validation.log
@@ -1359,6 +1403,7 @@ npm test
 **Impact**: Sandbox integration tests are skipped in CI/CD if Deno is unavailable.
 
 **Workaround**: Install Deno for complete test coverage:
+
 ```bash
 curl -fsSL https://deno.land/install.sh | sh  # Linux/macOS
 irm https://deno.land/install.ps1 | iex       # Windows
@@ -1367,6 +1412,7 @@ irm https://deno.land/install.ps1 | iex       # Windows
 ### 4. LLM Semantic Analysis (Optional Feature)
 
 **Limitation**: LLM semantic analysis requires:
+
 - Google API key (FREE tier available!) OR
 - API keys (Anthropic or OpenAI) OR
 - Local Ollama installation
@@ -1374,6 +1420,7 @@ irm https://deno.land/install.ps1 | iex       # Windows
 **Impact**: Without LLM setup, you get static analysis only (still comprehensive with 60 security rules across 6 threat categories).
 
 **Workaround**: Use free Google Gemini:
+
 ```bash
 # Get free API key from https://aistudio.google.com/apikey
 export GOOGLE_API_KEY=AIza...
@@ -1383,6 +1430,7 @@ mcp-verify validate "node server.js" --llm gemini:gemini-2.5-flash
 ```
 
 Or use free local Ollama:
+
 ```bash
 # Install Ollama (https://ollama.ai)
 ollama pull llama3.2
@@ -1398,6 +1446,7 @@ mcp-verify validate "node server.js" --llm ollama:llama3.2
 **Limitation**: SARIF reports require explicit `--format sarif` flag.
 
 **Expected Behavior**:
+
 ```bash
 # Always generated: JSON, HTML, Markdown
 mcp-verify validate "node server.js"
@@ -1412,7 +1461,7 @@ mcp-verify validate "node server.js" --format sarif
 
 ✅ **Multi-platform**: Windows, Linux, macOS fully supported
 ✅ **Protocol Support**: Stdio, HTTP, SSE transports work reliably
-✅ **Static Analysis**: 60 security rules across 6 threat categories, 100+ test cases, production-ready
+✅ **Static Analysis**: 61 security rules across 6 threat categories, 100+ test cases, production-ready
 ✅ **CI/CD Integration**: Exit codes, baseline comparison, regression detection
 ✅ **Report Formats**: JSON, HTML, Markdown always generated
 ✅ **Internationalization**: English and Spanish fully supported
@@ -1438,18 +1487,14 @@ We welcome contributions! Whether you're:
 
 ### Quick Start for Contributors
 
-```bash
-# Clone and setup
-git clone https://github.com/FinkTech/mcp-verify.git
-cd mcp-verify
-npm install
-npm run build
+Follow [Installation → Method 1](#method-1-from-source-recommended-) to build from source, then:
 
+```bash
 # Run tests
 npm test
 
-# Test locally
-mcp-verify validate "node tools/mocks/servers/simple-server.js"
+# Test locally against a mock server
+node dist/mcp-verify.js validate "node tools/mocks/servers/simple-server.js"
 ```
 
 ### Before Submitting PR
@@ -1465,20 +1510,9 @@ mcp-verify validate "node tools/mocks/servers/simple-server.js"
 🗺️ **Codebase Navigation**: [CODE_MAP.md](CODE_MAP.md)
 🏗️ **Architecture**: [ARCHITECTURE.md](./ARCHITECTURE.md)
 
----
+### 🤖 Future: AI-Powered Code Review
 
-## 🤖 Future: AI-Powered Code Review
-
-As MCP Verify grows, we're exploring AI-powered code review automation inspired by [OpenClaw](https://steipete.me/posts/2026/openclaw) by Peter Steinberger. OpenClaw demonstrated how autonomous AI agents can streamline development workflows at scale.
-
-**Vision:** If the project reaches sufficient scale and contributor volume, we plan to develop specialized review agents for:
-- Architecture and code standards validation
-- License compliance scanning
-- Security rule correctness verification
-
-**Current State:** All code review is done manually by maintainers through GitHub's standard PR process. We run periodic quality audits using internal tooling on scheduled intervals.
-
-This approach ensures we maintain high quality standards while keeping the contribution process accessible for developers today, with room to scale intelligently as the project grows.
+As MCP Verify grows, we're exploring AI-powered code review automation. The vision: specialized review agents for architecture validation, license compliance scanning, and security rule correctness verification. **Current state:** all code review is done manually by maintainers. We run periodic quality audits using internal tooling, with room to scale intelligently as the project grows.
 
 ---
 

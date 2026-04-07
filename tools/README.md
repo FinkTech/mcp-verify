@@ -61,21 +61,25 @@ Mock servers simulate real MCP servers for testing mcp-verify functionality.
 **Purpose**: Clean reference implementation
 
 **Characteristics**:
+
 - Follows all MCP protocol specifications
 - Well-documented tools with proper schemas
 - No security vulnerabilities
 - Excellent quality
 
 **Expected Scores**:
+
 - **Security**: 95-100% (Excellent)
 - **Quality**: 95-100% (Excellent)
 - **Status**: ✅ VALID
 
 **Tools**:
+
 - `get_weather` - Get weather for a location
 - `calculate` - Perform math operations
 
 **Usage**:
+
 ```bash
 # Test validation
 mcp-verify validate "node tools/mocks/servers/simple-server.js"
@@ -93,6 +97,7 @@ mcp-verify validate "node tools/mocks/servers/simple-server.js"
 **Purpose**: Test security rule detection
 
 **Characteristics**:
+
 - Contains **intentional** security vulnerabilities
 - Protocol-compliant (schema valid)
 - Used for regression testing security rules
@@ -110,12 +115,14 @@ mcp-verify validate "node tools/mocks/servers/simple-server.js"
 | Insecure Deserialization | SEC-007 | High |
 
 **Expected Scores**:
+
 - **Security**: 20-40% (LOW)
 - **Critical Findings**: 4+
 - **High Findings**: 3+
 - **Status**: ❌ INVALID
 
 **Usage**:
+
 ```bash
 # Test security detection
 mcp-verify validate "node tools/mocks/servers/vulnerable-server.js"
@@ -128,6 +135,7 @@ mcp-verify validate "node tools/mocks/servers/vulnerable-server.js"
 ```
 
 **Use Cases**:
+
 - Verify SEC-001 through SEC-010 rules work
 - Test SARIF report generation
 - CI/CD integration testing
@@ -140,12 +148,14 @@ mcp-verify validate "node tools/mocks/servers/vulnerable-server.js"
 **Purpose**: Test protocol validation
 
 **Characteristics**:
+
 - Contains MCP protocol violations
 - Invalid JSON-RPC responses
 - Schema errors
 - Used for protocol compliance testing
 
 **Issues**:
+
 - Missing required fields (tool names, descriptions)
 - Invalid JSON-RPC responses
 - Wrong protocol version (`2023-01-01` instead of `2024-11-05`)
@@ -154,11 +164,13 @@ mcp-verify validate "node tools/mocks/servers/vulnerable-server.js"
 - Inconsistent response structures
 
 **Expected Results**:
+
 - **Schema Valid**: ❌ false
 - **Protocol Compliance**: Failed
 - **Status**: ❌ INVALID
 
 **Usage**:
+
 ```bash
 # Test protocol validation
 mcp-verify validate "node tools/mocks/servers/broken-server.js"
@@ -225,11 +237,13 @@ echo $?  # Expected: 1 (validation failure)
 **Purpose**: Bundle application for distribution
 
 **Usage**:
+
 ```bash
 node tools/scripts/bundle.js
 ```
 
 **What it does**:
+
 - Bundles CLI application
 - Minifies code
 - Creates distributable package
@@ -241,11 +255,13 @@ node tools/scripts/bundle.js
 **Purpose**: Generate HTML preview of report
 
 **Usage**:
+
 ```bash
 npx tsx tools/scripts/generate-report-preview.ts
 ```
 
 **What it does**:
+
 - Loads sample report JSON
 - Generates HTML preview
 - Opens in browser for visual testing
@@ -267,16 +283,19 @@ Translation management scripts for maintaining English ↔ Spanish translations.
 **Purpose**: Extract translatable strings from code
 
 **Usage**:
+
 ```bash
 node tools/scripts/extract-i18n-strings.js
 ```
 
 **What it does**:
+
 - Scans codebase for `t('key')` calls
 - Lists all i18n keys used
 - Identifies missing translations
 
 **Output**:
+
 ```
 Found keys:
 - validation_complete
@@ -294,16 +313,19 @@ Missing translations: 5
 **Purpose**: Find hardcoded strings that should use i18n
 
 **Usage**:
+
 ```bash
 node tools/scripts/i18n_finder.js
 ```
 
 **What it does**:
+
 - Scans source files for hardcoded strings
 - Identifies user-facing messages
 - Suggests keys for translation
 
 **Output**:
+
 ```
 Found hardcoded strings:
 
@@ -323,6 +345,7 @@ Suggest: t('sql_injection_detected')
 **Purpose**: Remove unused translation keys
 
 **Usage**:
+
 ```bash
 # Version 1 (basic cleanup)
 node tools/scripts/clean-i18n.js
@@ -332,11 +355,13 @@ node tools/scripts/clean-i18n-v2.js
 ```
 
 **What it does**:
+
 - Scans codebase for `t('key')` usage
 - Identifies unused keys in `i18n.ts`
 - Removes orphaned translations
 
 **Output**:
+
 ```
 Scanning codebase for i18n usage...
 Found 245 used keys
@@ -352,17 +377,20 @@ Removing 67 unused keys...
 **Purpose**: Verify translation coverage and consistency
 
 **Usage**:
+
 ```bash
 node tools/scripts/verify_i18n.js
 ```
 
 **What it does**:
+
 - Checks all keys have English translation
 - Checks all keys have Spanish translation
 - Validates parameter substitution consistency
 - Reports coverage percentage
 
 **Output**:
+
 ```
 Checking i18n coverage...
 
@@ -386,6 +414,7 @@ Parameter mismatch:
 **Purpose**: Automatically translate missing keys using LLM
 
 **Usage**:
+
 ```bash
 # Using Gemini
 GEMINI_API_KEY=xxx node tools/scripts/translate-with-gemini.js
@@ -395,12 +424,14 @@ ANTHROPIC_API_KEY=xxx node tools/scripts/translate-with-llm.js
 ```
 
 **What it does**:
+
 - Identifies missing translations
 - Uses LLM to translate keys
 - Preserves parameter placeholders (`{name}`, etc.)
 - Updates `i18n.ts` automatically
 
 **Output**:
+
 ```
 Found 7 keys to translate (EN → ES)...
 
@@ -423,11 +454,13 @@ ES: "⚠️  --semantic-check está obsoleto..."
 **Purpose**: Review and finalize auto-translated keys
 
 **Usage**:
+
 ```bash
 node tools/scripts/translate/finalize_translation.js
 ```
 
 **What it does**:
+
 - Shows auto-translated keys for review
 - Allows manual correction
 - Commits final translations
@@ -455,54 +488,54 @@ chmod +x tools/mocks/servers/my-server.js
 ```javascript
 #!/usr/bin/env node
 
-const readline = require('readline');
+const readline = require("readline");
 
 const serverInfo = {
-  name: 'my-test-server',
-  version: '1.0.0'
+  name: "my-test-server",
+  version: "1.0.0",
 };
 
 const tools = [
   {
-    name: 'my_tool',
-    description: 'Clear description',
+    name: "my_tool",
+    description: "Clear description",
     inputSchema: {
-      type: 'object',
+      type: "object",
       properties: {
-        param: { type: 'string', description: 'Param description' }
+        param: { type: "string", description: "Param description" },
       },
-      required: ['param']
-    }
-  }
+      required: ["param"],
+    },
+  },
 ];
 
 function handleMessage(message) {
   const { jsonrpc, id, method } = message;
 
   switch (method) {
-    case 'initialize':
+    case "initialize":
       return {
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         id,
         result: {
-          protocolVersion: '2024-11-05',
+          protocolVersion: "2024-11-05",
           capabilities: { tools: {} },
-          serverInfo
-        }
+          serverInfo,
+        },
       };
 
-    case 'tools/list':
+    case "tools/list":
       return {
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         id,
-        result: { tools }
+        result: { tools },
       };
 
     default:
       return {
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         id,
-        error: { code: -32601, message: 'Method not found' }
+        error: { code: -32601, message: "Method not found" },
       };
   }
 }
@@ -511,20 +544,22 @@ function handleMessage(message) {
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
-  terminal: false
+  terminal: false,
 });
 
-rl.on('line', (line) => {
+rl.on("line", (line) => {
   try {
     const message = JSON.parse(line);
     const response = handleMessage(message);
     console.log(JSON.stringify(response));
   } catch (error) {
-    console.log(JSON.stringify({
-      jsonrpc: '2.0',
-      id: null,
-      error: { code: -32700, message: 'Parse error' }
-    }));
+    console.log(
+      JSON.stringify({
+        jsonrpc: "2.0",
+        id: null,
+        error: { code: -32700, message: "Parse error" },
+      }),
+    );
   }
 });
 ```
@@ -643,11 +678,11 @@ mcp-verify validate "node tools/mocks/servers/vulnerable-server.js" \
 
 ## 📊 Mock Server Testing Matrix
 
-| Server | Schema | Security | Quality | Exit Code |
-|--------|--------|----------|---------|-----------|
-| **simple-server.js** | ✅ Valid | 95-100 | 95-100 | 0 |
-| **vulnerable-server.js** | ✅ Valid | 20-40 | 60-80 | 2 |
-| **broken-server.js** | ❌ Invalid | N/A | N/A | 1 |
+| Server                   | Schema     | Security | Quality | Exit Code |
+| ------------------------ | ---------- | -------- | ------- | --------- |
+| **simple-server.js**     | ✅ Valid   | 95-100   | 95-100  | 0         |
+| **vulnerable-server.js** | ✅ Valid   | 20-40    | 60-80   | 2         |
+| **broken-server.js**     | ❌ Invalid | N/A      | N/A     | 1         |
 
 ---
 
@@ -706,6 +741,7 @@ npx tsx tools/scripts/generate-report-preview.ts
 
 **Cause**: Node.js version or permissions
 **Solution**:
+
 ```bash
 # Check Node version
 node --version  # Requires 18.x+
@@ -723,6 +759,7 @@ node tools/mocks/servers/simple-server.js
 
 **Cause**: Missing dependencies or syntax errors
 **Solution**:
+
 ```bash
 # Reinstall dependencies
 npm install
@@ -743,12 +780,12 @@ node tools/scripts/verify_i18n.js 2>&1
 
 ```typescript
 // ❌ BAD
-en: 'Server found: {name}'
-es: 'Servidor encontrado: {nombre}'
+en: "Server found: {name}";
+es: "Servidor encontrado: {nombre}";
 
 // ✅ GOOD
-en: 'Server found: {name}'
-es: 'Servidor encontrado: {name}'
+en: "Server found: {name}";
+es: "Servidor encontrado: {name}";
 ```
 
 ---

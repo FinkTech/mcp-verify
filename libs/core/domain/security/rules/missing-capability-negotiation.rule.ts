@@ -24,13 +24,16 @@
  * - MCP Protocol Specification - Capabilities
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
 
 export class MissingCapabilityNegotiationRule implements ISecurityRule {
-  code = 'SEC-048';
-  name = 'Missing Capability Negotiation Validation';
-  severity: 'medium' = 'medium';
+  code = "SEC-048";
+  name = "Missing Capability Negotiation Validation";
+  severity: "medium" = "medium";
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
@@ -40,36 +43,59 @@ export class MissingCapabilityNegotiationRule implements ISecurityRule {
     }
 
     // Keywords indicating dangerous features without capability checks
-    const DANGEROUS_FEATURE_KEYWORDS = ['dangerous', 'unsafe', 'feature', 'capability', 'negotiate', 'client capabilities'];
-    const CAPABILITY_CHECK_KEYWORDS = ['capability', 'negotiate', 'check capability', 'validate capability', 'supports'];
+    const DANGEROUS_FEATURE_KEYWORDS = [
+      "dangerous",
+      "unsafe",
+      "feature",
+      "capability",
+      "negotiate",
+      "client capabilities",
+    ];
+    const CAPABILITY_CHECK_KEYWORDS = [
+      "capability",
+      "negotiate",
+      "check capability",
+      "validate capability",
+      "supports",
+    ];
 
     for (const tool of discovery.tools) {
-      const toolText = `${tool.name} ${tool.description || ''}`.toLowerCase();
+      const toolText = `${tool.name} ${tool.description || ""}`.toLowerCase();
 
       // Check if tool mentions dangerous features
-      const hasDangerousFeature = DANGEROUS_FEATURE_KEYWORDS.some(kw => toolText.includes(kw));
+      const hasDangerousFeature = DANGEROUS_FEATURE_KEYWORDS.some((kw) =>
+        toolText.includes(kw),
+      );
 
       if (!hasDangerousFeature) continue;
 
       // Check if tool mentions capability checks
-      const hasCapabilityCheck = CAPABILITY_CHECK_KEYWORDS.some(kw => toolText.includes(kw));
+      const hasCapabilityCheck = CAPABILITY_CHECK_KEYWORDS.some((kw) =>
+        toolText.includes(kw),
+      );
 
       // Special case: mentions "without negotiating" or similar
-      const explicitlyMissingNegotiation = toolText.includes('without negotiat') ||
-                                          toolText.includes('sin negociar');
+      const explicitlyMissingNegotiation =
+        toolText.includes("without negotiat") ||
+        toolText.includes("sin negociar");
 
-      if (explicitlyMissingNegotiation || (hasDangerousFeature && !hasCapabilityCheck)) {
+      if (
+        explicitlyMissingNegotiation ||
+        (hasDangerousFeature && !hasCapabilityCheck)
+      ) {
         findings.push({
           ruleCode: this.code,
-          severity: 'medium',
+          severity: "medium",
           message: `Tool "${tool.name}" provides features without capability negotiation`,
           component: `tool:${tool.name}`,
-          location: { type: 'tool', name: tool.name },
+          location: { type: "tool", name: tool.name },
           evidence: {
-            risk: 'Inconsistency between declared and actual capabilities creates vulnerabilities',
-            detectedIssue: 'Feature provided without checking client capabilities'
+            risk: "Inconsistency between declared and actual capabilities creates vulnerabilities",
+            detectedIssue:
+              "Feature provided without checking client capabilities",
           },
-          remediation: 'Implement capability negotiation to verify client supports the feature before execution'
+          remediation:
+            "Implement capability negotiation to verify client supports the feature before execution",
         });
       }
     }

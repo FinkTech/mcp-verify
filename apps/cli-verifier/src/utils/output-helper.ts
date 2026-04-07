@@ -19,11 +19,11 @@
  * @param data - The data to output (string or object)
  */
 export function printOutput(data: string | object): void {
-  if (typeof data === 'object') {
+  if (typeof data === "object") {
     // Pretty-print JSON to stdout for readability
-    process.stdout.write(JSON.stringify(data, null, 2) + '\n');
+    process.stdout.write(JSON.stringify(data, null, 2) + "\n");
   } else {
-    process.stdout.write(data + '\n');
+    process.stdout.write(data + "\n");
   }
 }
 

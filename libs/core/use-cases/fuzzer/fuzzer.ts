@@ -5,21 +5,30 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import { t, normalizeCommand, normalizeArguments, detectDangerousPatterns } from '@mcp-verify/shared';
-import type { ITransport } from '../../domain/transport';
-import type { DiscoveryResult, FuzzingReport, FuzzingResult } from '../../domain/mcp-server/entities/validation.types';
-import type { McpTool, JsonObject } from '../../domain/shared/common.types';
+import {
+  t,
+  normalizeCommand,
+  normalizeArguments,
+  detectDangerousPatterns,
+} from "@mcp-verify/shared";
+import type { ITransport } from "../../domain/transport";
+import type {
+  DiscoveryResult,
+  FuzzingReport,
+  FuzzingResult,
+} from "../../domain/mcp-server/entities/validation.types";
+import type { McpTool, JsonObject } from "../../domain/shared/common.types";
 import {
   getAllPayloads,
   getPayloadsByType,
   getRandomPayloads,
-  ATTACK_PAYLOADS
-} from './payloads';
-import type { AttackPayload } from './payloads';
-import { ResponseAnalyzer } from './response-analyzer';
-import type { AnalysisResult } from './response-analyzer';
-import { MutationEngine, BatchMutator } from './mutation-engine';
-import type { MutatedPayload } from './mutation-engine';
+  ATTACK_PAYLOADS,
+} from "./payloads";
+import type { AttackPayload } from "./payloads";
+import { ResponseAnalyzer } from "./response-analyzer";
+import type { AnalysisResult } from "./response-analyzer";
+import { MutationEngine, BatchMutator } from "./mutation-engine";
+import type { MutatedPayload } from "./mutation-engine";
 
 /**
  * Type-safe definitions for fuzzer internals
@@ -48,7 +57,7 @@ interface FuzzPayload {
 }
 
 interface JSONSchemaProperty {
-  type?: 'string' | 'integer' | 'number' | 'boolean' | 'object' | 'array';
+  type?: "string" | "integer" | "number" | "boolean" | "object" | "array";
   pattern?: string;
   minimum?: number;
   maximum?: number;
@@ -63,22 +72,22 @@ interface JSONSchemaProperty {
  * Prevents accidental execution of destructive operations even if a mutation generates them
  */
 const DANGEROUS_COMMANDS = [
-  'rm -rf',
-  'rm -fr',
-  'del /s',
-  'format',
-  'mkfs',
-  'dd if=',
-  'DROP TABLE',
-  'DROP DATABASE',
-  'TRUNCATE',
-  'DELETE FROM',
-  ':(){:|:&};:',  // Fork bomb
-  'wget',
-  'curl',
-  '> /dev/sda',
-  'chmod 777',
-  'chmod -R 777'
+  "rm -rf",
+  "rm -fr",
+  "del /s",
+  "format",
+  "mkfs",
+  "dd if=",
+  "DROP TABLE",
+  "DROP DATABASE",
+  "TRUNCATE",
+  "DELETE FROM",
+  ":(){:|:&};:", // Fork bomb
+  "wget",
+  "curl",
+  "> /dev/sda",
+  "chmod 777",
+  "chmod -R 777",
 ] as const;
 
 export interface FuzzerConfig {
@@ -88,8 +97,8 @@ export interface FuzzerConfig {
   mutationsPerPayload: number;
 
   // Payload filtering
-  payloadTypes?: string[];  // Only use specific types (e.g., ['sqli', 'xss'])
-  maxSeverity?: 'critical' | 'high' | 'medium' | 'low';
+  payloadTypes?: string[]; // Only use specific types (e.g., ['sqli', 'xss'])
+  maxSeverity?: "critical" | "high" | "medium" | "low";
 
   // Response analysis
   analyzeResponses: boolean;
@@ -127,7 +136,7 @@ export class SmartFuzzer {
       detectVulnerabilities: true,
       timeout: 5000,
       delayBetweenTests: 100,
-      ...config
+      ...config,
     };
   }
 
@@ -143,7 +152,10 @@ export class SmartFuzzer {
    * @param args - The payload arguments to validate
    * @returns Object with safety status and reason if dangerous
    */
-  private isSafePayload(args: Record<string, unknown>): { safe: boolean; reason?: string } {
+  private isSafePayload(args: Record<string, unknown>): {
+    safe: boolean;
+    reason?: string;
+  } {
     // Layer 1: Normalize all arguments to detect obfuscated commands
     const normalizedArgs = normalizeArguments(args);
 
@@ -153,7 +165,7 @@ export class SmartFuzzer {
         if (normalized.includes(dangerousCmd.toLowerCase())) {
           return {
             safe: false,
-            reason: `Blacklist match: "${dangerousCmd}" detected in normalized payload`
+            reason: `Blacklist match: "${dangerousCmd}" detected in normalized payload`,
           };
         }
       }
@@ -165,7 +177,7 @@ export class SmartFuzzer {
       if (detectedPatterns.length > 0) {
         return {
           safe: false,
-          reason: `Dangerous patterns detected: ${detectedPatterns.join(', ')}`
+          reason: `Dangerous patterns detected: ${detectedPatterns.join(", ")}`,
         };
       }
     }
@@ -176,7 +188,7 @@ export class SmartFuzzer {
       if (argsString.includes(dangerousCmd.toLowerCase())) {
         return {
           safe: false,
-          reason: `Blacklist match in raw payload: "${dangerousCmd}"`
+          reason: `Blacklist match in raw payload: "${dangerousCmd}"`,
         };
       }
     }
@@ -191,7 +203,7 @@ export class SmartFuzzer {
       failedTests: 0,
       crashes: 0,
       results: [],
-      vulnerabilities: []  // v1.0: Track detected vulnerabilities
+      vulnerabilities: [], // v1.0: Track detected vulnerabilities
     };
 
     if (!discovery.tools) return report;
@@ -205,7 +217,9 @@ export class SmartFuzzer {
 
     // Calibrate baseline response time
     if (this.config.analyzeResponses && discovery.tools.length > 0) {
-      const baselineTime = await this.calibrateBaseline(discovery.tools[0].name);
+      const baselineTime = await this.calibrateBaseline(
+        discovery.tools[0].name,
+      );
       this.responseAnalyzer.setBaselineResponseTime(baselineTime);
     }
 
@@ -224,33 +238,44 @@ export class SmartFuzzer {
             toolName: tool.name,
             input: payload.args,
             payloadType: payload.type,
-            passed: true,  // Mark as "passed" since we safely skipped it
+            passed: true, // Mark as "passed" since we safely skipped it
             durationMs: 0,
             skipped: true,
-            skipReason: safetyCheck.reason || t('fuzz_dangerous_detected')
+            skipReason: safetyCheck.reason || t("fuzz_dangerous_detected"),
           });
           continue;
         }
 
         // Execute test
-        const result = await this.executeFuzzTest(tool.name, payload.args, payload.type, payload.attackPayload);
+        const result = await this.executeFuzzTest(
+          tool.name,
+          payload.args,
+          payload.type,
+          payload.attackPayload,
+        );
         report.results.push(result);
 
         // Track failures
         if (!result.passed) {
           report.failedTests++;
-          if (result.serverError && result.serverError.includes('Connection closed')) {
+          if (
+            result.serverError &&
+            result.serverError.includes("Connection closed")
+          ) {
             report.crashes++;
           }
         }
 
         // Track vulnerabilities
-        if (result.vulnerabilityAnalysis && result.vulnerabilityAnalysis.vulnerable) {
+        if (
+          result.vulnerabilityAnalysis &&
+          result.vulnerabilityAnalysis.vulnerable
+        ) {
           report.vulnerabilities = report.vulnerabilities || [];
           report.vulnerabilities.push({
             toolName: tool.name,
             payloadType: payload.type,
-            findings: result.vulnerabilityAnalysis.findings
+            findings: result.vulnerabilityAnalysis.findings,
           });
         }
 
@@ -268,7 +293,7 @@ export class SmartFuzzer {
     toolName: string,
     args: ToolArguments,
     payloadType: string,
-    attackPayload?: AttackPayload
+    attackPayload?: AttackPayload,
   ): Promise<FuzzingResult> {
     const start = Date.now();
     let response: unknown = null;
@@ -277,13 +302,13 @@ export class SmartFuzzer {
     try {
       // Send the fuzz test
       response = await this.transport.send({
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         id: this.requestId++,
-        method: 'tools/call',
+        method: "tools/call",
         params: {
           name: toolName,
-          arguments: args
-        }
+          arguments: args,
+        },
       });
 
       const durationMs = Date.now() - start;
@@ -295,7 +320,7 @@ export class SmartFuzzer {
           attackPayload,
           response,
           durationMs,
-          statusCode
+          statusCode,
         );
       }
 
@@ -305,13 +330,13 @@ export class SmartFuzzer {
         payloadType,
         passed: true,
         durationMs,
-        vulnerabilityAnalysis
+        vulnerabilityAnalysis,
       };
-
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : String(error);
       const durationMs = Date.now() - start;
-      const isCrash = msg.includes('Socket closed') || msg.includes('ECONNRESET');
+      const isCrash =
+        msg.includes("Socket closed") || msg.includes("ECONNRESET");
 
       // Analyze error response for vulnerabilities
       let vulnerabilityAnalysis: AnalysisResult | undefined;
@@ -321,7 +346,7 @@ export class SmartFuzzer {
           attackPayload,
           { error: msg },
           durationMs,
-          statusCode
+          statusCode,
         );
       }
 
@@ -332,7 +357,7 @@ export class SmartFuzzer {
         serverError: msg,
         passed: !isCrash, // Only fail if it crashed the transport
         durationMs,
-        vulnerabilityAnalysis
+        vulnerabilityAnalysis,
       };
     }
   }
@@ -352,7 +377,6 @@ export class SmartFuzzer {
     return allPayloads;
   }
 
-
   /**
    * Generate security attack payloads (v1.0)
    */
@@ -361,7 +385,11 @@ export class SmartFuzzer {
     args: ToolArguments;
     attackPayload: AttackPayload;
   }> {
-    const securityPayloads: Array<{ type: string; args: ToolArguments; attackPayload: AttackPayload }> = [];
+    const securityPayloads: Array<{
+      type: string;
+      args: ToolArguments;
+      attackPayload: AttackPayload;
+    }> = [];
     if (!tool.inputSchema?.properties) return securityPayloads;
 
     // Get attack payloads from library
@@ -372,7 +400,9 @@ export class SmartFuzzer {
       for (const type of this.config.payloadTypes) {
         // Validate type is a valid payload type
         if (type in ATTACK_PAYLOADS) {
-          attackPayloads.push(...getPayloadsByType(type as keyof typeof ATTACK_PAYLOADS));
+          attackPayloads.push(
+            ...getPayloadsByType(type as keyof typeof ATTACK_PAYLOADS),
+          );
         }
       }
     } else {
@@ -385,38 +415,47 @@ export class SmartFuzzer {
       const severityOrder = { low: 0, medium: 1, high: 2, critical: 3 };
       const maxSeverityLevel = severityOrder[this.config.maxSeverity];
       attackPayloads = attackPayloads.filter(
-        p => severityOrder[p.severity] <= maxSeverityLevel
+        (p) => severityOrder[p.severity] <= maxSeverityLevel,
       );
     }
 
     // Inject attack payloads into each string parameter
-    for (const [key, prop] of Object.entries(tool.inputSchema.properties) as [string, JSONSchemaProperty][]) {
-      if (prop.type === 'string') {
+    for (const [key, prop] of Object.entries(tool.inputSchema.properties) as [
+      string,
+      JSONSchemaProperty,
+    ][]) {
+      if (prop.type === "string") {
         for (const attackPayload of attackPayloads) {
           const args = { ...this.generateValidMock(tool.inputSchema) };
           args[key] = attackPayload.value;
 
           securityPayloads.push({
-            type: t('fuzz_security_attack', { type: attackPayload.type, key }),
+            type: t("fuzz_security_attack", { type: attackPayload.type, key }),
             args,
-            attackPayload
+            attackPayload,
           });
 
           // Apply mutations if enabled
           if (this.config.useMutations) {
             const mutations = this.mutationEngine.mutate(
               attackPayload,
-              this.config.mutationsPerPayload
+              this.config.mutationsPerPayload,
             );
 
             for (const mutation of mutations) {
-              const mutatedArgs = { ...this.generateValidMock(tool.inputSchema) };
+              const mutatedArgs = {
+                ...this.generateValidMock(tool.inputSchema),
+              };
               mutatedArgs[key] = mutation.value;
 
               securityPayloads.push({
-                type: t('fuzz_mutated_attack', { mutation: mutation.mutationType || 'unknown', type: attackPayload.type, key }),
+                type: t("fuzz_mutated_attack", {
+                  mutation: mutation.mutationType || "unknown",
+                  type: attackPayload.type,
+                  key,
+                }),
                 args: mutatedArgs,
-                attackPayload: mutation
+                attackPayload: mutation,
               });
             }
           }
@@ -427,15 +466,18 @@ export class SmartFuzzer {
     return securityPayloads;
   }
 
-  private generateValidMock(schema: McpTool['inputSchema']): ToolArguments {
+  private generateValidMock(schema: McpTool["inputSchema"]): ToolArguments {
     // Very basic mock generator to create a "base" valid object to corrupt
     const mock: ToolArguments = {};
     if (!schema.properties) return mock;
 
-    for (const [key, prop] of Object.entries(schema.properties) as [string, JSONSchemaProperty][]) {
-      if (prop.type === 'string') mock[key] = 'test';
-      else if (prop.type === 'integer' || prop.type === 'number') mock[key] = 1;
-      else if (prop.type === 'boolean') mock[key] = true;
+    for (const [key, prop] of Object.entries(schema.properties) as [
+      string,
+      JSONSchemaProperty,
+    ][]) {
+      if (prop.type === "string") mock[key] = "test";
+      else if (prop.type === "integer" || prop.type === "number") mock[key] = 1;
+      else if (prop.type === "boolean") mock[key] = true;
     }
     return mock;
   }
@@ -447,13 +489,13 @@ export class SmartFuzzer {
     const start = Date.now();
     try {
       await this.transport.send({
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         id: this.requestId++,
-        method: 'tools/call',
+        method: "tools/call",
         params: {
           name: toolName,
-          arguments: {}
-        }
+          arguments: {},
+        },
       });
     } catch (e) {
       // Ignore errors, we're just measuring time
@@ -465,7 +507,7 @@ export class SmartFuzzer {
    * Sleep helper
    */
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**

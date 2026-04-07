@@ -29,19 +29,30 @@
  * - NIST SP 800-90A: Entropy Requirements
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class InsufficientOutputEntropyRule implements ISecurityRule {
-  code = 'SEC-050';
-  name = 'Insufficient Output Entropy';
-  severity: 'medium' = 'medium';
+  code = "SEC-050";
+  name = "Insufficient Output Entropy";
+  severity: "medium" = "medium";
 
   private readonly SECURITY_ID_KEYWORDS = [
-    'token', 'id', 'nonce', 'otp', 'code', 'key',
-    'session', 'csrf', 'secret', 'random'
+    "token",
+    "id",
+    "nonce",
+    "otp",
+    "code",
+    "key",
+    "session",
+    "csrf",
+    "secret",
+    "random",
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -61,10 +72,10 @@ export class InsufficientOutputEntropyRule implements ISecurityRule {
         if (hasWeakPattern) {
           findings.push({
             severity: this.severity,
-            message: t('sec_050_weak_entropy', { toolName: tool.name }),
+            message: t("sec_050_weak_entropy", { toolName: tool.name }),
             component: `tool:${tool.name}`,
             ruleCode: this.code,
-            remediation: t('sec_050_recommendation')
+            remediation: t("sec_050_recommendation"),
           });
         }
       }
@@ -75,32 +86,44 @@ export class InsufficientOutputEntropyRule implements ISecurityRule {
 
   private generatesSecurityId(tool: McpTool): boolean {
     const nameLower = tool.name.toLowerCase();
-    const descLower = tool.description?.toLowerCase() || '';
+    const descLower = tool.description?.toLowerCase() || "";
 
-    return this.SECURITY_ID_KEYWORDS.some(kw =>
-      nameLower.includes(kw) || descLower.includes(kw)
+    return this.SECURITY_ID_KEYWORDS.some(
+      (kw) => nameLower.includes(kw) || descLower.includes(kw),
     );
   }
 
   private hasWeakEntropyPattern(tool: McpTool): boolean {
     // Check inputSchema for suspicious patterns
     if (tool.inputSchema?.properties) {
-      for (const [propName, propSchema] of Object.entries(tool.inputSchema.properties)) {
-        const schema = propSchema as { pattern?: string; maxLength?: number; type?: string };
+      for (const [propName, propSchema] of Object.entries(
+        tool.inputSchema.properties,
+      )) {
+        const schema = propSchema as {
+          pattern?: string;
+          maxLength?: number;
+          type?: string;
+        };
 
         // Check for numeric-only patterns (low entropy)
         if (schema.pattern) {
-          const numericOnly = /^\^?\[0-9\]\+?\$$/.test(schema.pattern.replace(/[{}]/g, ''));
+          const numericOnly = /^\^?\[0-9\]\+?\$$/.test(
+            schema.pattern.replace(/[{}]/g, ""),
+          );
           if (numericOnly) {
             return true;
           }
         }
 
         // Check for short tokens
-        if (schema.type === 'string' && schema.maxLength && schema.maxLength < 16) {
+        if (
+          schema.type === "string" &&
+          schema.maxLength &&
+          schema.maxLength < 16
+        ) {
           const propLower = propName.toLowerCase();
-          const isSecurityField = this.SECURITY_ID_KEYWORDS.some(kw =>
-            propLower.includes(kw)
+          const isSecurityField = this.SECURITY_ID_KEYWORDS.some((kw) =>
+            propLower.includes(kw),
           );
 
           if (isSecurityField) {

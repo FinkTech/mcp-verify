@@ -16,21 +16,20 @@
  *   - Output redirection to disk
  */
 
-import fs       from 'fs';
-import os       from 'os';
-import path     from 'path';
-import readline from 'readline';
+import fs from "fs";
+import os from "os";
+import path from "path";
+import readline from "readline";
 
-import { ConfigLoader } from '@mcp-verify/core';
+import { ConfigLoader } from "@mcp-verify/core";
 import {
   WorkspaceSession,
   WorkspaceContexts,
   LegacyWorkspaceSession,
-} from '../types/workspace-context';
-import { migrateSessionFile } from '../managers/migration';
+} from "../types/workspace-context";
+import { migrateSessionFile } from "../managers/migration";
 
 export class PersistenceManager {
-
   // ── Path helpers ─────────────────────────────────────────────────────────
 
   /**
@@ -38,14 +37,14 @@ export class PersistenceManager {
    * Called lazily so config is already loaded at call time.
    */
   static getPaths() {
-    const cfg             = ConfigLoader.get().workspace;
-    const workspaceDir    = cfg.directory;
+    const cfg = ConfigLoader.get().workspace;
+    const workspaceDir = cfg.directory;
     const sessionFileName = cfg.sessionFile;
 
     return {
-      globalDir:   path.join(os.homedir(), '.mcp-verify'),
-      historyFile: path.join(os.homedir(), '.mcp-verify', 'history.json'),
-      localDir:    path.join(process.cwd(), workspaceDir),
+      globalDir: path.join(os.homedir(), ".mcp-verify"),
+      historyFile: path.join(os.homedir(), ".mcp-verify", "history.json"),
+      localDir: path.join(process.cwd(), workspaceDir),
       sessionFile: path.join(process.cwd(), workspaceDir, sessionFileName),
     };
   }
@@ -66,11 +65,11 @@ export class PersistenceManager {
     try {
       const paths = PersistenceManager.getPaths();
       if (!fs.existsSync(paths.historyFile)) return [];
-      const raw  = fs.readFileSync(paths.historyFile, 'utf8');
+      const raw = fs.readFileSync(paths.historyFile, "utf8");
       const data = JSON.parse(raw) as unknown;
       if (!Array.isArray(data)) return [];
       return (data as unknown[])
-        .filter((e): e is string => typeof e === 'string')
+        .filter((e): e is string => typeof e === "string")
         .slice(-PersistenceManager.getHistoryLimit());
     } catch {
       return [];
@@ -84,13 +83,21 @@ export class PersistenceManager {
   static appendHistory(entry: string): void {
     if (!PersistenceManager.isEnabled()) return;
     try {
-      const paths    = PersistenceManager.getPaths();
+      const paths = PersistenceManager.getPaths();
       PersistenceManager.ensureDir(paths.globalDir);
       const existing = PersistenceManager.loadHistory();
       if (existing[existing.length - 1] === entry) return; // ignoredups
-      const updated  = [...existing, entry].slice(-PersistenceManager.getHistoryLimit());
-      fs.writeFileSync(paths.historyFile, JSON.stringify(updated, null, 2), 'utf8');
-    } catch { /* silent */ }
+      const updated = [...existing, entry].slice(
+        -PersistenceManager.getHistoryLimit(),
+      );
+      fs.writeFileSync(
+        paths.historyFile,
+        JSON.stringify(updated, null, 2),
+        "utf8",
+      );
+    } catch {
+      /* silent */
+    }
   }
 
   /**
@@ -100,8 +107,9 @@ export class PersistenceManager {
   static hydrateReadlineHistory(rl: readline.Interface): void {
     const history = PersistenceManager.loadHistory();
     // readline stores history in LIFO order internally
-    (rl as readline.Interface & { history: string[] }).history =
-      [...history].reverse();
+    (rl as readline.Interface & { history: string[] }).history = [
+      ...history,
+    ].reverse();
   }
 
   // ── Workspace session (legacy) ───────────────────────────────────────────
@@ -112,9 +120,9 @@ export class PersistenceManager {
     try {
       const paths = PersistenceManager.getPaths();
       if (!fs.existsSync(paths.sessionFile)) return undefined;
-      const raw  = fs.readFileSync(paths.sessionFile, 'utf8');
+      const raw = fs.readFileSync(paths.sessionFile, "utf8");
       const data = JSON.parse(raw) as unknown;
-      if (typeof data !== 'object' || data === null) return undefined;
+      if (typeof data !== "object" || data === null) return undefined;
       return data as WorkspaceSession;
     } catch {
       return undefined;
@@ -122,21 +130,29 @@ export class PersistenceManager {
   }
 
   /** Writes legacy session state to disk (non-atomic, legacy path only). */
-  static saveWorkspaceSession(
-    state: { target?: string; lang: string; config: Record<string, unknown> }
-  ): void {
+  static saveWorkspaceSession(state: {
+    target?: string;
+    lang: string;
+    config: Record<string, unknown>;
+  }): void {
     if (!PersistenceManager.isEnabled()) return;
     try {
       const paths = PersistenceManager.getPaths();
       PersistenceManager.ensureDir(paths.localDir);
       const payload: WorkspaceSession = {
-        target:  state.target,
-        lang:    state.lang as 'en' | 'es',
-        config:  state.config,
+        target: state.target,
+        lang: state.lang as "en" | "es",
+        config: state.config,
         savedAt: new Date().toISOString(),
       };
-      fs.writeFileSync(paths.sessionFile, JSON.stringify(payload, null, 2), 'utf8');
-    } catch { /* silent */ }
+      fs.writeFileSync(
+        paths.sessionFile,
+        JSON.stringify(payload, null, 2),
+        "utf8",
+      );
+    } catch {
+      /* silent */
+    }
   }
 
   // ── Multi-context workspace (v1.0) ───────────────────────────────────────
@@ -145,7 +161,10 @@ export class PersistenceManager {
    * Loads workspace data, auto-migrating from legacy format if needed.
    * Returns `undefined` when persistence is disabled or the file is absent.
    */
-  static loadWorkspaceData(): WorkspaceContexts | LegacyWorkspaceSession | undefined {
+  static loadWorkspaceData():
+    | WorkspaceContexts
+    | LegacyWorkspaceSession
+    | undefined {
     if (!PersistenceManager.isEnabled()) return undefined;
     try {
       const paths = PersistenceManager.getPaths();
@@ -162,14 +181,19 @@ export class PersistenceManager {
   static saveWorkspaceContexts(contexts: WorkspaceContexts): void {
     if (!PersistenceManager.isEnabled()) return;
     try {
-      const paths   = PersistenceManager.getPaths();
+      const paths = PersistenceManager.getPaths();
       PersistenceManager.ensureDir(paths.localDir);
       const payload: WorkspaceContexts = {
         ...contexts,
         savedAt: new Date().toISOString(),
       };
-      PersistenceManager.atomicWrite(paths.sessionFile, JSON.stringify(payload, null, 2));
-    } catch { /* silent */ }
+      PersistenceManager.atomicWrite(
+        paths.sessionFile,
+        JSON.stringify(payload, null, 2),
+      );
+    } catch {
+      /* silent */
+    }
   }
 
   // ── Output redirection ───────────────────────────────────────────────────
@@ -185,11 +209,11 @@ export class PersistenceManager {
 
     if (append) {
       const existing = fs.existsSync(resolved)
-        ? fs.readFileSync(resolved, 'utf8')
-        : '';
-      PersistenceManager.atomicWrite(resolved, existing + content + '\n');
+        ? fs.readFileSync(resolved, "utf8")
+        : "";
+      PersistenceManager.atomicWrite(resolved, existing + content + "\n");
     } else {
-      PersistenceManager.atomicWrite(resolved, content + '\n');
+      PersistenceManager.atomicWrite(resolved, content + "\n");
     }
   }
 
@@ -202,12 +226,14 @@ export class PersistenceManager {
   private static atomicWrite(targetPath: string, content: string): void {
     const tmpPath = `${targetPath}.tmp`;
     try {
-      fs.writeFileSync(tmpPath, content, 'utf8');
+      fs.writeFileSync(tmpPath, content, "utf8");
       fs.renameSync(tmpPath, targetPath);
     } catch (error) {
       try {
         if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
-      } catch { /* ignore cleanup errors */ }
+      } catch {
+        /* ignore cleanup errors */
+      }
       throw error;
     }
   }

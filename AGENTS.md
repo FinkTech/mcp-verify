@@ -9,17 +9,19 @@
 
 ```typescript
 // 1. Zero Any Standard
-function process(data: unknown) { /* use type guards */ }   // ❌ never: data: any
+function process(data: unknown) {
+  /* use type guards */
+} // ❌ never: data: any
 
 // 2. i18n for all user-facing strings
-console.log(t('validation_complete'))                       // ❌ never: 'Validation complete'
+console.log(t("validation_complete")); // ❌ never: 'Validation complete'
 
 // 3. Read Before Write — always Read existing file first, then Edit with old/new strings
 
 // 4. Atomic file writes — write to tmpPath → rename → prevents corruption on crash
 
 // 5. Timeout all async ops
-const controller = new AbortController();                   // ❌ never: bare await fetch(url)
+const controller = new AbortController(); // ❌ never: bare await fetch(url)
 setTimeout(() => controller.abort(), timeout);
 ```
 
@@ -59,14 +61,14 @@ mcp-verify/
 
 ## Tech Stack
 
-| Area | Stack |
-|---|---|
-| Runtime | Node.js 20+, TypeScript 5.x strict |
-| Monorepo | pnpm workspaces |
-| CLI/UI | chalk, ora, inquirer, blessed |
-| Testing | Jest + ts-jest |
-| Validation | Zod schemas |
-| LLM | @anthropic-ai/sdk, openai, ollama |
+| Area       | Stack                              |
+| ---------- | ---------------------------------- |
+| Runtime    | Node.js 20+, TypeScript 5.x strict |
+| Monorepo   | pnpm workspaces                    |
+| CLI/UI     | chalk, ora, inquirer, blessed      |
+| Testing    | Jest + ts-jest                     |
+| Validation | Zod schemas                        |
+| LLM        | @anthropic-ai/sdk, openai, ollama  |
 
 **Security invariants**: Zod on all external input · path traversal protection via `@mcp-verify/shared` · timeout 2–120s · secret redaction in logs.
 
@@ -74,14 +76,14 @@ mcp-verify/
 
 ## Environment Variables
 
-| Variable | Purpose | Default |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | LLM analysis (Claude) | — |
-| `OPENAI_API_KEY` | LLM analysis (GPT) | — |
-| `GOOGLE_API_KEY` | LLM analysis (Gemini) | — |
-| `MCP_VERIFY_LANG` | i18n language (`en`, `es`, `fr`…) | `en` |
-| `DEBUG` | Debug logging (`mcp-verify:*`) | — |
-| `NODE_ENV` | `development` / `production` | `development` |
+| Variable            | Purpose                           | Default       |
+| ------------------- | --------------------------------- | ------------- |
+| `ANTHROPIC_API_KEY` | LLM analysis (Claude)             | —             |
+| `OPENAI_API_KEY`    | LLM analysis (GPT)                | —             |
+| `GOOGLE_API_KEY`    | LLM analysis (Gemini)             | —             |
+| `MCP_VERIFY_LANG`   | i18n language (`en`, `es`, `fr`…) | `en`          |
+| `DEBUG`             | Debug logging (`mcp-verify:*`)    | —             |
+| `NODE_ENV`          | `development` / `production`      | `development` |
 
 LLM keys are optional but required for semantic analysis features.
 
@@ -91,14 +93,14 @@ LLM keys are optional but required for semantic analysis features.
 
 ```typescript
 // Cross-package → always use package names
-import { MCPValidator } from '@mcp-verify/core';
-import { t } from '@mcp-verify/shared';
+import { MCPValidator } from "@mcp-verify/core";
+import { t } from "@mcp-verify/shared";
 
 // Within a package → relative imports only
-import { ISecurityRule } from '../rules/rule.interface';
+import { ISecurityRule } from "../rules/rule.interface";
 
 // Types → import type
-import type { ValidationResult } from '@mcp-verify/core';
+import type { ValidationResult } from "@mcp-verify/core";
 ```
 
 ---
@@ -112,13 +114,13 @@ npm test -- --coverage
 npm run test:ci           # CI mode (max 2 workers)
 ```
 
-| Layer | Min coverage |
-|---|---|
-| Security rules | 100% |
-| Domain layer | 80% |
-| Use cases | 60% |
-| Infrastructure | 50% |
-| Apps | 40% |
+| Layer          | Min coverage |
+| -------------- | ------------ |
+| Security rules | 100%         |
+| Domain layer   | 80%          |
+| Use cases      | 60%          |
+| Infrastructure | 50%          |
+| Apps           | 40%          |
 
 See `TESTING.md` for full strategy and CI/CD integration.
 

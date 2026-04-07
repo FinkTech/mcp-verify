@@ -11,16 +11,16 @@
  * Centralized spinner configurations and helpers using ora
  */
 
-import ora, { Ora } from 'ora';
-import { t } from '@mcp-verify/shared';
+import ora, { Ora } from "ora";
+import { t } from "@mcp-verify/shared";
 
 /**
  * Create a spinner for validation operations
  */
 export function createValidationSpinner(target: string): Ora {
   return ora({
-    text: `${t('connecting_server')} ${target}`,
-    color: 'cyan'
+    text: `${t("connecting_server")} ${target}`,
+    color: "cyan",
   }).start();
 }
 
@@ -29,8 +29,8 @@ export function createValidationSpinner(target: string): Ora {
  */
 export function createStressTestSpinner(): Ora {
   return ora({
-    text: t('running_security_scan'),
-    color: 'yellow'
+    text: t("running_security_scan"),
+    color: "yellow",
   }).start();
 }
 
@@ -40,7 +40,7 @@ export function createStressTestSpinner(): Ora {
 export function createLoadingSpinner(text: string): Ora {
   return ora({
     text,
-    color: 'cyan'
+    color: "cyan",
   }).start();
 }
 
@@ -49,8 +49,8 @@ export function createLoadingSpinner(text: string): Ora {
  */
 export function createConnectionSpinner(target: string): Ora {
   return ora({
-    text: `${t('connecting_to_server')} ${target}`,
-    color: 'blue'
+    text: `${t("connecting_to_server")} ${target}`,
+    color: "blue",
   }).start();
 }
 
@@ -59,7 +59,7 @@ export function createConnectionSpinner(target: string): Ora {
  */
 export function createReportSpinner(): Ora {
   return ora({
-    text: t('generating_report'),
-    color: 'magenta'
+    text: t("generating_report"),
+    color: "magenta",
   }).start();
 }

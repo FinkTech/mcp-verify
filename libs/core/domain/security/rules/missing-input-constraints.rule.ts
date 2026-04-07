@@ -31,17 +31,25 @@
  * @module libs/core/domain/security/rules/missing-input-constraints.rule
  */
 
-import { t } from '@mcp-verify/shared';
-import { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool, JsonValue } from '../../shared/common.types';
+import { t } from "@mcp-verify/shared";
+import { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool, JsonValue } from "../../shared/common.types";
 
 export class MissingInputConstraintsRule implements ISecurityRule {
-  readonly code = 'SEC-019';
-  get name() { return t('sec_missing_constraints_name'); }
-  get description() { return t('sec_missing_constraints_desc'); }
-  readonly helpUri = 'https://owasp.org/www-project-top-ten/2017/A4_2017-XML_External_Entities_(XXE)';
-  readonly tags = ['CWE-1284', 'CWE-20', 'OWASP-A04:2021', 'Input Validation'];
+  readonly code = "SEC-019";
+  get name() {
+    return t("sec_missing_constraints_name");
+  }
+  get description() {
+    return t("sec_missing_constraints_desc");
+  }
+  readonly helpUri =
+    "https://owasp.org/www-project-top-ten/2017/A4_2017-XML_External_Entities_(XXE)";
+  readonly tags = ["CWE-1284", "CWE-20", "OWASP-A04:2021", "Input Validation"];
 
   /**
    * Recommended maximum string length (10MB)
@@ -57,9 +65,18 @@ export class MissingInputConstraintsRule implements ISecurityRule {
    * Parameter names that should always have constraints
    */
   private readonly CRITICAL_PARAMS = [
-    'query', 'sql', 'command', 'script', 'code',
-    'path', 'url', 'uri', 'filename',
-    'email', 'username', 'password'
+    "query",
+    "sql",
+    "command",
+    "script",
+    "code",
+    "path",
+    "url",
+    "uri",
+    "filename",
+    "email",
+    "username",
+    "password",
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -81,28 +98,38 @@ export class MissingInputConstraintsRule implements ISecurityRule {
       return findings;
     }
 
-    for (const [paramName, paramConfig] of Object.entries(tool.inputSchema.properties)) {
+    for (const [paramName, paramConfig] of Object.entries(
+      tool.inputSchema.properties,
+    )) {
       const config = paramConfig as Record<string, JsonValue>;
       const paramType = config.type as string;
 
       // Check string parameters
-      if (paramType === 'string') {
-        findings.push(...this.checkStringConstraints(paramName, config, tool.name));
+      if (paramType === "string") {
+        findings.push(
+          ...this.checkStringConstraints(paramName, config, tool.name),
+        );
       }
 
       // Check numeric parameters
-      if (paramType === 'number' || paramType === 'integer') {
-        findings.push(...this.checkNumericConstraints(paramName, config, tool.name));
+      if (paramType === "number" || paramType === "integer") {
+        findings.push(
+          ...this.checkNumericConstraints(paramName, config, tool.name),
+        );
       }
 
       // Check array parameters
-      if (paramType === 'array') {
-        findings.push(...this.checkArrayConstraints(paramName, config, tool.name));
+      if (paramType === "array") {
+        findings.push(
+          ...this.checkArrayConstraints(paramName, config, tool.name),
+        );
       }
 
       // Check object parameters
-      if (paramType === 'object') {
-        findings.push(...this.checkObjectConstraints(paramName, config, tool.name));
+      if (paramType === "object") {
+        findings.push(
+          ...this.checkObjectConstraints(paramName, config, tool.name),
+        );
       }
     }
 
@@ -112,50 +139,52 @@ export class MissingInputConstraintsRule implements ISecurityRule {
   private checkStringConstraints(
     paramName: string,
     config: Record<string, JsonValue>,
-    toolName: string
+    toolName: string,
   ): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
-    const isCritical = this.CRITICAL_PARAMS.some(kw => paramName.toLowerCase().includes(kw));
+    const isCritical = this.CRITICAL_PARAMS.some((kw) =>
+      paramName.toLowerCase().includes(kw),
+    );
 
     // Missing maxLength
     if (!config.maxLength && !config.pattern && !config.enum) {
       findings.push({
-        severity: isCritical ? 'medium' : 'low',
-        message: t('finding_missing_constraints_maxlength', {
+        severity: isCritical ? "medium" : "low",
+        message: t("finding_missing_constraints_maxlength", {
           param: paramName,
-          tool: toolName
+          tool: toolName,
         }),
         component: `tool:${toolName}`,
         ruleCode: this.code,
-        location: { type: 'tool', name: toolName, parameter: paramName },
+        location: { type: "tool", name: toolName, parameter: paramName },
         evidence: {
-          parameterType: 'string',
-          missingConstraint: 'maxLength',
-          risk: t('risk_missing_constraints_dos')
+          parameterType: "string",
+          missingConstraint: "maxLength",
+          risk: t("risk_missing_constraints_dos"),
         },
-        remediation: t('remediation_missing_constraints_add_maxlength', {
-          recommended: this.RECOMMENDED_MAX_STRING_LENGTH
-        })
+        remediation: t("remediation_missing_constraints_add_maxlength", {
+          recommended: this.RECOMMENDED_MAX_STRING_LENGTH,
+        }),
       });
     }
 
     // Missing pattern for critical params
     if (isCritical && !config.pattern && !config.enum) {
       findings.push({
-        severity: 'low',
-        message: t('finding_missing_constraints_pattern', {
+        severity: "low",
+        message: t("finding_missing_constraints_pattern", {
           param: paramName,
-          tool: toolName
+          tool: toolName,
         }),
         component: `tool:${toolName}`,
         ruleCode: this.code,
-        location: { type: 'tool', name: toolName, parameter: paramName },
+        location: { type: "tool", name: toolName, parameter: paramName },
         evidence: {
-          parameterType: 'string',
-          missingConstraint: 'pattern',
-          isCriticalParam: true
+          parameterType: "string",
+          missingConstraint: "pattern",
+          isCriticalParam: true,
         },
-        remediation: t('remediation_missing_constraints_add_pattern')
+        remediation: t("remediation_missing_constraints_add_pattern"),
       });
     }
 
@@ -165,46 +194,46 @@ export class MissingInputConstraintsRule implements ISecurityRule {
   private checkNumericConstraints(
     paramName: string,
     config: Record<string, JsonValue>,
-    toolName: string
+    toolName: string,
   ): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
 
     // Missing minimum
     if (config.minimum === undefined && config.exclusiveMinimum === undefined) {
       findings.push({
-        severity: 'low',
-        message: t('finding_missing_constraints_minimum', {
+        severity: "low",
+        message: t("finding_missing_constraints_minimum", {
           param: paramName,
-          tool: toolName
+          tool: toolName,
         }),
         component: `tool:${toolName}`,
         ruleCode: this.code,
-        location: { type: 'tool', name: toolName, parameter: paramName },
+        location: { type: "tool", name: toolName, parameter: paramName },
         evidence: {
           parameterType: config.type as string,
-          missingConstraint: 'minimum'
+          missingConstraint: "minimum",
         },
-        remediation: t('remediation_missing_constraints_add_bounds')
+        remediation: t("remediation_missing_constraints_add_bounds"),
       });
     }
 
     // Missing maximum
     if (config.maximum === undefined && config.exclusiveMaximum === undefined) {
       findings.push({
-        severity: 'low',
-        message: t('finding_missing_constraints_maximum', {
+        severity: "low",
+        message: t("finding_missing_constraints_maximum", {
           param: paramName,
-          tool: toolName
+          tool: toolName,
         }),
         component: `tool:${toolName}`,
         ruleCode: this.code,
-        location: { type: 'tool', name: toolName, parameter: paramName },
+        location: { type: "tool", name: toolName, parameter: paramName },
         evidence: {
           parameterType: config.type as string,
-          missingConstraint: 'maximum',
-          risk: t('risk_missing_constraints_overflow')
+          missingConstraint: "maximum",
+          risk: t("risk_missing_constraints_overflow"),
         },
-        remediation: t('remediation_missing_constraints_add_bounds')
+        remediation: t("remediation_missing_constraints_add_bounds"),
       });
     }
 
@@ -214,29 +243,29 @@ export class MissingInputConstraintsRule implements ISecurityRule {
   private checkArrayConstraints(
     paramName: string,
     config: Record<string, JsonValue>,
-    toolName: string
+    toolName: string,
   ): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
 
     // Missing maxItems
     if (!config.maxItems) {
       findings.push({
-        severity: 'low',
-        message: t('finding_missing_constraints_maxitems', {
+        severity: "low",
+        message: t("finding_missing_constraints_maxitems", {
           param: paramName,
-          tool: toolName
+          tool: toolName,
         }),
         component: `tool:${toolName}`,
         ruleCode: this.code,
-        location: { type: 'tool', name: toolName, parameter: paramName },
+        location: { type: "tool", name: toolName, parameter: paramName },
         evidence: {
-          parameterType: 'array',
-          missingConstraint: 'maxItems',
-          risk: t('risk_missing_constraints_memory')
+          parameterType: "array",
+          missingConstraint: "maxItems",
+          risk: t("risk_missing_constraints_memory"),
         },
-        remediation: t('remediation_missing_constraints_add_maxitems', {
-          recommended: this.RECOMMENDED_MAX_ARRAY_ITEMS
-        })
+        remediation: t("remediation_missing_constraints_add_maxitems", {
+          recommended: this.RECOMMENDED_MAX_ARRAY_ITEMS,
+        }),
       });
     }
 
@@ -246,26 +275,26 @@ export class MissingInputConstraintsRule implements ISecurityRule {
   private checkObjectConstraints(
     paramName: string,
     config: Record<string, JsonValue>,
-    toolName: string
+    toolName: string,
   ): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
 
     // Missing maxProperties
     if (!config.maxProperties && !config.properties) {
       findings.push({
-        severity: 'low',
-        message: t('finding_missing_constraints_maxprops', {
+        severity: "low",
+        message: t("finding_missing_constraints_maxprops", {
           param: paramName,
-          tool: toolName
+          tool: toolName,
         }),
         component: `tool:${toolName}`,
         ruleCode: this.code,
-        location: { type: 'tool', name: toolName, parameter: paramName },
+        location: { type: "tool", name: toolName, parameter: paramName },
         evidence: {
-          parameterType: 'object',
-          missingConstraint: 'maxProperties or properties definition'
+          parameterType: "object",
+          missingConstraint: "maxProperties or properties definition",
         },
-        remediation: t('remediation_missing_constraints_define_schema')
+        remediation: t("remediation_missing_constraints_define_schema"),
       });
     }
 

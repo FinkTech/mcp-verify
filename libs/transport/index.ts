@@ -26,4 +26,4 @@
 // export * from './sse-client/sse-transport';
 // export * from './http-client/http-transport';
 
-export const TRANSPORT_VERSION = '1.0.0';
+export const TRANSPORT_VERSION = "1.0.0";

@@ -214,6 +214,7 @@ git commit -s -m "feat(scanner): add SQL injection detection for PostgreSQL"
 ```
 
 **Commit message format**: `<type>(<scope>): <description>`
+
 - Types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`
 - Scope: Which part of the code (e.g., `cli`, `scanner`, `fuzzer`)
 - Description: What you did in present tense
@@ -226,6 +227,7 @@ git push origin feature/my-awesome-feature
 ```
 
 Then go to GitHub and click **"Create Pull Request"**. Make sure to:
+
 - ✅ Target the `develop` branch (not `main`)
 - ✅ Describe what your PR does
 - ✅ Reference any related issues
@@ -404,10 +406,10 @@ git branch -d release/1.1.0
 
 ```yaml
 ✅ Require pull request before merging
-  ✅ Require 1 approval from maintainer
-  ✅ Dismiss stale approvals when new commits pushed
+✅ Require 1 approval from maintainer
+✅ Dismiss stale approvals when new commits pushed
 ✅ Require status checks to pass
-  - ci (GitHub Actions - tests, linting, type checking)
+- ci (GitHub Actions - tests, linting, type checking)
 ✅ Require signed commits (recommended)
 ✅ Require linear history
 ✅ Do not allow bypassing settings
@@ -418,7 +420,7 @@ git branch -d release/1.1.0
 ```yaml
 ✅ Require pull request before merging
 ✅ Require status checks to pass
-  - ci (GitHub Actions)
+- ci (GitHub Actions)
 ✅ Allow administrators to bypass (for emergency hotfix merges)
 ```
 
@@ -523,6 +525,7 @@ Signed-off-by: Your Name <your.email@example.com>
 ```
 
 **Types**:
+
 - `feat` - New feature
 - `fix` - Bug fix
 - `docs` - Documentation only
@@ -595,6 +598,7 @@ git checkout -b feature/my-feature develop
 # ... make changes ...
 git push origin feature/my-feature  # ← This creates a PR from a feature branch
 ```
+
 </details>
 
 <details>
@@ -611,6 +615,7 @@ git push --force origin feature/my-feature
 git commit -m "fix: address review feedback"
 git push origin feature/my-feature
 ```
+
 </details>
 
 <details>
@@ -631,6 +636,7 @@ git push origin develop
 ```
 
 Do this regularly to avoid merge conflicts!
+
 </details>
 
 <details>
@@ -649,6 +655,7 @@ Do this regularly to avoid merge conflicts!
 5. **Ask for help** if you're stuck (comment on the PR)
 
 Example: CI shows 3 failing tests. Run `npm test` locally, fix the tests, commit, and push.
+
 </details>
 
 <details>
@@ -663,6 +670,7 @@ git config --global format.signoff true
 # Now all commits will be signed automatically
 git commit -m "feat: add feature"  # ← Automatically signed
 ```
+
 </details>
 
 <details>
@@ -673,18 +681,21 @@ git commit -m "feat: add feature"  # ← Automatically signed
 - **When in doubt** → `develop`
 
 The PR template will guide you.
+
 </details>
 
 <details>
 <summary><strong>Can I merge my own PR?</strong></summary>
 
 **No.** All PRs require review from a maintainer. We value collaborative review!
+
 </details>
 
 <details>
 <summary><strong>How long until my PR is reviewed?</strong></summary>
 
 We aim to review PRs within **48-72 hours**. If you haven't heard back after 5 days, feel free to ping us with a comment.
+
 </details>
 
 <details>
@@ -702,6 +713,7 @@ git checkout -b feature/add-graphql-api develop
 # ... work on GraphQL ...
 git push origin feature/add-graphql-api
 ```
+
 </details>
 
 <details>
@@ -721,6 +733,7 @@ If you already pushed:
 git commit --amend -m "fix(cli): correct commit message"
 git push --force origin feature/my-branch
 ```
+
 </details>
 
 ---

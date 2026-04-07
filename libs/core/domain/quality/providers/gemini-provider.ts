@@ -29,16 +29,16 @@
  * @module libs/core/domain/quality/providers/gemini-provider
  */
 
-import { t } from '@mcp-verify/shared';
+import { t } from "@mcp-verify/shared";
 import type {
   ILLMProvider,
   LLMMessage,
   LLMResponse,
   LLMProviderConfig,
-} from './llm-provider.interface';
+} from "./llm-provider.interface";
 
 interface GeminiContent {
-  role: 'user' | 'model';
+  role: "user" | "model";
   parts: { text: string }[];
 }
 
@@ -67,37 +67,38 @@ export class GeminiProvider implements ILLMProvider {
    */
   private readonly CONTEXT_WINDOWS: Record<string, number> = {
     // Gemini 3.0 (Latest)
-    'gemini-3.0-pro': 2_000_000,
-    'gemini-3.0-flash': 1_000_000,
+    "gemini-3.0-pro": 2_000_000,
+    "gemini-3.0-flash": 1_000_000,
     // Gemini 2.5
-    'gemini-2.5-pro': 2_000_000,
-    'gemini-2.5-flash': 1_000_000,
+    "gemini-2.5-pro": 2_000_000,
+    "gemini-2.5-flash": 1_000_000,
     // Gemini 2.0
-    'gemini-2.0-flash': 1_000_000,
-    'gemini-2.0-flash-lite': 1_000_000,
+    "gemini-2.0-flash": 1_000_000,
+    "gemini-2.0-flash-lite": 1_000_000,
     // Gemini 1.5 (Legacy)
-    'gemini-1.5-pro': 2_000_000,
-    'gemini-1.5-flash': 1_000_000,
-    'gemini-1.5-flash-8b': 1_000_000,
+    "gemini-1.5-pro": 2_000_000,
+    "gemini-1.5-flash": 1_000_000,
+    "gemini-1.5-flash-8b": 1_000_000,
   };
 
   constructor(config: LLMProviderConfig) {
     this.config = config;
-    this.baseUrl = config.baseUrl || 'https://generativelanguage.googleapis.com/v1beta';
+    this.baseUrl =
+      config.baseUrl || "https://generativelanguage.googleapis.com/v1beta";
 
     if (!this.config.apiKey) {
       throw new Error(
-        t('gemini_api_key_not_configured') ||
-        'Google API key not configured. Set GOOGLE_API_KEY environment variable.'
+        t("gemini_api_key_not_configured") ||
+          "Google API key not configured. Set GOOGLE_API_KEY environment variable.",
       );
     }
   }
 
   getName(): string {
     const modelName = this.config.model
-      .replace('gemini-', 'Gemini ')
-      .replace(/-/g, ' ')
-      .replace(/(\d)\.(\d)/g, '$1.$2');
+      .replace("gemini-", "Gemini ")
+      .replace(/-/g, " ")
+      .replace(/(\d)\.(\d)/g, "$1.$2");
     return `Google ${modelName}`;
   }
 
@@ -109,8 +110,8 @@ export class GeminiProvider implements ILLMProvider {
     // Validate API key format (Google API keys start with AIza)
     if (!this.isValidGoogleKey(this.config.apiKey)) {
       console.warn(
-        t('gemini_invalid_key_format') ||
-        'Invalid Google API key format. Keys should start with "AIza".'
+        t("gemini_invalid_key_format") ||
+          'Invalid Google API key format. Keys should start with "AIza".',
       );
       return false;
     }
@@ -120,9 +121,13 @@ export class GeminiProvider implements ILLMProvider {
 
   async complete(
     messages: LLMMessage[],
-    options?: { maxTokens?: number; temperature?: number; timeout?: number }
+    options?: { maxTokens?: number; temperature?: number; timeout?: number },
   ): Promise<LLMResponse> {
-    const { maxTokens = 2000, temperature = 0.2, timeout = 30000 } = options || {};
+    const {
+      maxTokens = 2000,
+      temperature = 0.2,
+      timeout = 30000,
+    } = options || {};
 
     // Convert messages to Gemini format
     const contents = this.convertToGeminiFormat(messages);
@@ -136,9 +141,9 @@ export class GeminiProvider implements ILLMProvider {
 
     try {
       const response = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           contents,
@@ -148,10 +153,16 @@ export class GeminiProvider implements ILLMProvider {
           },
           safetySettings: [
             // Allow all content for security analysis
-            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+            {
+              category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+              threshold: "BLOCK_NONE",
+            },
+            {
+              category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+              threshold: "BLOCK_NONE",
+            },
           ],
         }),
         signal: controller.signal,
@@ -164,10 +175,10 @@ export class GeminiProvider implements ILLMProvider {
         throw new Error(`Gemini API error (${response.status}): ${errorBody}`);
       }
 
-      const data = await response.json() as unknown as GeminiResponse;
+      const data = (await response.json()) as unknown as GeminiResponse;
 
       // Extract text from response
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
       return {
         text,
@@ -183,7 +194,7 @@ export class GeminiProvider implements ILLMProvider {
     } catch (error) {
       clearTimeout(timeoutId);
 
-      if (error instanceof Error && error.name === 'AbortError') {
+      if (error instanceof Error && error.name === "AbortError") {
         throw new Error(`Gemini API timeout after ${timeout}ms`);
       }
 
@@ -193,12 +204,12 @@ export class GeminiProvider implements ILLMProvider {
 
   getModelInfo(): {
     name: string;
-    provider: 'anthropic' | 'ollama' | 'openai' | 'gemini' | 'custom';
+    provider: "anthropic" | "ollama" | "openai" | "gemini" | "custom";
     contextWindow: number;
   } {
     return {
       name: this.config.model,
-      provider: 'gemini',
+      provider: "gemini",
       contextWindow: this.CONTEXT_WINDOWS[this.config.model] || 1_000_000,
     };
   }
@@ -211,22 +222,22 @@ export class GeminiProvider implements ILLMProvider {
    */
   private convertToGeminiFormat(messages: LLMMessage[]): GeminiContent[] {
     const contents: GeminiContent[] = [];
-    let systemPrompt = '';
+    let systemPrompt = "";
 
     for (const message of messages) {
-      if (message.role === 'system') {
+      if (message.role === "system") {
         // Collect system messages to prepend to first user message
-        systemPrompt += message.content + '\n\n';
+        systemPrompt += message.content + "\n\n";
         continue;
       }
 
-      const role = message.role === 'assistant' ? 'model' : 'user';
+      const role = message.role === "assistant" ? "model" : "user";
       let content = message.content;
 
       // Prepend system prompt to first user message
-      if (role === 'user' && systemPrompt && contents.length === 0) {
+      if (role === "user" && systemPrompt && contents.length === 0) {
         content = systemPrompt + content;
-        systemPrompt = '';
+        systemPrompt = "";
       }
 
       contents.push({
@@ -238,7 +249,7 @@ export class GeminiProvider implements ILLMProvider {
     // If we only have system messages, convert to user message
     if (contents.length === 0 && systemPrompt) {
       contents.push({
-        role: 'user',
+        role: "user",
         parts: [{ text: systemPrompt.trim() }],
       });
     }

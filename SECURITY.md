@@ -140,21 +140,21 @@ When using mcp-verify as an MCP server within Claude Desktop:
 
 mcp-verify detects vulnerability patterns across 60 security rules organized in 6 threat category blocks (OWASP Top 10, MCP-specific, OWASP LLM Top 10, Multi-Agent Attacks, Enterprise Compliance, AI Weaponization). Below are the core OWASP and MCP-specific rules (first 21 of 60 total):
 
-| Code         | Rule                       | Description                                  |
-|--------------|----------------------------|----------------------------------------------|
-| **SEC-001**  | Authentication Bypass      | Weak auth patterns, credential exposure      |
-| **SEC-002**  | Command Injection          | `exec()`, `eval()`, shell commands           |
-| **SEC-003**  | SQL Injection              | Dynamic SQL queries, unparameterized queries |
-| **SEC-004**  | SSRF                       | Server-side request forgery patterns         |
-| **SEC-005**  | XXE Injection              | XML external entity vulnerabilities          |
-| **SEC-006**  | Insecure Deserialization   | Unsafe object deserialization                |
-| **SEC-007**  | Path Traversal             | Directory traversal, file access             |
-| **SEC-008**  | Data Leakage               | API keys, secrets in descriptions            |
-| **SEC-009**  | Sensitive Data Exposure    | PII, credentials in parameters               |
-| **SEC-010**  | Rate Limiting              | Missing rate limit protection                |
-| **SEC-011**  | ReDoS                      | Regular expression denial of service         |
-| **SEC-012**  | Weak Cryptography          | MD5, SHA1, weak algorithms                   |
-| **SEC-013**  | Prompt Injection           | Indirect injection vectors, missing limits   |
+| Code        | Rule                     | Description                                  |
+| ----------- | ------------------------ | -------------------------------------------- |
+| **SEC-001** | Authentication Bypass    | Weak auth patterns, credential exposure      |
+| **SEC-002** | Command Injection        | `exec()`, `eval()`, shell commands           |
+| **SEC-003** | SQL Injection            | Dynamic SQL queries, unparameterized queries |
+| **SEC-004** | SSRF                     | Server-side request forgery patterns         |
+| **SEC-005** | XXE Injection            | XML external entity vulnerabilities          |
+| **SEC-006** | Insecure Deserialization | Unsafe object deserialization                |
+| **SEC-007** | Path Traversal           | Directory traversal, file access             |
+| **SEC-008** | Data Leakage             | API keys, secrets in descriptions            |
+| **SEC-009** | Sensitive Data Exposure  | PII, credentials in parameters               |
+| **SEC-010** | Rate Limiting            | Missing rate limit protection                |
+| **SEC-011** | ReDoS                    | Regular expression denial of service         |
+| **SEC-012** | Weak Cryptography        | MD5, SHA1, weak algorithms                   |
+| **SEC-013** | Prompt Injection         | Indirect injection vectors, missing limits   |
 
 ### Protocol Compliance (JSON-RPC 2.0)
 
@@ -193,6 +193,7 @@ mcp-verify includes a **Security Gateway v1.0** (`mcp-verify proxy`) - a product
 ```
 
 The Security Gateway operates **transparently** with defense-in-depth:
+
 1. **3-Layer Defense System** - Progressive analysis with early exit on detection
 2. **Client-Aware Panic Stop** - Isolated strikes per client to prevent global DoS
 3. **5 Classic Guardrails** - Additional protection layer (HTTPS, Input Sanitization, PII Redaction, Rate Limiting, Command Blocking)
@@ -210,17 +211,20 @@ The Security Gateway implements **progressive threat detection** with early exit
 **Purpose**: Block high-confidence threats with zero false positives using pattern-based detection.
 
 **Detection Methods**:
+
 - **SQL Injection (SEC-001)**: Detects `OR 1=1`, `UNION SELECT`, `'; DROP TABLE`, SQL comments
 - **Command Injection (SEC-002)**: Detects shell metacharacters (`;`, `|`, `&`, `` ` ``), command substitution (`$()`), dangerous commands (`rm -rf`, `del /f`)
 - **Path Traversal (SEC-003)**: Detects `../`, `..\\`, absolute paths (`/etc/`, `C:\`)
 
 **Characteristics**:
+
 - **Runtime Analysis**: Checks actual parameter values (not just schemas)
 - **Universal Application**: Runs on ALL tools (not filtered by name)
 - **Guaranteed Latency**: <10ms via pure regex (no I/O)
 - **Zero False Positives**: Only blocks confirmed attack patterns
 
 **Example**:
+
 ```typescript
 // Client sends SQL injection
 { method: 'tools/call', params: { name: 'query_users', arguments: { filter: "' OR 1=1--" } } }
@@ -254,16 +258,19 @@ The Security Gateway implements **progressive threat detection** with early exit
 **Purpose**: Detect complex attack patterns using heuristic scoring and stateful analysis.
 
 **Detection Methods**:
+
 - **Dangerous Tool Chaining (SEC-020)**: Detects suspicious sequences like `execute→read_file` (execute then exfiltrate)
 - **Excessive Permissions (SEC-023)**: Flags `skipConfirmation: true`, `bypassValidation: true`, missing `confirm: true`
 - **Anomaly Detection**: Statistical analysis of parameter distributions
 
 **Characteristics**:
+
 - **Stateful Analysis**: Tracks tool call history per session
 - **Heuristic Scoring**: Accumulates evidence across multiple parameters
 - **Configurable Thresholds**: Tune sensitivity per deployment
 
 **Example**:
+
 ```typescript
 // Client requests privileged action without confirmation
 { method: 'tools/call', params: { name: 'delete_all', arguments: { skipConfirmation: true } } }
@@ -293,11 +300,13 @@ The Security Gateway implements **progressive threat detection** with early exit
 **Purpose**: Detect novel attacks and semantic threats using AI-powered analysis.
 
 **Detection Methods**:
+
 - **Semantic Prompt Injection**: Context-aware analysis of tool call intent
 - **Polymorphic Attacks**: Novel patterns not covered by static rules
 - **Social Engineering**: Context-based manipulation detection
 
 **When to Enable**:
+
 - ✅ Research environments (studying novel attacks)
 - ✅ High-security deployments (military, finance, healthcare)
 - ✅ Honeypot/deception systems
@@ -305,6 +314,7 @@ The Security Gateway implements **progressive threat detection** with early exit
 - ❌ High-throughput systems (LLM API costs $5-$15 per 1000 requests)
 
 **Configuration**:
+
 ```bash
 # Enable Layer 3 (disabled by default)
 mcp-verify proxy "node server.js" --enable-llm-layer
@@ -314,6 +324,7 @@ mcp-verify proxy "node server.js" --no-llm-layer
 ```
 
 **Characteristics**:
+
 - **Context-Aware**: Understands semantic meaning beyond patterns
 - **Adaptive**: Learns from novel attack vectors
 - **Explainable**: Provides reasoning for each detection
@@ -327,6 +338,7 @@ The Panic Stop system prevents **Denial of Service (DoS) attacks** caused by mal
 ##### Problem: Global DoS Vulnerability
 
 **Without client isolation**:
+
 ```
 Client A (malicious) → Triggers 3x HTTP 429 errors → GLOBAL panic mode activated
 Client B (legitimate) → BLOCKED as collateral damage ❌
@@ -347,6 +359,7 @@ Each client has **isolated strike tracking** using `Map<clientId, RateLimitState
 ```
 
 **Client ID Extraction Priority**:
+
 1. **`x-client-id` header** (explicit client identification)
 2. **`x-forwarded-for` header** (proxy chain, first IP extracted)
 3. **`req.socket.remoteAddress`** (direct connection IP)
@@ -354,13 +367,14 @@ Each client has **isolated strike tracking** using `Map<clientId, RateLimitState
 
 ##### Progressive Backoff (3 Strikes)
 
-| Strike       | Trigger          | Backoff Duration | Behavior                                   | Recovery                 |
-|--------------|------------------|------------------|--------------------------------------------|--------------------------|
-| **Strike 1** | First HTTP 429   | 30 seconds       | Client blocked temporarily                 | Auto-resume after 30s    |
-| **Strike 2** | Second HTTP 429  | 60 seconds       | Extended block with warning                | Auto-resume after 60s    |
-| **Strike 3** | Third HTTP 429   | **Permanent**    | **PANIC MODE** - client permanently blocked| Only proxy restart clears|
+| Strike       | Trigger         | Backoff Duration | Behavior                                    | Recovery                  |
+| ------------ | --------------- | ---------------- | ------------------------------------------- | ------------------------- |
+| **Strike 1** | First HTTP 429  | 30 seconds       | Client blocked temporarily                  | Auto-resume after 30s     |
+| **Strike 2** | Second HTTP 429 | 60 seconds       | Extended block with warning                 | Auto-resume after 60s     |
+| **Strike 3** | Third HTTP 429  | **Permanent**    | **PANIC MODE** - client permanently blocked | Only proxy restart clears |
 
 **Example Flow**:
+
 ```bash
 # Client 192.168.1.100 triggers first 429
 [INFO] Strike 1/3 for client 192.168.1.100: Entering 30 second backoff
@@ -402,6 +416,7 @@ Each client has **isolated strike tracking** using `Map<clientId, RateLimitState
 ```
 
 **Anti-DoS Properties**:
+
 - ✅ **Client Isolation**: One malicious client cannot affect others
 - ✅ **Self-Healing**: Automatic recovery after backoff period
 - ✅ **Forensic Trail**: Complete audit log with client IDs and timestamps
@@ -418,12 +433,14 @@ The following guardrails run **AFTER** the Security Gateway passes a request, pr
 **Purpose**: Ensures all external HTTP requests are upgraded to HTTPS to prevent man-in-the-middle attacks.
 
 **How it works**:
+
 - Intercepts tool calls that include URL parameters (e.g., `fetch_url`, `download_file`)
 - Detects HTTP URLs using pattern matching: `http://` (non-secure)
 - Automatically upgrades to `https://` before forwarding to server
 - Logs all upgrades for security auditing
 
 **Example**:
+
 ```typescript
 // Client request
 { method: 'tools/call', params: { name: 'fetch_data', arguments: { url: 'http://api.example.com/data' } } }
@@ -436,11 +453,13 @@ The following guardrails run **AFTER** the Security Gateway passes a request, pr
 ```
 
 **Protection against**:
+
 - Man-in-the-middle (MITM) attacks
 - Credential sniffing on public networks
 - API key interception
 
 **Limitations**:
+
 - Does not protect internal localhost requests (assumed trusted)
 - Cannot enforce HTTPS for embedded URLs in text responses
 
@@ -449,6 +468,7 @@ The following guardrails run **AFTER** the Security Gateway passes a request, pr
 **Purpose**: Neutralizes common injection attacks by stripping dangerous characters from tool parameters.
 
 **How it works**:
+
 - Scans all string parameters in tool calls
 - Applies multiple sanitization rules:
   - **SQL Injection**: Removes `'`, `"`, `;`, `--`, `/*`, `*/`, `UNION`, `SELECT`, `DROP`, `DELETE`, `INSERT`
@@ -458,6 +478,7 @@ The following guardrails run **AFTER** the Security Gateway passes a request, pr
 - Returns sanitized parameters to tool implementation
 
 **Example**:
+
 ```typescript
 // Malicious client request
 { method: 'tools/call', params: { name: 'search_users', arguments: { query: "' OR 1=1--" } } }
@@ -470,12 +491,14 @@ The following guardrails run **AFTER** the Security Gateway passes a request, pr
 ```
 
 **Protection against**:
+
 - SQL Injection (OWASP A03:2021)
 - Cross-Site Scripting (OWASP A03:2021)
 - Command Injection (OWASP A03:2021)
 - Path Traversal (OWASP A01:2021)
 
 **Limitations**:
+
 - May cause false positives for legitimate queries containing SQL keywords (e.g., "SELECT a product from the menu")
 - Cannot detect context-aware injections (e.g., second-order SQL injection)
 - Does not validate business logic (e.g., "legal" queries that bypass authorization)
@@ -485,6 +508,7 @@ The following guardrails run **AFTER** the Security Gateway passes a request, pr
 **Purpose**: Prevents sensitive personal information from leaking in logs and responses.
 
 **How it works**:
+
 - Scans **server responses** (not client requests) for PII patterns
 - Redacts using regex patterns:
   - **Credit Cards**: `\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}` → `****-****-****-1234`
@@ -496,6 +520,7 @@ The following guardrails run **AFTER** the Security Gateway passes a request, pr
 - Redacts **both response payloads and audit logs**
 
 **Example**:
+
 ```typescript
 // Server response (unredacted)
 { result: { customer: 'John Doe', email: 'john@example.com', card: '4532-1234-5678-9010' } }
@@ -508,12 +533,14 @@ The following guardrails run **AFTER** the Security Gateway passes a request, pr
 ```
 
 **Protection against**:
+
 - Data Leakage (OWASP A01:2021)
 - GDPR violations (PII exposure)
 - PCI-DSS violations (credit card exposure)
 - Compliance violations (HIPAA, CCPA)
 
 **Limitations**:
+
 - Regex-based detection may miss obfuscated PII (e.g., `john [at] example.com`)
 - Cannot detect custom PII formats (e.g., internal employee IDs)
 - Does not prevent PII from being **processed** by the server (only redacted in logs)
@@ -523,6 +550,7 @@ The following guardrails run **AFTER** the Security Gateway passes a request, pr
 **Purpose**: Prevents Denial of Service (DoS) attacks by limiting request frequency per tool.
 
 **How it works**:
+
 - Implements **Token Bucket Algorithm** per tool name
 - Default limits:
   - **Capacity**: 100 requests per tool
@@ -532,6 +560,7 @@ The following guardrails run **AFTER** the Security Gateway passes a request, pr
 - Rejects excess requests with `429 Too Many Requests` error
 
 **Example**:
+
 ```typescript
 // Client sends 150 requests to 'execute_query' in 1 second
 
@@ -546,12 +575,14 @@ The following guardrails run **AFTER** the Security Gateway passes a request, pr
 ```
 
 **Protection against**:
+
 - Denial of Service (DoS) attacks
 - Resource exhaustion
 - Accidental runaway loops (e.g., infinite LLM recursion)
 - API quota abuse
 
 **Configuration**:
+
 ```bash
 # Customize limits via environment variables
 MCP_RATE_LIMIT_CAPACITY=200 \
@@ -560,6 +591,7 @@ mcp-verify proxy "node server.js"
 ```
 
 **Limitations**:
+
 - Per-tool limits, not per-client (all clients share the same bucket)
 - No persistent state (limits reset on proxy restart)
 - Does not protect against **distributed** DoS (multiple proxies)
@@ -569,6 +601,7 @@ mcp-verify proxy "node server.js"
 **Purpose**: Prevents execution of dangerous shell commands that could compromise the host system.
 
 **How it works**:
+
 - Scans tool parameters for **command-like patterns**
 - Blocks if any of these patterns are detected:
   - **Destructive**: `rm -rf`, `del /f`, `format`, `DROP DATABASE`
@@ -578,6 +611,7 @@ mcp-verify proxy "node server.js"
 - Returns error before request reaches server
 
 **Example**:
+
 ```typescript
 // Malicious client request
 { method: 'tools/call', params: { name: 'run_script', arguments: { command: 'rm -rf /var/log/*' } } }
@@ -590,18 +624,21 @@ mcp-verify proxy "node server.js"
 ```
 
 **Protection against**:
+
 - Remote Code Execution (RCE)
 - Data Exfiltration
 - Privilege Escalation
 - System Compromise
 
 **Limitations**:
+
 - Pattern-based (can be bypassed with obfuscation: `r""m -rf`)
 - Cannot detect context-aware malicious logic (e.g., "legal" command with malicious parameters)
 - May block legitimate use cases (e.g., `curl` in a debugging tool)
 
 **Bypass Protection**:
 To allow specific commands, use an allow-list:
+
 ```bash
 MCP_ALLOW_COMMANDS="curl,wget" mcp-verify proxy "node server.js"
 ```
@@ -611,16 +648,19 @@ MCP_ALLOW_COMMANDS="curl,wget" mcp-verify proxy "node server.js"
 The Proxy emits **structured security events** to **stderr** for integration with SIEM/logging systems.
 
 **Log Format**:
+
 ```
 [LEVEL] 🔒 GUARDRAIL_NAME: Event description (metadata)
 ```
 
 **Log Levels**:
+
 - `[INFO]`: Normal security events (sanitization, redaction, HTTPS upgrade)
 - `[WARN]`: Blocked requests (rate limiting, command blocking)
 - `[ERROR]`: Internal proxy errors (misconfiguration, guardrail failures)
 
 **Example Audit Log**:
+
 ```bash
 [INFO] 🔒 HTTPS_ENFORCER: Upgraded URL from HTTP to HTTPS: api.example.com
 [INFO] 🛡️ INPUT_SANITIZER: Sanitized SQL injection attempt in tool 'search_users' (removed: ', --)
@@ -630,6 +670,7 @@ The Proxy emits **structured security events** to **stderr** for integration wit
 ```
 
 **Integration with Logging Systems**:
+
 ```bash
 # Datadog
 mcp-verify proxy "node server.js" 2>&1 | tee /dev/stderr | datadog-agent logs
@@ -645,6 +686,7 @@ mcp-verify proxy "node server.js" 2> security-audit.log
 ```
 
 **Security Event Metrics**:
+
 - Total requests proxied
 - Blocked requests per Security Gateway layer (L1/L2/L3)
 - Client strike counts and panic mode activations
@@ -656,21 +698,23 @@ mcp-verify proxy "node server.js" 2> security-audit.log
 
 **Performance Impact (Security Gateway v1.0)**:
 
-| Configuration | Latency | Use Case | Cost (approx.) |
-|---------------|---------|----------|----------------|
-| **Layer 1+2 only (default)** | +10-50ms | Production, high-throughput | $0 |
-| **Layer 1+2 with cache hits** | +<1ms | Repeated requests (65-75% hit ratio) | $0 |
-| **Layer 1+2+3 (LLM enabled)** | +500-2000ms | Research, high-security | $5-$15 per 1K req* |
-| **Classic Guardrails only** | +5-15ms | Legacy compatibility | $0 |
+| Configuration                 | Latency     | Use Case                             | Cost (approx.)      |
+| ----------------------------- | ----------- | ------------------------------------ | ------------------- |
+| **Layer 1+2 only (default)**  | +10-50ms    | Production, high-throughput          | $0                  |
+| **Layer 1+2 with cache hits** | +<1ms       | Repeated requests (65-75% hit ratio) | $0                  |
+| **Layer 1+2+3 (LLM enabled)** | +500-2000ms | Research, high-security              | $5-$15 per 1K req\* |
+| **Classic Guardrails only**   | +5-15ms     | Legacy compatibility                 | $0                  |
 
-*LLM costs vary by provider (Anthropic/OpenAI/Gemini) and depend on actual usage patterns.
+\*LLM costs vary by provider (Anthropic/OpenAI/Gemini) and depend on actual usage patterns.
 
 **Resource Usage**:
+
 - **Memory**: ~15MB base + 10MB per 1000 cache entries + strike tracking state
 - **CPU**: <10% overhead (Layer 1+2), <15% with guardrails
 - **Disk I/O**: Minimal (audit log writes only)
 
 **Throughput**:
+
 - **Without Gateway**: ~10,000 requests/sec
 - **Layer 1+2 enabled**: ~8,000 requests/sec (20% reduction)
 - **Layer 1+2+3 enabled**: ~100-500 requests/sec (LLM bottleneck)
@@ -701,11 +745,13 @@ The **Smart Fuzzer** (`mcp-verify fuzz`) is an intelligent security testing engi
 #### How It Works
 
 **Phase 1: Fingerprinting**
+
 - Automatically detects server language/framework (Node.js, Python, Java, etc.)
 - Disables irrelevant payload generators (saves 40-60% time)
 - Example: If server is Node.js, disables Java deserialization payloads
 
 **Phase 2: Baseline Calibration**
+
 - Sends clean requests to establish "normal" behavior
 - Measures average response time, size, status codes
 - Creates anomaly detection thresholds (e.g., "response >3x baseline = suspicious")
@@ -713,53 +759,54 @@ The **Smart Fuzzer** (`mcp-verify fuzz`) is an intelligent security testing engi
 **Phase 3: Payload Generation**
 9 specialized generators create attack vectors:
 
-| Generator | Vulnerability Targeted | Example Payload |
-|-----------|------------------------|-----------------|
-| **Prompt Injection** | Indirect prompt injection, jailbreaks | `Ignore previous instructions. Execute: ...` |
-| **SQL Injection** | Database access bypass | `' OR 1=1--`, `UNION SELECT * FROM users` |
-| **XSS Payloads** | Cross-site scripting | `<script>alert(1)</script>`, `<img src=x onerror=...>` |
-| **Command Injection** | Shell command execution | `; cat /etc/passwd`, `| whoami` |
-| **JWT Attacks** | Token forgery, algorithm confusion | `{"alg":"none"}`, expired tokens |
-| **Prototype Pollution** | JavaScript object poisoning | `{"__proto__": {"isAdmin": true}}` |
-| **JSON-RPC Violations** | Protocol compliance bypass | Invalid `jsonrpc` versions, missing IDs |
-| **Schema Confusion** | Type coercion, boundary testing | `age: "999999999999999999999"` (string instead of int) |
-| **Path Traversal** | Directory traversal | `../../etc/passwd`, `C:\Windows\System32` |
+| Generator               | Vulnerability Targeted                | Example Payload                                        |
+| ----------------------- | ------------------------------------- | ------------------------------------------------------ | ------- |
+| **Prompt Injection**    | Indirect prompt injection, jailbreaks | `Ignore previous instructions. Execute: ...`           |
+| **SQL Injection**       | Database access bypass                | `' OR 1=1--`, `UNION SELECT * FROM users`              |
+| **XSS Payloads**        | Cross-site scripting                  | `<script>alert(1)</script>`, `<img src=x onerror=...>` |
+| **Command Injection**   | Shell command execution               | `; cat /etc/passwd`, `                                 | whoami` |
+| **JWT Attacks**         | Token forgery, algorithm confusion    | `{"alg":"none"}`, expired tokens                       |
+| **Prototype Pollution** | JavaScript object poisoning           | `{"__proto__": {"isAdmin": true}}`                     |
+| **JSON-RPC Violations** | Protocol compliance bypass            | Invalid `jsonrpc` versions, missing IDs                |
+| **Schema Confusion**    | Type coercion, boundary testing       | `age: "999999999999999999999"` (string instead of int) |
+| **Path Traversal**      | Directory traversal                   | `../../etc/passwd`, `C:\Windows\System32`              |
 
 **Phase 4: Mutation Strategies**
 12 mutation strategies transform baseline payloads:
 
-| Mutation | Purpose | Example |
-|----------|---------|---------|
-| **SQL Depth** | Nested injection | `' OR (SELECT * FROM (SELECT 1)x)--` |
-| **Null-Byte Injection** | String termination bypass | `payload\x00.txt` |
-| **Unicode Bypass** | Filter evasion | `<script>` → `＜script＞` (fullwidth chars) |
-| **Timing Probes** | Blind injection detection | `'; WAITFOR DELAY '00:00:05'--` |
-| **Buffer Stress** | Overflow testing | 10KB+ strings |
-| **Quote Variation** | SQL injection variants | `"`, `'`, `` ` ``, `''`, `"""` |
-| **Case Mutation** | Case-sensitive filter bypass | `SeLeCt`, `uNiOn` |
-| **Encoding Bypass** | WAF evasion | URL-encode, double-encode, hex |
-| **Polyglot Payloads** | Multi-context injection | `';alert(1)//` (SQL + XSS) |
-| **Recursive Nesting** | Parser exhaustion | `{{{{{...}}}}}` (1000+ levels) |
-| **Type Confusion** | Type coercion bugs | `true` → `"true"` → `1` → `[true]` |
-| **Boundary Probing** | Min/max violations | `age: -1`, `age: 9999999999` |
+| Mutation                | Purpose                      | Example                                     |
+| ----------------------- | ---------------------------- | ------------------------------------------- |
+| **SQL Depth**           | Nested injection             | `' OR (SELECT * FROM (SELECT 1)x)--`        |
+| **Null-Byte Injection** | String termination bypass    | `payload\x00.txt`                           |
+| **Unicode Bypass**      | Filter evasion               | `<script>` → `＜script＞` (fullwidth chars) |
+| **Timing Probes**       | Blind injection detection    | `'; WAITFOR DELAY '00:00:05'--`             |
+| **Buffer Stress**       | Overflow testing             | 10KB+ strings                               |
+| **Quote Variation**     | SQL injection variants       | `"`, `'`, `` ` ``, `''`, `"""`              |
+| **Case Mutation**       | Case-sensitive filter bypass | `SeLeCt`, `uNiOn`                           |
+| **Encoding Bypass**     | WAF evasion                  | URL-encode, double-encode, hex              |
+| **Polyglot Payloads**   | Multi-context injection      | `';alert(1)//` (SQL + XSS)                  |
+| **Recursive Nesting**   | Parser exhaustion            | `{{{{{...}}}}}` (1000+ levels)              |
+| **Type Confusion**      | Type coercion bugs           | `true` → `"true"` → `1` → `[true]`          |
+| **Boundary Probing**    | Min/max violations           | `age: -1`, `age: 9999999999`                |
 
 **Phase 5: Anomaly Detection**
 10 detectors analyze responses for exploitation signs:
 
-| Detector | What It Detects | Confidence Signal |
-|----------|-----------------|-------------------|
-| **Timing Anomalies** | Blind injection, DoS | Response >3x baseline (e.g., 50ms → 200ms) |
-| **Error Disclosure** | Stack traces, SQL errors | Keywords: `SQLException`, `Traceback`, `Fatal error` |
-| **XSS Reflection** | Payload echoed in response | Detects `<script>`, `onerror=` in output |
-| **Prompt Leaks** | System instructions exposed | Patterns: `You are a helpful assistant...` |
-| **Jailbreak Success** | Guardrail bypass | Response contains restricted content |
-| **Path Traversal** | Directory listing, file access | Detects `/etc/passwd`, `root:x:0:0` |
-| **Weak Identifiers** | Predictable IDs, UUIDs | Sequential IDs: `1`, `2`, `3` vs. `a3f5-9d2c-...` |
-| **Info Disclosure** | Version numbers, internal paths | `Express 4.17.1`, `/home/user/app/src/` |
-| **JWT Manipulation** | Forged tokens accepted | `alg: none` succeeds, expired tokens valid |
-| **Prototype Pollution** | Polluted properties in response | `isAdmin: true` when it shouldn't exist |
+| Detector                | What It Detects                 | Confidence Signal                                    |
+| ----------------------- | ------------------------------- | ---------------------------------------------------- |
+| **Timing Anomalies**    | Blind injection, DoS            | Response >3x baseline (e.g., 50ms → 200ms)           |
+| **Error Disclosure**    | Stack traces, SQL errors        | Keywords: `SQLException`, `Traceback`, `Fatal error` |
+| **XSS Reflection**      | Payload echoed in response      | Detects `<script>`, `onerror=` in output             |
+| **Prompt Leaks**        | System instructions exposed     | Patterns: `You are a helpful assistant...`           |
+| **Jailbreak Success**   | Guardrail bypass                | Response contains restricted content                 |
+| **Path Traversal**      | Directory listing, file access  | Detects `/etc/passwd`, `root:x:0:0`                  |
+| **Weak Identifiers**    | Predictable IDs, UUIDs          | Sequential IDs: `1`, `2`, `3` vs. `a3f5-9d2c-...`    |
+| **Info Disclosure**     | Version numbers, internal paths | `Express 4.17.1`, `/home/user/app/src/`              |
+| **JWT Manipulation**    | Forged tokens accepted          | `alg: none` succeeds, expired tokens valid           |
+| **Prototype Pollution** | Polluted properties in response | `isAdmin: true` when it shouldn't exist              |
 
 **Phase 6: Feedback Loop**
+
 - If detector flags a response as suspicious, fuzzer generates **mutations** of that payload
 - Example: If `' OR 1=1--` causes timing anomaly, fuzzer tries:
   - `" OR 1=1--` (quote variation)
@@ -770,18 +817,22 @@ The **Smart Fuzzer** (`mcp-verify fuzz`) is an intelligent security testing engi
 #### Security Benefits
 
 **1. Runtime Vulnerability Detection**
+
 - Unlike static analysis, fuzzer **executes** payloads against running servers
 - Catches vulnerabilities that only manifest at runtime (e.g., weak validation logic)
 
 **2. Adaptive Testing**
+
 - Learns from server responses to refine attack strategies
 - Example: If server blocks `<script>`, tries `<img onerror=...>`, `<svg onload=...>`
 
 **3. Baseline Comparison**
+
 - Establishes "known good" state before fuzzing
 - Eliminates false positives from legitimate slow operations
 
 **4. Comprehensive Coverage**
+
 - Tests **all parameter combinations** (nested objects, arrays, edge cases)
 - Example: For `{ user: { role: string } }`, tests:
   - `role: "admin"` (valid)
@@ -792,6 +843,7 @@ The **Smart Fuzzer** (`mcp-verify fuzz`) is an intelligent security testing engi
 #### Configuration & Safety
 
 **Controlling Intensity**:
+
 ```bash
 # Light fuzzing (25 payloads/tool, no mutations)
 mcp-verify fuzz "node server.js" --max-payloads 25 --no-mutations
@@ -804,11 +856,13 @@ mcp-verify fuzz "node server.js" --max-payloads 100 --mutations 5
 ```
 
 **Production Safety**:
+
 - ⚠️ **Never run against production** without authorization
 - Use `--concurrency 1 --delay 1000` to reduce impact
 - Enable `--dry-run` to preview payloads without sending
 
 **Ethical Considerations**:
+
 - Fuzzer is designed for **authorized security testing only**
 - Users are responsible for ensuring proper authorization
 - See [Responsible Disclosure Policy](#reporting-vulnerabilities)
@@ -816,12 +870,14 @@ mcp-verify fuzz "node server.js" --max-payloads 100 --mutations 5
 #### Limitations
 
 **What Fuzzer CANNOT Detect**:
+
 - ❌ **Business logic flaws** (e.g., "analyst can approve transactions" if schema allows it)
 - ❌ **Second-order vulnerabilities** (stored XSS that executes later)
 - ❌ **Zero-day exploits** (unknown attack vectors not in payload database)
 - ❌ **Human error** (misconfigured AWS S3 buckets, weak passwords)
 
 **False Positives**:
+
 - Timing anomalies may occur due to network latency, not vulnerabilities
 - Always manually verify CRITICAL findings before reporting
 
@@ -834,6 +890,7 @@ mcp-verify fuzz "node server.js" --max-payloads 100 --mutations 5
 #### Purpose
 
 Different environments require different security rigor:
+
 - **Development**: Fast iterations, minimal overhead → Light profile
 - **Staging**: Balanced testing before production → Balanced profile
 - **Pre-Production**: Maximum scrutiny, zero tolerance → Aggressive profile
@@ -842,15 +899,16 @@ Profiles provide **preset configurations** so users don't manually configure 20+
 
 #### Available Profiles
 
-| Profile | Use Case | Payloads/Tool | Mutations | Score Threshold | Fail On |
-|---------|----------|---------------|-----------|-----------------|---------|
-| **light** | Quick checks, CI/CD (fast feedback) | 25 | 0 | 60/100 | Critical only |
-| **balanced** | Regular testing (default) | 50 | 3 | 70/100 | Critical only |
-| **aggressive** | Pre-production audits (maximum rigor) | 100 | 5 | 90/100 | Critical + High |
+| Profile        | Use Case                              | Payloads/Tool | Mutations | Score Threshold | Fail On         |
+| -------------- | ------------------------------------- | ------------- | --------- | --------------- | --------------- |
+| **light**      | Quick checks, CI/CD (fast feedback)   | 25            | 0         | 60/100          | Critical only   |
+| **balanced**   | Regular testing (default)             | 50            | 3         | 70/100          | Critical only   |
+| **aggressive** | Pre-production audits (maximum rigor) | 100           | 5         | 90/100          | Critical + High |
 
 #### Profile Configuration Details
 
 **Light Profile**:
+
 ```json
 {
   "fuzzing": {
@@ -881,6 +939,7 @@ Profiles provide **preset configurations** so users don't manually configure 20+
 **Use Case**: Fast CI/CD pipelines where developers need immediate feedback (< 30 seconds per tool).
 
 **Balanced Profile** (Default):
+
 ```json
 {
   "fuzzing": {
@@ -911,6 +970,7 @@ Profiles provide **preset configurations** so users don't manually configure 20+
 **Use Case**: Standard security testing in staging environments (1-3 minutes per tool).
 
 **Aggressive Profile**:
+
 ```json
 {
   "fuzzing": {
@@ -943,6 +1003,7 @@ Profiles provide **preset configurations** so users don't manually configure 20+
 #### Usage
 
 **CLI (One-Shot)**:
+
 ```bash
 # Validate with light profile
 mcp-verify validate "node server.js" --profile light
@@ -952,6 +1013,7 @@ mcp-verify fuzz "node server.js" --profile aggressive
 ```
 
 **Interactive Shell**:
+
 ```bash
 $ mcp-verify
 > profile set aggressive
@@ -962,6 +1024,7 @@ $ mcp-verify
 ```
 
 **Custom Profiles**:
+
 ```bash
 # Save current settings as custom profile
 > profile save my-custom-profile
@@ -975,16 +1038,19 @@ $ mcp-verify
 #### Security Implications
 
 **Light Profile Risks**:
+
 - ⚠️ May miss sophisticated attacks (no mutations, low payload count)
 - ⚠️ Timing-based attacks not detected (timing detection disabled)
 - ✅ Suitable for: Quick smoke tests, developer local testing
 
 **Balanced Profile**:
+
 - ✅ Good coverage of common vulnerabilities
 - ✅ Reasonable trade-off between speed and rigor
 - ✅ Suitable for: CI/CD, staging environment testing
 
 **Aggressive Profile Risks**:
+
 - ⚠️ High resource consumption (may trigger rate limiting)
 - ⚠️ Long execution time (not suitable for rapid iteration)
 - ✅ Suitable for: Pre-production audits, compliance testing
@@ -992,12 +1058,14 @@ $ mcp-verify
 #### Configuration Hierarchy
 
 Profiles respect the configuration hierarchy:
+
 1. **CLI Flags** (highest priority): `--max-payloads 200` overrides profile
 2. **Active Context**: Context-specific settings override profile
 3. **Profile**: Preset or custom profile settings
 4. **System Defaults** (lowest priority): Fallback values
 
 **Example**:
+
 ```bash
 # Aggressive profile = 100 payloads, but CLI flag overrides to 200
 mcp-verify fuzz "node server.js" --profile aggressive --max-payloads 200
@@ -1013,11 +1081,13 @@ The **Interactive Shell** (`mcp-verify` without arguments) provides a persistent
 #### Security Features
 
 **1. Multi-Context Isolation**
+
 - Each context (dev, staging, prod) has **independent configuration**
 - Prevents accidental cross-environment contamination
 - Example: Switching from `dev` to `prod` does NOT carry over fuzzing settings
 
 **Example**:
+
 ```bash
 $ mcp-verify
 > context create dev
@@ -1034,22 +1104,26 @@ $ mcp-verify
 ```
 
 **2. Session Persistence Security**
+
 - Session state saved to `.mcp-verify/session.json` (per-project)
 - File permissions: `0600` (read/write by owner only)
 - **Secrets are NEVER persisted** (API keys, tokens excluded)
 
 **What is persisted**:
+
 - ✅ Target MCP server (e.g., `node server.js`)
 - ✅ Active language (en/es)
 - ✅ Active security profile (light/balanced/aggressive)
 - ✅ Context configurations
 
 **What is NOT persisted**:
+
 - ❌ API keys (loaded from environment only)
 - ❌ Command history containing secrets (redacted before save)
 - ❌ Temporary authentication tokens
 
 **3. Command History Redaction**
+
 - History saved to `~/.mcp-verify/history.json` (cross-session)
 - **Automatic secret redaction** before saving
 - Patterns redacted:
@@ -1058,6 +1132,7 @@ $ mcp-verify
   - `token: "ghp_..."` → `token: "***REDACTED***"`
 
 **Example**:
+
 ```bash
 # User types
 > validate node server.js --api-key sk-ant-api03-XXXXXX
@@ -1067,11 +1142,13 @@ $ mcp-verify
 ```
 
 **4. Environment Variable Security**
+
 - `.env` files auto-loaded on shell startup
 - Environment variables **NOT persisted** to session files
 - Loaded keys visible in `status` command for debugging
 
 **Example**:
+
 ```bash
 $ mcp-verify
 Loading environment from .env...
@@ -1085,14 +1162,17 @@ Environment:
 ```
 
 **What is secure**:
+
 - ✅ API keys loaded from `.env` (not hardcoded in shell commands)
 - ✅ `.env` excluded from version control (via `.gitignore`)
 
 **What is NOT secure**:
+
 - ❌ `.env` file permissions (user must set `chmod 600 .env`)
 - ❌ Environment variable leaks via OS process inspection (use encrypted secrets in production)
 
 **5. Output Redirection Safety**
+
 ```bash
 # Redirect command output to file
 > validate > report.txt
@@ -1107,6 +1187,7 @@ Environment:
 **Purpose**: Verify target MCP server is reachable and validates protocol compliance.
 
 **What it checks**:
+
 1. **Connection Status**: Can the proxy reach the server?
 2. **MCP Handshake**: Does the server respond to `initialize` request correctly?
 3. **Protocol Version**: Does the server support MCP 2024-11-05?
@@ -1114,6 +1195,7 @@ Environment:
 5. **Last Report**: Where was the last security report saved?
 
 **Example**:
+
 ```bash
 > status
 Workspace Status
@@ -1140,6 +1222,7 @@ Target Connection:
 ```
 
 **Security Value**:
+
 - Prevents accidental testing against **wrong server** (e.g., fuzzing prod instead of dev)
 - Validates **protocol compliance** before expensive fuzzing runs
 - Detects **dead targets** early (no wasted time on unreachable servers)
@@ -1147,21 +1230,25 @@ Target Connection:
 #### Autocomplete Security
 
 **File Path Completion**:
+
 - Only completes **readable files** (checks file permissions)
 - Prevents tab-completing restricted files (`/etc/shadow`, etc.)
 
 **Flag Completion**:
+
 - Only suggests **valid flags** for active command
 - Prevents typo-based injection (e.g., `--max-payloads` vs. `--max-paylaods`)
 
 #### Attack Surface
 
 **What Interactive Shell DOES NOT expose**:
+
 - ❌ Network listening ports (shell is local-only)
 - ❌ Web interfaces (no HTTP server)
 - ❌ Remote command execution (commands run in local process)
 
 **Threat Model**:
+
 - Shell assumes **trusted local user** (if attacker has shell access, game over)
 - Does NOT protect against **malicious MCP servers** (use proxy guardrails for that)
 
@@ -1174,6 +1261,7 @@ The **Secret Redaction System** prevents API keys, tokens, and credentials from 
 #### Redaction Targets
 
 **1. Command History**
+
 - Location: `~/.mcp-verify/history.json`
 - Redacts before saving to disk
 - Patterns detected:
@@ -1185,11 +1273,13 @@ The **Secret Redaction System** prevents API keys, tokens, and credentials from 
   - `Bearer <value>`
 
 **2. Session Files**
+
 - Location: `.mcp-verify/session.json`
 - API keys **NEVER** stored in session
 - Only references to environment variables stored (e.g., `"apiKeyEnv": "ANTHROPIC_API_KEY"`)
 
 **3. Logs**
+
 - All log output (stdout, stderr, debug logs) scanned for secrets
 - Redacted patterns:
   - API keys: `sk-****...****` (shows first 3 + last 4 chars)
@@ -1197,6 +1287,7 @@ The **Secret Redaction System** prevents API keys, tokens, and credentials from 
   - Passwords: `***REDACTED***`
 
 **4. Report Files**
+
 - HTML/JSON/SARIF reports redact secrets found in:
   - Tool descriptions (e.g., "Use API key sk-ant-...")
   - Parameter examples
@@ -1205,6 +1296,7 @@ The **Secret Redaction System** prevents API keys, tokens, and credentials from 
 #### Redaction Algorithm
 
 **Pattern Detection**:
+
 ```typescript
 // Anthropic API keys
 /sk-ant-api03-[a-zA-Z0-9_-]{95}/g → sk-****...****
@@ -1223,22 +1315,26 @@ The **Secret Redaction System** prevents API keys, tokens, and credentials from 
 ```
 
 **Redaction Strategy**:
+
 - **Short secrets** (<20 chars): Fully redacted → `***REDACTED***`
 - **Long secrets** (≥20 chars): Partial redaction → `sk-****...7x3A` (first 3 + last 4 visible)
 
 **Why partial redaction?**
+
 - Allows debugging: "Which key was used?" without exposing full secret
 - Maintains log correlation: Same key always shows same redaction
 
 #### Security Guarantees
 
 **What IS protected**:
+
 - ✅ API keys in command history
 - ✅ Tokens in session files
 - ✅ Secrets in log output
 - ✅ Credentials in reports
 
 **What is NOT protected**:
+
 - ❌ Secrets already committed to Git (use `git-secrets` or `truffleHog`)
 - ❌ Secrets in process memory (use encrypted memory if needed)
 - ❌ Secrets in OS environment (use secrets managers like HashiCorp Vault)
@@ -1247,6 +1343,7 @@ The **Secret Redaction System** prevents API keys, tokens, and credentials from 
 #### Best Practices
 
 **1. Never hardcode secrets**:
+
 ```bash
 # ❌ BAD: Secret in command
 mcp-verify validate node server.js --api-key sk-ant-api03-XXXXXX
@@ -1257,6 +1354,7 @@ mcp-verify validate node server.js
 ```
 
 **2. Use `.env` files for local development**:
+
 ```bash
 # .env (add to .gitignore!)
 ANTHROPIC_API_KEY=sk-ant-api03-XXXXXX
@@ -1264,6 +1362,7 @@ OPENAI_API_KEY=sk-XXXXXX
 ```
 
 **3. Use secrets managers in production**:
+
 ```bash
 # AWS Secrets Manager
 export ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id mcp-verify-key --query SecretString --output text)
@@ -1273,18 +1372,21 @@ export ANTHROPIC_API_KEY=$(vault kv get -field=api_key secret/mcp-verify)
 ```
 
 **4. Rotate keys regularly**:
+
 - If key appears in logs/history/reports → Rotate immediately
 - Monitor usage via Anthropic Console for suspicious activity
 
 #### Verification
 
 **Check if history is redacted**:
+
 ```bash
 cat ~/.mcp-verify/history.json | grep -i "api"
 # Should show: "***REDACTED***" not actual keys
 ```
 
 **Check if logs are clean**:
+
 ```bash
 mcp-verify validate node server.js > output.log 2>&1
 grep -E "sk-ant-|sk-[a-zA-Z0-9]{48}" output.log
@@ -1355,6 +1457,7 @@ mcp-verify v1.0.0 performs automated technical security testing but has inherent
 The fuzzer excels at finding technical vulnerabilities (type confusion, boundary violations, enum bypass). However, it cannot understand domain-specific authorization logic.
 
 **Example**:
+
 ```typescript
 // Schema (technically valid)
 {
@@ -1370,6 +1473,7 @@ The fuzzer excels at finding technical vulnerabilities (type confusion, boundary
 **Impact**: Authorization bugs that depend on business context will NOT be caught.
 
 **Mitigation**:
+
 - Complement mcp-verify with **manual authorization testing**
 - Implement **role-based access control (RBAC) tests** in your test suite
 - Document business rules explicitly in tool descriptions
@@ -1382,6 +1486,7 @@ The fuzzer excels at finding technical vulnerabilities (type confusion, boundary
 mcp-verify uses heuristics to detect vulnerabilities. A server that correctly validates input may still trigger findings if the validation logic isn't visible in the schema.
 
 **Example of False Positive**:
+
 ```typescript
 // Payload sent by fuzzer
 { age: 121 }  // Schema: { maximum: 120 }
@@ -1398,6 +1503,7 @@ CRITICAL: Boundary overflow - age exceeds maximum (121 > 120)
 **Impact**: Security teams may waste time investigating non-issues.
 
 **Mitigation**:
+
 - **Always review CRITICAL findings manually** before reporting as vulnerabilities
 - Check server responses: `error` responses often indicate correct validation
 - Use baseline comparison (`--compare-baseline`) to track new findings vs. known false positives
@@ -1417,6 +1523,7 @@ The fuzzer generates **150-250 payloads per tool** for schema-aware testing. Thi
 **Impact**: Production services may be disrupted or security teams alerted unnecessarily.
 
 **Mitigation**:
+
 - ⚠️ **ALWAYS run mcp-verify in staging/pre-production environments**
 - If testing production is unavoidable:
   - Use `--concurrency 1` to reduce request rate
@@ -1426,6 +1533,7 @@ The fuzzer generates **150-250 payloads per tool** for schema-aware testing. Thi
   - Run during maintenance windows
 
 **Example Safe Configuration**:
+
 ```bash
 # Safe for production (slower, less aggressive)
 mcp-verify fuzz "https://api.example.com" \
@@ -1442,6 +1550,7 @@ mcp-verify fuzz "https://api.example.com" \
 The fuzzer checks immediate responses only. If a malicious payload is stored and executed when another user accesses it, mcp-verify will NOT detect it.
 
 **Example**:
+
 ```typescript
 // Fuzzer sends
 { comment: '<script>alert(1)</script>' }
@@ -1456,6 +1565,7 @@ The fuzzer checks immediate responses only. If a malicious payload is stored and
 ```
 
 **Mitigation**:
+
 - Perform **manual penetration testing** for stored data scenarios
 - Use **dynamic application security testing (DAST)** tools for runtime analysis
 - Implement **content security policy (CSP)** to mitigate stored XSS
@@ -1467,6 +1577,7 @@ The fuzzer checks immediate responses only. If a malicious payload is stored and
 mcp-verify relies on response patterns to detect vulnerabilities (errors, timing differences). Servers that return success codes even for invalid input can produce false negatives.
 
 **Example**:
+
 ```typescript
 // Fuzzer sends SSRF payload
 { url: 'http://169.254.169.254/latest/meta-data/' }
@@ -1479,6 +1590,7 @@ mcp-verify relies on response patterns to detect vulnerabilities (errors, timing
 ```
 
 **Mitigation**:
+
 - Review application logs for suspicious outbound requests
 - Use **traffic monitoring** (Wireshark, Burp Suite) during fuzzing
 - Test with verbose error messages enabled (in staging only)
@@ -1489,33 +1601,33 @@ mcp-verify relies on response patterns to detect vulnerabilities (errors, timing
 
 ### What mcp-verify Controls
 
-| Component | Control Level | Description |
-|-----------|---------------|-------------|
+| Component             | Control Level    | Description                  |
+| --------------------- | ---------------- | ---------------------------- |
 | Static Analysis Rules | **Full Control** | We define detection patterns |
-| Report Generation | **Full Control** | JSON/SARIF/HTML outputs |
-| CLI Interface | **Full Control** | Command-line behavior |
-| MCP Server Interface | **Full Control** | Tool schemas and responses |
+| Report Generation     | **Full Control** | JSON/SARIF/HTML outputs      |
+| CLI Interface         | **Full Control** | Command-line behavior        |
+| MCP Server Interface  | **Full Control** | Tool schemas and responses   |
 
 ### What mcp-verify Does NOT Control
 
-| Component | Control Level | Description |
-|-----------|---------------|-------------|
-| Tested MCP Servers | **No Control** | We analyze external servers |
-| Claude Desktop Keychain | **No Control** | Managed by Anthropic |
-| User's Environment Variables | **No Control** | User responsibility |
-| Network Security | **No Control** | HTTPS, firewalls, etc. |
-| Runtime Exploits | **No Control** | Dynamic vulnerabilities |
+| Component                    | Control Level  | Description                 |
+| ---------------------------- | -------------- | --------------------------- |
+| Tested MCP Servers           | **No Control** | We analyze external servers |
+| Claude Desktop Keychain      | **No Control** | Managed by Anthropic        |
+| User's Environment Variables | **No Control** | User responsibility         |
+| Network Security             | **No Control** | HTTPS, firewalls, etc.      |
+| Runtime Exploits             | **No Control** | Dynamic vulnerabilities     |
 
 ### Responsibility Matrix
 
-| Scenario | Responsible Party |
-|----------|-------------------|
-| mcp-verify reports false positive | **mcp-verify (Fink)** - Report as bug |
-| mcp-verify misses a vulnerability | **mcp-verify (Fink)** - Report as enhancement |
+| Scenario                                         | Responsible Party                                     |
+| ------------------------------------------------ | ----------------------------------------------------- |
+| mcp-verify reports false positive                | **mcp-verify (Fink)** - Report as bug                 |
+| mcp-verify misses a vulnerability                | **mcp-verify (Fink)** - Report as enhancement         |
 | Tested server is exploited despite 100/100 score | **Server Developer** - mcp-verify analyzes statically |
-| API key leaked via environment variable | **User** - Secure your environment |
-| Claude Desktop keychain compromised | **Anthropic** - Not controlled by mcp-verify |
-| Network interception of API key | **User** - Use HTTPS, secure networks |
+| API key leaked via environment variable          | **User** - Secure your environment                    |
+| Claude Desktop keychain compromised              | **Anthropic** - Not controlled by mcp-verify          |
+| Network interception of API key                  | **User** - Use HTTPS, secure networks                 |
 
 ---
 

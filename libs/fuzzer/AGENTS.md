@@ -30,19 +30,20 @@ FuzzerEngine (orchestrator)
 
 ## Generators (9)
 
-| Generator | File | Attack Surface |
-|---|---|---|
-| `PromptInjectionGenerator` | `generators/prompt-injection.ts` | LLM jailbreaks, system prompt leaks, DAN/AIM/context injection |
-| `ClassicPayloadsGenerator` | `generators/classic-payloads.ts` | SQLi, XSS, CMDi, path traversal |
-| `JWTAttackGenerator` | `generators/jwt-attack.ts` | None alg bypass, weak secrets, claims manipulation, kid injection |
-| `PrototypePollutionGenerator` | `generators/prototype-pollution.ts` | `__proto__`, constructor attacks |
-| `JSONRPCGenerator` | `generators/jsonrpc.ts` | MCP protocol violations, malformed requests |
-| `SchemaConfusionGenerator` | `generators/schema-confusion.ts` | Type confusion, maxLength±1, enum bypass |
-| `TimeBasedGenerator` | `generators/time-based.ts` | Sleep injections, timing attacks |
-| `RawProtocolGenerator` | `generators/raw-protocol.ts` | Malformed JSON-RPC, missing fields |
-| `CustomGenerator` | `generators/custom.ts` | User-defined payloads |
+| Generator                     | File                                | Attack Surface                                                    |
+| ----------------------------- | ----------------------------------- | ----------------------------------------------------------------- |
+| `PromptInjectionGenerator`    | `generators/prompt-injection.ts`    | LLM jailbreaks, system prompt leaks, DAN/AIM/context injection    |
+| `ClassicPayloadsGenerator`    | `generators/classic-payloads.ts`    | SQLi, XSS, CMDi, path traversal                                   |
+| `JWTAttackGenerator`          | `generators/jwt-attack.ts`          | None alg bypass, weak secrets, claims manipulation, kid injection |
+| `PrototypePollutionGenerator` | `generators/prototype-pollution.ts` | `__proto__`, constructor attacks                                  |
+| `JSONRPCGenerator`            | `generators/jsonrpc.ts`             | MCP protocol violations, malformed requests                       |
+| `SchemaConfusionGenerator`    | `generators/schema-confusion.ts`    | Type confusion, maxLength±1, enum bypass                          |
+| `TimeBasedGenerator`          | `generators/time-based.ts`          | Sleep injections, timing attacks                                  |
+| `RawProtocolGenerator`        | `generators/raw-protocol.ts`        | Malformed JSON-RPC, missing fields                                |
+| `CustomGenerator`             | `generators/custom.ts`              | User-defined payloads                                             |
 
 **Interface**:
+
 ```typescript
 interface IPayloadGenerator {
   name: string;
@@ -55,20 +56,21 @@ interface IPayloadGenerator {
 
 ## Detectors (10)
 
-| Detector | File | Triggers on |
-|---|---|---|
-| `TimingDetector` | `detectors/timing.ts` | >2x baseline → medium, >10s → high |
-| `ErrorDetector` | `detectors/error.ts` | Stack traces, DB errors, framework leaks |
-| `XSSDetector` | `detectors/xss.ts` | Script execution, DOM manipulation in response |
-| `PromptLeakDetector` | `detectors/prompt-leak.ts` | "You are", "Your purpose", instruction blocks |
-| `JailbreakDetector` | `detectors/jailbreak.ts` | Compliance with harmful requests, DAN acceptance |
-| `PathTraversalDetector` | `detectors/path-traversal.ts` | File path disclosure in response |
-| `WeakIDDetector` | `detectors/weak-id.ts` | Sequential/predictable tokens |
-| `InfoDisclosureDetector` | `detectors/info-disclosure.ts` | Version strings, internal paths |
-| `ProtocolViolationDetector` | `detectors/protocol-violation.ts` | Non-compliant JSON-RPC responses |
-| `CustomDetector` | `detectors/custom.ts` | User-defined detection logic |
+| Detector                    | File                              | Triggers on                                      |
+| --------------------------- | --------------------------------- | ------------------------------------------------ |
+| `TimingDetector`            | `detectors/timing.ts`             | >2x baseline → medium, >10s → high               |
+| `ErrorDetector`             | `detectors/error.ts`              | Stack traces, DB errors, framework leaks         |
+| `XSSDetector`               | `detectors/xss.ts`                | Script execution, DOM manipulation in response   |
+| `PromptLeakDetector`        | `detectors/prompt-leak.ts`        | "You are", "Your purpose", instruction blocks    |
+| `JailbreakDetector`         | `detectors/jailbreak.ts`          | Compliance with harmful requests, DAN acceptance |
+| `PathTraversalDetector`     | `detectors/path-traversal.ts`     | File path disclosure in response                 |
+| `WeakIDDetector`            | `detectors/weak-id.ts`            | Sequential/predictable tokens                    |
+| `InfoDisclosureDetector`    | `detectors/info-disclosure.ts`    | Version strings, internal paths                  |
+| `ProtocolViolationDetector` | `detectors/protocol-violation.ts` | Non-compliant JSON-RPC responses                 |
+| `CustomDetector`            | `detectors/custom.ts`             | User-defined detection logic                     |
 
 **Interface**:
+
 ```typescript
 interface IVulnerabilityDetector {
   name: string;
@@ -90,11 +92,13 @@ Bit flip · Case mutation · URL/Base64/Unicode encoding · Repeat (AAAA) · Tru
 ## Extension Guide
 
 ### Add Generator
+
 1. `touch generators/my-generator.ts` — implement `IPayloadGenerator`
 2. Export from `generators/index.ts`
 3. Register in `FuzzerEngine` constructor: `this.generators = [...existing, new MyGenerator()]`
 
 ### Add Detector
+
 1. `touch detectors/my-detector.ts` — implement `IVulnerabilityDetector`
 2. Export from `detectors/index.ts`
 3. Register in `FuzzerEngine` constructor: `this.detectors = [...existing, new MyDetector()]`
@@ -105,14 +109,14 @@ Bit flip · Case mutation · URL/Base64/Unicode encoding · Repeat (AAAA) · Tru
 
 ## Performance Knobs
 
-| Config | Default | When to change |
-|---|---|---|
-| `concurrency` | 1 | Increase to 5 for faster runs |
-| `payloadTimeout` | 5000ms | Increase for slow servers |
-| `totalTimeout` | 300000ms | Reduce for CI |
-| `mutationRounds` | 3 | Reduce to 1-2 to prevent explosion |
-| `generators` | all | Pass name array to run subset |
-| `anomalyThreshold` | 2x | Increase to 3x to reduce false positives |
+| Config             | Default  | When to change                           |
+| ------------------ | -------- | ---------------------------------------- |
+| `concurrency`      | 1        | Increase to 5 for faster runs            |
+| `payloadTimeout`   | 5000ms   | Increase for slow servers                |
+| `totalTimeout`     | 300000ms | Reduce for CI                            |
+| `mutationRounds`   | 3        | Reduce to 1-2 to prevent explosion       |
+| `generators`       | all      | Pass name array to run subset            |
+| `anomalyThreshold` | 2x       | Increase to 3x to reduce false positives |
 
 ---
 
@@ -126,12 +130,12 @@ npm test -- detectors/my-detector.spec.ts
 npm test -- engine/fuzzer-engine.spec.ts   # full feedback loop
 ```
 
-| Area | Min coverage |
-|---|---|
-| Generators | 80% — test both triggering and non-triggering schemas |
-| Detectors | 80% — test vulnerable + safe responses |
-| MutationEngine | 70% |
-| FuzzerEngine integration | 60% |
+| Area                     | Min coverage                                          |
+| ------------------------ | ----------------------------------------------------- |
+| Generators               | 80% — test both triggering and non-triggering schemas |
+| Detectors                | 80% — test vulnerable + safe responses                |
+| MutationEngine           | 70%                                                   |
+| FuzzerEngine integration | 60%                                                   |
 
 ---
 

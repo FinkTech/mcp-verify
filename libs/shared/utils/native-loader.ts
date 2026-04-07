@@ -33,10 +33,10 @@
  *   }
  */
 
-import * as fs   from 'fs';
-import * as path from 'path';
-import * as os   from 'os';
-import { t }     from './cli/i18n-helper';
+import * as fs from "fs";
+import * as path from "path";
+import * as os from "os";
+import { t } from "./cli/i18n-helper";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -62,8 +62,8 @@ function detectSEA(): boolean {
   // Primary: official node:sea API (Node 21.7+)
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const seaModule = require('node:sea') as { isSea?: () => boolean };
-    if (typeof seaModule.isSea === 'function') {
+    const seaModule = require("node:sea") as { isSea?: () => boolean };
+    if (typeof seaModule.isSea === "function") {
       return seaModule.isSea();
     }
   } catch {
@@ -78,7 +78,10 @@ function detectSEA(): boolean {
   // a clear error. False positives (returning true in dev) would cause the
   // loader to search for a manifest that doesn't exist and then fall back
   // to normal require() anyway, so they are also harmless.
-  const manifestPath = path.join(path.dirname(process.execPath), 'native-addons.json');
+  const manifestPath = path.join(
+    path.dirname(process.execPath),
+    "native-addons.json",
+  );
   return fs.existsSync(manifestPath);
 }
 
@@ -96,29 +99,29 @@ const IS_SEA: boolean = detectSEA();
 // musl by checking for the musl libc file at its canonical path.
 // ─────────────────────────────────────────────────────────────────────────────
 
-type LinuxAbi = 'gnu' | 'musl';
+type LinuxAbi = "gnu" | "musl";
 
 function detectLinuxAbi(): LinuxAbi {
   // Alpine and musl-based distros ship musl libc at a well-known path.
   // glibc distros do not have this file.
   const muslPaths = [
-    '/lib/libc.musl-x86_64.so.1',   // x64
-    '/lib/libc.musl-aarch64.so.1',  // arm64
-    '/lib/libc.musl-armhf.so.1',    // arm32
-    '/usr/lib/x86_64-linux-musl/libc.so', // some Alpine variants
+    "/lib/libc.musl-x86_64.so.1", // x64
+    "/lib/libc.musl-aarch64.so.1", // arm64
+    "/lib/libc.musl-armhf.so.1", // arm32
+    "/usr/lib/x86_64-linux-musl/libc.so", // some Alpine variants
   ];
-  return muslPaths.some(p => fs.existsSync(p)) ? 'musl' : 'gnu';
+  return muslPaths.some((p) => fs.existsSync(p)) ? "musl" : "gnu";
 }
 
 /** Returns the napi-rs arch/abi suffix for the current platform.
  *  Examples: 'linux-x64-gnu', 'darwin-arm64', 'win32-x64-msvc' */
 function currentNapiSuffix(): string {
   const platform = process.platform; // 'linux' | 'darwin' | 'win32'
-  const arch     = process.arch;     // 'x64' | 'arm64' | 'ia32' | ...
+  const arch = process.arch; // 'x64' | 'arm64' | 'ia32' | ...
 
-  if (platform === 'win32') return `win32-${arch}-msvc`;
-  if (platform === 'darwin') return `darwin-${arch}`;
-  if (platform === 'linux') return `linux-${arch}-${detectLinuxAbi()}`;
+  if (platform === "win32") return `win32-${arch}-msvc`;
+  if (platform === "darwin") return `darwin-${arch}`;
+  if (platform === "linux") return `linux-${arch}-${detectLinuxAbi()}`;
 
   // Fallback for other Unix-like systems (FreeBSD, etc.) — best effort
   return `${platform}-${arch}-gnu`;
@@ -133,10 +136,13 @@ let _manifest: NativeAddonManifest | null | undefined = undefined; // undefined 
 function readManifest(): NativeAddonManifest | null {
   if (_manifest !== undefined) return _manifest;
 
-  const manifestPath = path.join(path.dirname(process.execPath), 'native-addons.json');
+  const manifestPath = path.join(
+    path.dirname(process.execPath),
+    "native-addons.json",
+  );
 
   try {
-    const raw = fs.readFileSync(manifestPath, 'utf-8');
+    const raw = fs.readFileSync(manifestPath, "utf-8");
     _manifest = JSON.parse(raw) as NativeAddonManifest;
   } catch {
     // Manifest absent or malformed. Not fatal: loadNativeAddon will fall back
@@ -160,7 +166,7 @@ function readManifest(): NativeAddonManifest | null {
  */
 function loadFromSeaDir<T>(packageName: string, execDir: string): T | null {
   const manifest = readManifest();
-  const suffix   = currentNapiSuffix();
+  const suffix = currentNapiSuffix();
 
   // Prefer the exact-match .node file for the current arch/abi, then
   // fall back to any available .node for this package.
@@ -169,18 +175,25 @@ function loadFromSeaDir<T>(packageName: string, execDir: string): T | null {
   if (manifest?.addons[packageName]) {
     const files = manifest.addons[packageName];
     // Best candidate: filename contains our exact suffix (e.g. linux-x64-gnu)
-    const exact = files.find(f => f.includes(suffix));
+    const exact = files.find((f) => f.includes(suffix));
     if (exact) candidates.push(path.join(execDir, exact));
     // Remaining candidates (wrong arch, but worth trying — better than nothing)
-    files.filter(f => f !== exact).forEach(f => candidates.push(path.join(execDir, f)));
+    files
+      .filter((f) => f !== exact)
+      .forEach((f) => candidates.push(path.join(execDir, f)));
   }
 
   // Last resort: scan the directory for any .node file containing the packageName base name
-  const packageNameBase = packageName.split('/').pop() ?? packageName;
+  const packageNameBase = packageName.split("/").pop() ?? packageName;
   try {
     fs.readdirSync(execDir)
-      .filter(f => f.endsWith('.node') && f.includes(packageNameBase) && !candidates.some(c => c.endsWith(f)))
-      .forEach(f => candidates.push(path.join(execDir, f)));
+      .filter(
+        (f) =>
+          f.endsWith(".node") &&
+          f.includes(packageNameBase) &&
+          !candidates.some((c) => c.endsWith(f)),
+      )
+      .forEach((f) => candidates.push(path.join(execDir, f)));
   } catch {
     // Unreadable dir — continue with what we have
   }
@@ -226,7 +239,7 @@ function loadFromSeaDir<T>(packageName: string, execDir: string): T | null {
  */
 export function loadNativeAddon<T = unknown>(
   packageName: string,
-  options: { warnOnMissing?: boolean } = {}
+  options: { warnOnMissing?: boolean } = {},
 ): T | null {
   const { warnOnMissing = false } = options;
 
@@ -247,7 +260,12 @@ export function loadNativeAddon<T = unknown>(
       if (warnOnMissing) {
         // Use process.stderr to avoid going through the logger
         // (this may be called before the logger is initialised)
-        process.stderr.write(t('mcp_error_native_addon_not_found_sea', { addon: packageName, dir: execDir }) + '\n');
+        process.stderr.write(
+          t("mcp_error_native_addon_not_found_sea", {
+            addon: packageName,
+            dir: execDir,
+          }) + "\n",
+        );
       }
       return null;
     }
@@ -259,7 +277,10 @@ export function loadNativeAddon<T = unknown>(
     return require(packageName) as T;
   } catch {
     if (warnOnMissing) {
-      process.stderr.write(t('mcp_error_native_addon_not_installed', { addon: packageName }) + '\n');
+      process.stderr.write(
+        t("mcp_error_native_addon_not_installed", { addon: packageName }) +
+          "\n",
+      );
     }
     return null;
   }
@@ -311,17 +332,20 @@ export function getNativeAddonManifest(): NativeAddonManifest | null {
  */
 export function isNativeAddonAvailable(packageName: string): boolean {
   if (IS_SEA) {
-    const execDir  = path.dirname(process.execPath);
+    const execDir = path.dirname(process.execPath);
     const manifest = readManifest();
-    const suffix   = currentNapiSuffix();
+    const suffix = currentNapiSuffix();
 
     // Check manifest first (fast path)
-    if (manifest?.addons[packageName]?.some(f => f.includes(suffix))) return true;
+    if (manifest?.addons[packageName]?.some((f) => f.includes(suffix)))
+      return true;
 
     // Fall back to filesystem scan
-    const packageNameBase = packageName.split('/').pop() ?? packageName;
+    const packageNameBase = packageName.split("/").pop() ?? packageName;
     try {
-      return fs.readdirSync(execDir).some(f => f.endsWith('.node') && f.includes(packageNameBase));
+      return fs
+        .readdirSync(execDir)
+        .some((f) => f.endsWith(".node") && f.includes(packageNameBase));
     } catch {
       return false;
     }
@@ -356,12 +380,12 @@ export function getPlatformInfo(): {
   addonDir: string;
 } {
   return {
-    platform:    process.platform,
-    arch:        process.arch,
-    napiSuffix:  currentNapiSuffix(),
+    platform: process.platform,
+    arch: process.arch,
+    napiSuffix: currentNapiSuffix(),
     nodeVersion: process.version,
-    isSEA:       IS_SEA,
-    execPath:    process.execPath,
-    addonDir:    getNativeAddonDir(),
+    isSEA: IS_SEA,
+    execPath: process.execPath,
+    addonDir: getNativeAddonDir(),
   };
 }

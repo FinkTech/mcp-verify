@@ -27,24 +27,44 @@
  * - OWASP API Security Top 10 - API1:2023 Broken Object Level Authorization
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class InsecurePluginDesignRule implements ISecurityRule {
-  code = 'SEC-029';
-  name = 'Insecure Plugin Design';
-  severity: 'high' = 'high';
+  code = "SEC-029";
+  name = "Insecure Plugin Design";
+  severity: "high" = "high";
 
   private readonly WRITE_KEYWORDS = [
-    'create', 'update', 'delete', 'modify', 'write',
-    'insert', 'remove', 'set', 'put', 'post', 'patch'
+    "create",
+    "update",
+    "delete",
+    "modify",
+    "write",
+    "insert",
+    "remove",
+    "set",
+    "put",
+    "post",
+    "patch",
   ];
 
   private readonly READ_KEYWORDS = [
-    'get', 'fetch', 'retrieve', 'read', 'list',
-    'show', 'view', 'query', 'search', 'find'
+    "get",
+    "fetch",
+    "retrieve",
+    "read",
+    "list",
+    "show",
+    "view",
+    "query",
+    "search",
+    "find",
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -60,18 +80,18 @@ export class InsecurePluginDesignRule implements ISecurityRule {
       if (issues.length > 0) {
         findings.push({
           severity: this.severity,
-          message: t('sec_029_insecure_plugin', {
+          message: t("sec_029_insecure_plugin", {
             toolName: tool.name,
-            issues: issues.join('; ')
+            issues: issues.join("; "),
           }),
           component: `tool:${tool.name}`,
           ruleCode: this.code,
-          remediation: t('sec_029_recommendation'),
+          remediation: t("sec_029_recommendation"),
           references: [
-            'OWASP LLM Top 10 2025 - LLM07: Insecure Plugin Design',
-            'OWASP API Security Top 10 - API1:2023 BOLA',
-            'CWE-285: Improper Authorization'
-          ]
+            "OWASP LLM Top 10 2025 - LLM07: Insecure Plugin Design",
+            "OWASP API Security Top 10 - API1:2023 BOLA",
+            "CWE-285: Improper Authorization",
+          ],
         });
       }
     }
@@ -84,14 +104,17 @@ export class InsecurePluginDesignRule implements ISecurityRule {
 
     // Issue 1: No input schema
     if (!tool.inputSchema || !tool.inputSchema.properties) {
-      issues.push('Missing inputSchema (accepts any input)');
+      issues.push("Missing inputSchema (accepts any input)");
       return issues; // Critical issue, return early
     }
 
     // Issue 2: No required parameters
     const required = tool.inputSchema.required || [];
-    if (required.length === 0 && Object.keys(tool.inputSchema.properties).length > 0) {
-      issues.push('All parameters are optional');
+    if (
+      required.length === 0 &&
+      Object.keys(tool.inputSchema.properties).length > 0
+    ) {
+      issues.push("All parameters are optional");
     }
 
     // Issue 3: Mixing read and write operations
@@ -99,13 +122,13 @@ export class InsecurePluginDesignRule implements ISecurityRule {
     const hasWriteOp = this.hasOperationType(tool, this.WRITE_KEYWORDS);
 
     if (hasReadOp && hasWriteOp) {
-      issues.push('Combines read and write operations (violates SRP)');
+      issues.push("Combines read and write operations (violates SRP)");
     }
 
     // Issue 4: No parameter validation constraints
     const hasValidation = this.hasParameterValidation(tool);
     if (!hasValidation) {
-      issues.push('Parameters lack validation constraints');
+      issues.push("Parameters lack validation constraints");
     }
 
     return issues;
@@ -113,10 +136,10 @@ export class InsecurePluginDesignRule implements ISecurityRule {
 
   private hasOperationType(tool: McpTool, keywords: string[]): boolean {
     const nameLower = tool.name.toLowerCase();
-    const descLower = tool.description?.toLowerCase() || '';
+    const descLower = tool.description?.toLowerCase() || "";
 
-    return keywords.some(keyword =>
-      nameLower.includes(keyword) || descLower.includes(keyword)
+    return keywords.some(
+      (keyword) => nameLower.includes(keyword) || descLower.includes(keyword),
     );
   }
 

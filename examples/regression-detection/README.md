@@ -4,17 +4,17 @@ This directory contains practical examples showing how to use regression detecti
 
 ## 📁 Files
 
-| File | Description |
-|------|-------------|
-| `demo-server.js` | Simple MCP server (v1.0 - secure) |
-| `demo-server-v2.js` | Same server with vulnerabilities (v2.0 - insecure) |
-| `demo.sh` | Interactive demo showing full workflow |
-| `1-create-baseline.sh` | Create a baseline from v1.0 |
-| `2-detect-regression.sh` | Detect regression in v2.0 |
-| `3-compare-scans.sh` | Compare two scans manually |
-| `4-view-history.sh` | View scan history and trends |
-| `ci-cd/github-actions.yml` | GitHub Actions example |
-| `ci-cd/pre-commit-hook.sh` | Git pre-commit hook |
+| File                       | Description                                        |
+| -------------------------- | -------------------------------------------------- |
+| `demo-server.js`           | Simple MCP server (v1.0 - secure)                  |
+| `demo-server-v2.js`        | Same server with vulnerabilities (v2.0 - insecure) |
+| `demo.sh`                  | Interactive demo showing full workflow             |
+| `1-create-baseline.sh`     | Create a baseline from v1.0                        |
+| `2-detect-regression.sh`   | Detect regression in v2.0                          |
+| `3-compare-scans.sh`       | Compare two scans manually                         |
+| `4-view-history.sh`        | View scan history and trends                       |
+| `ci-cd/github-actions.yml` | GitHub Actions example                             |
+| `ci-cd/pre-commit-hook.sh` | Git pre-commit hook                                |
 
 ---
 
@@ -28,6 +28,7 @@ This directory contains practical examples showing how to use regression detecti
 ```
 
 This will:
+
 1. Start the secure v1.0 server
 2. Create a baseline scan
 3. Switch to insecure v2.0
@@ -55,6 +56,7 @@ kill $SERVER_PID
 ```
 
 **Output:**
+
 ```
 ✓ Scan saved as baseline: scan_2025-01-21T16-30-00_abc123
 ```
@@ -75,6 +77,7 @@ kill $SERVER_PID
 ```
 
 **Output:**
+
 ```
 📊 Regression Analysis:
 ──────────────────────────────────────────────────
@@ -109,6 +112,7 @@ node ../../dist/mcp-verify.js history --server demo-mcp-server
 ```
 
 **Output:**
+
 ```
 📋 Scan History (2 scans)
 
@@ -200,12 +204,14 @@ Full example: [ci-cd/pre-commit-hook.sh](./ci-cd/pre-commit-hook.sh)
 ## 🎯 What Each Example Demonstrates
 
 ### `demo-server.js` (Secure)
+
 - Proper input validation
 - Safe command execution
 - No path traversal
 - **Security Score:** ~95/100
 
 ### `demo-server-v2.js` (Vulnerable)
+
 - Missing input validation
 - Command injection vulnerability
 - Path traversal risk
@@ -218,24 +224,28 @@ Full example: [ci-cd/pre-commit-hook.sh](./ci-cd/pre-commit-hook.sh)
 ## 💡 Best Practices
 
 ### 1. Set Baseline on Stable Releases
+
 ```bash
 git tag v1.0.0
 mcp-verify validate ./server --set-baseline
 ```
 
 ### 2. Always Compare in CI
+
 ```bash
 # In your CI pipeline
 mcp-verify validate ./server --compare-baseline || exit 1
 ```
 
 ### 3. Review History Regularly
+
 ```bash
 # Weekly security review
 mcp-verify history --trend
 ```
 
 ### 4. Use Exit Codes
+
 ```bash
 mcp-verify validate ./server --compare-baseline
 EXIT_CODE=$?
@@ -254,12 +264,14 @@ fi
 ## 🐛 Troubleshooting
 
 ### "No baseline found"
+
 ```bash
 # Create one first
 mcp-verify validate ./server --set-baseline
 ```
 
 ### "Scan not found"
+
 ```bash
 # List available scans
 mcp-verify history
@@ -269,6 +281,7 @@ mcp-verify diff scan_2025-01-21T16-30-00_abc123 scan_2025-01-21T16-35-00_def456
 ```
 
 ### Clear history
+
 ```bash
 rm -rf .mcp-verify/history/
 ```

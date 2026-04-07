@@ -21,19 +21,19 @@
  * @module libs/core/use-cases/fuzzer/response-analyzer
  */
 
-import { t } from '@mcp-verify/shared';
-import type { AttackPayload } from './payloads';
+import { t } from "@mcp-verify/shared";
+import type { AttackPayload } from "./payloads";
 
 export interface AnalysisResult {
   vulnerable: boolean;
-  confidence: 'high' | 'medium' | 'low';
+  confidence: "high" | "medium" | "low";
   findings: VulnerabilityFinding[];
   baselineDeviation?: number;
 }
 
 export interface VulnerabilityFinding {
   type: string;
-  severity: 'critical' | 'high' | 'medium' | 'low';
+  severity: "critical" | "high" | "medium" | "low";
   description: string;
   evidence: string;
   remediation: string;
@@ -49,22 +49,22 @@ export class ResponseAnalyzer {
       /SQL syntax.*?error/i,
       /mysql_fetch/i,
       /Unclosed quotation mark/i,
-      /ORA-\d{5}/i,  // Oracle errors
+      /ORA-\d{5}/i, // Oracle errors
       /Microsoft SQL Server/i,
       /PostgreSQL.*?ERROR/i,
       /SQLite3::SQLException/i,
       /SQLSTATE\[/i,
       /Invalid column name/i,
-      /Incorrect syntax near/i
+      /Incorrect syntax near/i,
     ],
 
     // Stack trace patterns (information disclosure)
     stackTraces: [
-      /at\s+[\w$.]+\([\w$.]+:\d+:\d+\)/,  // JavaScript
-      /File ".*?", line \d+/,             // Python
-      /\w+Exception.*?at.*?:\d+/,         // Java/C#
+      /at\s+[\w$.]+\([\w$.]+:\d+:\d+\)/, // JavaScript
+      /File ".*?", line \d+/, // Python
+      /\w+Exception.*?at.*?:\d+/, // Java/C#
       /Traceback \(most recent call last\)/,
-      /Fatal error.*?in.*?on line \d+/    // PHP
+      /Fatal error.*?in.*?on line \d+/, // PHP
     ],
 
     // XSS reflection patterns
@@ -72,63 +72,59 @@ export class ResponseAnalyzer {
       /<script[^>]*>.*?alert\(/i,
       /<img[^>]*onerror=/i,
       /<svg[^>]*onload=/i,
-      /javascript:alert\(/i
+      /javascript:alert\(/i,
     ],
 
     // Command injection indicators
     commandInjection: [
-      /root:.*?:0:0:/,              // /etc/passwd content
-      /uid=\d+.*?gid=\d+/,          // whoami output
-      /total \d+\n.*?rwx/,          // ls -la output
-      /Microsoft Windows.*?Copyright/i  // Windows cmd output
+      /root:.*?:0:0:/, // /etc/passwd content
+      /uid=\d+.*?gid=\d+/, // whoami output
+      /total \d+\n.*?rwx/, // ls -la output
+      /Microsoft Windows.*?Copyright/i, // Windows cmd output
     ],
 
     // Path traversal success indicators
     pathTraversal: [
-      /root:x:0:0/,                 // Unix password file
+      /root:x:0:0/, // Unix password file
       /daemon:x:\d+:\d+/,
-      /\[boot loader\]/i,           // Windows boot.ini
-      /\[operating systems\]/i
+      /\[boot loader\]/i, // Windows boot.ini
+      /\[operating systems\]/i,
     ],
 
     // XXE success indicators
     xxe: [
-      /root:.*?:\/root/,            // Unix passwd via XXE
+      /root:.*?:\/root/, // Unix passwd via XXE
       /ENTITY.*?SYSTEM/i,
-      /<!DOCTYPE.*?ENTITY/i
+      /<!DOCTYPE.*?ENTITY/i,
     ],
 
     // SSRF indicators
     ssrf: [
-      /ami-id/,                     // AWS metadata
+      /ami-id/, // AWS metadata
       /instance-id/,
       /placement\/availability-zone/,
-      /<html.*?<\/html>/s           // HTML from internal service
+      /<html.*?<\/html>/s, // HTML from internal service
     ],
 
     // NoSQL injection indicators
-    nosql: [
-      /MongoError/i,
-      /CastError/,
-      /\$where.*?function/i
-    ],
+    nosql: [/MongoError/i, /CastError/, /\$where.*?function/i],
 
     // Generic error indicators (might reveal sensitive info)
     genericErrors: [
       /Internal Server Error/i,
       /500.*?Error/i,
       /Fatal error/i,
-      /Exception.*?:\s*.*?at/i
-    ]
+      /Exception.*?:\s*.*?at/i,
+    ],
   };
 
   /**
    * Timing thresholds (milliseconds)
    */
   private timingThresholds = {
-    normal: 1000,        // Normal response time
-    suspiciousSlow: 3000,  // Might indicate time-based injection
-    definitelySlow: 5000   // Very likely time-based injection
+    normal: 1000, // Normal response time
+    suspiciousSlow: 3000, // Might indicate time-based injection
+    definitelySlow: 5000, // Very likely time-based injection
   };
 
   /**
@@ -143,7 +139,7 @@ export class ResponseAnalyzer {
     payload: AttackPayload,
     response: unknown,
     responseTime: number,
-    statusCode?: number
+    statusCode?: number,
   ): AnalysisResult {
     const findings: VulnerabilityFinding[] = [];
 
@@ -157,12 +153,12 @@ export class ResponseAnalyzer {
     findings.push(...this.analyzeStackTraces(responseStr));
 
     // 3. Content reflection (XSS)
-    if (payload.type === 'xss') {
+    if (payload.type === "xss") {
       findings.push(...this.analyzeXssReflection(payload, responseStr));
     }
 
     // 4. Timing analysis (blind injection)
-    if (payload.type === 'sqli' || payload.type === 'cmdInjection') {
+    if (payload.type === "sqli" || payload.type === "cmdInjection") {
       findings.push(...this.analyzeTimingAnomalies(payload, responseTime));
     }
 
@@ -171,22 +167,22 @@ export class ResponseAnalyzer {
 
     // 6. Specific payload type analysis
     switch (payload.type) {
-      case 'sqli':
+      case "sqli":
         findings.push(...this.analyzeSqlInjection(responseStr));
         break;
-      case 'cmdInjection':
+      case "cmdInjection":
         findings.push(...this.analyzeCommandInjection(responseStr));
         break;
-      case 'pathTraversal':
+      case "pathTraversal":
         findings.push(...this.analyzePathTraversal(responseStr));
         break;
-      case 'xxe':
+      case "xxe":
         findings.push(...this.analyzeXxe(responseStr));
         break;
-      case 'ssrf':
+      case "ssrf":
         findings.push(...this.analyzeSsrf(responseStr));
         break;
-      case 'nosql':
+      case "nosql":
         findings.push(...this.analyzeNoSql(responseStr));
         break;
     }
@@ -195,15 +191,16 @@ export class ResponseAnalyzer {
     const confidence = this.calculateConfidence(findings);
 
     // Calculate baseline deviation
-    const baselineDeviation = this.baselineResponseTime > 0
-      ? responseTime - this.baselineResponseTime
-      : undefined;
+    const baselineDeviation =
+      this.baselineResponseTime > 0
+        ? responseTime - this.baselineResponseTime
+        : undefined;
 
     return {
       vulnerable: findings.length > 0,
       confidence,
       findings,
-      baselineDeviation
+      baselineDeviation,
     };
   }
 
@@ -217,17 +214,20 @@ export class ResponseAnalyzer {
   /**
    * Analyze for error messages
    */
-  private analyzeErrors(payload: AttackPayload, response: string): VulnerabilityFinding[] {
+  private analyzeErrors(
+    payload: AttackPayload,
+    response: string,
+  ): VulnerabilityFinding[] {
     const findings: VulnerabilityFinding[] = [];
 
     for (const pattern of this.patterns.genericErrors) {
       if (pattern.test(response)) {
         findings.push({
-          type: 'information_disclosure',
-          severity: 'medium',
-          description: t('fuzz_info_disclosure_desc'),
+          type: "information_disclosure",
+          severity: "medium",
+          description: t("fuzz_info_disclosure_desc"),
           evidence: response.substring(0, 200),
-          remediation: t('fuzz_info_disclosure_rem')
+          remediation: t("fuzz_info_disclosure_rem"),
         });
         break;
       }
@@ -245,11 +245,11 @@ export class ResponseAnalyzer {
     for (const pattern of this.patterns.stackTraces) {
       if (pattern.test(response)) {
         findings.push({
-          type: 'information_disclosure',
-          severity: 'high',
-          description: t('fuzz_stack_trace_desc'),
+          type: "information_disclosure",
+          severity: "high",
+          description: t("fuzz_stack_trace_desc"),
           evidence: response.substring(0, 300),
-          remediation: t('fuzz_stack_trace_rem')
+          remediation: t("fuzz_stack_trace_rem"),
         });
         break;
       }
@@ -261,17 +261,20 @@ export class ResponseAnalyzer {
   /**
    * Analyze for XSS reflection
    */
-  private analyzeXssReflection(payload: AttackPayload, response: string): VulnerabilityFinding[] {
+  private analyzeXssReflection(
+    payload: AttackPayload,
+    response: string,
+  ): VulnerabilityFinding[] {
     const findings: VulnerabilityFinding[] = [];
 
     // Check if payload is reflected unencoded
     if (response.includes(payload.value)) {
       findings.push({
-        type: 'xss',
-        severity: 'high',
-        description: t('fuzz_xss_reflected_desc'),
+        type: "xss",
+        severity: "high",
+        description: t("fuzz_xss_reflected_desc"),
         evidence: `Payload "${payload.value}" found in response`,
-        remediation: t('fuzz_xss_reflected_rem')
+        remediation: t("fuzz_xss_reflected_rem"),
       });
     }
 
@@ -279,11 +282,11 @@ export class ResponseAnalyzer {
     for (const pattern of this.patterns.xssReflection) {
       if (pattern.test(response)) {
         findings.push({
-          type: 'xss',
-          severity: 'high',
-          description: t('fuzz_xss_detected_desc'),
+          type: "xss",
+          severity: "high",
+          description: t("fuzz_xss_detected_desc"),
           evidence: response.substring(0, 200),
-          remediation: t('fuzz_xss_detected_rem')
+          remediation: t("fuzz_xss_detected_rem"),
         });
         break;
       }
@@ -295,26 +298,29 @@ export class ResponseAnalyzer {
   /**
    * Analyze timing anomalies
    */
-  private analyzeTimingAnomalies(payload: AttackPayload, responseTime: number): VulnerabilityFinding[] {
+  private analyzeTimingAnomalies(
+    payload: AttackPayload,
+    responseTime: number,
+  ): VulnerabilityFinding[] {
     const findings: VulnerabilityFinding[] = [];
 
     // Time-based blind injection detection
-    if (payload.value.includes('SLEEP') || payload.value.includes('WAITFOR')) {
+    if (payload.value.includes("SLEEP") || payload.value.includes("WAITFOR")) {
       if (responseTime >= this.timingThresholds.definitelySlow) {
         findings.push({
-          type: 'time_based_injection',
-          severity: 'critical',
-          description: t('fuzz_time_sqli_desc'),
+          type: "time_based_injection",
+          severity: "critical",
+          description: t("fuzz_time_sqli_desc"),
           evidence: `Response time: ${responseTime}ms (expected: < ${this.timingThresholds.normal}ms)`,
-          remediation: t('fuzz_time_sqli_rem')
+          remediation: t("fuzz_time_sqli_rem"),
         });
       } else if (responseTime >= this.timingThresholds.suspiciousSlow) {
         findings.push({
-          type: 'time_based_injection',
-          severity: 'high',
-          description: t('fuzz_time_suspicious_desc'),
+          type: "time_based_injection",
+          severity: "high",
+          description: t("fuzz_time_suspicious_desc"),
           evidence: `Response time: ${responseTime}ms`,
-          remediation: t('fuzz_time_suspicious_rem')
+          remediation: t("fuzz_time_suspicious_rem"),
         });
       }
     }
@@ -325,16 +331,19 @@ export class ResponseAnalyzer {
   /**
    * Analyze status code
    */
-  private analyzeStatusCode(statusCode: number | undefined, payload: AttackPayload): VulnerabilityFinding[] {
+  private analyzeStatusCode(
+    statusCode: number | undefined,
+    payload: AttackPayload,
+  ): VulnerabilityFinding[] {
     const findings: VulnerabilityFinding[] = [];
 
     if (statusCode === 500) {
       findings.push({
-        type: 'server_error',
-        severity: 'medium',
-        description: t('fuzz_server_error_desc'),
+        type: "server_error",
+        severity: "medium",
+        description: t("fuzz_server_error_desc"),
         evidence: `Status code: ${statusCode}`,
-        remediation: t('fuzz_server_error_rem')
+        remediation: t("fuzz_server_error_rem"),
       });
     }
 
@@ -350,11 +359,11 @@ export class ResponseAnalyzer {
     for (const pattern of this.patterns.sqlErrors) {
       if (pattern.test(response)) {
         findings.push({
-          type: 'sqli',
-          severity: 'critical',
-          description: t('fuzz_sqli_detected_desc'),
+          type: "sqli",
+          severity: "critical",
+          description: t("fuzz_sqli_detected_desc"),
           evidence: response.substring(0, 200),
-          remediation: t('fuzz_sqli_detected_rem')
+          remediation: t("fuzz_sqli_detected_rem"),
         });
         break;
       }
@@ -372,11 +381,11 @@ export class ResponseAnalyzer {
     for (const pattern of this.patterns.commandInjection) {
       if (pattern.test(response)) {
         findings.push({
-          type: 'cmdInjection',
-          severity: 'critical',
-          description: t('fuzz_cmd_detected_desc'),
+          type: "cmdInjection",
+          severity: "critical",
+          description: t("fuzz_cmd_detected_desc"),
           evidence: response.substring(0, 200),
-          remediation: t('fuzz_cmd_detected_rem')
+          remediation: t("fuzz_cmd_detected_rem"),
         });
         break;
       }
@@ -394,11 +403,11 @@ export class ResponseAnalyzer {
     for (const pattern of this.patterns.pathTraversal) {
       if (pattern.test(response)) {
         findings.push({
-          type: 'pathTraversal',
-          severity: 'critical',
-          description: t('fuzz_path_detected_desc'),
+          type: "pathTraversal",
+          severity: "critical",
+          description: t("fuzz_path_detected_desc"),
           evidence: response.substring(0, 200),
-          remediation: t('fuzz_path_detected_rem')
+          remediation: t("fuzz_path_detected_rem"),
         });
         break;
       }
@@ -416,11 +425,11 @@ export class ResponseAnalyzer {
     for (const pattern of this.patterns.xxe) {
       if (pattern.test(response)) {
         findings.push({
-          type: 'xxe',
-          severity: 'critical',
-          description: t('fuzz_xxe_detected_desc'),
+          type: "xxe",
+          severity: "critical",
+          description: t("fuzz_xxe_detected_desc"),
           evidence: response.substring(0, 200),
-          remediation: t('fuzz_xxe_detected_rem')
+          remediation: t("fuzz_xxe_detected_rem"),
         });
         break;
       }
@@ -438,11 +447,11 @@ export class ResponseAnalyzer {
     for (const pattern of this.patterns.ssrf) {
       if (pattern.test(response)) {
         findings.push({
-          type: 'ssrf',
-          severity: 'critical',
-          description: t('fuzz_ssrf_detected_desc'),
+          type: "ssrf",
+          severity: "critical",
+          description: t("fuzz_ssrf_detected_desc"),
           evidence: response.substring(0, 200),
-          remediation: t('fuzz_ssrf_detected_rem')
+          remediation: t("fuzz_ssrf_detected_rem"),
         });
         break;
       }
@@ -460,11 +469,11 @@ export class ResponseAnalyzer {
     for (const pattern of this.patterns.nosql) {
       if (pattern.test(response)) {
         findings.push({
-          type: 'nosql',
-          severity: 'high',
-          description: t('fuzz_nosql_detected_desc'),
+          type: "nosql",
+          severity: "high",
+          description: t("fuzz_nosql_detected_desc"),
           evidence: response.substring(0, 200),
-          remediation: t('fuzz_nosql_detected_rem')
+          remediation: t("fuzz_nosql_detected_rem"),
         });
         break;
       }
@@ -476,14 +485,16 @@ export class ResponseAnalyzer {
   /**
    * Calculate confidence level based on findings
    */
-  private calculateConfidence(findings: VulnerabilityFinding[]): 'high' | 'medium' | 'low' {
-    if (findings.length === 0) return 'low';
+  private calculateConfidence(
+    findings: VulnerabilityFinding[],
+  ): "high" | "medium" | "low" {
+    if (findings.length === 0) return "low";
 
-    const hasCritical = findings.some(f => f.severity === 'critical');
+    const hasCritical = findings.some((f) => f.severity === "critical");
     const hasMultiple = findings.length >= 2;
 
-    if (hasCritical && hasMultiple) return 'high';
-    if (hasCritical || hasMultiple) return 'medium';
-    return 'low';
+    if (hasCritical && hasMultiple) return "high";
+    if (hasCritical || hasMultiple) return "medium";
+    return "low";
   }
 }

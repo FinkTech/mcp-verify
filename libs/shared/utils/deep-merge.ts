@@ -20,7 +20,7 @@
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return (
     value !== null &&
-    typeof value === 'object' &&
+    typeof value === "object" &&
     !Array.isArray(value) &&
     !(value instanceof Date) &&
     !(value instanceof RegExp)
@@ -56,7 +56,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
  */
 export function deepMerge<T extends Record<string, unknown>>(
   target: T,
-  source: Record<string, unknown>
+  source: Record<string, unknown>,
 ): T {
   const result: Record<string, unknown> = { ...target };
 
@@ -78,7 +78,7 @@ export function deepMerge<T extends Record<string, unknown>>(
     if (isPlainObject(targetValue) && isPlainObject(sourceValue)) {
       result[key] = deepMerge(
         targetValue as Record<string, unknown>,
-        sourceValue as Record<string, unknown>
+        sourceValue as Record<string, unknown>,
       );
     } else {
       // Otherwise, source value replaces target value
@@ -101,5 +101,8 @@ export function deepMerge<T extends Record<string, unknown>>(
 export function deepMergeAll<T extends Record<string, unknown>>(
   ...objects: Record<string, unknown>[]
 ): T {
-  return objects.reduce((acc, obj) => deepMerge(acc, obj), {} as Record<string, unknown>) as T;
+  return objects.reduce(
+    (acc, obj) => deepMerge(acc, obj),
+    {} as Record<string, unknown>,
+  ) as T;
 }

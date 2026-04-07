@@ -45,13 +45,13 @@
 
 export const ICONS = {
   // Placeholder - Reemplaza con tus SVGs cuando los tengas
-  shield: '', // TODO: Agregar SVG de escudo
-  check: '',  // TODO: Agregar SVG de check
-  alert: '',  // TODO: Agregar SVG de alerta
-  copy: '',   // TODO: Agregar SVG de copiar
-  info: '',   // TODO: Agregar SVG de info
-  download: '', // TODO: Agregar SVG de descarga
-  baseline: ''  // TODO: Agregar SVG de baseline
+  shield: "", // TODO: Agregar SVG de escudo
+  check: "", // TODO: Agregar SVG de check
+  alert: "", // TODO: Agregar SVG de alerta
+  copy: "", // TODO: Agregar SVG de copiar
+  info: "", // TODO: Agregar SVG de info
+  download: "", // TODO: Agregar SVG de descarga
+  baseline: "", // TODO: Agregar SVG de baseline
 };
 
 // ============================================
@@ -63,16 +63,16 @@ export const ICONS = {
 
 export const YOGUI_STATES = {
   // TODO v1.1: Agregar SVG/PNG de Yogui escaneando
-  scanning: '',
+  scanning: "",
 
   // TODO v1.1: Agregar SVG/PNG de Yogui con escudo (crítico)
-  shield: '',
+  shield: "",
 
   // TODO v1.1: Agregar SVG/PNG de Yogui celebrando (success)
-  celebrating: '',
+  celebrating: "",
 
   // TODO v1.1: Agregar SVG/PNG de Yogui pensativo (warning)
-  thinking: ''
+  thinking: "",
 };
 
 // ============================================
@@ -85,7 +85,7 @@ export const YOGUI_STATES = {
 // TODO: Agregar tu logo aquí
 // Ejemplo SVG: export const LOGO_SVG = `<svg>...</svg>`
 // Ejemplo WebP: export const LOGO_BASE64 = 'data:image/webp;base64,...'
-export const LOGO_SVG = '';
+export const LOGO_SVG = "";
 
 // ============================================
 // HERO IMAGE (Actual - JPEG pesado)
@@ -93,7 +93,7 @@ export const LOGO_SVG = '';
 // IMPORTANTE: Esta imagen pesa mucho (>100KB)
 // TODO v1.1: Reemplazar con WebP optimizado <20KB
 
-export { HERO_IMAGE } from './hero-image';
+export { HERO_IMAGE } from "./hero-image";
 
 // ============================================
 // ASCII ART - CLI (v1.0 - YA LISTO)
@@ -123,7 +123,7 @@ export const ASCII_ART = {
 
   warning: `
    🧸⚠️  Issues Found
-`
+`,
 };
 
 // ============================================
@@ -135,12 +135,15 @@ export const ASCII_ART = {
  * @param filePath - Ruta del archivo de imagen
  * @returns String Base64 con data URI
  */
-export function imageToBase64(filePath: string, mimeType: 'image/webp' | 'image/png' | 'image/jpeg'): string {
+export function imageToBase64(
+  filePath: string,
+  mimeType: "image/webp" | "image/png" | "image/jpeg",
+): string {
   // Implementar cuando necesites convertir imágenes locales
   // const fs = require('fs');
   // const imageBuffer = fs.readFileSync(filePath);
   // return `data:${mimeType};base64,${imageBuffer.toString('base64')}`;
-  return '';
+  return "";
 }
 
 /**
@@ -148,7 +151,10 @@ export function imageToBase64(filePath: string, mimeType: 'image/webp' | 'image/
  * @param base64String - String Base64 a validar
  * @param maxKB - Tamaño máximo en KB
  */
-export function validateAssetSize(base64String: string, maxKB: number): boolean {
+export function validateAssetSize(
+  base64String: string,
+  maxKB: number,
+): boolean {
   const sizeInBytes = (base64String.length * 3) / 4;
   const sizeInKB = sizeInBytes / 1024;
   return sizeInKB <= maxKB;

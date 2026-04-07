@@ -20,5 +20,5 @@ export {
   // Types
   ReportMapperOptions,
   FuzzerSecurityFinding,
-  FuzzingSummary
-} from './report-mapper';
+  FuzzingSummary,
+} from "./report-mapper";

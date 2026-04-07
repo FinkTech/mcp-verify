@@ -14,12 +14,14 @@ This file is optimized for Claude Code. Other AI coding agents should reference 
 - **Shared**: i18n, logging, formatters (ZERO dependencies)
 
 **Dependency rules**:
+
 - Domain → shared only (NO frameworks)
 - Infrastructure → domain + shared
 - Use cases → infrastructure + domain + shared
 - Apps → all libs
 
 **Decision guide**:
+
 - Add security rule → `core/domain/security/rules/`
 - Add fuzzing generator → `fuzzer/generators/`
 - Add report format → `core/domain/reporting/`

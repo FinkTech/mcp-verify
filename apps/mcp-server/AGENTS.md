@@ -21,6 +21,7 @@
 ## Market Differentiator
 
 This is the **first MCP server** that allows AI agents (Claude, GPT, etc.) to:
+
 - Validate MCP servers before deployment
 - Scan for security vulnerabilities (60 rules across 6 threat categories)
 - **Deep Fuzzing**: Target individual tools with smart attack payloads
@@ -38,6 +39,7 @@ This is the **first MCP server** that allows AI agents (Claude, GPT, etc.) to:
 ## 10 MCP Tools (Quick Reference)
 
 ### 1. validateServer
+
 Comprehensive validation (handshake, discovery, schema, security, quality, protocol).
 
 **Input**: `{ command: string; args?: string[]; configPath?: string }`
@@ -47,6 +49,7 @@ Comprehensive validation (handshake, discovery, schema, security, quality, proto
 ---
 
 ### 2. scanSecurity
+
 Security-focused scan with 60 rules across 6 threat categories: OWASP Top 10 (13 rules), MCP-specific (8 rules), OWASP LLM Top 10 (9 rules), Multi-Agent Attacks (11 rules), Enterprise Compliance (9 rules), and AI Weaponization (10 rules).
 
 **Input**: `{ command: string; args?: string[]; rules?: string[] }`
@@ -56,6 +59,7 @@ Security-focused scan with 60 rules across 6 threat categories: OWASP Top 10 (13
 ---
 
 ### 3. analyzeQuality
+
 Quality analysis (documentation, naming, descriptions, semantic clarity).
 
 **Input**: `{ command: string; args?: string[] }`
@@ -65,6 +69,7 @@ Quality analysis (documentation, naming, descriptions, semantic clarity).
 ---
 
 ### 4. generateReport
+
 Generate detailed reports in multiple formats (json, sarif, text, markdown).
 
 **Input**: `{ command: string; args?: string[]; format?: string; outputPath?: string }`
@@ -74,6 +79,7 @@ Generate detailed reports in multiple formats (json, sarif, text, markdown).
 ---
 
 ### 5. listInstalledServers
+
 Discover all MCP servers from config files (Claude Desktop, Gemini CLI, Cursor, Zed).
 
 **Input**: `{ configPath?: string }`
@@ -83,6 +89,7 @@ Discover all MCP servers from config files (Claude Desktop, Gemini CLI, Cursor, 
 ---
 
 ### 6. selfAudit
+
 Environment health check (Node.js, Git, Python, Deno, config discovery, live server tests).
 
 **Input**: `{ configPath?: string; skipServerValidation?: boolean }`
@@ -92,6 +99,7 @@ Environment health check (Node.js, Git, Python, Deno, config discovery, live ser
 ---
 
 ### 7. compareServers
+
 Multi-server comparison (security, quality, protocol compliance, capability counts).
 
 **Input**: `{ serverNames?: string[]; servers?: Array<{name, command, args}> }`
@@ -101,11 +109,13 @@ Multi-server comparison (security, quality, protocol compliance, capability coun
 ---
 
 ### 8. fuzzTool (Tier S)
+
 Execute selective fuzzing on a specific MCP tool to identify security vulnerabilities. Supports light, balanced, and aggressive profiles.
 
 **Input**: `{ command, args?, toolName, profile?, maxDuration? }`
 
 **Example**:
+
 ```json
 {
   "command": "node",
@@ -118,11 +128,13 @@ Execute selective fuzzing on a specific MCP tool to identify security vulnerabil
 ---
 
 ### 9. inspectToolSemantics (Tier S)
+
 Analyze an MCP tool for malicious intent using strict LLM analysis. Detects discrepancies between claimed function and actual capabilities.
 
 **Input**: `{ command?, args?, toolName?, toolDefinition?, llmProvider?, llmModel? }`
 
 **Example**:
+
 ```json
 {
   "command": "node",
@@ -134,11 +146,13 @@ Analyze an MCP tool for malicious intent using strict LLM analysis. Detects disc
 ---
 
 ### 10. suggestSecureSchema (Tier S)
+
 Analyze MCP tool input schema and suggest security-hardened version with constraints (maxLength, patterns, bounds, enums).
 
 **Input**: `{ command?, args?, toolName?, toolDefinition?, strictness? }`
 
 **Example**:
+
 ```json
 {
   "command": "node",
@@ -163,6 +177,7 @@ Raw validation reports are detailed but unwieldy for AI agents. The `formatForLL
 - **Next steps**: specific, executable actions
 
 **Example output structure**:
+
 ```typescript
 {
   status: 'valid',
@@ -185,13 +200,13 @@ Raw validation reports are detailed but unwieldy for AI agents. The `formatForLL
 
 Auto-detects MCP servers from standard config locations:
 
-| Client | Config Path |
-|--------|-------------|
-| Claude Desktop | `~/.claude/claude_desktop_config.json` |
-| Gemini CLI (global) | `~/.gemini/settings.json` |
-| Gemini CLI (local) | `./.gemini/settings.json` |
-| Cursor | `~/.cursor/mcp.json` |
-| Zed | `~/.config/zed/settings.json` |
+| Client              | Config Path                            |
+| ------------------- | -------------------------------------- |
+| Claude Desktop      | `~/.claude/claude_desktop_config.json` |
+| Gemini CLI (global) | `~/.gemini/settings.json`              |
+| Gemini CLI (local)  | `./.gemini/settings.json`              |
+| Cursor              | `~/.cursor/mcp.json`                   |
+| Zed                 | `~/.config/zed/settings.json`          |
 
 **Precedence**: Local configs override global (e.g., `./.gemini/settings.json` shadows `~/.gemini/settings.json`).
 
@@ -202,6 +217,7 @@ Auto-detects MCP servers from standard config locations:
 ## Claude Desktop Integration
 
 **Setup**:
+
 1. Build the server: `cd apps/mcp-server && npm run build`
 2. Add to `~/.claude/claude_desktop_config.json`:
    ```json
@@ -211,12 +227,14 @@ Auto-detects MCP servers from standard config locations:
          "command": "npx",
          "args": ["-y", "-p", "@finktech/mcp-verify", "mcp-verify-server"]
        }
-     }   }
+     }
+   }
    ```
 3. Restart Claude Desktop
 4. Verify with: "List available MCP tools" in Claude
 
 **Environment variables**:
+
 - `MCP_VERIFY_LANG=es` - Change language (default: en)
 - `DEBUG=mcp-verify:*` - Enable debug logging
 
@@ -228,12 +246,12 @@ All tools follow this structure:
 
 ```typescript
 // 1. Import dependencies
-import { MCPValidator, createScopedLogger } from '@mcp-verify/core';
-import { formatForLLM } from '../utils/llm-formatter.js';
+import { MCPValidator, createScopedLogger } from "@mcp-verify/core";
+import { formatForLLM } from "../utils/llm-formatter.js";
 
 // 2. Setup logger + i18n
-const logger = createScopedLogger('myToolTool');
-const lang = (process.env.MCP_VERIFY_LANG as Language) || 'en';
+const logger = createScopedLogger("myToolTool");
+const lang = (process.env.MCP_VERIFY_LANG as Language) || "en";
 
 // 3. Export tool function
 export async function myToolTool(args: unknown): Promise<ToolResult> {
@@ -256,13 +274,13 @@ export async function myToolTool(args: unknown): Promise<ToolResult> {
 
     // 9. Return MCP-compliant response
     return {
-      content: [{ type: 'text', text: JSON.stringify(llmOutput) }]
+      content: [{ type: "text", text: JSON.stringify(llmOutput) }],
     };
   } catch (error) {
-    logger.error('Tool failed', error as Error);
+    logger.error("Tool failed", error as Error);
     return {
-      content: [{ type: 'text', text: JSON.stringify({ error: '...' }) }],
-      isError: true
+      content: [{ type: "text", text: JSON.stringify({ error: "..." }) }],
+      isError: true,
     };
   }
 }
@@ -273,13 +291,15 @@ export async function myToolTool(args: unknown): Promise<ToolResult> {
 ## Modifying the MCP Server
 
 **Add new tool**:
+
 1. Create `src/tools/my-tool.ts` (follow pattern above)
 2. Export tool function: `export async function myToolTool(args): Promise<ToolResult>`
 3. Register in `src/server.ts`:
    ```typescript
    server.setRequestHandler(CallToolRequestSchema, async (request) => {
      switch (request.params.name) {
-       case 'myTool': return await myToolTool(request.params.arguments);
+       case "myTool":
+         return await myToolTool(request.params.arguments);
        // ...
      }
    });
@@ -296,11 +316,13 @@ export async function myToolTool(args: unknown): Promise<ToolResult> {
 5. Rebuild: `npm run build`
 
 **Update LLM formatting**:
+
 - Edit `src/utils/llm-formatter.ts`
 - Adjust weighted scores, emoji indicators, or next steps
 - Test with Claude to validate improvements
 
 **Change language**:
+
 - Translations live in `libs/core/domain/reporting/i18n.ts`
 - Set `MCP_VERIFY_LANG=es` environment variable
 - English is default (hardcoded fallback)
@@ -310,6 +332,7 @@ export async function myToolTool(args: unknown): Promise<ToolResult> {
 ## Troubleshooting
 
 ### Server not appearing in Claude Desktop
+
 - **Check**: Is path in `claude_desktop_config.json` correct and absolute?
 - **Check**: Did you rebuild after code changes? (`npm run build`)
 - **Check**: Did you restart Claude Desktop after config change?
@@ -317,6 +340,7 @@ export async function myToolTool(args: unknown): Promise<ToolResult> {
 - **Debug**: Run manually: `node dist/index.js` and look for errors
 
 ### Tools not listing in Claude
+
 - **Check**: Is server connected? (green indicator in Claude)
 - **Check**: Is `ListToolsRequestSchema` handler registered?
 - **Check**: Are tool schemas valid JSON Schema?
@@ -324,6 +348,7 @@ export async function myToolTool(args: unknown): Promise<ToolResult> {
 - **Debug**: Run with `DEBUG=mcp-verify:* node dist/index.js`
 
 ### Tool execution returns error
+
 - **Check**: Are arguments matching tool's `inputSchema`?
 - **Check**: Is target server running and accessible?
 - **Check**: Are timeouts sufficient for slow validation tasks?
@@ -331,6 +356,7 @@ export async function myToolTool(args: unknown): Promise<ToolResult> {
 - **Debug**: Add `console.error(JSON.stringify(error))` in tool handler
 
 ### LLM formatting not working
+
 - **Check**: Is `formatForLLM()` called before returning result?
 - **Check**: Is raw validation report structure valid?
 - **Check**: Are all required fields present in output?
@@ -338,6 +364,7 @@ export async function myToolTool(args: unknown): Promise<ToolResult> {
 - **Debug**: Add `console.log(JSON.stringify(llmOutput))` before return
 
 ### Config discovery not finding servers
+
 - **Check**: Are config files in standard locations?
   - `~/.claude/claude_desktop_config.json`
   - `~/.gemini/settings.json`
@@ -348,6 +375,7 @@ export async function myToolTool(args: unknown): Promise<ToolResult> {
 - **Debug**: Add `console.log` in `discoverMcpConfig()`
 
 ### Server crashes on tool execution
+
 - **Check**: Is error handling present in all tool handlers?
 - **Check**: Is cleanup (e.g., `validator.cleanup()`) called on success AND error?
 - **Check**: Are there uncaught promise rejections?
@@ -355,12 +383,14 @@ export async function myToolTool(args: unknown): Promise<ToolResult> {
 - **Debug**: Check stderr logs for stack traces
 
 ### Environment variables not loading
+
 - **Check**: Are env vars set before starting server?
 - **Check**: Is `.env` file in correct directory (if using dotenv)?
 - **Check**: Are variable names exact? (`MCP_VERIFY_LANG`, not `MCP_LANG`)
 - **Debug**: Add `console.log(process.env)` at server startup
 
 ### Stdio communication errors
+
 - **Check**: Is server using stdio transport correctly?
 - **Check**: Are messages JSON-RPC 2.0 compliant?
 - **Check**: Is stderr used ONLY for logs (not JSON-RPC messages)?
@@ -395,6 +425,7 @@ npm test -- --coverage
 ```
 
 **Test scenarios**:
+
 1. **Tool Handlers**: Each tool with valid/invalid inputs, error cases
 2. **LLM Formatter**: Verify formatting adheres to AI-optimized structure
 3. **Config Discovery**: Test all client config paths (Claude, Gemini, Cursor, Zed)
@@ -402,36 +433,38 @@ npm test -- --coverage
 5. **Timeout Handling**: Tool execution timeouts, cleanup on abort
 
 **Example test**:
-```typescript
-import { validateServerTool } from '../tools/validate-server';
 
-describe('validateServerTool', () => {
-  it('should return LLM-formatted output for valid server', async () => {
+```typescript
+import { validateServerTool } from "../tools/validate-server";
+
+describe("validateServerTool", () => {
+  it("should return LLM-formatted output for valid server", async () => {
     const result = await validateServerTool({
-      command: 'node',
-      args: ['test-server.js']
+      command: "node",
+      args: ["test-server.js"],
     });
 
     expect(result.content).toBeDefined();
     expect(result.isError).toBeUndefined();
 
     const output = JSON.parse(result.content[0].text);
-    expect(output.status).toBe('valid');
+    expect(output.status).toBe("valid");
     expect(output.overallScore).toBeGreaterThan(0);
     expect(output.nextSteps).toBeInstanceOf(Array);
   });
 
-  it('should handle missing command gracefully', async () => {
+  it("should handle missing command gracefully", async () => {
     const result = await validateServerTool({});
 
     expect(result.isError).toBe(true);
     const output = JSON.parse(result.content[0].text);
-    expect(output.error).toContain('command');
+    expect(output.error).toContain("command");
   });
 });
 ```
 
 **MCP Inspector Testing**:
+
 ```bash
 # Start Inspector UI
 npx @modelcontextprotocol/inspector node dist/index.js

@@ -21,10 +21,10 @@ export function parseEnvVars(envPairs: string[]): Record<string, string> {
   const envVars: Record<string, string> = {};
 
   envPairs.forEach((pair: string) => {
-    const [key, ...rest] = pair.split('=');
-    const value = rest.join('='); // Re-join in case value contains '='
+    const [key, ...rest] = pair.split("=");
+    const value = rest.join("="); // Re-join in case value contains '='
     if (key) {
-      envVars[key] = value || '';
+      envVars[key] = value || "";
     }
   });
 
@@ -37,7 +37,7 @@ export function parseEnvVars(envPairs: string[]): Record<string, string> {
  * @returns true if valid format
  */
 export function isValidEnvPair(pair: string): boolean {
-  return pair.includes('=') && pair.split('=')[0].trim().length > 0;
+  return pair.includes("=") && pair.split("=")[0].trim().length > 0;
 }
 
 /**
@@ -46,11 +46,15 @@ export function isValidEnvPair(pair: string): boolean {
  * @returns Object with parsed and validated environment variables
  * @throws Error if invalid format found
  */
-export function parseAndValidateEnvVars(envPairs: string[]): Record<string, string> {
-  const invalidPairs = envPairs.filter(pair => !isValidEnvPair(pair));
+export function parseAndValidateEnvVars(
+  envPairs: string[],
+): Record<string, string> {
+  const invalidPairs = envPairs.filter((pair) => !isValidEnvPair(pair));
 
   if (invalidPairs.length > 0) {
-    throw new Error(`Invalid environment variable format: ${invalidPairs.join(', ')}. Expected format: KEY=VALUE`);
+    throw new Error(
+      `Invalid environment variable format: ${invalidPairs.join(", ")}. Expected format: KEY=VALUE`,
+    );
   }
 
   return parseEnvVars(envPairs);

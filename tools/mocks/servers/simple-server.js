@@ -12,78 +12,78 @@
  * This server follows best practices and should pass all validations.
  */
 
-const readline = require('readline');
+const readline = require("readline");
 
 // MCP Server state
 const serverInfo = {
-  name: 'simple-test-server',
-  version: '1.0.0'
+  name: "simple-test-server",
+  version: "1.0.0",
 };
 
 // Available tools
 const tools = [
   {
-    name: 'get_weather',
-    description: 'Get current weather for a location',
+    name: "get_weather",
+    description: "Get current weather for a location",
     inputSchema: {
-      type: 'object',
+      type: "object",
       properties: {
         location: {
-          type: 'string',
-          description: 'City name or coordinates'
-        }
+          type: "string",
+          description: "City name or coordinates",
+        },
       },
-      required: ['location']
-    }
+      required: ["location"],
+    },
   },
   {
-    name: 'calculate',
-    description: 'Perform basic mathematical calculations',
+    name: "calculate",
+    description: "Perform basic mathematical calculations",
     inputSchema: {
-      type: 'object',
+      type: "object",
       properties: {
         operation: {
-          type: 'string',
-          enum: ['add', 'subtract', 'multiply', 'divide'],
-          description: 'Mathematical operation to perform'
+          type: "string",
+          enum: ["add", "subtract", "multiply", "divide"],
+          description: "Mathematical operation to perform",
         },
         a: {
-          type: 'number',
-          description: 'First operand'
+          type: "number",
+          description: "First operand",
         },
         b: {
-          type: 'number',
-          description: 'Second operand'
-        }
+          type: "number",
+          description: "Second operand",
+        },
       },
-      required: ['operation', 'a', 'b']
-    }
-  }
+      required: ["operation", "a", "b"],
+    },
+  },
 ];
 
 // Available resources
 const resources = [
   {
-    name: 'documentation',
-    uri: 'file:///docs/readme.md',
-    mimeType: 'text/markdown',
-    description: 'Server documentation'
-  }
+    name: "documentation",
+    uri: "file:///docs/readme.md",
+    mimeType: "text/markdown",
+    description: "Server documentation",
+  },
 ];
 
 // Available prompts
 const prompts = [
   {
-    name: 'greeting',
-    description: 'A friendly greeting prompt',
+    name: "greeting",
+    description: "A friendly greeting prompt",
     arguments: [
       {
-        name: 'name',
-        description: 'Name of the person to greet',
-        required: true
-      }
-    ]
-  }
+        name: "name",
+        description: "Name of the person to greet",
+        required: true,
+      },
+    ],
+  },
 ];
 
 // JSON-RPC message handler
@@ -91,119 +91,127 @@ function handleMessage(message) {
   const { jsonrpc, id, method, params } = message;
 
   // Validate JSON-RPC 2.0
-  if (jsonrpc !== '2.0') {
+  if (jsonrpc !== "2.0") {
     return {
-      jsonrpc: '2.0',
+      jsonrpc: "2.0",
       id,
       error: {
         code: -32600,
-        message: 'Invalid Request - jsonrpc must be "2.0"'
-      }
+        message: 'Invalid Request - jsonrpc must be "2.0"',
+      },
     };
   }
 
   // Handle different methods
   switch (method) {
-    case 'initialize':
+    case "initialize":
       return {
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         id,
         result: {
-          protocolVersion: '2024-11-05',
+          protocolVersion: "2024-11-05",
           capabilities: {
             tools: {},
             resources: {},
-            prompts: {}
+            prompts: {},
           },
-          serverInfo
-        }
+          serverInfo,
+        },
       };
 
-    case 'tools/list':
+    case "tools/list":
       return {
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         id,
         result: {
-          tools
-        }
+          tools,
+        },
       };
 
-    case 'resources/list':
+    case "resources/list":
       return {
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         id,
         result: {
-          resources
-        }
+          resources,
+        },
       };
 
-    case 'prompts/list':
+    case "prompts/list":
       return {
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         id,
         result: {
-          prompts
-        }
+          prompts,
+        },
       };
 
-    case 'tools/call':
+    case "tools/call":
       const { name, arguments: args } = params;
 
-      if (name === 'get_weather') {
+      if (name === "get_weather") {
         return {
-          jsonrpc: '2.0',
+          jsonrpc: "2.0",
           id,
           result: {
             content: [
               {
-                type: 'text',
-                text: `Weather in ${args.location}: Sunny, 22°C`
-              }
-            ]
-          }
+                type: "text",
+                text: `Weather in ${args.location}: Sunny, 22°C`,
+              },
+            ],
+          },
         };
       }
 
-      if (name === 'calculate') {
+      if (name === "calculate") {
         let result;
         switch (args.operation) {
-          case 'add': result = args.a + args.b; break;
-          case 'subtract': result = args.a - args.b; break;
-          case 'multiply': result = args.a * args.b; break;
-          case 'divide': result = args.a / args.b; break;
+          case "add":
+            result = args.a + args.b;
+            break;
+          case "subtract":
+            result = args.a - args.b;
+            break;
+          case "multiply":
+            result = args.a * args.b;
+            break;
+          case "divide":
+            result = args.a / args.b;
+            break;
         }
 
         return {
-          jsonrpc: '2.0',
+          jsonrpc: "2.0",
           id,
           result: {
             content: [
               {
-                type: 'text',
-                text: `Result: ${result}`
-              }
-            ]
-          }
+                type: "text",
+                text: `Result: ${result}`,
+              },
+            ],
+          },
         };
       }
 
       return {
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         id,
         error: {
           code: -32601,
-          message: `Tool not found: ${name}`
-        }
+          message: `Tool not found: ${name}`,
+        },
       };
 
     default:
       return {
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         id,
         error: {
           code: -32601,
-          message: `Method not found: ${method}`
-        }
+          message: `Method not found: ${method}`,
+        },
       };
   }
 }
@@ -212,31 +220,33 @@ function handleMessage(message) {
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
-  terminal: false
+  terminal: false,
 });
 
-rl.on('line', (line) => {
+rl.on("line", (line) => {
   try {
     const message = JSON.parse(line);
     const response = handleMessage(message);
     console.log(JSON.stringify(response));
   } catch (error) {
-    console.log(JSON.stringify({
-      jsonrpc: '2.0',
-      id: null,
-      error: {
-        code: -32700,
-        message: 'Parse error'
-      }
-    }));
+    console.log(
+      JSON.stringify({
+        jsonrpc: "2.0",
+        id: null,
+        error: {
+          code: -32700,
+          message: "Parse error",
+        },
+      }),
+    );
   }
 });
 
 // Handle graceful shutdown
-process.on('SIGINT', () => {
+process.on("SIGINT", () => {
   process.exit(0);
 });
 
-process.on('SIGTERM', () => {
+process.on("SIGTERM", () => {
   process.exit(0);
 });

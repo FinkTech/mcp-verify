@@ -29,9 +29,12 @@
  * - CWE-494: Download of Code Without Integrity Check
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import { t } from "@mcp-verify/shared";
 
 interface McpServerConfig {
   command?: string;
@@ -46,31 +49,31 @@ interface McpConfig {
 }
 
 export class ApiEndpointHijackingRule implements ISecurityRule {
-  code = 'SEC-054';
-  name = 'API Endpoint Hijacking via Config Override';
-  severity: 'critical' = 'critical';
+  code = "SEC-054";
+  name = "API Endpoint Hijacking via Config Override";
+  severity: "critical" = "critical";
 
   private readonly OFFICIAL_ENDPOINTS = [
-    'api.anthropic.com',
-    'api.openai.com',
-    'generativelanguage.googleapis.com',
-    'api.together.xyz',
-    'api.cohere.ai',
-    'api.mistral.ai'
+    "api.anthropic.com",
+    "api.openai.com",
+    "generativelanguage.googleapis.com",
+    "api.together.xyz",
+    "api.cohere.ai",
+    "api.mistral.ai",
   ];
 
   private readonly API_ENV_VARS = [
-    'ANTHROPIC_BASE_URL',
-    'ANTHROPIC_API_URL',
-    'OPENAI_BASE_URL',
-    'OPENAI_API_URL',
-    'API_BASE_URL',
-    'API_URL',
-    'BASE_URL',
-    'GEMINI_API_URL',
-    'GEMINI_BASE_URL',
-    'LLM_API_URL',
-    'LLM_BASE_URL'
+    "ANTHROPIC_BASE_URL",
+    "ANTHROPIC_API_URL",
+    "OPENAI_BASE_URL",
+    "OPENAI_API_URL",
+    "API_BASE_URL",
+    "API_URL",
+    "BASE_URL",
+    "GEMINI_API_URL",
+    "GEMINI_BASE_URL",
+    "LLM_API_URL",
+    "LLM_BASE_URL",
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -82,38 +85,56 @@ export class ApiEndpointHijackingRule implements ISecurityRule {
 
     // Keywords indicating endpoint registration/hijacking
     const ENDPOINT_KEYWORDS = [
-      'register_endpoint', 'register endpoint', 'endpoint',
-      'hijack', 'override endpoint', 'replace endpoint',
-      'api endpoint', 'endpoint_path', 'route registration'
+      "register_endpoint",
+      "register endpoint",
+      "endpoint",
+      "hijack",
+      "override endpoint",
+      "replace endpoint",
+      "api endpoint",
+      "endpoint_path",
+      "route registration",
     ];
 
     // Keywords indicating security issues
     const INSECURE_KEYWORDS = [
-      'without checking', 'without verification', 'without validation',
-      'sin verificar', 'sin validación', 'no verification',
-      'collision', 'override', 'replace'
+      "without checking",
+      "without verification",
+      "without validation",
+      "sin verificar",
+      "sin validación",
+      "no verification",
+      "collision",
+      "override",
+      "replace",
     ];
 
     for (const tool of discovery.tools) {
-      const toolText = `${tool.name} ${tool.description || ''}`.toLowerCase();
+      const toolText = `${tool.name} ${tool.description || ""}`.toLowerCase();
 
       // Check if tool mentions endpoint operations
-      const hasEndpointOperation = ENDPOINT_KEYWORDS.some(kw => toolText.includes(kw));
+      const hasEndpointOperation = ENDPOINT_KEYWORDS.some((kw) =>
+        toolText.includes(kw),
+      );
 
       if (!hasEndpointOperation) continue;
 
       // Check for security issues
-      const hasSecurityIssue = INSECURE_KEYWORDS.some(kw => toolText.includes(kw));
+      const hasSecurityIssue = INSECURE_KEYWORDS.some((kw) =>
+        toolText.includes(kw),
+      );
 
       // Check for endpoint_path parameter
       let hasEndpointParam = false;
-      if (tool.inputSchema && typeof tool.inputSchema === 'object') {
+      if (tool.inputSchema && typeof tool.inputSchema === "object") {
         const schema = tool.inputSchema as Record<string, any>;
         if (schema.properties) {
           for (const paramName of Object.keys(schema.properties)) {
-            if (paramName.toLowerCase().includes('endpoint') ||
-                paramName.toLowerCase().includes('path') ||
-                paramName.toLowerCase().includes('route')) {
+            if (
+              paramName.toLowerCase().includes("endpoint") ||
+              paramName.toLowerCase().includes("path") ||
+              paramName.toLowerCase().includes("route")
+            ) {
               hasEndpointParam = true;
               break;
             }
@@ -123,21 +144,23 @@ export class ApiEndpointHijackingRule implements ISecurityRule {
 
       if (hasSecurityIssue || (hasEndpointOperation && hasEndpointParam)) {
         findings.push({
-          severity: 'critical',
-          message: t('sec_054_tool_endpoint_hijacking', { tool: tool.name }),
+          severity: "critical",
+          message: t("sec_054_tool_endpoint_hijacking", { tool: tool.name }),
           component: `tool:${tool.name}`,
           ruleCode: this.code,
-          location: { type: 'tool', name: tool.name },
+          location: { type: "tool", name: tool.name },
           evidence: {
-            risk: 'Tool can register or hijack API endpoints without proper validation',
-            detectedOperation: hasEndpointParam ? 'Endpoint registration with path parameter' : 'Endpoint manipulation without validation'
+            risk: "Tool can register or hijack API endpoints without proper validation",
+            detectedOperation: hasEndpointParam
+              ? "Endpoint registration with path parameter"
+              : "Endpoint manipulation without validation",
           },
-          remediation: t('sec_054_recommendation'),
+          remediation: t("sec_054_recommendation"),
           references: [
-            'CVE-2026-21852: API Endpoint Hijacking in MCP Config',
-            'Check Point Research: MCP Security (Vector 3)',
-            'CWE-494: Download of Code Without Integrity Check'
-          ]
+            "CVE-2026-21852: API Endpoint Hijacking in MCP Config",
+            "Check Point Research: MCP Security (Vector 3)",
+            "CWE-494: Download of Code Without Integrity Check",
+          ],
         });
       }
     }
@@ -152,17 +175,22 @@ export class ApiEndpointHijackingRule implements ISecurityRule {
     const findings: SecurityFinding[] = [];
 
     try {
-      const fs = require('fs');
+      const fs = require("fs");
       if (!fs.existsSync(configPath)) {
         return findings;
       }
 
-      const content = fs.readFileSync(configPath, 'utf-8');
+      const content = fs.readFileSync(configPath, "utf-8");
       const config: McpConfig = JSON.parse(content);
 
       if (config.mcpServers) {
-        for (const [serverName, serverConfig] of Object.entries(config.mcpServers)) {
-          const serverFindings = this.analyzeServerEnv(serverName, serverConfig);
+        for (const [serverName, serverConfig] of Object.entries(
+          config.mcpServers,
+        )) {
+          const serverFindings = this.analyzeServerEnv(
+            serverName,
+            serverConfig,
+          );
           findings.push(...serverFindings);
         }
       }
@@ -170,7 +198,7 @@ export class ApiEndpointHijackingRule implements ISecurityRule {
       // Also check top-level env if present
       const topLevelEnv = (config as { env?: Record<string, string> }).env;
       if (topLevelEnv) {
-        const topLevelFindings = this.analyzeEnvVars('global', topLevelEnv);
+        const topLevelFindings = this.analyzeEnvVars("global", topLevelEnv);
         findings.push(...topLevelFindings);
       }
     } catch (error) {
@@ -180,7 +208,10 @@ export class ApiEndpointHijackingRule implements ISecurityRule {
     return findings;
   }
 
-  private analyzeServerEnv(serverName: string, serverConfig: McpServerConfig): SecurityFinding[] {
+  private analyzeServerEnv(
+    serverName: string,
+    serverConfig: McpServerConfig,
+  ): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
 
     if (!serverConfig.env) {
@@ -193,15 +224,18 @@ export class ApiEndpointHijackingRule implements ISecurityRule {
     return findings;
   }
 
-  private analyzeEnvVars(serverName: string, env: Record<string, string>): SecurityFinding[] {
+  private analyzeEnvVars(
+    serverName: string,
+    env: Record<string, string>,
+  ): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
 
     for (const [envVar, envValue] of Object.entries(env)) {
       const envVarUpper = envVar.toUpperCase();
 
       // Check if this is an API endpoint variable
-      const isApiEndpoint = this.API_ENV_VARS.some(apiVar =>
-        envVarUpper.includes(apiVar) || envVarUpper === apiVar
+      const isApiEndpoint = this.API_ENV_VARS.some(
+        (apiVar) => envVarUpper.includes(apiVar) || envVarUpper === apiVar,
       );
 
       if (isApiEndpoint) {
@@ -209,23 +243,23 @@ export class ApiEndpointHijackingRule implements ISecurityRule {
 
         if (!isOfficial) {
           const isLocalhost = this.isLocalhostEndpoint(envValue);
-          const severity = isLocalhost ? 'high' : 'critical';
+          const severity = isLocalhost ? "high" : "critical";
 
           findings.push({
             severity,
-            message: t('sec_054_endpoint_hijacking', {
+            message: t("sec_054_endpoint_hijacking", {
               serverName,
               envVar,
-              value: envValue
+              value: envValue,
             }),
             component: `config:${serverName}`,
             ruleCode: this.code,
-            remediation: t('sec_054_recommendation'),
+            remediation: t("sec_054_recommendation"),
             references: [
-              'CVE-2026-21852: API Endpoint Hijacking in MCP Config',
-              'Check Point Research: MCP Security (Vector 3)',
-              'CWE-494: Download of Code Without Integrity Check'
-            ]
+              "CVE-2026-21852: API Endpoint Hijacking in MCP Config",
+              "Check Point Research: MCP Security (Vector 3)",
+              "CWE-494: Download of Code Without Integrity Check",
+            ],
           });
         }
       }
@@ -239,8 +273,9 @@ export class ApiEndpointHijackingRule implements ISecurityRule {
       const urlObj = new URL(url);
       const hostname = urlObj.hostname.toLowerCase();
 
-      return this.OFFICIAL_ENDPOINTS.some(official =>
-        hostname === official || hostname.endsWith(`.${official}`)
+      return this.OFFICIAL_ENDPOINTS.some(
+        (official) =>
+          hostname === official || hostname.endsWith(`.${official}`),
       );
     } catch {
       // Invalid URL format
@@ -253,13 +288,15 @@ export class ApiEndpointHijackingRule implements ISecurityRule {
       const urlObj = new URL(url);
       const hostname = urlObj.hostname.toLowerCase();
 
-      return hostname === 'localhost' ||
-        hostname === '127.0.0.1' ||
-        hostname === '0.0.0.0' ||
-        hostname === '::1' ||
-        hostname.startsWith('192.168.') ||
-        hostname.startsWith('10.') ||
-        hostname.startsWith('172.');
+      return (
+        hostname === "localhost" ||
+        hostname === "127.0.0.1" ||
+        hostname === "0.0.0.0" ||
+        hostname === "::1" ||
+        hostname.startsWith("192.168.") ||
+        hostname.startsWith("10.") ||
+        hostname.startsWith("172.")
+      );
     } catch {
       return false;
     }

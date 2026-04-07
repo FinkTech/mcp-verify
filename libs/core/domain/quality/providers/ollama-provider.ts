@@ -33,13 +33,13 @@
  * @module libs/core/domain/quality/providers/ollama-provider
  */
 
-import { t, getUserAgent } from '@mcp-verify/shared';
+import { t, getUserAgent } from "@mcp-verify/shared";
 import type {
   ILLMProvider,
   LLMMessage,
   LLMResponse,
   LLMProviderConfig,
-} from './llm-provider.interface';
+} from "./llm-provider.interface";
 
 interface OllamaTagsResponse {
   models: {
@@ -81,19 +81,19 @@ export class OllamaProvider implements ILLMProvider {
    * Model context windows (approximate)
    */
   private readonly CONTEXT_WINDOWS: Record<string, number> = {
-    'llama3.2': 128_000,
-    'llama3.2:3b': 128_000,
-    'llama3.1': 128_000,
-    'codellama': 16_000,
-    'codellama:7b': 16_000,
-    'codellama:13b': 16_000,
-    'mistral': 32_000,
-    'mistral:7b': 32_000,
+    "llama3.2": 128_000,
+    "llama3.2:3b": 128_000,
+    "llama3.1": 128_000,
+    codellama: 16_000,
+    "codellama:7b": 16_000,
+    "codellama:13b": 16_000,
+    mistral: 32_000,
+    "mistral:7b": 32_000,
   };
 
   constructor(config: LLMProviderConfig) {
     this.config = config;
-    this.baseUrl = config.baseUrl || 'http://localhost:11434';
+    this.baseUrl = config.baseUrl || "http://localhost:11434";
   }
 
   getName(): string {
@@ -105,7 +105,7 @@ export class OllamaProvider implements ILLMProvider {
       // Check if Ollama server is running
       const response = await fetch(`${this.baseUrl}/api/tags`, {
         signal: AbortSignal.timeout(5000),
-        headers: { 'User-Agent': getUserAgent() },
+        headers: { "User-Agent": getUserAgent() },
       });
 
       if (!response.ok) {
@@ -113,29 +113,29 @@ export class OllamaProvider implements ILLMProvider {
       }
 
       // Check if requested model is available
-      const data = await response.json() as unknown as OllamaTagsResponse;
+      const data = (await response.json()) as unknown as OllamaTagsResponse;
       const models = data.models || [];
 
       const modelExists = models.some(
         (m) =>
           m.name === this.config.model ||
-          m.name.startsWith(this.config.model + ':')
+          m.name.startsWith(this.config.model + ":"),
       );
 
       if (!modelExists) {
-        const availableModels = models.map((m) => m.name).join(', ');
+        const availableModels = models.map((m) => m.name).join(", ");
         console.warn(
-          t('ollama_model_not_found', {
+          t("ollama_model_not_found", {
             url: this.baseUrl,
             model: this.config.model,
-            available: availableModels
-          })
+            available: availableModels,
+          }),
         );
         return false;
       }
 
       return true;
-    } catch (error: any) {
+    } catch {
       // Ollama not running or not reachable
       return false;
     }
@@ -143,9 +143,13 @@ export class OllamaProvider implements ILLMProvider {
 
   async complete(
     messages: LLMMessage[],
-    options?: { maxTokens?: number; temperature?: number; timeout?: number }
+    options?: { maxTokens?: number; temperature?: number; timeout?: number },
   ): Promise<LLMResponse> {
-    const { maxTokens = 2000, temperature = 0.2, timeout = 60000 } = options || {};
+    const {
+      maxTokens = 2000,
+      temperature = 0.2,
+      timeout = 60000,
+    } = options || {};
 
     // Convert messages to Ollama prompt format
     // Ollama's /api/generate expects a single prompt string
@@ -157,10 +161,10 @@ export class OllamaProvider implements ILLMProvider {
 
     try {
       const response = await fetch(`${this.baseUrl}/api/generate`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': getUserAgent(),
+          "Content-Type": "application/json",
+          "User-Agent": getUserAgent(),
         },
         body: JSON.stringify({
           model: this.config.model,
@@ -178,49 +182,47 @@ export class OllamaProvider implements ILLMProvider {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(
-          `Ollama API error (${response.status}): ${errorText}`
-        );
+        throw new Error(`Ollama API error (${response.status}): ${errorText}`);
       }
 
-      const data = await response.json() as unknown as OllamaGenerateResponse;
+      const data = (await response.json()) as unknown as OllamaGenerateResponse;
 
       return {
-        text: data.response || '',
+        text: data.response || "",
         usage: {
           inputTokens: data.prompt_eval_count || 0,
           outputTokens: data.eval_count || 0,
         },
         metadata: {
           model: data.model,
-          finishReason: data.done ? 'stop' : 'length',
+          finishReason: data.done ? "stop" : "length",
         },
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       clearTimeout(timeoutId);
 
-      if (error.name === 'AbortError') {
-        throw new Error(t('ollama_timeout', { timeout }));
+      if ((error as Error).name === "AbortError") {
+        throw new Error(t("ollama_timeout", { timeout }));
       }
 
-      throw new Error(t('ollama_api_error', { error: error.message }));
+      throw new Error(t("ollama_api_error", { error: (error as Error).message }));
     }
   }
 
   getModelInfo(): {
     name: string;
-    provider: 'anthropic' | 'ollama' | 'openai' | 'custom';
+    provider: "anthropic" | "ollama" | "openai" | "custom";
     contextWindow: number;
   } {
     // Try to find exact match or base model match
     const contextWindow =
       this.CONTEXT_WINDOWS[this.config.model] ||
-      this.CONTEXT_WINDOWS[this.config.model.split(':')[0]] ||
+      this.CONTEXT_WINDOWS[this.config.model.split(":")[0]] ||
       32_000; // Default
 
     return {
       name: this.config.model,
-      provider: 'ollama',
+      provider: "ollama",
       contextWindow,
     };
   }
@@ -234,9 +236,14 @@ export class OllamaProvider implements ILLMProvider {
   private formatMessagesAsPrompt(messages: LLMMessage[]): string {
     return messages
       .map((m) => {
-        const role = m.role === 'system' ? 'System' : m.role === 'user' ? 'User' : 'Assistant';
+        const role =
+          m.role === "system"
+            ? "System"
+            : m.role === "user"
+              ? "User"
+              : "Assistant";
         return `${role}: ${m.content}`;
       })
-      .join('\n\n');
+      .join("\n\n");
   }
 }

@@ -28,55 +28,63 @@
  * Download them from: https://nodejs.org/dist/latest-v20.x/
  */
 
-'use strict';
+"use strict";
 
-const { execSync, spawnSync } = require('child_process');
-const fs   = require('fs');
-const path = require('path');
-const os   = require('os');
-const crypto = require('crypto');
+const { execSync, spawnSync } = require("child_process");
+const fs = require("fs");
+const path = require("path");
+const os = require("os");
+const crypto = require("crypto");
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CLI argument parsing (no extra deps)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const argv = process.argv.slice(2);
-const hasFlag   = (f) => argv.includes(f);
-const flagValue = (f) => { const i = argv.indexOf(f); return i !== -1 ? argv[i + 1] : null; };
+const hasFlag = (f) => argv.includes(f);
+const flagValue = (f) => {
+  const i = argv.indexOf(f);
+  return i !== -1 ? argv[i + 1] : null;
+};
 
 const OPT = {
-  all:       hasFlag('--all'),
-  server:    hasFlag('--server'),
-  noSign:    hasFlag('--no-sign'),
-  verbose:   hasFlag('--verbose') || hasFlag('-v'),
-  skipBuild: hasFlag('--skip-build'),       // assume esbuild already ran
-  target:    flagValue('--target'),         // linux | macos | windows
-  nodeVersion: flagValue('--node-version') || '20',
+  all: hasFlag("--all"),
+  server: hasFlag("--server"),
+  noSign: hasFlag("--no-sign"),
+  verbose: hasFlag("--verbose") || hasFlag("-v"),
+  skipBuild: hasFlag("--skip-build"), // assume esbuild already ran
+  target: flagValue("--target"), // linux | macos | windows
+  nodeVersion: flagValue("--node-version") || "20",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Paths
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ROOT      = path.resolve(__dirname, '../..');
-const DIST      = path.join(ROOT, 'dist');
-const BIN_OUT   = path.join(DIST, 'bin');        // final executables land here
-const SEA_DIR   = path.join(DIST, '.sea');        // temp blobs
-const NODE_BINS = path.join(ROOT, 'tools', 'node-bins'); // optional cross-compile bins
+const ROOT = path.resolve(__dirname, "../..");
+const DIST = path.join(ROOT, "dist");
+const BIN_OUT = path.join(DIST, "bin"); // final executables land here
+const SEA_DIR = path.join(DIST, ".sea"); // temp blobs
+const NODE_BINS = path.join(ROOT, "tools", "node-bins"); // optional cross-compile bins
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Build targets
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ALL_TARGETS = [
-  { id: 'linux',   platform: 'linux',  ext: '',     nodeBinSuffix: 'linux-x64'   },
-  { id: 'macos',   platform: 'darwin', ext: '',     nodeBinSuffix: 'darwin-x64'  },
-  { id: 'windows', platform: 'win32',  ext: '.exe', nodeBinSuffix: 'win-x64.exe' },
+  { id: "linux", platform: "linux", ext: "", nodeBinSuffix: "linux-x64" },
+  { id: "macos", platform: "darwin", ext: "", nodeBinSuffix: "darwin-x64" },
+  {
+    id: "windows",
+    platform: "win32",
+    ext: ".exe",
+    nodeBinSuffix: "win-x64.exe",
+  },
 ];
 
 function resolveTargets() {
   if (OPT.target) {
-    const t = ALL_TARGETS.find(t => t.id === OPT.target);
+    const t = ALL_TARGETS.find((t) => t.id === OPT.target);
     if (!t) {
       die(`Unknown target "${OPT.target}". Valid: linux | macos | windows`);
     }
@@ -85,8 +93,9 @@ function resolveTargets() {
   if (OPT.all) return ALL_TARGETS;
 
   // Default: current platform only
-  const current = ALL_TARGETS.find(t => t.platform === process.platform)
-    || ALL_TARGETS.find(t => t.id === 'linux'); // CI fallback
+  const current =
+    ALL_TARGETS.find((t) => t.platform === process.platform) ||
+    ALL_TARGETS.find((t) => t.id === "linux"); // CI fallback
   return [current];
 }
 
@@ -95,24 +104,37 @@ function resolveTargets() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const colors = {
-  reset:  '\x1b[0m',
-  bold:   '\x1b[1m',
-  dim:    '\x1b[2m',
-  green:  '\x1b[32m',
-  yellow: '\x1b[33m',
-  cyan:   '\x1b[36m',
-  red:    '\x1b[31m',
-  white:  '\x1b[37m',
+  reset: "\x1b[0m",
+  bold: "\x1b[1m",
+  dim: "\x1b[2m",
+  green: "\x1b[32m",
+  yellow: "\x1b[33m",
+  cyan: "\x1b[36m",
+  red: "\x1b[31m",
+  white: "\x1b[37m",
 };
 
 const c = (color, text) => `${colors[color]}${text}${colors.reset}`;
 
-function log(msg)         { console.log(`  ${c('cyan',  '›')} ${msg}`); }
-function success(msg)     { console.log(`  ${c('green', '✔')} ${c('bold', msg)}`); }
-function warn(msg)        { console.log(`  ${c('yellow','⚠')} ${msg}`); }
-function section(title)   { console.log(`\n${c('bold',  '  ── ' + title + ' ──')}`); }
-function die(msg)         { console.error(`\n  ${c('red','✗')} ${c('bold', msg)}\n`); process.exit(1); }
-function verbose(msg)     { if (OPT.verbose) console.log(`  ${c('dim', '[verbose] ' + msg)}`); }
+function log(msg) {
+  console.log(`  ${c("cyan", "›")} ${msg}`);
+}
+function success(msg) {
+  console.log(`  ${c("green", "✔")} ${c("bold", msg)}`);
+}
+function warn(msg) {
+  console.log(`  ${c("yellow", "⚠")} ${msg}`);
+}
+function section(title) {
+  console.log(`\n${c("bold", "  ── " + title + " ──")}`);
+}
+function die(msg) {
+  console.error(`\n  ${c("red", "✗")} ${c("bold", msg)}\n`);
+  process.exit(1);
+}
+function verbose(msg) {
+  if (OPT.verbose) console.log(`  ${c("dim", "[verbose] " + msg)}`);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shell helpers
@@ -120,7 +142,7 @@ function verbose(msg)     { if (OPT.verbose) console.log(`  ${c('dim', '[verbose
 
 function run(cmd, opts = {}) {
   verbose(`$ ${cmd}`);
-  return execSync(cmd, { encoding: 'utf8', stdio: 'pipe', ...opts }).trim();
+  return execSync(cmd, { encoding: "utf8", stdio: "pipe", ...opts }).trim();
 }
 
 function runOrDie(cmd, errorMsg, opts = {}) {
@@ -138,10 +160,10 @@ function runOrDie(cmd, errorMsg, opts = {}) {
 function resolveLocalBin(name) {
   // Check both root and hoisted workspace locations
   const candidates = [
-    path.join(ROOT, 'node_modules', '.bin', name),
-    path.join(ROOT, 'node_modules', '.bin', name + '.cmd'), // Windows
+    path.join(ROOT, "node_modules", ".bin", name),
+    path.join(ROOT, "node_modules", ".bin", name + ".cmd"), // Windows
   ];
-  return candidates.find(p => fs.existsSync(p)) || null;
+  return candidates.find((p) => fs.existsSync(p)) || null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -149,7 +171,10 @@ function resolveLocalBin(name) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function sha256File(filePath) {
-  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+  return crypto
+    .createHash("sha256")
+    .update(fs.readFileSync(filePath))
+    .digest("hex");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -157,10 +182,10 @@ function sha256File(filePath) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function validatePrerequisites() {
-  section('Validating prerequisites');
+  section("Validating prerequisites");
 
   // Node version check (need ≥ 20 for SEA)
-  const nodeVer = process.versions.node.split('.').map(Number);
+  const nodeVer = process.versions.node.split(".").map(Number);
   if (nodeVer[0] < 20) {
     die(`Node.js 20+ required for SEA. Found: ${process.version}`);
   }
@@ -168,25 +193,27 @@ function validatePrerequisites() {
 
   // postject must be installed as a local devDependency.
   // We resolve it directly from node_modules — no npx, no network, pinned version.
-  const postjectBin = resolveLocalBin('postject');
+  const postjectBin = resolveLocalBin("postject");
   if (!postjectBin) {
     die(
-      'postject not found in node_modules/.bin/.\n' +
-      '    Run: npm install --save-dev postject\n' +
-      '    Then retry: node tools/scripts/compile-sea.js'
+      "postject not found in node_modules/.bin/.\n" +
+        "    Run: npm install --save-dev postject\n" +
+        "    Then retry: node tools/scripts/compile-sea.js",
     );
   }
   // Stash for use in injectBlob()
   process.env._MCP_POSTJECT_BIN = postjectBin;
-  log(`postject ${c('dim', postjectBin)} ✓`);
+  log(`postject ${c("dim", postjectBin)} ✓`);
 
   // macOS signing tools (soft check)
-  if (process.platform === 'darwin' && !OPT.noSign) {
-    const hasCodesign = spawnSync('which', ['codesign']).status === 0;
+  if (process.platform === "darwin" && !OPT.noSign) {
+    const hasCodesign = spawnSync("which", ["codesign"]).status === 0;
     if (!hasCodesign) {
-      warn('codesign not found. macOS binary will be unsigned. Use --no-sign to silence this.');
+      warn(
+        "codesign not found. macOS binary will be unsigned. Use --no-sign to silence this.",
+      );
     } else {
-      log('codesign ✓');
+      log("codesign ✓");
     }
   }
 }
@@ -198,10 +225,15 @@ function validatePrerequisites() {
 function ensureBundle(bundleFile, label) {
   if (!fs.existsSync(bundleFile)) {
     if (OPT.skipBuild) {
-      die(`Bundle not found at ${bundleFile}. Remove --skip-build to build first.`);
+      die(
+        `Bundle not found at ${bundleFile}. Remove --skip-build to build first.`,
+      );
     }
     log(`Bundle not found. Running esbuild for ${label}…`);
-    runOrDie(`node ${path.join(ROOT, 'tools/scripts/bundle.js')}`, 'esbuild failed');
+    runOrDie(
+      `node ${path.join(ROOT, "tools/scripts/bundle.js")}`,
+      "esbuild failed",
+    );
   }
 
   if (!fs.existsSync(bundleFile)) {
@@ -251,11 +283,11 @@ function writeSeaConfig(bundleFile, blobFile, label) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function generateBlob(seaConfigPath, blobFile) {
-  log('Generating SEA preparation blob…');
+  log("Generating SEA preparation blob…");
   runOrDie(
     `node --experimental-sea-config "${seaConfigPath}"`,
-    'Failed to generate SEA blob',
-    { cwd: ROOT }
+    "Failed to generate SEA blob",
+    { cwd: ROOT },
   );
 
   if (!fs.existsSync(blobFile)) {
@@ -285,15 +317,15 @@ function resolveNodeBinary(target) {
   }
 
   // Cross-compile: look for pre-downloaded binary
-  const suffix   = target.nodeBinSuffix;
+  const suffix = target.nodeBinSuffix;
   const expected = path.join(NODE_BINS, `node-v${OPT.nodeVersion}-${suffix}`);
 
   if (!fs.existsSync(expected)) {
     die(
       `Cross-compile binary not found for target "${target.id}".\n` +
-      `    Expected: ${expected}\n` +
-      `    Download: https://nodejs.org/dist/latest-v${OPT.nodeVersion}.x/\n` +
-      `    Rename the binary to: node-v${OPT.nodeVersion}-${suffix}`
+        `    Expected: ${expected}\n` +
+        `    Download: https://nodejs.org/dist/latest-v${OPT.nodeVersion}.x/\n` +
+        `    Rename the binary to: node-v${OPT.nodeVersion}-${suffix}`,
     );
   }
 
@@ -306,14 +338,17 @@ function resolveNodeBinary(target) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function prepareNodeCopy(target, label, nodeBinary) {
-  const outputName = label === 'cli' ? `mcp-verify${target.ext}` : `mcp-verify-server${target.ext}`;
+  const outputName =
+    label === "cli"
+      ? `mcp-verify${target.ext}`
+      : `mcp-verify-server${target.ext}`;
   const outputPath = path.join(BIN_OUT, target.id, outputName);
 
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.copyFileSync(nodeBinary, outputPath);
 
   // Make executable on Unix
-  if (target.platform !== 'win32') {
+  if (target.platform !== "win32") {
     fs.chmodSync(outputPath, 0o755);
   }
 
@@ -329,16 +364,16 @@ function prepareNodeCopy(target, label, nodeBinary) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function removeMacOSSignature(binaryPath) {
-  if (process.platform !== 'darwin') return;
+  if (process.platform !== "darwin") return;
   if (OPT.noSign) return;
 
-  verbose('Removing existing macOS code signature…');
+  verbose("Removing existing macOS code signature…");
   try {
     run(`codesign --remove-signature "${binaryPath}"`);
-    log('Existing macOS signature removed ✓');
+    log("Existing macOS signature removed ✓");
   } catch {
     // Binary may not be signed; that's fine
-    verbose('No existing signature to remove (or codesign unavailable)');
+    verbose("No existing signature to remove (or codesign unavailable)");
   }
 }
 
@@ -356,32 +391,34 @@ function removeMacOSSignature(binaryPath) {
 //     Required on macOS (Mach-O format uses segments, not just sections).
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SEA_FUSE = 'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2';
+const SEA_FUSE = "NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2";
 
 function injectBlob(binaryPath, blobPath, target) {
-  log('Injecting SEA blob with postject…');
+  log("Injecting SEA blob with postject…");
 
-  const machoFlag = target.platform === 'darwin'
-    ? '--macho-segment-name NODE_SEA'
-    : '';
+  const machoFlag =
+    target.platform === "darwin" ? "--macho-segment-name NODE_SEA" : "";
 
   // Use the local devDependency binary resolved in validatePrerequisites().
   // Never use npx here — it adds network latency and may resolve a different version.
-  const postjectBin = process.env._MCP_POSTJECT_BIN
-    || resolveLocalBin('postject')
-    || die('postject binary not found. Run npm install --save-dev postject');
+  const postjectBin =
+    process.env._MCP_POSTJECT_BIN ||
+    resolveLocalBin("postject") ||
+    die("postject binary not found. Run npm install --save-dev postject");
 
   const cmd = [
     `"${postjectBin}"`,
     `"${binaryPath}"`,
-    'NODE_SEA_BLOB',
+    "NODE_SEA_BLOB",
     `"${blobPath}"`,
     `--sentinel-fuse ${SEA_FUSE}`,
     machoFlag,
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   runOrDie(cmd, `postject injection failed for ${path.basename(binaryPath)}`);
-  log('Blob injected ✓');
+  log("Blob injected ✓");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -394,23 +431,25 @@ function injectBlob(binaryPath, blobPath, target) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function signBinary(binaryPath, target) {
-  if (target.platform !== 'darwin') return;
+  if (target.platform !== "darwin") return;
   if (OPT.noSign) {
-    warn('Skipping macOS code signing (--no-sign). Binary may be blocked by Gatekeeper.');
+    warn(
+      "Skipping macOS code signing (--no-sign). Binary may be blocked by Gatekeeper.",
+    );
     return;
   }
 
-  const codesignId = process.env.MCP_VERIFY_SIGN_IDENTITY || '-'; // '-' = ad-hoc
+  const codesignId = process.env.MCP_VERIFY_SIGN_IDENTITY || "-"; // '-' = ad-hoc
   const entitlements = process.env.MCP_VERIFY_ENTITLEMENTS_PATH
     ? `--entitlements "${process.env.MCP_VERIFY_ENTITLEMENTS_PATH}"`
-    : '';
+    : "";
 
   log(`Signing binary (identity: ${codesignId})…`);
   runOrDie(
     `codesign --sign "${codesignId}" ${entitlements} "${binaryPath}"`,
-    'codesign failed'
+    "codesign failed",
   );
-  log('Binary signed ✓');
+  log("Binary signed ✓");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -424,16 +463,18 @@ function smokeTest(binaryPath, target) {
     return;
   }
 
-  log('Running smoke test…');
+  log("Running smoke test…");
   try {
     const output = run(`"${binaryPath}" --version 2>&1`);
     if (output) {
-      log(`Smoke test passed. Output: ${output.split('\n')[0]}`);
+      log(`Smoke test passed. Output: ${output.split("\n")[0]}`);
     } else {
-      warn('Smoke test: no output from --version (binary ran without error)');
+      warn("Smoke test: no output from --version (binary ran without error)");
     }
   } catch (err) {
-    warn(`Smoke test failed: ${err.message}\n    Binary may still work; check manually.`);
+    warn(
+      `Smoke test failed: ${err.message}\n    Binary may still work; check manually.`,
+    );
   }
 }
 
@@ -443,39 +484,49 @@ function smokeTest(binaryPath, target) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function updateIntegrityManifest(artifacts) {
-  const manifestDir  = path.join(ROOT, '.mcp-verify');
-  const manifestPath = path.join(manifestDir, 'sea-integrity.json');
+  const manifestDir = path.join(ROOT, ".mcp-verify");
+  const manifestPath = path.join(manifestDir, "sea-integrity.json");
 
   fs.mkdirSync(manifestDir, { recursive: true });
 
-  let gitCommit = 'unknown';
-  try { gitCommit = run('git rev-parse --short HEAD', { cwd: ROOT }); } catch {}
+  let gitCommit = "unknown";
+  try {
+    gitCommit = run("git rev-parse --short HEAD", { cwd: ROOT });
+  } catch {}
 
-  let pkgVersion = '0.0.0';
-  try { pkgVersion = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version; } catch {}
+  let pkgVersion = "0.0.0";
+  try {
+    pkgVersion = JSON.parse(
+      fs.readFileSync(path.join(ROOT, "package.json"), "utf8"),
+    ).version;
+  } catch {}
 
   const entry = {
-    buildId:   `sea-${Date.now()}`,
-    buildType: 'node-sea',
-    version:   pkgVersion,
+    buildId: `sea-${Date.now()}`,
+    buildType: "node-sea",
+    version: pkgVersion,
     timestamp: new Date().toISOString(),
     gitCommit,
-    artifacts: artifacts.map(a => ({
-      target:   a.target,
-      label:    a.label,
-      path:     path.relative(ROOT, a.path),
-      size:     fs.statSync(a.path).size,
-      sha256:   `sha256-${sha256File(a.path)}`,
+    artifacts: artifacts.map((a) => ({
+      target: a.target,
+      label: a.label,
+      path: path.relative(ROOT, a.path),
+      size: fs.statSync(a.path).size,
+      sha256: `sha256-${sha256File(a.path)}`,
     })),
   };
 
   let existing = { current: null, history: [] };
-  try { existing = JSON.parse(fs.readFileSync(manifestPath, 'utf8')); } catch {}
-  existing.history = [existing.current, ...(existing.history || [])].filter(Boolean).slice(0, 20);
+  try {
+    existing = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  } catch {}
+  existing.history = [existing.current, ...(existing.history || [])]
+    .filter(Boolean)
+    .slice(0, 20);
   existing.current = entry;
 
-  const tmp = manifestPath + '.tmp';
-  fs.writeFileSync(tmp, JSON.stringify(existing, null, 2) + '\n');
+  const tmp = manifestPath + ".tmp";
+  fs.writeFileSync(tmp, JSON.stringify(existing, null, 2) + "\n");
   fs.renameSync(tmp, manifestPath);
 
   log(`Integrity manifest: ${path.relative(ROOT, manifestPath)}`);
@@ -494,7 +545,11 @@ function compileSingle(target, label, bundleFile) {
   section(`${label.toUpperCase()} → ${target.id}`);
 
   // 3. SEA config
-  const seaConfigPath = writeSeaConfig(bundleFile, blobFile, `${label}-${target.id}`);
+  const seaConfigPath = writeSeaConfig(
+    bundleFile,
+    blobFile,
+    `${label}-${target.id}`,
+  );
 
   // 4. Generate blob
   generateBlob(seaConfigPath, blobFile);
@@ -526,52 +581,65 @@ function compileSingle(target, label, bundleFile) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log(`\n${c('bold', '  🔒 mcp-verify — Node.js SEA Compiler')}`);
-  console.log(c('dim', `  Replaces pkg (CVE-2024-24828) with native Node ${OPT.nodeVersion}+ SEA\n`));
+  console.log(`\n${c("bold", "  🔒 mcp-verify — Node.js SEA Compiler")}`);
+  console.log(
+    c(
+      "dim",
+      `  Replaces pkg (CVE-2024-24828) with native Node ${OPT.nodeVersion}+ SEA\n`,
+    ),
+  );
 
   // 1. Prerequisites
   validatePrerequisites();
 
   // Ensure working directories exist
   fs.mkdirSync(BIN_OUT, { recursive: true });
-  fs.mkdirSync(SEA_DIR,  { recursive: true });
+  fs.mkdirSync(SEA_DIR, { recursive: true });
 
   const targets = resolveTargets();
-  log(`Targets: ${targets.map(t => t.id).join(', ')}`);
+  log(`Targets: ${targets.map((t) => t.id).join(", ")}`);
 
   // 2. Ensure bundles exist
-  section('Checking bundles');
-  const CLI_BUNDLE    = path.join(DIST, 'mcp-verify.js');
-  const SERVER_BUNDLE = path.join(DIST, 'mcp-server.js');
+  section("Checking bundles");
+  const CLI_BUNDLE = path.join(DIST, "mcp-verify.js");
+  const SERVER_BUNDLE = path.join(DIST, "mcp-server.js");
 
-  ensureBundle(CLI_BUNDLE, 'CLI');
-  if (OPT.server) ensureBundle(SERVER_BUNDLE, 'MCP Server');
+  ensureBundle(CLI_BUNDLE, "CLI");
+  if (OPT.server) ensureBundle(SERVER_BUNDLE, "MCP Server");
 
   // Compile each target
   const allArtifacts = [];
 
   for (const target of targets) {
-    const cliOut = compileSingle(target, 'cli', CLI_BUNDLE);
-    allArtifacts.push({ target: target.id, label: 'cli', path: cliOut });
+    const cliOut = compileSingle(target, "cli", CLI_BUNDLE);
+    allArtifacts.push({ target: target.id, label: "cli", path: cliOut });
 
     if (OPT.server) {
-      const serverOut = compileSingle(target, 'server', SERVER_BUNDLE);
-      allArtifacts.push({ target: target.id, label: 'server', path: serverOut });
+      const serverOut = compileSingle(target, "server", SERVER_BUNDLE);
+      allArtifacts.push({
+        target: target.id,
+        label: "server",
+        path: serverOut,
+      });
     }
   }
 
   // 11. Integrity manifest
-  section('Integrity manifest');
+  section("Integrity manifest");
   updateIntegrityManifest(allArtifacts);
 
   // Summary
-  section('Build summary');
+  section("Build summary");
   for (const a of allArtifacts) {
     const sizeKB = (fs.statSync(a.path).size / 1024 / 1024).toFixed(1);
-    success(`${a.target}/${a.label}: ${path.relative(ROOT, a.path)} (${sizeKB} MB)`);
+    success(
+      `${a.target}/${a.label}: ${path.relative(ROOT, a.path)} (${sizeKB} MB)`,
+    );
   }
 
-  console.log(`\n  ${c('green', '✔')} ${c('bold', 'SEA compilation complete.')}\n`);
+  console.log(
+    `\n  ${c("green", "✔")} ${c("bold", "SEA compilation complete.")}\n`,
+  );
 }
 
-main().catch(err => die(err.stack || err.message));
+main().catch((err) => die(err.stack || err.message));

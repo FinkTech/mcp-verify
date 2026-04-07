@@ -25,7 +25,7 @@ try {
   const res = await fetch("https://google.com");
   console.log("❌ FALLO DE SEGURIDAD: ¡Tengo internet!");
 } catch (error) {
-   if (error instanceof Deno.errors.PermissionDenied) {
+  if (error instanceof Deno.errors.PermissionDenied) {
     console.log("✅ ÉXITO: El sandbox bloqueó la red (PermissionDenied).");
   } else {
     console.error("❓ ERROR INESPERADO:", error);

@@ -5,7 +5,10 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import { IDiagnosticCheck, DiagnosticResult } from './diagnostic-check.interface';
+import {
+  IDiagnosticCheck,
+  DiagnosticResult,
+} from "./diagnostic-check.interface";
 
 export class DiagnosticRunner {
   private checks: IDiagnosticCheck[] = [];
@@ -23,9 +26,9 @@ export class DiagnosticRunner {
         // Safety net: checks should handle their own errors, but just in case
         return {
           name: check.name,
-          status: 'fail' as const,
+          status: "fail" as const,
           message: `Check crashed: ${error instanceof Error ? error.message : String(error)}`,
-          durationMs: 0
+          durationMs: 0,
         };
       }
     });

@@ -42,16 +42,16 @@ mcp-verify doctor "node server.js" --verbose
 
 ### What Doctor Checks
 
-| Check | What it verifies | Required |
-|---|---|---|
-| **Node.js Runtime** | Version ≥ 18 installed | ✅ Always |
-| **Git CLI** | Installed for version control operations | Optional |
-| **Deno Runtime** | Installed (needed for `--sandbox` mode) | Optional |
-| **Python Runtime** | Installed (needed for Python-based MCP servers) | Optional |
-| **Binary Integrity** | SHA-256 checksum matches the build manifest | ✅ Always |
-| **Build Age** | Warns if the build is older than 30 days | ✅ Always |
-| **Port / Connectivity** | Can the target server be reached? | When target given |
-| **DNS Resolution** | Is the hostname resolvable? | When target given |
+| Check                   | What it verifies                                | Required          |
+| ----------------------- | ----------------------------------------------- | ----------------- |
+| **Node.js Runtime**     | Version ≥ 18 installed                          | ✅ Always         |
+| **Git CLI**             | Installed for version control operations        | Optional          |
+| **Deno Runtime**        | Installed (needed for `--sandbox` mode)         | Optional          |
+| **Python Runtime**      | Installed (needed for Python-based MCP servers) | Optional          |
+| **Binary Integrity**    | SHA-256 checksum matches the build manifest     | ✅ Always         |
+| **Build Age**           | Warns if the build is older than 30 days        | ✅ Always         |
+| **Port / Connectivity** | Can the target server be reached?               | When target given |
+| **DNS Resolution**      | Is the hostname resolvable?                     | When target given |
 
 ### Reading Doctor Output
 
@@ -94,6 +94,7 @@ mcp-verify doctor --clean-history 5
 **What it means:** The TCP connection to the target port was actively refused. The server is not listening on that address and port.
 
 **Symptoms:**
+
 ```
 ✗ Connection Failed
   Failed to connect to MCP server at http://localhost:3000
@@ -129,6 +130,7 @@ mcp-verify doctor http://localhost:3000
 **What it means:** The hostname in your target URL could not be resolved to an IP address.
 
 **Symptoms:**
+
 ```
 ✗ DNS Resolution Failed
   Could not resolve hostname: my-server.example.com
@@ -162,6 +164,7 @@ cat /etc/hosts | grep my-server
 **What it means:** The connection was established (or attempted) but the server did not respond within the allowed time window.
 
 **Symptoms:**
+
 ```
 ✗ Connection Timeout
   The request timed out (http://localhost:3000)
@@ -192,12 +195,12 @@ mcp-verify doctor "node server.js"
 
 ### Error Table: Network
 
-| Error Code | Message | Most Likely Cause | First Fix |
-|---|---|---|---|
-| `ECONNREFUSED` | Connection Failed | Server not running | Start the server process |
-| `ENOTFOUND` | DNS Resolution Failed | Wrong hostname / DNS misconfigured | Check URL, try IP address |
-| `ETIMEDOUT` | Connection Timeout | Server slow, firewall blocking | Increase `--timeout` |
-| `ECONNRESET` | Transport Error | Server crashed mid-handshake | Check server logs |
+| Error Code     | Message               | Most Likely Cause                  | First Fix                 |
+| -------------- | --------------------- | ---------------------------------- | ------------------------- |
+| `ECONNREFUSED` | Connection Failed     | Server not running                 | Start the server process  |
+| `ENOTFOUND`    | DNS Resolution Failed | Wrong hostname / DNS misconfigured | Check URL, try IP address |
+| `ETIMEDOUT`    | Connection Timeout    | Server slow, firewall blocking     | Increase `--timeout`      |
+| `ECONNRESET`   | Transport Error       | Server crashed mid-handshake       | Check server logs         |
 
 ---
 
@@ -246,6 +249,7 @@ echo $ANTHROPIC_API_KEY
 ```
 
 **Valid models:**
+
 ```bash
 mcp-verify validate "node server.js" --llm anthropic:claude-haiku-4-5-20251001  # Fastest, cheapest
 mcp-verify validate "node server.js" --llm anthropic:claude-sonnet-4-20250514   # Balanced
@@ -271,6 +275,7 @@ echo $OPENAI_API_KEY
 ```
 
 **Valid models:**
+
 ```bash
 mcp-verify validate "node server.js" --llm openai:gpt-4o-mini   # Recommended (fast, cheap)
 mcp-verify validate "node server.js" --llm openai:gpt-4o        # More accurate
@@ -297,6 +302,7 @@ echo $GOOGLE_API_KEY
 ```
 
 **Valid models:**
+
 ```bash
 mcp-verify validate "node server.js" --llm gemini:gemini-2.5-flash   # Free tier, fast
 mcp-verify validate "node server.js" --llm gemini:gemini-2.5-pro     # Higher accuracy
@@ -353,17 +359,17 @@ htop  # ensure CPU/RAM is available
 
 ### LLM Error Reference Table
 
-| Error | Provider | Root Cause | Fix |
-|---|---|---|---|
-| `Anthropic API key not configured` | Anthropic | `ANTHROPIC_API_KEY` not set | `export ANTHROPIC_API_KEY="sk-ant-api03-..."` |
-| `Invalid API key format. Expected: sk-ant-...` | Anthropic | Wrong key prefix | Regenerate key at console.anthropic.com |
-| `OpenAI API key not configured` | OpenAI | `OPENAI_API_KEY` not set | `export OPENAI_API_KEY="sk-..."` |
-| `Invalid API key format. Expected: sk-...` | OpenAI | Wrong key prefix | Regenerate key at platform.openai.com |
-| `Google API key not configured` | Gemini | `GOOGLE_API_KEY` not set | `export GOOGLE_API_KEY="AIza..."` |
-| `Invalid API key format. Expected: AIza...` | Gemini | Wrong key format | Regenerate key at aistudio.google.com |
-| `Ollama model not found` | Ollama | Model not downloaded | `ollama pull llama3.2` |
-| `Ollama request timed out` | Ollama | Hardware too slow / model too large | Use a smaller model or increase timeout |
-| `LLM analysis failed` | Any | Network / auth / quota | Check key, wait and retry, check billing |
+| Error                                          | Provider  | Root Cause                          | Fix                                           |
+| ---------------------------------------------- | --------- | ----------------------------------- | --------------------------------------------- |
+| `Anthropic API key not configured`             | Anthropic | `ANTHROPIC_API_KEY` not set         | `export ANTHROPIC_API_KEY="sk-ant-api03-..."` |
+| `Invalid API key format. Expected: sk-ant-...` | Anthropic | Wrong key prefix                    | Regenerate key at console.anthropic.com       |
+| `OpenAI API key not configured`                | OpenAI    | `OPENAI_API_KEY` not set            | `export OPENAI_API_KEY="sk-..."`              |
+| `Invalid API key format. Expected: sk-...`     | OpenAI    | Wrong key prefix                    | Regenerate key at platform.openai.com         |
+| `Google API key not configured`                | Gemini    | `GOOGLE_API_KEY` not set            | `export GOOGLE_API_KEY="AIza..."`             |
+| `Invalid API key format. Expected: AIza...`    | Gemini    | Wrong key format                    | Regenerate key at aistudio.google.com         |
+| `Ollama model not found`                       | Ollama    | Model not downloaded                | `ollama pull llama3.2`                        |
+| `Ollama request timed out`                     | Ollama    | Hardware too slow / model too large | Use a smaller model or increase timeout       |
+| `LLM analysis failed`                          | Any       | Network / auth / quota              | Check key, wait and retry, check billing      |
 
 ---
 
@@ -406,6 +412,7 @@ node server.js --verbose
 **What it means:** The server responded, but the response was not valid JSON-RPC 2.0.
 
 **Diagnostic questions:**
+
 - Is the transport type correct? (`--transport stdio` vs `--transport http`)
 - Does the server produce any non-JSON output to stdout (e.g., log lines, banners)?
 - Is the server returning an HTTP error before the MCP response?
@@ -430,11 +437,11 @@ mcp-verify validate "node server.js" --verbose
 
 `mcp-verify` tests three protocol compliance rules during validation:
 
-| Code | Description | What to fix on the server |
-|---|---|---|
-| `RPC-001` | Server did not return an error for a non-existent method | Return a proper `method not found` JSON-RPC error |
-| `RPC-002` | Server returned an empty error object | Error objects must include at minimum a `code` and `message` |
-| `RPC-003` | Server accepted a request missing the `jsonrpc` field | Reject malformed requests that omit required fields |
+| Code      | Description                                              | What to fix on the server                                    |
+| --------- | -------------------------------------------------------- | ------------------------------------------------------------ |
+| `RPC-001` | Server did not return an error for a non-existent method | Return a proper `method not found` JSON-RPC error            |
+| `RPC-002` | Server returned an empty error object                    | Error objects must include at minimum a `code` and `message` |
+| `RPC-003` | Server accepted a request missing the `jsonrpc` field    | Reject malformed requests that omit required fields          |
 
 These violations are reported in the validation report but do not always block the scan. However, they indicate the server is not spec-compliant and may cause integration issues with MCP clients.
 
@@ -593,11 +600,11 @@ mcp-verify doctor
 
 `mcp-verify` uses three distinct exit codes, each with a different meaning. Treating them as a single "error" will cause you to miss useful diagnostic information.
 
-| Code | Meaning           | Action Required                                     |
-|------|-------------------|-----------------------------------------------------|
-| `0`  | ✅ Success        | None                                                |
+| Code | Meaning           | Action Required                                      |
+| ---- | ----------------- | ---------------------------------------------------- |
+| `0`  | ✅ Success        | None                                                 |
 | `1`  | ❌ Error          | Check server availability, CLI flags, or environment |
-| `2`  | 🚨 Critical Issue | Review security findings or regression diff         |
+| `2`  | 🚨 Critical Issue | Review security findings or regression diff          |
 
 **Critical distinction in CI/CD:**
 
@@ -673,13 +680,13 @@ git commit -m "chore: accept new security baseline after intentional change"
 
 ### Common GitHub Actions Mistakes
 
-| Mistake | Symptom | Fix |
-|---|---|---|
-| API key not in Secrets | `LLM analysis failed` | Add `ANTHROPIC_API_KEY` to repo Secrets |
-| Server not started | Exit `1`, connection refused | Add a server startup + `wait-on` step before `mcp-verify` |
-| Baseline not downloaded | Every run shows regressions | Use `actions/download-artifact` to fetch the baseline |
-| Exit code not checked | Failures silently ignored | Ensure `fail-on-error: true` or check `$?` explicitly |
-| Wrong Node.js version | `mcp-verify` install fails | Pin `node-version: '20'` in the `setup-node` step |
+| Mistake                 | Symptom                      | Fix                                                       |
+| ----------------------- | ---------------------------- | --------------------------------------------------------- |
+| API key not in Secrets  | `LLM analysis failed`        | Add `ANTHROPIC_API_KEY` to repo Secrets                   |
+| Server not started      | Exit `1`, connection refused | Add a server startup + `wait-on` step before `mcp-verify` |
+| Baseline not downloaded | Every run shows regressions  | Use `actions/download-artifact` to fetch the baseline     |
+| Exit code not checked   | Failures silently ignored    | Ensure `fail-on-error: true` or check `$?` explicitly     |
+| Wrong Node.js version   | `mcp-verify` install fails   | Pin `node-version: '20'` in the `setup-node` step         |
 
 ---
 
@@ -698,7 +705,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install mcp-verify
         run: npm install -g mcp-verify
@@ -742,16 +749,19 @@ jobs:
 If you've worked through the relevant section and the problem persists:
 
 1. **Run doctor with verbose output** and copy the result:
+
    ```bash
    mcp-verify doctor [target] --verbose
    ```
 
 2. **Run validate with verbose output** to capture the raw error:
+
    ```bash
    mcp-verify validate [target] --verbose
    ```
 
 3. **Check the examples** for working command patterns:
+
    ```bash
    mcp-verify examples
    ```
@@ -774,5 +784,5 @@ If you've worked through the relevant section and the problem persists:
 
 ---
 
-*Part of the **mcp-verify** project — the open-source security scanner for Model Context Protocol servers.*
-*Licensed under [AGPL-3.0](./LICENSE). © 2026 FinkTech.*
+_Part of the **mcp-verify** project — the open-source security scanner for Model Context Protocol servers._
+_Licensed under [AGPL-3.0](./LICENSE). © 2026 FinkTech._

@@ -7,6 +7,7 @@
 This library provides the communication bridge between `mcp-verify` and MCP servers. It abstracts the underlying protocols (STDIO, HTTP, SSE) into a unified `ITransport` interface.
 
 ### Refactoring Status
+
 - [ ] Move `ITransport` from `@mcp-verify/core`
 - [ ] Move `StdioTransport`
 - [ ] Move `HttpTransport`
@@ -20,4 +21,5 @@ This library provides the communication bridge between `mcp-verify` and MCP serv
 - `sse-client/`: Real-time streaming communication.
 
 ---
-*Part of the mcp-verify project.*
+
+_Part of the mcp-verify project._

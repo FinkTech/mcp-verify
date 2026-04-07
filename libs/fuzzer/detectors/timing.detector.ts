@@ -42,7 +42,7 @@ import type {
   DetectionResult,
   DetectionConfidence,
   DetectionSeverity,
-} from './detector.interface';
+} from "./detector.interface";
 
 // ---------------------------------------------------------------------------
 // Internal types
@@ -58,17 +58,17 @@ interface TimingSample {
 }
 
 interface TimingAnomaly {
-  readonly type: 'slow' | 'very-slow' | 'timeout-like' | 'consistent-delay';
+  readonly type: "slow" | "very-slow" | "timeout-like" | "consistent-delay";
   readonly ratio: number;
   readonly description: string;
   readonly severity: DetectionSeverity;
 }
 
 interface BaselineStats {
-  readonly mean:   number;
+  readonly mean: number;
   readonly stdDev: number;
   readonly median: number;
-  readonly max:    number;
+  readonly max: number;
   /** The value actually used for ratio calculations (median or mean per config). */
   readonly active: number;
   /** How many clean (non-anomalous) samples contributed. */
@@ -129,17 +129,25 @@ function normalisePayload(raw: string): string {
   let s = raw;
 
   // Double URL decode (%2553 → %53 → S etc.)
-  try { s = decodeURIComponent(s); } catch { /* keep as-is */ }
-  try { s = decodeURIComponent(s); } catch { /* keep as-is */ }
+  try {
+    s = decodeURIComponent(s);
+  } catch {
+    /* keep as-is */
+  }
+  try {
+    s = decodeURIComponent(s);
+  } catch {
+    /* keep as-is */
+  }
 
   // Strip SQL block comments (/**/)
-  s = s.replace(/\/\*.*?\*\//gs, ' ');
+  s = s.replace(/\/\*.*?\*\//gs, " ");
 
   // Strip SQL line comments (-- ..., # ...)
-  s = s.replace(/--[^\n]*/g, ' ').replace(/#[^\n]*/g, ' ');
+  s = s.replace(/--[^\n]*/g, " ").replace(/#[^\n]*/g, " ");
 
   // Collapse whitespace
-  s = s.replace(/\s+/g, ' ').trim();
+  s = s.replace(/\s+/g, " ").trim();
 
   return s.toUpperCase();
 }
@@ -149,7 +157,7 @@ function normalisePayload(raw: string): string {
  * Each entry captures the delay value in group 1 (or group 2 for WAITFOR).
  */
 const TIME_BASED_PATTERNS: ReadonlyArray<{
-  pattern:  RegExp;
+  pattern: RegExp;
   /** Index of the capture group containing the delay (seconds). */
   delayGroup: number;
   /** Multiply group value by this to get milliseconds. */
@@ -158,52 +166,52 @@ const TIME_BASED_PATTERNS: ReadonlyArray<{
 }> = [
   // MySQL SLEEP(N)
   {
-    pattern:      /\bSLEEP\s*\(\s*(\d+(?:\.\d+)?)\s*\)/,
-    delayGroup:   1,
+    pattern: /\bSLEEP\s*\(\s*(\d+(?:\.\d+)?)\s*\)/,
+    delayGroup: 1,
     multiplierMs: 1_000,
-    cweId:        'CWE-89',
+    cweId: "CWE-89",
   },
   // MSSQL WAITFOR DELAY 'H:M:S'
   {
-    pattern:      /\bWAITFOR\s+DELAY\s+'(\d{1,2}):(\d{2}):(\d{2})'/,
-    delayGroup:   1, // special-cased below
+    pattern: /\bWAITFOR\s+DELAY\s+'(\d{1,2}):(\d{2}):(\d{2})'/,
+    delayGroup: 1, // special-cased below
     multiplierMs: 0, // computed separately
-    cweId:        'CWE-89',
+    cweId: "CWE-89",
   },
   // PostgreSQL pg_sleep(N)
   {
-    pattern:      /\bPG_SLEEP\s*\(\s*(\d+(?:\.\d+)?)\s*\)/,
-    delayGroup:   1,
+    pattern: /\bPG_SLEEP\s*\(\s*(\d+(?:\.\d+)?)\s*\)/,
+    delayGroup: 1,
     multiplierMs: 1_000,
-    cweId:        'CWE-89',
+    cweId: "CWE-89",
   },
   // Oracle DBMS_LOCK.SLEEP(N)
   {
-    pattern:      /\bDBMS_LOCK\.SLEEP\s*\(\s*(\d+(?:\.\d+)?)\s*\)/,
-    delayGroup:   1,
+    pattern: /\bDBMS_LOCK\.SLEEP\s*\(\s*(\d+(?:\.\d+)?)\s*\)/,
+    delayGroup: 1,
     multiplierMs: 1_000,
-    cweId:        'CWE-89',
+    cweId: "CWE-89",
   },
   // Unix: sleep N
   {
-    pattern:      /\bSLEEP\s+(\d+)/,
-    delayGroup:   1,
+    pattern: /\bSLEEP\s+(\d+)/,
+    delayGroup: 1,
     multiplierMs: 1_000,
-    cweId:        'CWE-78',
+    cweId: "CWE-78",
   },
   // Windows: timeout /T N
   {
-    pattern:      /\bTIMEOUT\s+\/T\s+(\d+)/,
-    delayGroup:   1,
+    pattern: /\bTIMEOUT\s+\/T\s+(\d+)/,
+    delayGroup: 1,
     multiplierMs: 1_000,
-    cweId:        'CWE-78',
+    cweId: "CWE-78",
   },
   // Ping-based timing: ping -c N / ping -n N
   {
-    pattern:      /\bPING\s+-[CN]\s+(\d+)/,
-    delayGroup:   1,
+    pattern: /\bPING\s+-[CN]\s+(\d+)/,
+    delayGroup: 1,
     multiplierMs: 1_000,
-    cweId:        'CWE-78',
+    cweId: "CWE-78",
   },
 ];
 
@@ -222,18 +230,20 @@ function matchTimeBasedPayload(raw: string): TimeBasedMatch | null {
 
     // Special-case: WAITFOR DELAY 'H:M:S'
     if (/WAITFOR/.test(entry.pattern.source) && m[1] && m[2] && m[3]) {
-      const ms = (parseInt(m[1], 10) * 3_600 +
-                  parseInt(m[2], 10) * 60   +
-                  parseInt(m[3], 10)) * 1_000;
+      const ms =
+        (parseInt(m[1], 10) * 3_600 +
+          parseInt(m[2], 10) * 60 +
+          parseInt(m[3], 10)) *
+        1_000;
       return { expectedDelayMs: Math.min(ms, 30_000), cweId: entry.cweId };
     }
 
-    const raw_val = parseFloat(m[entry.delayGroup] ?? '0');
+    const raw_val = parseFloat(m[entry.delayGroup] ?? "0");
     if (isNaN(raw_val)) continue;
 
     return {
       expectedDelayMs: Math.min(raw_val * entry.multiplierMs, 30_000),
-      cweId:           entry.cweId,
+      cweId: entry.cweId,
     };
   }
 
@@ -242,10 +252,10 @@ function matchTimeBasedPayload(raw: string): TimeBasedMatch | null {
 
 /** Determine CWE from payload category or payload content. */
 function resolveCwe(payload: string, category?: string): string {
-  if (category === 'cmd-injection') return 'CWE-78';
-  if (category === 'sqli')          return 'CWE-89';
+  if (category === "cmd-injection") return "CWE-78";
+  if (category === "sqli") return "CWE-89";
   const m = matchTimeBasedPayload(payload);
-  return m?.cweId ?? 'CWE-208';
+  return m?.cweId ?? "CWE-208";
 }
 
 // ---------------------------------------------------------------------------
@@ -277,10 +287,17 @@ interface ToolState {
 // ---------------------------------------------------------------------------
 
 export class TimingDetector implements IVulnerabilityDetector {
-  readonly id          = 'timing';
-  readonly name        = 'Timing Attack Detector';
-  readonly description = 'Detects time-based injection (Blind SQLi, Blind Cmd Injection, ReDoS). CWE-208/89/78';
-  readonly categories  = ['timing', 'blind-injection', 'sqli', 'cmd-injection', 'redos'];
+  readonly id = "timing";
+  readonly name = "Timing Attack Detector";
+  readonly description =
+    "Detects time-based injection (Blind SQLi, Blind Cmd Injection, ReDoS). CWE-208/89/78";
+  readonly categories = [
+    "timing",
+    "blind-injection",
+    "sqli",
+    "cmd-injection",
+    "redos",
+  ];
   readonly enabledByDefault = true;
 
   private readonly cfg: Required<TimingConfig>;
@@ -288,17 +305,17 @@ export class TimingDetector implements IVulnerabilityDetector {
 
   constructor(config: TimingConfig = {}) {
     this.cfg = {
-      minSamples:           config.minSamples           ?? 5,
-      slowThreshold:        config.slowThreshold        ?? 3,
-      verySlowThreshold:    config.verySlowThreshold    ?? 5,
-      timeoutThreshold:     config.timeoutThreshold     ?? 10_000,
+      minSamples: config.minSamples ?? 5,
+      slowThreshold: config.slowThreshold ?? 3,
+      verySlowThreshold: config.verySlowThreshold ?? 5,
+      timeoutThreshold: config.timeoutThreshold ?? 10_000,
       detectConsistentDelay: config.detectConsistentDelay ?? true,
-      expectedDelayMs:      config.expectedDelayMs      ?? 5_000,
-      delayTolerance:       config.delayTolerance       ?? 1_500,
-      warmupSamples:        config.warmupSamples        ?? 3,
-      windowSize:           config.windowSize           ?? 30,
-      useMedian:            config.useMedian            ?? true,
-      confirmationStreak:   config.confirmationStreak   ?? 3,
+      expectedDelayMs: config.expectedDelayMs ?? 5_000,
+      delayTolerance: config.delayTolerance ?? 1_500,
+      warmupSamples: config.warmupSamples ?? 3,
+      windowSize: config.windowSize ?? 30,
+      useMedian: config.useMedian ?? true,
+      confirmationStreak: config.confirmationStreak ?? 3,
       anomalyExclusionRatio: config.anomalyExclusionRatio ?? 2.5,
     };
   }
@@ -315,9 +332,10 @@ export class TimingDetector implements IVulnerabilityDetector {
   detect(context: DetectorContext): DetectionResult {
     const { toolName, responseTimeMs, isError, engineHint } = context;
 
-    const payloadStr = typeof context.payload === 'string'
-      ? context.payload
-      : JSON.stringify(context.payload);
+    const payloadStr =
+      typeof context.payload === "string"
+        ? context.payload
+        : JSON.stringify(context.payload);
 
     const ts = this.getOrCreateToolState(toolName);
 
@@ -325,11 +343,14 @@ export class TimingDetector implements IVulnerabilityDetector {
     const stats = this.computeProtectedBaseline(ts);
 
     // ── Classify this response ───────────────────────────────────────────────
-    const isWarmingUp = ts.cleanCount < this.cfg.warmupSamples + this.cfg.minSamples;
+    const isWarmingUp =
+      ts.cleanCount < this.cfg.warmupSamples + this.cfg.minSamples;
 
     if (isWarmingUp) {
       // During warm-up we accept all non-anomalous samples unconditionally
-      ts.cleanSamples.push(this.makeSample(responseTimeMs, payloadStr, isError, false));
+      ts.cleanSamples.push(
+        this.makeSample(responseTimeMs, payloadStr, isError, false),
+      );
       ts.allSamples.push(ts.cleanSamples[ts.cleanSamples.length - 1]);
       if (!isError) ts.cleanCount++;
       return this.notDetected();
@@ -341,20 +362,35 @@ export class TimingDetector implements IVulnerabilityDetector {
 
     // ── Detect anomaly ───────────────────────────────────────────────────────
     const timeBased = matchTimeBasedPayload(payloadStr);
-    const anomaly   = this.detectAnomaly(responseTimeMs, stats, payloadStr, timeBased, engineHint);
+    const anomaly = this.detectAnomaly(
+      responseTimeMs,
+      stats,
+      payloadStr,
+      timeBased,
+      engineHint,
+    );
 
     // ── Protected baseline update ────────────────────────────────────────────
     // The key fix: only non-anomalous responses feed the clean baseline.
-    const ratio      = stats.active > 0 ? responseTimeMs / stats.active : 0;
-    const isAnomalous = anomaly !== null || ratio >= this.cfg.anomalyExclusionRatio;
+    const ratio = stats.active > 0 ? responseTimeMs / stats.active : 0;
+    const isAnomalous =
+      anomaly !== null || ratio >= this.cfg.anomalyExclusionRatio;
 
-    const sample = this.makeSample(responseTimeMs, payloadStr, isError, isAnomalous);
+    const sample = this.makeSample(
+      responseTimeMs,
+      payloadStr,
+      isError,
+      isAnomalous,
+    );
     ts.allSamples.push(sample);
 
     if (!isAnomalous && !isError) {
       ts.cleanSamples.push(sample);
       // Enforce window size on clean samples only
-      if (ts.cleanSamples.length > this.cfg.warmupSamples + this.cfg.windowSize) {
+      if (
+        ts.cleanSamples.length >
+        this.cfg.warmupSamples + this.cfg.windowSize
+      ) {
         ts.cleanSamples.splice(0, 1);
       }
       ts.cleanCount++;
@@ -370,23 +406,29 @@ export class TimingDetector implements IVulnerabilityDetector {
     ts.consecutiveStreak++;
 
     // Escalate confidence based on consecutive streak and anomaly type
-    const finding = this.escalateConfidence(anomaly, ts, payloadStr, timeBased, engineHint);
+    const finding = this.escalateConfidence(
+      anomaly,
+      ts,
+      payloadStr,
+      timeBased,
+      engineHint,
+    );
 
     return {
-      detectorId:        this.id,
-      detected:          true,
+      detectorId: this.id,
+      detected: true,
       vulnerabilityType: finding.vulnerabilityType,
-      severity:          finding.severity,
-      confidence:        finding.confidence,
-      description:       finding.description,
+      severity: finding.severity,
+      confidence: finding.confidence,
+      description: finding.description,
       evidence: {
-        payload:         context.payload,
-        response:        context.response,
+        payload: context.payload,
+        response: context.response,
         matchedPatterns: finding.matchedPatterns,
       },
-      remediation:  this.buildRemediation(anomaly.type, payloadStr, timeBased),
-      cweId:        resolveCwe(payloadStr, engineHint?.originalCategory),
-      owaspCategory: 'A03:2021-Injection',
+      remediation: this.buildRemediation(anomaly.type, payloadStr, timeBased),
+      cweId: resolveCwe(payloadStr, engineHint?.originalCategory),
+      owaspCategory: "A03:2021-Injection",
     };
   }
 
@@ -401,8 +443,10 @@ export class TimingDetector implements IVulnerabilityDetector {
   private computeProtectedBaseline(ts: ToolState): BaselineStats | null {
     // Skip warmup samples, take last windowSize
     const afterWarmup = ts.cleanSamples.slice(this.cfg.warmupSamples);
-    const windowed    = afterWarmup.slice(-this.cfg.windowSize);
-    const data        = windowed.filter(s => !s.isError).map(s => s.responseTimeMs);
+    const windowed = afterWarmup.slice(-this.cfg.windowSize);
+    const data = windowed
+      .filter((s) => !s.isError)
+      .map((s) => s.responseTimeMs);
 
     if (data.length < this.cfg.minSamples) return null;
 
@@ -418,9 +462,8 @@ export class TimingDetector implements IVulnerabilityDetector {
     stats: BaselineStats,
     payload: string,
     timeBased: TimeBasedMatch | null,
-    hint?: DetectorContext['engineHint']
+    hint?: DetectorContext["engineHint"],
   ): TimingAnomaly | null {
-
     const ratio = stats.active > 0 ? responseTimeMs / stats.active : 0;
 
     // Jitter protection: don't flag anomalies on ultra-fast responses (e.g. 1ms -> 3ms)
@@ -430,10 +473,10 @@ export class TimingDetector implements IVulnerabilityDetector {
     // ── 1. Absolute timeout threshold ───────────────────────────────────────
     if (responseTimeMs >= this.cfg.timeoutThreshold) {
       return {
-        type:        'timeout-like',
+        type: "timeout-like",
         ratio,
         description: `Response time (${responseTimeMs}ms) exceeds timeout threshold (${this.cfg.timeoutThreshold}ms)`,
-        severity:    'high',
+        severity: "high",
       };
     }
 
@@ -441,16 +484,16 @@ export class TimingDetector implements IVulnerabilityDetector {
     // Checked BEFORE the generic ratio checks because it provides the highest
     // confidence signal and should be reported with the most specific type.
     if (this.cfg.detectConsistentDelay && timeBased) {
-      const expectedMs  = timeBased.expectedDelayMs || this.cfg.expectedDelayMs;
+      const expectedMs = timeBased.expectedDelayMs || this.cfg.expectedDelayMs;
       const actualDelay = responseTimeMs - stats.active;
-      const delta       = Math.abs(actualDelay - expectedMs);
+      const delta = Math.abs(actualDelay - expectedMs);
 
       if (delta <= this.cfg.delayTolerance) {
         return {
-          type:        'consistent-delay',
+          type: "consistent-delay",
           ratio,
           description: `Delay of ~${actualDelay.toFixed(0)}ms matches injected delay of ${expectedMs}ms (Δ${delta.toFixed(0)}ms, tolerance ${this.cfg.delayTolerance}ms)`,
-          severity:    'critical',
+          severity: "critical",
         };
       }
     }
@@ -458,32 +501,32 @@ export class TimingDetector implements IVulnerabilityDetector {
     // ── 3. Very-slow threshold ───────────────────────────────────────────────
     if (ratio >= this.cfg.verySlowThreshold && responseTimeMs > minDuration) {
       return {
-        type:        'very-slow',
+        type: "very-slow",
         ratio,
         description: `Response ${ratio.toFixed(1)}× slower than protected baseline (${responseTimeMs}ms vs ${stats.active.toFixed(0)}ms)`,
-        severity:    'high',
+        severity: "high",
       };
     }
 
     // ── 4. Slow threshold ────────────────────────────────────────────────────
     if (ratio >= this.cfg.slowThreshold && responseTimeMs > minDuration) {
       return {
-        type:        'slow',
+        type: "slow",
         ratio,
         description: `Response ${ratio.toFixed(1)}× slower than protected baseline (${responseTimeMs}ms vs ${stats.active.toFixed(0)}ms)`,
-        severity:    'medium',
+        severity: "medium",
       };
     }
 
     // ── 5. Engine hint corroboration ─────────────────────────────────────────
     // If the Engine already flagged a timing_anomaly but our ratio-based checks
     // didn't fire (e.g. baseline is stale), trust the Engine and emit low-confidence.
-    if (hint?.isAnomaly && hint.anomalyReasons?.includes('timing_anomaly')) {
+    if (hint?.isAnomaly && hint.anomalyReasons?.includes("timing_anomaly")) {
       return {
-        type:        'slow',
+        type: "slow",
         ratio,
-        description: `Engine flagged timing anomaly (${responseTimeMs}ms, engine baseline ~${hint.engineBaselineMs?.toFixed(0) ?? '?'}ms)`,
-        severity:    'low',
+        description: `Engine flagged timing anomaly (${responseTimeMs}ms, engine baseline ~${hint.engineBaselineMs?.toFixed(0) ?? "?"}ms)`,
+        severity: "low",
       };
     }
 
@@ -495,53 +538,60 @@ export class TimingDetector implements IVulnerabilityDetector {
   // -------------------------------------------------------------------------
 
   private escalateConfidence(
-    anomaly:   TimingAnomaly,
-    ts:        ToolState,
-    payload:   string,
+    anomaly: TimingAnomaly,
+    ts: ToolState,
+    payload: string,
     timeBased: TimeBasedMatch | null,
-    hint?:     DetectorContext['engineHint']
+    hint?: DetectorContext["engineHint"],
   ): {
     vulnerabilityType: string;
-    severity:          DetectionSeverity;
-    confidence:        DetectionConfidence;
-    description:       string;
-    matchedPatterns:   string[];
+    severity: DetectionSeverity;
+    confidence: DetectionConfidence;
+    description: string;
+    matchedPatterns: string[];
   } {
-    const streak   = ts.consecutiveStreak;
+    const streak = ts.consecutiveStreak;
     const required = this.cfg.confirmationStreak;
 
     // Engine hint: mutation payloads from timing-probe strategy provide
     // independent corroboration even with streak < required
     const engineCorroborates =
       hint?.isMutation === true &&
-      (hint.mutationStrategy === 'timing-probe' || hint.mutationStrategy === 'sql-depth') &&
-      hint.anomalyReasons?.includes('timing_anomaly') === true;
+      (hint.mutationStrategy === "timing-probe" ||
+        hint.mutationStrategy === "sql-depth") &&
+      hint.anomalyReasons?.includes("timing_anomaly") === true;
 
     // ── Definite: consistent-delay + (streak >= required OR engine confirms)
-    if (anomaly.type === 'consistent-delay') {
+    if (anomaly.type === "consistent-delay") {
       const confirmed = streak >= required || engineCorroborates;
       return {
-        vulnerabilityType: 'Time-Based Injection (Confirmed)',
-        severity:          'critical',
-        confidence:        confirmed ? 'definite' : 'high',
-        description:       confirmed
+        vulnerabilityType: "Time-Based Injection (Confirmed)",
+        severity: "critical",
+        confidence: confirmed ? "definite" : "high",
+        description: confirmed
           ? `✅ Blind time-based injection CONFIRMED: ${anomaly.description}. ` +
-            `${streak} consecutive anomalies${engineCorroborates ? ' + Engine corroboration' : ''}.`
+            `${streak} consecutive anomalies${engineCorroborates ? " + Engine corroboration" : ""}.`
           : `🔴 Strong timing signal: ${anomaly.description}. Streak: ${streak}/${required}.`,
-        matchedPatterns: [anomaly.type, timeBased ? 'time-based-payload' : 'timing-ratio'],
+        matchedPatterns: [
+          anomaly.type,
+          timeBased ? "time-based-payload" : "timing-ratio",
+        ],
       };
     }
 
     // ── High: streak >= required threshold
     if (streak >= required) {
-      const isTimingMutation = hint?.mutationStrategy === 'timing-probe';
+      const isTimingMutation = hint?.mutationStrategy === "timing-probe";
       return {
-        vulnerabilityType: timeBased ? 'Time-Based Injection' : 'Persistent Timing Anomaly',
-        severity:          streak >= required * 2 ? 'critical' : 'high',
-        confidence:        'high',
-        description:       `⚠️  ${streak} consecutive timing anomalies — likely sustained injection. ` +
-                           anomaly.description +
-                           (isTimingMutation ? ' [Confirmed by mutation probe]' : ''),
+        vulnerabilityType: timeBased
+          ? "Time-Based Injection"
+          : "Persistent Timing Anomaly",
+        severity: streak >= required * 2 ? "critical" : "high",
+        confidence: "high",
+        description:
+          `⚠️  ${streak} consecutive timing anomalies — likely sustained injection. ` +
+          anomaly.description +
+          (isTimingMutation ? " [Confirmed by mutation probe]" : ""),
         matchedPatterns: [anomaly.type, `streak-${streak}`],
       };
     }
@@ -549,22 +599,26 @@ export class TimingDetector implements IVulnerabilityDetector {
     // ── Medium: engine corroborates or payload is time-based but streak low
     if (engineCorroborates || (timeBased && streak >= 2)) {
       return {
-        vulnerabilityType: 'Timing Anomaly (Probable Injection)',
-        severity:          'medium',
-        confidence:        'medium',
-        description:       `⚡ Timing anomaly: ${anomaly.description}. ` +
-                           (engineCorroborates ? 'Engine mutation confirms.' : `Streak: ${streak}.`),
+        vulnerabilityType: "Timing Anomaly (Probable Injection)",
+        severity: "medium",
+        confidence: "medium",
+        description:
+          `⚡ Timing anomaly: ${anomaly.description}. ` +
+          (engineCorroborates
+            ? "Engine mutation confirms."
+            : `Streak: ${streak}.`),
         matchedPatterns: [anomaly.type],
       };
     }
 
     // ── Low: single anomaly, no corroboration
     return {
-      vulnerabilityType: 'Timing Anomaly',
-      severity:          anomaly.severity === 'critical' ? 'high' : anomaly.severity,
-      confidence:        'low',
-      description:       `🟡 Single timing anomaly: ${anomaly.description}. ` +
-                         `Awaiting ${required - streak} more consecutive anomalies for confirmation.`,
+      vulnerabilityType: "Timing Anomaly",
+      severity: anomaly.severity === "critical" ? "high" : anomaly.severity,
+      confidence: "low",
+      description:
+        `🟡 Single timing anomaly: ${anomaly.description}. ` +
+        `Awaiting ${required - streak} more consecutive anomalies for confirmation.`,
       matchedPatterns: [anomaly.type],
     };
   }
@@ -575,17 +629,26 @@ export class TimingDetector implements IVulnerabilityDetector {
 
   private calcStats(times: number[]): BaselineStats {
     const n = times.length;
-    if (n === 0) return { mean: 0, stdDev: 0, median: 0, max: 0, active: 0, cleanSamples: 0 };
+    if (n === 0)
+      return {
+        mean: 0,
+        stdDev: 0,
+        median: 0,
+        max: 0,
+        active: 0,
+        cleanSamples: 0,
+      };
 
     const sorted = [...times].sort((a, b) => a - b);
-    const mean   = times.reduce((a, b) => a + b, 0) / n;
-    const median = n % 2 === 0
-      ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2
-      : sorted[Math.floor(n / 2)];
+    const mean = times.reduce((a, b) => a + b, 0) / n;
+    const median =
+      n % 2 === 0
+        ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2
+        : sorted[Math.floor(n / 2)];
     const variance = times.reduce((s, t) => s + (t - mean) ** 2, 0) / n;
-    const stdDev   = Math.sqrt(variance);
-    const max      = sorted[n - 1];
-    const active   = this.cfg.useMedian ? median : mean;
+    const stdDev = Math.sqrt(variance);
+    const max = sorted[n - 1];
+    const active = this.cfg.useMedian ? median : mean;
 
     return { mean, stdDev, median, max, active, cleanSamples: n };
   }
@@ -597,11 +660,11 @@ export class TimingDetector implements IVulnerabilityDetector {
   private getOrCreateToolState(toolName: string): ToolState {
     if (!this.state.has(toolName)) {
       this.state.set(toolName, {
-        allSamples:        [],
-        cleanSamples:      [],
-        anomalies:         [],
+        allSamples: [],
+        cleanSamples: [],
+        anomalies: [],
         consecutiveStreak: 0,
-        cleanCount:        0,
+        cleanCount: 0,
       });
     }
     return this.state.get(toolName)!;
@@ -611,20 +674,26 @@ export class TimingDetector implements IVulnerabilityDetector {
     responseTimeMs: number,
     payload: string,
     isError: boolean,
-    isAnomalous: boolean
+    isAnomalous: boolean,
   ): TimingSample {
-    return { responseTimeMs, payload, timestamp: Date.now(), isError, isAnomalous };
+    return {
+      responseTimeMs,
+      payload,
+      timestamp: Date.now(),
+      isError,
+      isAnomalous,
+    };
   }
 
   private notDetected(): DetectionResult {
     return {
-      detectorId:        this.id,
-      detected:          false,
-      vulnerabilityType: 'Timing Attack',
-      severity:          'low',
-      confidence:        'low',
-      description:       'No timing anomaly detected',
-      evidence:          { payload: '', response: null },
+      detectorId: this.id,
+      detected: false,
+      vulnerabilityType: "Timing Attack",
+      severity: "low",
+      confidence: "low",
+      description: "No timing anomaly detected",
+      evidence: { payload: "", response: null },
     };
   }
 
@@ -635,21 +704,27 @@ export class TimingDetector implements IVulnerabilityDetector {
   private buildRemediation(
     anomalyType: string,
     payload: string,
-    timeBased: TimeBasedMatch | null
+    timeBased: TimeBasedMatch | null,
   ): string {
-    if (anomalyType === 'consistent-delay') {
-      if (timeBased?.cweId === 'CWE-89') {
-        return 'Use parameterized queries / prepared statements. Never concatenate user-supplied ' +
-               'values into SQL strings. Apply allowlist validation on all filter parameters.';
+    if (anomalyType === "consistent-delay") {
+      if (timeBased?.cweId === "CWE-89") {
+        return (
+          "Use parameterized queries / prepared statements. Never concatenate user-supplied " +
+          "values into SQL strings. Apply allowlist validation on all filter parameters."
+        );
       }
-      if (timeBased?.cweId === 'CWE-78') {
-        return 'Avoid passing user input to shell commands. Use subprocess APIs with argument arrays ' +
-               '(not shell interpolation). Validate all inputs against a strict allowlist.';
+      if (timeBased?.cweId === "CWE-78") {
+        return (
+          "Avoid passing user input to shell commands. Use subprocess APIs with argument arrays " +
+          "(not shell interpolation). Validate all inputs against a strict allowlist."
+        );
       }
     }
 
-    return 'Investigate timing discrepancies. Ensure all database queries use parameterized ' +
-           'statements and all system-command inputs are strictly validated before use.';
+    return (
+      "Investigate timing discrepancies. Ensure all database queries use parameterized " +
+      "statements and all system-command inputs are strictly validated before use."
+    );
   }
 
   // -------------------------------------------------------------------------
@@ -663,25 +738,25 @@ export class TimingDetector implements IVulnerabilityDetector {
 
   /** Inspect internal state for a specific tool (for tests and dashboards). */
   getStats(toolName: string): {
-    totalSamples:       number;
-    cleanSamples:       number;
-    anomalousSamples:   number;
-    consecutiveStreak:  number;
-    anomalies:          number;
+    totalSamples: number;
+    cleanSamples: number;
+    anomalousSamples: number;
+    consecutiveStreak: number;
+    anomalies: number;
     baseline?: BaselineStats;
   } | null {
     const ts = this.state.get(toolName);
     if (!ts) return null;
 
-    const anomalousSamples = ts.allSamples.filter(s => s.isAnomalous).length;
-    const baseline         = this.computeProtectedBaseline(ts) ?? undefined;
+    const anomalousSamples = ts.allSamples.filter((s) => s.isAnomalous).length;
+    const baseline = this.computeProtectedBaseline(ts) ?? undefined;
 
     return {
-      totalSamples:      ts.allSamples.length,
-      cleanSamples:      ts.cleanSamples.length,
+      totalSamples: ts.allSamples.length,
+      cleanSamples: ts.cleanSamples.length,
       anomalousSamples,
       consecutiveStreak: ts.consecutiveStreak,
-      anomalies:         ts.anomalies.length,
+      anomalies: ts.anomalies.length,
       baseline,
     };
   }

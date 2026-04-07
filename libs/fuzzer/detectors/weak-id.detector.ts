@@ -34,8 +34,8 @@ import {
   DetectorContext,
   DetectionResult,
   DetectionConfidence,
-  DetectionSeverity
-} from './detector.interface';
+  DetectionSeverity,
+} from "./detector.interface";
 
 interface CryptoFinding {
   type: string;
@@ -65,7 +65,10 @@ interface PredictabilityResult {
   incrementPassed: boolean;
 
   /** Detected timestamp component */
-  timestampComponent: { position: number; type: 'unix_s' | 'unix_ms' | 'sequential' } | null;
+  timestampComponent: {
+    position: number;
+    type: "unix_s" | "unix_ms" | "sequential";
+  } | null;
   /** Are IDs timestamp-free? */
   timestampPassed: boolean;
 
@@ -117,10 +120,11 @@ export interface WeakIdConfig {
 }
 
 export class WeakIdDetector implements IVulnerabilityDetector {
-  readonly id = 'weak-id';
-  readonly name = 'Weak ID / Cryptography Detector';
-  readonly description = 'Detects predictable identifiers using entropy, correlation, and statistical tests (CWE-338)';
-  readonly categories = ['cryptography', 'idor', 'authentication'];
+  readonly id = "weak-id";
+  readonly name = "Weak ID / Cryptography Detector";
+  readonly description =
+    "Detects predictable identifiers using entropy, correlation, and statistical tests (CWE-338)";
+  readonly categories = ["cryptography", "idor", "authentication"];
   readonly enabledByDefault = true;
 
   private config: Required<WeakIdConfig>;
@@ -137,7 +141,7 @@ export class WeakIdDetector implements IVulnerabilityDetector {
       detectWeakHash: config.detectWeakHash ?? true,
       detectWeakJwt: config.detectWeakJwt ?? true,
       entropyThreshold: config.entropyThreshold ?? 4.0,
-      correlationThreshold: config.correlationThreshold ?? 0.3
+      correlationThreshold: config.correlationThreshold ?? 0.3,
     };
   }
 
@@ -146,23 +150,26 @@ export class WeakIdDetector implements IVulnerabilityDetector {
   private readonly weakHashPatterns = [
     {
       pattern: /\b[a-f0-9]{32}\b/gi,
-      type: 'MD5',
+      type: "MD5",
       bits: 128,
-      severity: 'high' as DetectionSeverity,
-      cwe: 'CWE-327',
-      description: 'MD5 hash detected - cryptographically broken, vulnerable to collision attacks'
+      severity: "high" as DetectionSeverity,
+      cwe: "CWE-327",
+      description:
+        "MD5 hash detected - cryptographically broken, vulnerable to collision attacks",
     },
     {
       pattern: /\b[a-f0-9]{40}\b/gi,
-      type: 'SHA1',
+      type: "SHA1",
       bits: 160,
-      severity: 'medium' as DetectionSeverity,
-      cwe: 'CWE-327',
-      description: 'SHA1 hash detected - deprecated, vulnerable to collision attacks'
-    }
+      severity: "medium" as DetectionSeverity,
+      cwe: "CWE-327",
+      description:
+        "SHA1 hash detected - deprecated, vulnerable to collision attacks",
+    },
   ];
 
-  private readonly jwtPattern = /eyJ[A-Za-z0-9_-]*\.eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*/g;
+  private readonly jwtPattern =
+    /eyJ[A-Za-z0-9_-]*\.eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*/g;
 
   isApplicable(_category: string): boolean {
     return true;
@@ -191,7 +198,10 @@ export class WeakIdDetector implements IVulnerabilityDetector {
     }
 
     // 4. Advanced ID predictability analysis
-    const predictabilityFindings = this.analyzeIdPredictability(context, responseStr);
+    const predictabilityFindings = this.analyzeIdPredictability(
+      context,
+      responseStr,
+    );
     findings.push(...predictabilityFindings);
 
     if (findings.length === 0) {
@@ -200,37 +210,44 @@ export class WeakIdDetector implements IVulnerabilityDetector {
 
     // Determine highest severity
     const severityOrder: Record<DetectionSeverity, number> = {
-      low: 1, medium: 2, high: 3, critical: 4
+      low: 1,
+      medium: 2,
+      high: 3,
+      critical: 4,
     };
     const highestSeverity = findings.reduce((max, f) => {
       return severityOrder[f.severity] > severityOrder[max] ? f.severity : max;
-    }, 'low' as DetectionSeverity);
+    }, "low" as DetectionSeverity);
 
-    const confidence: DetectionConfidence = findings.length > 2 ? 'high' : 'medium';
-    const descriptions = findings.map(f => f.description).slice(0, 3);
-    const types = [...new Set(findings.map(f => f.type))];
+    const confidence: DetectionConfidence =
+      findings.length > 2 ? "high" : "medium";
+    const descriptions = findings.map((f) => f.description).slice(0, 3);
+    const types = [...new Set(findings.map((f) => f.type))];
 
     return {
       detectorId: this.id,
       detected: true,
-      vulnerabilityType: 'Weak Cryptography / Predictable ID',
+      vulnerabilityType: "Weak Cryptography / Predictable ID",
       severity: highestSeverity,
       confidence,
-      description: `Cryptographic weaknesses detected: ${descriptions.join('; ')}`,
+      description: `Cryptographic weaknesses detected: ${descriptions.join("; ")}`,
       evidence: {
         payload: context.payload,
         response: this.truncateResponse(context.response),
-        matchedPatterns: types
+        matchedPatterns: types,
       },
       remediation: this.generateRemediation(findings),
       cweId: this.getPrimaryCwe(findings),
-      owaspCategory: 'A02:2021-Cryptographic Failures'
+      owaspCategory: "A02:2021-Cryptographic Failures",
     };
   }
 
   // ==================== PREDICTABILITY ANALYSIS ====================
 
-  private analyzeIdPredictability(context: DetectorContext, responseStr: string): CryptoFinding[] {
+  private analyzeIdPredictability(
+    context: DetectorContext,
+    responseStr: string,
+  ): CryptoFinding[] {
     const findings: CryptoFinding[] = [];
 
     // Extract potential IDs
@@ -268,76 +285,80 @@ export class WeakIdDetector implements IVulnerabilityDetector {
     if (!analysis.isSecure) {
       if (!analysis.incrementPassed && analysis.incrementPattern) {
         findings.push({
-          type: 'predictable-increment',
-          severity: 'critical',
+          type: "predictable-increment",
+          severity: "critical",
           description: `Sequential ID pattern detected: increment of ${analysis.incrementPattern.step} with ${(analysis.incrementPattern.confidence * 100).toFixed(0)}% confidence`,
-          cwe: 'CWE-338',
-          evidence: `Last IDs: ${idSamples.slice(-3).join(', ')}`
+          cwe: "CWE-338",
+          evidence: `Last IDs: ${idSamples.slice(-3).join(", ")}`,
         });
       }
 
       if (!analysis.timestampPassed && analysis.timestampComponent) {
         findings.push({
-          type: 'timestamp-based-id',
-          severity: 'critical',
+          type: "timestamp-based-id",
+          severity: "critical",
           description: `Timestamp-based ID detected: ${analysis.timestampComponent.type} at position ${analysis.timestampComponent.position}`,
-          cwe: 'CWE-338',
-          evidence: `IDs contain predictable time component`
+          cwe: "CWE-338",
+          evidence: `IDs contain predictable time component`,
         });
       }
 
       if (!analysis.correlationPassed) {
         findings.push({
-          type: 'high-serial-correlation',
-          severity: 'high',
+          type: "high-serial-correlation",
+          severity: "high",
           description: `High serial correlation (r=${analysis.serialCorrelation.toFixed(3)}) indicates predictable sequence`,
-          cwe: 'CWE-338',
-          evidence: `Correlation should be < ${this.config.correlationThreshold}`
+          cwe: "CWE-338",
+          evidence: `Correlation should be < ${this.config.correlationThreshold}`,
         });
       }
 
       if (!analysis.runsTestPassed) {
         findings.push({
-          type: 'failed-randomness-test',
-          severity: 'high',
+          type: "failed-randomness-test",
+          severity: "high",
           description: `Failed Wald-Wolfowitz runs test (Z=${analysis.runsTestZ.toFixed(2)}): IDs are not random`,
-          cwe: 'CWE-338',
-          evidence: `Z-score should be between -1.96 and 1.96`
+          cwe: "CWE-338",
+          evidence: `Z-score should be between -1.96 and 1.96`,
         });
       }
 
       if (!analysis.entropyPassed) {
         findings.push({
-          type: 'low-entropy',
-          severity: 'high',
+          type: "low-entropy",
+          severity: "high",
           description: `Low entropy: ${analysis.entropy.toFixed(2)} bits (need >= ${this.config.entropyThreshold})`,
-          cwe: 'CWE-338',
-          evidence: `Entropy: ${analysis.entropy.toFixed(2)}`
+          cwe: "CWE-338",
+          evidence: `Entropy: ${analysis.entropy.toFixed(2)}`,
         });
       }
 
       // NIST Monobit Test - The real cryptographic test
       if (!analysis.monobitPassed) {
         findings.push({
-          type: 'failed-nist-monobit',
-          severity: 'critical',
+          type: "failed-nist-monobit",
+          severity: "critical",
           description: `Failed NIST Monobit test (P=${analysis.monobitPValue.toFixed(4)}): bit frequency is biased, not cryptographically random`,
-          cwe: 'CWE-338',
-          evidence: `P-value ${analysis.monobitPValue.toFixed(4)} < 0.01 threshold. Indicates weak PRNG like Math.random()`
+          cwe: "CWE-338",
+          evidence: `P-value ${analysis.monobitPValue.toFixed(4)} < 0.01 threshold. Indicates weak PRNG like Math.random()`,
         });
       }
 
       // Hamming Distance Analysis
       if (!analysis.hammingPassed) {
-        const ratio = (analysis.avgHammingDistance / analysis.expectedHammingDistance * 100).toFixed(1);
+        const ratio = (
+          (analysis.avgHammingDistance / analysis.expectedHammingDistance) *
+          100
+        ).toFixed(1);
         findings.push({
-          type: 'abnormal-hamming-distance',
-          severity: 'high',
+          type: "abnormal-hamming-distance",
+          severity: "high",
           description: `Abnormal Hamming distance: ${analysis.avgHammingDistance.toFixed(1)} bits (expected ~${analysis.expectedHammingDistance.toFixed(1)}, got ${ratio}%)`,
-          cwe: 'CWE-338',
-          evidence: analysis.avgHammingDistance < analysis.expectedHammingDistance * 0.8
-            ? 'Too few bits changing = sequential/counter-based IDs'
-            : 'Too many bits changing = possible XOR obfuscation'
+          cwe: "CWE-338",
+          evidence:
+            analysis.avgHammingDistance < analysis.expectedHammingDistance * 0.8
+              ? "Too few bits changing = sequential/counter-based IDs"
+              : "Too many bits changing = possible XOR obfuscation",
         });
       }
     }
@@ -345,18 +366,23 @@ export class WeakIdDetector implements IVulnerabilityDetector {
     return findings;
   }
 
-  private performPredictabilityAnalysis(ids: string[], numbers: number[]): PredictabilityResult {
+  private performPredictabilityAnalysis(
+    ids: string[],
+    numbers: number[],
+  ): PredictabilityResult {
     // 1. Shannon Entropy
-    const entropy = this.calculateEntropy(ids.join(''));
+    const entropy = this.calculateEntropy(ids.join(""));
     const entropyPassed = entropy >= this.config.entropyThreshold;
 
     // 2. Serial Correlation (lag-1 autocorrelation)
     const serialCorrelation = this.calculateSerialCorrelation(numbers);
-    const correlationPassed = Math.abs(serialCorrelation) < this.config.correlationThreshold;
+    const correlationPassed =
+      Math.abs(serialCorrelation) < this.config.correlationThreshold;
 
     // 3. Increment Detection
     const incrementPattern = this.detectIncrementPattern(numbers);
-    const incrementPassed = incrementPattern === null || incrementPattern.confidence < 0.8;
+    const incrementPassed =
+      incrementPattern === null || incrementPattern.confidence < 0.8;
 
     // 4. Timestamp Detection
     const timestampComponent = this.detectTimestampComponent(numbers);
@@ -383,26 +409,27 @@ export class WeakIdDetector implements IVulnerabilityDetector {
       timestampPassed,
       runsTestPassed,
       monobitPassed,
-      hammingPassed
+      hammingPassed,
     ];
     const passCount = passedTests.filter(Boolean).length;
 
     // Need to pass at least 5 of 7 tests for "secure"
     const isSecure = passCount >= 5;
-    const confidence: DetectionConfidence = numbers.length >= 10 ? 'high' : 'medium';
+    const confidence: DetectionConfidence =
+      numbers.length >= 10 ? "high" : "medium";
 
     const failedTests: string[] = [];
-    if (!entropyPassed) failedTests.push('entropy');
-    if (!correlationPassed) failedTests.push('correlation');
-    if (!incrementPassed) failedTests.push('increment');
-    if (!timestampPassed) failedTests.push('timestamp');
-    if (!runsTestPassed) failedTests.push('runs');
-    if (!monobitPassed) failedTests.push('monobit');
-    if (!hammingPassed) failedTests.push('hamming');
+    if (!entropyPassed) failedTests.push("entropy");
+    if (!correlationPassed) failedTests.push("correlation");
+    if (!incrementPassed) failedTests.push("increment");
+    if (!timestampPassed) failedTests.push("timestamp");
+    if (!runsTestPassed) failedTests.push("runs");
+    if (!monobitPassed) failedTests.push("monobit");
+    if (!hammingPassed) failedTests.push("hamming");
 
     const summary = isSecure
       ? `ID generation appears secure (passed ${passCount}/7 tests)`
-      : `ID generation is WEAK: failed tests: ${failedTests.join(', ')}`;
+      : `ID generation is WEAK: failed tests: ${failedTests.join(", ")}`;
 
     return {
       entropy,
@@ -422,7 +449,7 @@ export class WeakIdDetector implements IVulnerabilityDetector {
       hammingPassed,
       isSecure,
       confidence,
-      summary
+      summary,
     };
   }
 
@@ -477,7 +504,9 @@ export class WeakIdDetector implements IVulnerabilityDetector {
    * Detect if values follow an increment pattern (counter)
    * Returns the step size and confidence level
    */
-  private detectIncrementPattern(values: number[]): { step: number; confidence: number } | null {
+  private detectIncrementPattern(
+    values: number[],
+  ): { step: number; confidence: number } | null {
     if (values.length < 3) return null;
 
     // Calculate differences between consecutive values
@@ -515,16 +544,18 @@ export class WeakIdDetector implements IVulnerabilityDetector {
   /**
    * Detect if values contain timestamp components
    */
-  private detectTimestampComponent(values: number[]): { position: number; type: 'unix_s' | 'unix_ms' | 'sequential' } | null {
+  private detectTimestampComponent(
+    values: number[],
+  ): { position: number; type: "unix_s" | "unix_ms" | "sequential" } | null {
     if (values.length < 2) return null;
 
     // Check if values look like Unix timestamps (seconds)
     const now = Date.now() / 1000;
-    const recentPast = now - (365 * 24 * 3600); // 1 year ago
-    const nearFuture = now + (24 * 3600); // 1 day ahead
+    const recentPast = now - 365 * 24 * 3600; // 1 year ago
+    const nearFuture = now + 24 * 3600; // 1 day ahead
 
-    const looksLikeUnixSeconds = values.every(v =>
-      v >= recentPast && v <= nearFuture
+    const looksLikeUnixSeconds = values.every(
+      (v) => v >= recentPast && v <= nearFuture,
     );
 
     if (looksLikeUnixSeconds) {
@@ -535,22 +566,23 @@ export class WeakIdDetector implements IVulnerabilityDetector {
       }
       // If diffs are small and positive, likely timestamps
       const avgDiff = timeDiffs.reduce((a, b) => a + b, 0) / timeDiffs.length;
-      if (avgDiff >= 0 && avgDiff < 60) { // Less than 1 minute between samples
-        return { position: 0, type: 'unix_s' };
+      if (avgDiff >= 0 && avgDiff < 60) {
+        // Less than 1 minute between samples
+        return { position: 0, type: "unix_s" };
       }
     }
 
     // Check for Unix milliseconds
     const nowMs = Date.now();
-    const recentPastMs = nowMs - (365 * 24 * 3600 * 1000);
-    const nearFutureMs = nowMs + (24 * 3600 * 1000);
+    const recentPastMs = nowMs - 365 * 24 * 3600 * 1000;
+    const nearFutureMs = nowMs + 24 * 3600 * 1000;
 
-    const looksLikeUnixMs = values.every(v =>
-      v >= recentPastMs && v <= nearFutureMs
+    const looksLikeUnixMs = values.every(
+      (v) => v >= recentPastMs && v <= nearFutureMs,
     );
 
     if (looksLikeUnixMs) {
-      return { position: 0, type: 'unix_ms' };
+      return { position: 0, type: "unix_ms" };
     }
 
     // Check for sequential component (monotonically increasing, small steps)
@@ -572,7 +604,7 @@ export class WeakIdDetector implements IVulnerabilityDetector {
 
       // If differences are consistently small, it's a counter
       if (maxDiff < 1000 && avgDiff > 0) {
-        return { position: 0, type: 'sequential' };
+        return { position: 0, type: "sequential" };
       }
     }
 
@@ -591,7 +623,7 @@ export class WeakIdDetector implements IVulnerabilityDetector {
     const median = sorted[Math.floor(sorted.length / 2)];
 
     // Convert to binary sequence (above/below median)
-    const binary = values.map(v => v >= median ? 1 : 0);
+    const binary = values.map((v) => (v >= median ? 1 : 0));
 
     // Count runs (sequences of same value)
     let runs = 1;
@@ -602,14 +634,14 @@ export class WeakIdDetector implements IVulnerabilityDetector {
     }
 
     // Count n1 (above median) and n2 (below median)
-    const n1 = binary.filter(b => b === 1).length;
-    const n2 = binary.filter(b => b === 0).length;
+    const n1 = binary.filter((b) => b === 1).length;
+    const n2 = binary.filter((b) => b === 0).length;
 
     if (n1 === 0 || n2 === 0) return 0;
 
     // Calculate expected runs and standard deviation
     const n = n1 + n2;
-    const expectedRuns = ((2 * n1 * n2) / n) + 1;
+    const expectedRuns = (2 * n1 * n2) / n + 1;
     const variance = (2 * n1 * n2 * (2 * n1 * n2 - n)) / (n * n * (n - 1));
 
     if (variance <= 0) return 0;
@@ -647,7 +679,7 @@ export class WeakIdDetector implements IVulnerabilityDetector {
     // Count the number of 1s
     let sum = 0;
     for (const bit of bitString) {
-      sum += bit === '1' ? 1 : -1;
+      sum += bit === "1" ? 1 : -1;
     }
 
     // Calculate the test statistic
@@ -678,7 +710,9 @@ export class WeakIdDetector implements IVulnerabilityDetector {
     x = Math.abs(x);
 
     const t = 1.0 / (1.0 + p * x);
-    const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+    const y =
+      1.0 -
+      ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
 
     return sign === 1 ? 1 - y : 1 + y;
   }
@@ -688,18 +722,18 @@ export class WeakIdDetector implements IVulnerabilityDetector {
    * Uses hex characters or raw character codes
    */
   private idsToBitString(ids: string[]): string {
-    const combined = ids.join('');
-    let bits = '';
+    const combined = ids.join("");
+    let bits = "";
 
     for (const char of combined) {
       // If hex character, convert directly
       if (/[0-9a-fA-F]/.test(char)) {
         const nibble = parseInt(char, 16);
-        bits += nibble.toString(2).padStart(4, '0');
+        bits += nibble.toString(2).padStart(4, "0");
       } else {
         // Otherwise use character code
         const code = char.charCodeAt(0);
-        bits += code.toString(2).padStart(8, '0');
+        bits += code.toString(2).padStart(8, "0");
       }
     }
 
@@ -736,8 +770,8 @@ export class WeakIdDetector implements IVulnerabilityDetector {
 
       // Align lengths
       const maxLen = Math.max(bits1.length, bits2.length);
-      const padded1 = bits1.padStart(maxLen, '0');
-      const padded2 = bits2.padStart(maxLen, '0');
+      const padded1 = bits1.padStart(maxLen, "0");
+      const padded2 = bits2.padStart(maxLen, "0");
 
       // Count differing bits
       let hammingDist = 0;
@@ -793,7 +827,7 @@ export class WeakIdDetector implements IVulnerabilityDetector {
     if (!matches) return null;
 
     // Return the largest numeric component (usually the most significant)
-    const numbers = matches.map(m => parseInt(m, 10));
+    const numbers = matches.map((m) => parseInt(m, 10));
     return Math.max(...numbers);
   }
 
@@ -804,30 +838,36 @@ export class WeakIdDetector implements IVulnerabilityDetector {
     const jwts = text.match(this.jwtPattern) || [];
 
     for (const jwt of jwts) {
-      const parts = jwt.split('.');
+      const parts = jwt.split(".");
       if (parts.length !== 3) continue;
 
       try {
         const headerJson = this.base64UrlDecode(parts[0]);
         const header = JSON.parse(headerJson);
 
-        if (header.alg === 'none' || header.alg === 'None' || header.alg === 'NONE') {
+        if (
+          header.alg === "none" ||
+          header.alg === "None" ||
+          header.alg === "NONE"
+        ) {
           findings.push({
-            type: 'jwt-alg-none',
-            severity: 'critical',
-            description: 'JWT with "none" algorithm detected - signature verification disabled',
-            cwe: 'CWE-347',
-            evidence: jwt.substring(0, 50) + '...'
+            type: "jwt-alg-none",
+            severity: "critical",
+            description:
+              'JWT with "none" algorithm detected - signature verification disabled',
+            cwe: "CWE-347",
+            evidence: jwt.substring(0, 50) + "...",
           });
         }
 
-        if (header.alg === 'HS256' && header.typ === 'JWT') {
+        if (header.alg === "HS256" && header.typ === "JWT") {
           findings.push({
-            type: 'jwt-alg-confusion',
-            severity: 'high',
-            description: 'JWT uses HS256 - vulnerable to key confusion if server uses asymmetric keys',
-            cwe: 'CWE-347',
-            evidence: jwt.substring(0, 50) + '...'
+            type: "jwt-alg-confusion",
+            severity: "high",
+            description:
+              "JWT uses HS256 - vulnerable to key confusion if server uses asymmetric keys",
+            cwe: "CWE-347",
+            evidence: jwt.substring(0, 50) + "...",
           });
         }
 
@@ -836,37 +876,43 @@ export class WeakIdDetector implements IVulnerabilityDetector {
 
         if (!payload.exp) {
           findings.push({
-            type: 'jwt-no-expiry',
-            severity: 'medium',
-            description: 'JWT without expiration claim (exp) - token never expires',
-            cwe: 'CWE-613',
-            evidence: 'Missing "exp" claim'
+            type: "jwt-no-expiry",
+            severity: "medium",
+            description:
+              "JWT without expiration claim (exp) - token never expires",
+            cwe: "CWE-613",
+            evidence: 'Missing "exp" claim',
           });
         }
 
         if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
           findings.push({
-            type: 'jwt-expired',
-            severity: 'low',
-            description: 'Expired JWT returned in response',
-            cwe: 'CWE-613',
-            evidence: `Expired at: ${new Date(payload.exp * 1000).toISOString()}`
+            type: "jwt-expired",
+            severity: "low",
+            description: "Expired JWT returned in response",
+            cwe: "CWE-613",
+            evidence: `Expired at: ${new Date(payload.exp * 1000).toISOString()}`,
           });
         }
 
-        const sensitiveKeys = ['password', 'secret', 'api_key', 'apiKey', 'private_key'];
+        const sensitiveKeys = [
+          "password",
+          "secret",
+          "api_key",
+          "apiKey",
+          "private_key",
+        ];
         for (const key of sensitiveKeys) {
           if (payload[key]) {
             findings.push({
-              type: 'jwt-sensitive-data',
-              severity: 'critical',
+              type: "jwt-sensitive-data",
+              severity: "critical",
               description: `JWT contains sensitive data in payload: "${key}"`,
-              cwe: 'CWE-200',
-              evidence: `Field "${key}" present in JWT payload`
+              cwe: "CWE-200",
+              evidence: `Field "${key}" present in JWT payload`,
             });
           }
         }
-
       } catch {
         continue;
       }
@@ -876,11 +922,11 @@ export class WeakIdDetector implements IVulnerabilityDetector {
   }
 
   private base64UrlDecode(str: string): string {
-    let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+    let base64 = str.replace(/-/g, "+").replace(/_/g, "/");
     while (base64.length % 4) {
-      base64 += '=';
+      base64 += "=";
     }
-    return Buffer.from(base64, 'base64').toString('utf-8');
+    return Buffer.from(base64, "base64").toString("utf-8");
   }
 
   // ==================== WEAK HASH DETECTION ====================
@@ -891,8 +937,8 @@ export class WeakIdDetector implements IVulnerabilityDetector {
     for (const hashDef of this.weakHashPatterns) {
       const matches = text.match(hashDef.pattern) || [];
 
-      const realHashes = matches.filter(m => {
-        if (m.includes('-')) return false;
+      const realHashes = matches.filter((m) => {
+        if (m.includes("-")) return false;
         if (m.length === 6 && /^[a-f0-9]{6}$/i.test(m)) return false;
         return true;
       });
@@ -903,7 +949,7 @@ export class WeakIdDetector implements IVulnerabilityDetector {
           severity: hashDef.severity,
           description: hashDef.description,
           cwe: hashDef.cwe,
-          evidence: realHashes[0]
+          evidence: realHashes[0],
         });
       }
     }
@@ -916,32 +962,37 @@ export class WeakIdDetector implements IVulnerabilityDetector {
   private detectWeakUuids(text: string): CryptoFinding[] {
     const findings: CryptoFinding[] = [];
 
-    const uuidV1Pattern = /\b[0-9a-f]{8}-[0-9a-f]{4}-1[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
+    const uuidV1Pattern =
+      /\b[0-9a-f]{8}-[0-9a-f]{4}-1[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
     const v1Matches = text.match(uuidV1Pattern) || [];
 
     if (v1Matches.length > 0) {
       findings.push({
-        type: 'uuid-v1-timestamp',
-        severity: 'high',
-        description: 'UUID v1 detected - timestamp-based, predictable and leaks creation time/MAC address',
-        cwe: 'CWE-338',
-        evidence: v1Matches[0]
+        type: "uuid-v1-timestamp",
+        severity: "high",
+        description:
+          "UUID v1 detected - timestamp-based, predictable and leaks creation time/MAC address",
+        cwe: "CWE-338",
+        evidence: v1Matches[0],
       });
     }
 
-    const uuidV3Pattern = /\b[0-9a-f]{8}-[0-9a-f]{4}-3[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
-    const uuidV5Pattern = /\b[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
+    const uuidV3Pattern =
+      /\b[0-9a-f]{8}-[0-9a-f]{4}-3[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
+    const uuidV5Pattern =
+      /\b[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
 
     const v3Matches = text.match(uuidV3Pattern) || [];
     const v5Matches = text.match(uuidV5Pattern) || [];
 
     if (v3Matches.length > 0 || v5Matches.length > 0) {
       findings.push({
-        type: 'uuid-deterministic',
-        severity: 'medium',
-        description: 'UUID v3/v5 detected - deterministic (name-based), may be predictable if inputs are known',
-        cwe: 'CWE-338',
-        evidence: v3Matches[0] || v5Matches[0]
+        type: "uuid-deterministic",
+        severity: "medium",
+        description:
+          "UUID v3/v5 detected - deterministic (name-based), may be predictable if inputs are known",
+        cwe: "CWE-338",
+        evidence: v3Matches[0] || v5Matches[0],
       });
     }
 
@@ -954,19 +1005,19 @@ export class WeakIdDetector implements IVulnerabilityDetector {
     return {
       detectorId: this.id,
       detected: false,
-      vulnerabilityType: 'Weak Cryptography',
-      severity: 'low',
-      confidence: 'low',
-      description: 'No cryptographic weaknesses detected',
+      vulnerabilityType: "Weak Cryptography",
+      severity: "low",
+      confidence: "low",
+      description: "No cryptographic weaknesses detected",
       evidence: {
-        payload: '',
-        response: null
-      }
+        payload: "",
+        response: null,
+      },
     };
   }
 
   private stringifyResponse(response: unknown): string {
-    if (typeof response === 'string') return response;
+    if (typeof response === "string") return response;
     try {
       return JSON.stringify(response);
     } catch {
@@ -977,57 +1028,79 @@ export class WeakIdDetector implements IVulnerabilityDetector {
   private truncateResponse(response: unknown): unknown {
     const str = this.stringifyResponse(response);
     if (str.length > 500) {
-      return str.substring(0, 500) + '... [truncated]';
+      return str.substring(0, 500) + "... [truncated]";
     }
     return response;
   }
 
   private generateRemediation(findings: CryptoFinding[]): string {
     const remediations: string[] = [];
-    const types = new Set(findings.map(f => f.type));
+    const types = new Set(findings.map((f) => f.type));
 
-    if (types.has('jwt-alg-none') || types.has('jwt-alg-confusion')) {
-      remediations.push('Enforce algorithm validation in JWT library. Whitelist allowed algorithms (RS256/ES256)');
+    if (types.has("jwt-alg-none") || types.has("jwt-alg-confusion")) {
+      remediations.push(
+        "Enforce algorithm validation in JWT library. Whitelist allowed algorithms (RS256/ES256)",
+      );
     }
-    if (types.has('jwt-no-expiry')) {
-      remediations.push('Always include exp (expiration) claim in JWTs');
+    if (types.has("jwt-no-expiry")) {
+      remediations.push("Always include exp (expiration) claim in JWTs");
     }
-    if (types.has('jwt-sensitive-data')) {
-      remediations.push('Never store sensitive data in JWT payload. Use encrypted JWE or store in database');
+    if (types.has("jwt-sensitive-data")) {
+      remediations.push(
+        "Never store sensitive data in JWT payload. Use encrypted JWE or store in database",
+      );
     }
-    if (types.has('weak-hash-md5') || types.has('weak-hash-sha1')) {
-      remediations.push('Use SHA-256 or SHA-3 for hashing. Use bcrypt/argon2 for passwords');
+    if (types.has("weak-hash-md5") || types.has("weak-hash-sha1")) {
+      remediations.push(
+        "Use SHA-256 or SHA-3 for hashing. Use bcrypt/argon2 for passwords",
+      );
     }
-    if (types.has('uuid-v1-timestamp')) {
-      remediations.push('Use UUID v4 (random) instead of v1 (timestamp-based)');
+    if (types.has("uuid-v1-timestamp")) {
+      remediations.push("Use UUID v4 (random) instead of v1 (timestamp-based)");
     }
-    if (types.has('predictable-increment') || types.has('timestamp-based-id')) {
-      remediations.push('Use crypto.randomUUID() or crypto.randomBytes() instead of counters or timestamps');
+    if (types.has("predictable-increment") || types.has("timestamp-based-id")) {
+      remediations.push(
+        "Use crypto.randomUUID() or crypto.randomBytes() instead of counters or timestamps",
+      );
     }
-    if (types.has('high-serial-correlation') || types.has('failed-randomness-test')) {
-      remediations.push('Replace weak PRNG (Math.random) with cryptographically secure alternatives (crypto.randomBytes)');
+    if (
+      types.has("high-serial-correlation") ||
+      types.has("failed-randomness-test")
+    ) {
+      remediations.push(
+        "Replace weak PRNG (Math.random) with cryptographically secure alternatives (crypto.randomBytes)",
+      );
     }
-    if (types.has('low-entropy')) {
-      remediations.push('Increase ID length and character set to improve entropy');
+    if (types.has("low-entropy")) {
+      remediations.push(
+        "Increase ID length and character set to improve entropy",
+      );
     }
-    if (types.has('failed-nist-monobit')) {
-      remediations.push('CRITICAL: Your ID generator failed NIST SP 800-22 Monobit test. Use crypto.randomUUID() or crypto.randomBytes() instead of Math.random()');
+    if (types.has("failed-nist-monobit")) {
+      remediations.push(
+        "CRITICAL: Your ID generator failed NIST SP 800-22 Monobit test. Use crypto.randomUUID() or crypto.randomBytes() instead of Math.random()",
+      );
     }
-    if (types.has('abnormal-hamming-distance')) {
-      remediations.push('IDs show abnormal bit-flip patterns. Avoid sequential counters, timestamps, or simple XOR obfuscation. Use true cryptographic randomness');
+    if (types.has("abnormal-hamming-distance")) {
+      remediations.push(
+        "IDs show abnormal bit-flip patterns. Avoid sequential counters, timestamps, or simple XOR obfuscation. Use true cryptographic randomness",
+      );
     }
 
-    return remediations.join('. ') || 'Review and strengthen cryptographic implementations';
+    return (
+      remediations.join(". ") ||
+      "Review and strengthen cryptographic implementations"
+    );
   }
 
   private getPrimaryCwe(findings: CryptoFinding[]): string {
-    const cwePriority = ['CWE-347', 'CWE-327', 'CWE-338', 'CWE-613', 'CWE-200'];
+    const cwePriority = ["CWE-347", "CWE-327", "CWE-338", "CWE-613", "CWE-200"];
     for (const cwe of cwePriority) {
-      if (findings.some(f => f.cwe === cwe)) {
+      if (findings.some((f) => f.cwe === cwe)) {
         return cwe;
       }
     }
-    return 'CWE-338';
+    return "CWE-338";
   }
 
   /**

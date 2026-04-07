@@ -31,26 +31,43 @@
  * - CWE-502: Deserialization of Untrusted Data
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class AgentMemoryInjectionRule implements ISecurityRule {
-  code = 'SEC-041';
-  name = 'Agent Memory Injection';
-  severity: 'critical' = 'critical';
+  code = "SEC-041";
+  name = "Agent Memory Injection";
+  severity: "critical" = "critical";
 
   private readonly MEMORY_WRITE_PATTERNS = [
-    /add.*memory/i, /store.*memory/i, /save.*memory/i,
-    /update.*memory/i, /set.*memory/i, /persist.*memory/i,
-    /write.*context/i, /add.*context/i, /update.*context/i,
-    /remember/i, /memorize/i, /learn/i
+    /add.*memory/i,
+    /store.*memory/i,
+    /save.*memory/i,
+    /update.*memory/i,
+    /set.*memory/i,
+    /persist.*memory/i,
+    /write.*context/i,
+    /add.*context/i,
+    /update.*context/i,
+    /remember/i,
+    /memorize/i,
+    /learn/i,
   ];
 
   private readonly DANGEROUS_MEMORY_TYPES = [
-    'system', 'instruction', 'directive', 'rule',
-    'policy', 'constraint', 'behavior', 'personality'
+    "system",
+    "instruction",
+    "directive",
+    "rule",
+    "policy",
+    "constraint",
+    "behavior",
+    "personality",
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -68,24 +85,24 @@ export class AgentMemoryInjectionRule implements ISecurityRule {
         const allowsDangerousTypes = this.allowsDangerousMemoryTypes(tool);
 
         if (!hasValidation || allowsDangerousTypes) {
-          const severity = allowsDangerousTypes ? 'critical' : 'high';
+          const severity = allowsDangerousTypes ? "critical" : "high";
 
           findings.push({
             severity,
-            message: t('sec_041_memory_injection', {
+            message: t("sec_041_memory_injection", {
               toolName: tool.name,
               issue: allowsDangerousTypes
-                ? 'allows system/instruction memory types'
-                : 'missing memory validation'
+                ? "allows system/instruction memory types"
+                : "missing memory validation",
             }),
             component: `tool:${tool.name}`,
             ruleCode: this.code,
-            remediation: t('sec_041_recommendation'),
+            remediation: t("sec_041_recommendation"),
             references: [
-              'Multi-Agent Security Framework (MASF) 2024 - Memory Isolation',
-              'OWASP LLM Top 10 - LLM01: Prompt Injection (Memory Context)',
-              'CWE-502: Deserialization of Untrusted Data'
-            ]
+              "Multi-Agent Security Framework (MASF) 2024 - Memory Isolation",
+              "OWASP LLM Top 10 - LLM01: Prompt Injection (Memory Context)",
+              "CWE-502: Deserialization of Untrusted Data",
+            ],
           });
         }
       }
@@ -96,23 +113,35 @@ export class AgentMemoryInjectionRule implements ISecurityRule {
 
   private writesToAgentMemory(tool: McpTool): boolean {
     // Check name pattern
-    const nameMatches = this.MEMORY_WRITE_PATTERNS.some(pattern =>
-      pattern.test(tool.name)
+    const nameMatches = this.MEMORY_WRITE_PATTERNS.some((pattern) =>
+      pattern.test(tool.name),
     );
     if (nameMatches) return true;
 
     // Check description
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
-      const descMatches = this.MEMORY_WRITE_PATTERNS.some(pattern =>
-        pattern.test(descLower)
+      const descMatches = this.MEMORY_WRITE_PATTERNS.some((pattern) =>
+        pattern.test(descLower),
       );
       if (descMatches) return true;
 
       // Check for memory/context keywords
-      const memoryKeywords = ['memory', 'context', 'history', 'session', 'state'];
-      const hasMemoryKeyword = memoryKeywords.some(kw => descLower.includes(kw));
-      const mentionsWrite = descLower.includes('write') || descLower.includes('save') || descLower.includes('store') || descLower.includes('add');
+      const memoryKeywords = [
+        "memory",
+        "context",
+        "history",
+        "session",
+        "state",
+      ];
+      const hasMemoryKeyword = memoryKeywords.some((kw) =>
+        descLower.includes(kw),
+      );
+      const mentionsWrite =
+        descLower.includes("write") ||
+        descLower.includes("save") ||
+        descLower.includes("store") ||
+        descLower.includes("add");
 
       if (hasMemoryKeyword && mentionsWrite) return true;
     }
@@ -121,7 +150,11 @@ export class AgentMemoryInjectionRule implements ISecurityRule {
     if (tool.inputSchema?.properties) {
       for (const propName of Object.keys(tool.inputSchema.properties)) {
         const propLower = propName.toLowerCase();
-        if (propLower.includes('memory') || propLower.includes('context') || propLower.includes('remember')) {
+        if (
+          propLower.includes("memory") ||
+          propLower.includes("context") ||
+          propLower.includes("remember")
+        ) {
           return true;
         }
       }
@@ -135,21 +168,31 @@ export class AgentMemoryInjectionRule implements ISecurityRule {
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
       const validationKeywords = [
-        'validate', 'sanitize', 'filter', 'verify',
-        'check', 'whitelist', 'allowed types'
+        "validate",
+        "sanitize",
+        "filter",
+        "verify",
+        "check",
+        "whitelist",
+        "allowed types",
       ];
 
-      const hasValidation = validationKeywords.some(keyword =>
-        descLower.includes(keyword)
+      const hasValidation = validationKeywords.some((keyword) =>
+        descLower.includes(keyword),
       );
       if (hasValidation) return true;
     }
 
     // Check if memory parameters have constraints
     if (tool.inputSchema?.properties) {
-      for (const [propName, propSchema] of Object.entries(tool.inputSchema.properties)) {
+      for (const [propName, propSchema] of Object.entries(
+        tool.inputSchema.properties,
+      )) {
         const propLower = propName.toLowerCase();
-        const isMemoryParam = propLower.includes('memory') || propLower.includes('content') || propLower.includes('data');
+        const isMemoryParam =
+          propLower.includes("memory") ||
+          propLower.includes("content") ||
+          propLower.includes("data");
 
         if (isMemoryParam) {
           const schema = propSchema as {
@@ -160,7 +203,8 @@ export class AgentMemoryInjectionRule implements ISecurityRule {
             [key: string]: unknown;
           };
 
-          const hasConstraints = schema.pattern || schema.format || schema.enum || schema.maxLength;
+          const hasConstraints =
+            schema.pattern || schema.format || schema.enum || schema.maxLength;
           if (hasConstraints) return true;
         }
       }
@@ -175,10 +219,16 @@ export class AgentMemoryInjectionRule implements ISecurityRule {
     }
 
     // Check for "type" or "memory_type" parameter
-    for (const [propName, propSchema] of Object.entries(tool.inputSchema.properties)) {
+    for (const [propName, propSchema] of Object.entries(
+      tool.inputSchema.properties,
+    )) {
       const propLower = propName.toLowerCase();
 
-      if (propLower === 'type' || propLower === 'memory_type' || propLower === 'entry_type') {
+      if (
+        propLower === "type" ||
+        propLower === "memory_type" ||
+        propLower === "entry_type"
+      ) {
         const schema = propSchema as {
           enum?: string[];
           [key: string]: unknown;
@@ -186,9 +236,9 @@ export class AgentMemoryInjectionRule implements ISecurityRule {
 
         // If enum exists, check if it includes dangerous types
         if (schema.enum) {
-          const enumValues = schema.enum.map(v => String(v).toLowerCase());
-          const hasDangerousType = this.DANGEROUS_MEMORY_TYPES.some(dangerous =>
-            enumValues.includes(dangerous)
+          const enumValues = schema.enum.map((v) => String(v).toLowerCase());
+          const hasDangerousType = this.DANGEROUS_MEMORY_TYPES.some(
+            (dangerous) => enumValues.includes(dangerous),
           );
 
           if (hasDangerousType) return true;

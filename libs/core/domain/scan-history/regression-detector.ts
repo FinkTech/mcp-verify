@@ -5,7 +5,7 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import { ScanHistory, RegressionReport, CompareOptions } from './types';
+import { ScanHistory, RegressionReport, CompareOptions } from "./types";
 
 /**
  * Detects security/quality regressions between scans
@@ -14,7 +14,11 @@ export class RegressionDetector {
   /**
    * Compare two scans and detect regressions
    */
-  static compare(current: ScanHistory, baseline: ScanHistory, options: CompareOptions = {}): RegressionReport {
+  static compare(
+    current: ScanHistory,
+    baseline: ScanHistory,
+    options: CompareOptions = {},
+  ): RegressionReport {
     const scoreThreshold = options.scoreThreshold || 10;
 
     // Calculate score changes
@@ -82,26 +86,35 @@ export class RegressionDetector {
 
     // Find new issues (in current but not in baseline)
     const newIssues = currentFindings.filter(
-      (cf) => !baselineFindings.some((bf) => bf.message === cf.message && bf.component === cf.component)
+      (cf) =>
+        !baselineFindings.some(
+          (bf) => bf.message === cf.message && bf.component === cf.component,
+        ),
     );
 
     // Find resolved issues (in baseline but not in current)
     const resolvedIssues = baselineFindings.filter(
-      (bf) => !currentFindings.some((cf) => cf.message === bf.message && cf.component === bf.component)
+      (bf) =>
+        !currentFindings.some(
+          (cf) => cf.message === bf.message && cf.component === bf.component,
+        ),
     );
 
     // Determine degradation severity
-    let degradationSeverity: 'none' | 'info' | 'warning' | 'blocking' = 'none';
+    let degradationSeverity: "none" | "info" | "warning" | "blocking" = "none";
     let degradationDetected = false;
 
     // BLOCKING: New critical issues
     if (findingsChange.critical.delta > 0) {
-      degradationSeverity = 'blocking';
+      degradationSeverity = "blocking";
       degradationDetected = true;
     }
     // WARNING: Security score dropped significantly or new high severity issues
-    else if (scoreChange.security.delta < -scoreThreshold || findingsChange.high.delta > 0) {
-      degradationSeverity = 'warning';
+    else if (
+      scoreChange.security.delta < -scoreThreshold ||
+      findingsChange.high.delta > 0
+    ) {
+      degradationSeverity = "warning";
       degradationDetected = true;
     }
     // INFO: Minor changes
@@ -110,18 +123,21 @@ export class RegressionDetector {
       findingsChange.medium.delta > 0 ||
       findingsChange.low.delta > 0
     ) {
-      degradationSeverity = 'info';
+      degradationSeverity = "info";
       degradationDetected = true;
     }
 
     // Determine recommendation
-    let recommendation: 'safe_to_deploy' | 'review_required' | 'blocking_issues';
-    if (degradationSeverity === 'blocking') {
-      recommendation = 'blocking_issues';
-    } else if (degradationSeverity === 'warning') {
-      recommendation = 'review_required';
+    let recommendation:
+      | "safe_to_deploy"
+      | "review_required"
+      | "blocking_issues";
+    if (degradationSeverity === "blocking") {
+      recommendation = "blocking_issues";
+    } else if (degradationSeverity === "warning") {
+      recommendation = "review_required";
     } else {
-      recommendation = 'safe_to_deploy';
+      recommendation = "safe_to_deploy";
     }
 
     // Generate summary
@@ -130,7 +146,7 @@ export class RegressionDetector {
       findingsChange,
       newIssues,
       resolvedIssues,
-      degradationSeverity
+      degradationSeverity,
     );
 
     return {
@@ -153,28 +169,33 @@ export class RegressionDetector {
    * Generate human-readable summary
    */
   private static generateSummary(
-    scoreChange: RegressionReport['score_change'],
-    findingsChange: RegressionReport['findings_change'],
-    newIssues: RegressionReport['new_issues'],
-    resolvedIssues: RegressionReport['resolved_issues'],
-    severity: string
+    scoreChange: RegressionReport["score_change"],
+    findingsChange: RegressionReport["findings_change"],
+    newIssues: RegressionReport["new_issues"],
+    resolvedIssues: RegressionReport["resolved_issues"],
+    severity: string,
   ): string {
     const parts: string[] = [];
 
     // Security score change
     if (scoreChange.security.delta !== 0) {
-      const direction = scoreChange.security.delta > 0 ? 'improved' : 'degraded';
+      const direction =
+        scoreChange.security.delta > 0 ? "improved" : "degraded";
       parts.push(
-        `Security score ${direction} from ${scoreChange.security.before} to ${scoreChange.security.after} (${scoreChange.security.delta > 0 ? '+' : ''}${scoreChange.security.delta})`
+        `Security score ${direction} from ${scoreChange.security.before} to ${scoreChange.security.after} (${scoreChange.security.delta > 0 ? "+" : ""}${scoreChange.security.delta})`,
       );
     }
 
     // New critical/high issues
     if (findingsChange.critical.delta > 0) {
-      parts.push(`${findingsChange.critical.delta} new CRITICAL issue(s) detected`);
+      parts.push(
+        `${findingsChange.critical.delta} new CRITICAL issue(s) detected`,
+      );
     }
     if (findingsChange.high.delta > 0) {
-      parts.push(`${findingsChange.high.delta} new HIGH severity issue(s) detected`);
+      parts.push(
+        `${findingsChange.high.delta} new HIGH severity issue(s) detected`,
+      );
     }
 
     // Resolved issues
@@ -184,30 +205,34 @@ export class RegressionDetector {
 
     // New issues details
     if (newIssues.length > 0 && newIssues.length <= 3) {
-      parts.push(`New issues: ${newIssues.map((i) => `${i.severity} - ${i.message}`).join('; ')}`);
+      parts.push(
+        `New issues: ${newIssues.map((i) => `${i.severity} - ${i.message}`).join("; ")}`,
+      );
     } else if (newIssues.length > 3) {
       parts.push(`${newIssues.length} new issues detected (see details)`);
     }
 
     // Severity-based conclusion
-    if (severity === 'blocking') {
-      parts.push('⛔ BLOCKING: Critical issues must be fixed before deployment');
-    } else if (severity === 'warning') {
-      parts.push('⚠️  WARNING: Review required before deployment');
-    } else if (severity === 'info') {
-      parts.push('ℹ️  INFO: Minor changes detected');
+    if (severity === "blocking") {
+      parts.push(
+        "⛔ BLOCKING: Critical issues must be fixed before deployment",
+      );
+    } else if (severity === "warning") {
+      parts.push("⚠️  WARNING: Review required before deployment");
+    } else if (severity === "info") {
+      parts.push("ℹ️  INFO: Minor changes detected");
     } else {
-      parts.push('✅ No degradation detected');
+      parts.push("✅ No degradation detected");
     }
 
-    return parts.join('. ');
+    return parts.join(". ");
   }
 
   /**
    * Analyze trend across multiple scans
    */
   static analyzeTrend(scans: ScanHistory[]): {
-    trend: 'improving' | 'stable' | 'degrading';
+    trend: "improving" | "stable" | "degrading";
     average_security_score: number;
     average_quality_score: number;
     total_scans: number;
@@ -215,21 +240,24 @@ export class RegressionDetector {
   } {
     if (scans.length === 0) {
       return {
-        trend: 'stable',
+        trend: "stable",
         average_security_score: 0,
         average_quality_score: 0,
         total_scans: 0,
-        date_range: { from: 'N/A', to: 'N/A' },
+        date_range: { from: "N/A", to: "N/A" },
       };
     }
 
     // Sort by timestamp (oldest first for trend calculation)
     const sorted = [...scans].sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
 
-    const avgSecurity = scans.reduce((sum, s) => sum + s.security_score, 0) / scans.length;
-    const avgQuality = scans.reduce((sum, s) => sum + s.quality_score, 0) / scans.length;
+    const avgSecurity =
+      scans.reduce((sum, s) => sum + s.security_score, 0) / scans.length;
+    const avgQuality =
+      scans.reduce((sum, s) => sum + s.quality_score, 0) / scans.length;
 
     // Simple trend: compare first half vs second half
     const midpoint = Math.floor(sorted.length / 2);
@@ -237,17 +265,19 @@ export class RegressionDetector {
     const secondHalf = sorted.slice(midpoint);
 
     const firstHalfAvg =
-      firstHalf.reduce((sum, s) => sum + s.security_score, 0) / (firstHalf.length || 1);
+      firstHalf.reduce((sum, s) => sum + s.security_score, 0) /
+      (firstHalf.length || 1);
     const secondHalfAvg =
-      secondHalf.reduce((sum, s) => sum + s.security_score, 0) / (secondHalf.length || 1);
+      secondHalf.reduce((sum, s) => sum + s.security_score, 0) /
+      (secondHalf.length || 1);
 
-    let trend: 'improving' | 'stable' | 'degrading';
+    let trend: "improving" | "stable" | "degrading";
     if (secondHalfAvg > firstHalfAvg + 5) {
-      trend = 'improving';
+      trend = "improving";
     } else if (secondHalfAvg < firstHalfAvg - 5) {
-      trend = 'degrading';
+      trend = "degrading";
     } else {
-      trend = 'stable';
+      trend = "stable";
     }
 
     return {

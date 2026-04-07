@@ -11,21 +11,21 @@
  * Create default configuration file
  */
 
-import chalk from 'chalk';
-import fs from 'fs';
-import path from 'path';
-import { DEFAULT_CONFIG } from '@mcp-verify/core';
-import { t } from '@mcp-verify/shared';
+import chalk from "chalk";
+import fs from "fs";
+import path from "path";
+import { DEFAULT_CONFIG } from "@mcp-verify/core";
+import { t } from "@mcp-verify/shared";
 
 export async function runInitAction() {
-  const configPath = path.join(process.cwd(), 'mcp-verify.config.json');
+  const configPath = path.join(process.cwd(), "mcp-verify.config.json");
   if (fs.existsSync(configPath)) {
-    console.log(chalk.yellow(t('config_exists')), configPath);
+    console.log(chalk.yellow(t("config_exists")), configPath);
     return;
   }
 
   const configContent = JSON.stringify(DEFAULT_CONFIG, null, 2);
   fs.writeFileSync(configPath, configContent);
-  console.log(chalk.green('✓ ' + t('config_created')), configPath);
-  console.log(chalk.gray(t('edit_to_customize')));
+  console.log(chalk.green("✓ " + t("config_created")), configPath);
+  console.log(chalk.gray(t("edit_to_customize")));
 }

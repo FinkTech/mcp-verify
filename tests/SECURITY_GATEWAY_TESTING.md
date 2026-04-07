@@ -8,9 +8,11 @@
 ## 📋 Cobertura de Tests
 
 ### Tests de Integración (`integration/security-gateway.spec.ts`)
+
 ✅ **136 assertions** cubriendo:
 
 #### Layer 1: Fast Rules (Pattern Matching)
+
 - ✅ Bloqueo de SQL Injection (SEC-001)
 - ✅ Bloqueo de Command Injection (SEC-002)
 - ✅ Bloqueo de SSRF con IPs internas (SEC-003)
@@ -19,23 +21,27 @@
 - ✅ Latencia <50ms para Layer 1
 
 #### Layer 2: Suspicious Rules (Semantic Analysis)
+
 - ✅ Activación para herramientas sospechosas (execute, delete, admin)
 - ✅ NO activación para herramientas benignas
 - ✅ Detección de Excessive Agency (SEC-023)
 - ✅ Latencia <100ms para Layer 1+2
 
 #### Layer 3: LLM Rules (Deep Analysis, Opt-in)
+
 - ✅ Activación con flag `deepAnalysis=true`
 - ✅ Detección de keywords (agent, swarm, plugin)
 - ✅ NO activación cuando `deepAnalysis=false`
 
 #### Cache (Layer 1)
+
 - ✅ Cache hit para requests idénticos
 - ✅ Cache miss para diferentes params
 - ✅ TTL de 60s documentado
 - ✅ LRU eviction a 1000 entradas documentado
 
 #### Explainable Blocking
+
 - ✅ Metadata completa en respuestas de error:
   - `ruleId` (SEC-XXX)
   - `severity` (critical/high/medium/low)
@@ -48,47 +54,56 @@
 - ✅ Remediation guidance accionable
 
 #### Audit Events
+
 - ✅ Emisión de `security-analysis` en bloqueo
 - ✅ Emisión de `security-analysis` en paso
 - ✅ Inclusión de findings en eventos
 
 #### Performance
+
 - ✅ Layer 1 <50ms
 - ✅ Layer 1+2 <100ms
 
 ---
 
 ### Tests Unitarios (`unit/security-gateway-internals.spec.ts`)
+
 ✅ **47 assertions** cubriendo:
 
 #### Cache Behavior
+
 - ✅ Cache de requests idénticos
 - ✅ NO cache de requests diferentes
 - ✅ TTL de 60s verificado
 - ✅ LRU eviction a 1000 entradas verificado
 
 #### Suspicious Tool Detection
+
 - ✅ Detección de 20 keywords sospechosos (execute, delete, admin, etc.)
 - ✅ NO detección en herramientas benignas
 - ✅ Activación solo para `tools/call`
 
 #### Deep Analysis Activation
+
 - ✅ Activación para 12 keywords de análisis profundo (agent, swarm, inject, etc.)
 - ✅ NO activación para herramientas benignas
 - ✅ Requiere flag `deepAnalysis=true`
 
 #### Message Hashing
+
 - ✅ Hashes consistentes para mensajes idénticos
 - ✅ Hashes diferentes para mensajes diferentes
 - ✅ Formato SHA-256 hex (64 chars)
 
 #### Rule Layer Classification
+
 - ✅ 18 Fast Rules identificadas
 - ✅ 20 Suspicious Rules identificadas
 - ✅ 11 LLM Rules identificadas
 - ✅ 49 reglas clasificadas de 60 totales
 
 #### Error Code Mapping
+
 - ✅ Layer 1 → -32001
 - ✅ Layer 2 → -32002
 - ✅ Layer 3 → -32003
@@ -100,11 +115,13 @@
 ## 🚀 Ejecución de Tests
 
 ### Ejecutar todos los tests
+
 ```bash
 npm test
 ```
 
 ### Ejecutar solo tests del Security Gateway
+
 ```bash
 # Tests de integración
 npm test -- tests/integration/security-gateway.spec.ts
@@ -114,16 +131,19 @@ npm test -- tests/unit/security-gateway-internals.spec.ts
 ```
 
 ### Ejecutar con coverage
+
 ```bash
 npm test -- --coverage
 ```
 
 ### Ejecutar en modo watch
+
 ```bash
 npm test -- --watch
 ```
 
 ### Ejecutar con verbose output
+
 ```bash
 npm test -- --verbose
 ```
@@ -132,46 +152,49 @@ npm test -- --verbose
 
 ## 📊 Métricas de Cobertura Esperadas
 
-| Componente | Cobertura Esperada | Assertions |
-|------------|-------------------|------------|
-| `runSecurityAnalysis()` | 100% | 45 |
-| `runFastRules()` | 100% | 20 |
-| `runSuspiciousRules()` | 100% | 18 |
-| `runLLMRules()` | 100% | 12 |
-| `isSuspiciousTool()` | 100% | 22 |
-| `requiresDeepAnalysis()` | 100% | 14 |
-| `hashMessage()` | 100% | 3 |
-| Cache logic | 100% | 8 |
-| Explainable blocking | 100% | 15 |
-| Audit events | 100% | 9 |
-| **TOTAL** | **~95%** | **183** |
+| Componente               | Cobertura Esperada | Assertions |
+| ------------------------ | ------------------ | ---------- |
+| `runSecurityAnalysis()`  | 100%               | 45         |
+| `runFastRules()`         | 100%               | 20         |
+| `runSuspiciousRules()`   | 100%               | 18         |
+| `runLLMRules()`          | 100%               | 12         |
+| `isSuspiciousTool()`     | 100%               | 22         |
+| `requiresDeepAnalysis()` | 100%               | 14         |
+| `hashMessage()`          | 100%               | 3          |
+| Cache logic              | 100%               | 8          |
+| Explainable blocking     | 100%               | 15         |
+| Audit events             | 100%               | 9          |
+| **TOTAL**                | **~95%**           | **183**    |
 
 ---
 
 ## 🐛 Debugging Tests
 
 ### Ver audit events en tiempo real
+
 Los tests capturan audit events. Para debugging, puedes agregar:
 
 ```typescript
-proxyServer.on('audit', (event) => {
-  console.log('[AUDIT]', event.type, event);
+proxyServer.on("audit", (event) => {
+  console.log("[AUDIT]", event.type, event);
 });
 ```
 
 ### Ver latencias
+
 ```typescript
-const secEvent = auditEvents.find(e => e.type === 'security-analysis');
-console.log('Latency:', secEvent.latencyMs, 'ms');
-console.log('Layer:', secEvent.layer);
+const secEvent = auditEvents.find((e) => e.type === "security-analysis");
+console.log("Latency:", secEvent.latencyMs, "ms");
+console.log("Layer:", secEvent.layer);
 ```
 
 ### Ver findings completos
+
 ```typescript
 if (response.error?.data) {
-  console.log('Rule ID:', response.error.data.ruleId);
-  console.log('Severity:', response.error.data.severity);
-  console.log('Remediation:', response.error.data.remediation);
+  console.log("Rule ID:", response.error.data.ruleId);
+  console.log("Severity:", response.error.data.severity);
+  console.log("Remediation:", response.error.data.remediation);
 }
 ```
 
@@ -182,6 +205,7 @@ if (response.error?.data) {
 Antes de considerar la Fase 1 completa:
 
 ### Tests de Integración
+
 - [x] Layer 1 bloquea SQL injection
 - [x] Layer 1 bloquea command injection
 - [x] Layer 1 bloquea SSRF
@@ -196,6 +220,7 @@ Antes de considerar la Fase 1 completa:
 - [x] Latencias cumplen targets (<50ms L1, <100ms L1+2)
 
 ### Tests Unitarios
+
 - [x] Cache TTL de 60s verificado
 - [x] LRU eviction a 1000 entradas verificado
 - [x] 20 suspicious keywords detectados
@@ -205,6 +230,7 @@ Antes de considerar la Fase 1 completa:
 - [x] Códigos de error mapeados correctamente
 
 ### Performance
+
 - [ ] Benchmark con 100 req/s → ejecutar manualmente
 - [ ] Benchmark con 1000 req/s → ejecutar manualmente
 - [ ] P95 latency <50ms Layer 1 → medir en producción
@@ -216,20 +242,26 @@ Antes de considerar la Fase 1 completa:
 ## 🔧 Troubleshooting
 
 ### Test timeout
+
 Si los tests fallan con timeout:
+
 ```bash
 npm test -- --testTimeout=60000
 ```
 
 ### Puerto en uso
+
 Si el puerto 10001-10004 está ocupado:
+
 ```typescript
 // Cambiar PROXY_PORT en security-gateway.spec.ts
 const PROXY_PORT = 10010; // Usar puerto libre
 ```
 
 ### Mock transport falla
+
 Si `mockSend` no se inicializa:
+
 ```typescript
 // Verificar que beforeAll se ejecute antes de los tests
 beforeAll(async () => {
@@ -239,7 +271,9 @@ beforeAll(async () => {
 ```
 
 ### SecurityScanner no encuentra reglas
+
 Verificar que las reglas estén habilitadas en config:
+
 ```typescript
 securityConfig: {
   ...DEFAULT_CONFIG,
@@ -255,7 +289,9 @@ securityConfig: {
 ## 📝 Notas de Implementación
 
 ### Reglas No Clasificadas (11 reglas)
+
 Estas reglas existen en SecurityScanner pero no están clasificadas en las 3 capas:
+
 - SEC-007: Path Traversal (duplicada, usar SEC-004)
 - SEC-010: Sensitive Exposure (duplicada, usar SEC-009)
 - SEC-044: Schema Versioning Absent
@@ -271,6 +307,7 @@ Estas reglas existen en SecurityScanner pero no están clasificadas en las 3 cap
 **Acción requerida**: Clasificar estas reglas en una de las 3 capas en futuras iteraciones.
 
 ### Reglas Deshabilitadas por Defecto (Block D)
+
 Las reglas SEC-051 a SEC-060 (Weaponization) están deshabilitadas por defecto por razones de seguridad. Para habilitarlas:
 
 ```typescript

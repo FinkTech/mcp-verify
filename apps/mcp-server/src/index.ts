@@ -26,38 +26,38 @@
  *   }
  */
 
-import { startServer } from './server';
-import { createScopedLogger } from '@mcp-verify/core';
+import { startServer } from "./server";
+import { createScopedLogger } from "@mcp-verify/core";
 
-const logger = createScopedLogger('Main');
+const logger = createScopedLogger("Main");
 
 /**
  * Main entry point
  */
 async function main(): Promise<void> {
   try {
-    logger.info('Initializing mcp-verify server');
+    logger.info("Initializing mcp-verify server");
 
     await startServer();
 
     // Handle graceful shutdown
-    process.on('SIGINT', async () => {
-      logger.info('Received SIGINT, shutting down gracefully');
+    process.on("SIGINT", async () => {
+      logger.info("Received SIGINT, shutting down gracefully");
       process.exit(0);
     });
 
-    process.on('SIGTERM', async () => {
-      logger.info('Received SIGTERM, shutting down gracefully');
+    process.on("SIGTERM", async () => {
+      logger.info("Received SIGTERM, shutting down gracefully");
       process.exit(0);
     });
   } catch (error) {
-    logger.error('Fatal error starting server', error as Error);
+    logger.error("Fatal error starting server", error as Error);
     process.exit(1);
   }
 }
 
 // Start the server
 main().catch((error) => {
-  console.error('Unhandled error:', error);
+  console.error("Unhandled error:", error);
   process.exit(1);
 });

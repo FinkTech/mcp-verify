@@ -18,20 +18,17 @@
  * - Markdown Report Generator
  */
 
-import type {
-  FuzzingSession,
-  FuzzingError
-} from '../engine/fuzzer-engine';
-import type { DetectionResult } from '../detectors/detector.interface';
-import type { GeneratedPayload } from '../generators/generator.interface';
+import type { FuzzingSession, FuzzingError } from "../engine/fuzzer-engine";
+import type { DetectionResult } from "../detectors/detector.interface";
+import type { GeneratedPayload } from "../generators/generator.interface";
 import {
   Report,
   FuzzingReport,
   FuzzingResult,
   SecurityReport,
   SecurityFinding,
-  QualityReport
-} from '@mcp-verify/core/domain/mcp-server/entities/validation.types';
+  QualityReport,
+} from "@mcp-verify/core/domain/mcp-server/entities/validation.types";
 
 /**
  * Options for report mapping
@@ -56,7 +53,7 @@ export interface FuzzerSecurityFinding extends SecurityFinding {
   /** Detector that found this */
   detectorId: string;
   /** Confidence level */
-  confidence: 'high' | 'medium' | 'low';
+  confidence: "high" | "medium" | "low";
   /** CWE identifier if available */
   cwe?: string;
   /** OWASP reference if available */
@@ -73,7 +70,7 @@ export interface FuzzerSecurityFinding extends SecurityFinding {
 export function sessionToFuzzingReport(
   session: FuzzingSession,
   toolName: string,
-  options: ReportMapperOptions = {}
+  options: ReportMapperOptions = {},
 ): FuzzingReport {
   const maxEvidence = options.maxEvidenceLength || 500;
 
@@ -87,10 +84,11 @@ export function sessionToFuzzingReport(
   // Create results for vulnerabilities found
   for (const vuln of session.vulnerabilities) {
     const evidence = vuln.evidence;
-    const payload = evidence?.payload || 'N/A';
-    const payloadStr = typeof payload === 'string'
-      ? payload.substring(0, 200)
-      : truncate(JSON.stringify(payload), 200);
+    const payload = evidence?.payload || "N/A";
+    const payloadStr =
+      typeof payload === "string"
+        ? payload.substring(0, 200)
+        : truncate(JSON.stringify(payload), 200);
 
     results.push({
       toolName,
@@ -101,14 +99,17 @@ export function sessionToFuzzingReport(
       vulnerabilityAnalysis: {
         vulnerable: true,
         confidence: mapConfidence(vuln.confidence),
-        findings: [{
-          type: vuln.detectorId,
-          severity: mapSeverity(vuln.severity),
-          description: vuln.description,
-          evidence: truncate(JSON.stringify(evidence || {}), maxEvidence),
-          remediation: vuln.remediation || 'Review and fix the identified vulnerability'
-        }]
-      }
+        findings: [
+          {
+            type: vuln.detectorId,
+            severity: mapSeverity(vuln.severity),
+            description: vuln.description,
+            evidence: truncate(JSON.stringify(evidence || {}), maxEvidence),
+            remediation:
+              vuln.remediation || "Review and fix the identified vulnerability",
+          },
+        ],
+      },
     });
   }
 
@@ -121,7 +122,7 @@ export function sessionToFuzzingReport(
       serverError: error.message,
       passed: true, // Errors are expected in fuzzing
       durationMs: 0,
-      skipped: false
+      skipped: false,
     });
   }
 
@@ -131,7 +132,7 @@ export function sessionToFuzzingReport(
     payloadType: string;
     findings: Array<{
       type: string;
-      severity: 'critical' | 'high' | 'medium' | 'low';
+      severity: "critical" | "high" | "medium" | "low";
       description: string;
       evidence: string;
       remediation: string;
@@ -152,7 +153,7 @@ export function sessionToFuzzingReport(
       toolVulns.set(payloadType, {
         toolName,
         payloadType,
-        findings: []
+        findings: [],
       });
     }
 
@@ -161,12 +162,13 @@ export function sessionToFuzzingReport(
       severity: mapSeverity(vuln.severity),
       description: vuln.description,
       evidence: truncate(JSON.stringify(vuln.evidence || {}), maxEvidence),
-      remediation: vuln.remediation || 'Review and fix the identified vulnerability'
+      remediation:
+        vuln.remediation || "Review and fix the identified vulnerability",
     });
   }
 
   // Flatten vulnerabilities map
-  const vulnerabilities: FuzzingReport['vulnerabilities'] = [];
+  const vulnerabilities: FuzzingReport["vulnerabilities"] = [];
   for (const [, toolVulns] of vulnsByTool) {
     for (const [, vuln] of toolVulns) {
       vulnerabilities.push(vuln);
@@ -177,13 +179,14 @@ export function sessionToFuzzingReport(
     executed: true,
     totalTests: session.totalPayloads,
     failedTests: session.vulnerabilities.length,
-    crashes: session.errors.filter(e =>
-      e.message.includes('ECONNRESET') ||
-      e.message.includes('Socket closed') ||
-      e.message.includes('Connection refused')
+    crashes: session.errors.filter(
+      (e) =>
+        e.message.includes("ECONNRESET") ||
+        e.message.includes("Socket closed") ||
+        e.message.includes("Connection refused"),
     ).length,
     results,
-    vulnerabilities
+    vulnerabilities,
   };
 }
 
@@ -192,9 +195,9 @@ export function sessionToFuzzingReport(
  */
 export function sessionToSecurityFindings(
   session: FuzzingSession,
-  toolName: string
+  toolName: string,
 ): FuzzerSecurityFinding[] {
-  return session.vulnerabilities.map(vuln => {
+  return session.vulnerabilities.map((vuln) => {
     const evidence = vuln.evidence;
 
     return {
@@ -209,8 +212,8 @@ export function sessionToSecurityFindings(
       confidence: mapConfidence(vuln.confidence),
       cwe: vuln.cweId,
       owasp: vuln.owaspCategory,
-      payload: truncate(String(evidence?.payload || ''), 200),
-      payloadCategory: vuln.detectorId
+      payload: truncate(String(evidence?.payload || ""), 200),
+      payloadCategory: vuln.detectorId,
     };
   });
 }
@@ -221,16 +224,22 @@ export function sessionToSecurityFindings(
  */
 export function sessionToReport(
   session: FuzzingSession,
-  options: ReportMapperOptions = {}
+  options: ReportMapperOptions = {},
 ): Report {
-  const toolName = options.toolName || 'unknown';
+  const toolName = options.toolName || "unknown";
   const fuzzingReport = sessionToFuzzingReport(session, toolName, options);
   const securityFindings = sessionToSecurityFindings(session, toolName);
 
   // Calculate security score based on findings
-  const criticalCount = securityFindings.filter(f => f.severity === 'critical').length;
-  const highCount = securityFindings.filter(f => f.severity === 'high').length;
-  const mediumCount = securityFindings.filter(f => f.severity === 'medium').length;
+  const criticalCount = securityFindings.filter(
+    (f) => f.severity === "critical",
+  ).length;
+  const highCount = securityFindings.filter(
+    (f) => f.severity === "high",
+  ).length;
+  const mediumCount = securityFindings.filter(
+    (f) => f.severity === "medium",
+  ).length;
 
   // Score: Start at 100, deduct based on severity
   let score = 100;
@@ -241,24 +250,24 @@ export function sessionToReport(
 
   const securityReport: SecurityReport = {
     score,
-    level: score >= 70 ? 'low' : score >= 40 ? 'medium' : 'high',
+    level: score >= 70 ? "low" : score >= 40 ? "medium" : "high",
     findings: securityFindings as SecurityFinding[],
     criticalCount,
     highCount,
     mediumCount,
-    lowCount: securityFindings.filter(f => f.severity === 'low').length
+    lowCount: securityFindings.filter((f) => f.severity === "low").length,
   };
 
   const qualityReport: QualityReport = {
     score: 100, // Fuzzer doesn't assess quality
-    issues: []
+    issues: [],
   };
 
   return {
-    server_name: options.serverName || 'MCP Server',
-    url: options.serverUrl || 'unknown',
-    status: score >= 70 ? 'valid' : 'invalid',
-    protocol_version: '2024-11-05',
+    server_name: options.serverName || "MCP Server",
+    url: options.serverUrl || "unknown",
+    status: score >= 70 ? "valid" : "invalid",
+    protocol_version: "2024-11-05",
     security: securityReport,
     quality: qualityReport,
     fuzzing: fuzzingReport,
@@ -266,32 +275,35 @@ export function sessionToReport(
       count: 1,
       valid: 1,
       invalid: 0,
-      items: [{
-        name: toolName,
-        description: 'Target tool for fuzzing',
-        inputSchema: {
-          type: 'object',
-          properties: {}
+      items: [
+        {
+          name: toolName,
+          description: "Target tool for fuzzing",
+          inputSchema: {
+            type: "object",
+            properties: {},
+          },
+          status: "valid",
         },
-        status: 'valid'
-      }]
+      ],
     },
     resources: {
       count: 0,
       valid: 0,
       invalid: 0,
-      items: []
+      items: [],
     },
     prompts: {
       count: 0,
       valid: 0,
       invalid: 0,
-      items: []
+      items: [],
     },
     timestamp: new Date().toISOString(),
-    duration_ms: session.endedAt && session.startedAt
-      ? session.endedAt.getTime() - session.startedAt.getTime()
-      : 0
+    duration_ms:
+      session.endedAt && session.startedAt
+        ? session.endedAt.getTime() - session.startedAt.getTime()
+        : 0,
   };
 }
 
@@ -326,20 +338,34 @@ export function sessionToSummary(session: FuzzingSession): FuzzingSummary {
     ? (session.endedAt.getTime() - session.startedAt.getTime()) / 1000
     : 0;
 
-  const criticalCount = session.vulnerabilities.filter(v => v.severity === 'critical').length;
-  const highCount = session.vulnerabilities.filter(v => v.severity === 'high').length;
-  const mediumCount = session.vulnerabilities.filter(v => v.severity === 'medium').length;
-  const lowCount = session.vulnerabilities.filter(v => v.severity === 'low').length;
+  const criticalCount = session.vulnerabilities.filter(
+    (v) => v.severity === "critical",
+  ).length;
+  const highCount = session.vulnerabilities.filter(
+    (v) => v.severity === "high",
+  ).length;
+  const mediumCount = session.vulnerabilities.filter(
+    (v) => v.severity === "medium",
+  ).length;
+  const lowCount = session.vulnerabilities.filter(
+    (v) => v.severity === "low",
+  ).length;
 
-  const crashes = session.errors.filter(e =>
-    e.message.includes('ECONNRESET') ||
-    e.message.includes('Socket closed') ||
-    e.message.includes('Connection refused')
+  const crashes = session.errors.filter(
+    (e) =>
+      e.message.includes("ECONNRESET") ||
+      e.message.includes("Socket closed") ||
+      e.message.includes("Connection refused"),
   ).length;
 
   // Top 5 findings by severity
   const sortedFindings = [...session.vulnerabilities].sort((a, b) => {
-    const severityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+    const severityOrder: Record<string, number> = {
+      critical: 0,
+      high: 1,
+      medium: 2,
+      low: 3,
+    };
     return (severityOrder[a.severity] || 3) - (severityOrder[b.severity] || 3);
   });
 
@@ -353,47 +379,50 @@ export function sessionToSummary(session: FuzzingSession): FuzzingSummary {
       critical: criticalCount,
       high: highCount,
       medium: mediumCount,
-      low: lowCount
+      low: lowCount,
     },
     errors: session.errors.length,
     crashes,
     aborted: session.aborted,
     categories: session.payloadsByCategory,
-    topFindings: sortedFindings.slice(0, 5).map(v => ({
+    topFindings: sortedFindings.slice(0, 5).map((v) => ({
       detector: v.detectorId,
       severity: v.severity,
-      description: v.description
-    }))
+      description: v.description,
+    })),
   };
 }
 
 // Helper functions
 
-function mapSeverity(severity: string): 'critical' | 'high' | 'medium' | 'low' {
+function mapSeverity(severity: string): "critical" | "high" | "medium" | "low" {
   switch (severity) {
-    case 'critical': return 'critical';
-    case 'high': return 'high';
-    case 'medium': return 'medium';
-    case 'low':
+    case "critical":
+      return "critical";
+    case "high":
+      return "high";
+    case "medium":
+      return "medium";
+    case "low":
     default:
-      return 'low';
+      return "low";
   }
 }
 
-function mapConfidence(confidence: string): 'high' | 'medium' | 'low' {
+function mapConfidence(confidence: string): "high" | "medium" | "low" {
   switch (confidence) {
-    case 'definite':
-    case 'high':
-      return 'high';
-    case 'medium':
-      return 'medium';
-    case 'low':
+    case "definite":
+    case "high":
+      return "high";
+    case "medium":
+      return "medium";
+    case "low":
     default:
-      return 'low';
+      return "low";
   }
 }
 
 function truncate(str: string, maxLen: number): string {
   if (str.length <= maxLen) return str;
-  return str.substring(0, maxLen - 3) + '...';
+  return str.substring(0, maxLen - 3) + "...";
 }

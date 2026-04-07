@@ -24,13 +24,13 @@ import {
   createScopedLogger,
   StdioTransport,
   translations,
-  Language
-} from '@mcp-verify/core';
-import type { McpTool } from '@mcp-verify/core/domain/shared/common.types';
-import { formatForLLM } from '../utils/llm-formatter.js';
+  Language,
+} from "@mcp-verify/core";
+import type { McpTool } from "@mcp-verify/core/domain/shared/common.types";
+import { formatForLLM } from "../utils/llm-formatter.js";
 
-const logger = createScopedLogger('suggestSecureSchemaTool');
-const lang: Language = (process.env.MCP_VERIFY_LANG as Language) || 'en';
+const logger = createScopedLogger("suggestSecureSchemaTool");
+const lang: Language = (process.env.MCP_VERIFY_LANG as Language) || "en";
 const t = translations[lang];
 
 interface SuggestSecureSchemaArgs {
@@ -38,12 +38,12 @@ interface SuggestSecureSchemaArgs {
   args?: string[];
   toolName?: string;
   toolDefinition?: McpTool;
-  strictness?: 'minimal' | 'balanced' | 'maximum';
+  strictness?: "minimal" | "balanced" | "maximum";
 }
 
 interface SuggestSecureSchemaResult {
   content: Array<{
-    type: 'text';
+    type: "text";
     text: string;
   }>;
   isError?: boolean;
@@ -55,49 +55,49 @@ interface SuggestSecureSchemaResult {
  */
 const STRICTNESS_LEVELS = {
   minimal: {
-    maxStringLength: 10 * 1024 * 1024,  // 10MB
+    maxStringLength: 10 * 1024 * 1024, // 10MB
     maxArrayItems: 10000,
     requirePatterns: false,
     requireEnums: false,
-    blockAdditionalProperties: false
+    blockAdditionalProperties: false,
   },
   balanced: {
-    maxStringLength: 1024 * 1024,  // 1MB
+    maxStringLength: 1024 * 1024, // 1MB
     maxArrayItems: 1000,
-    requirePatterns: true,  // For sensitive fields
-    requireEnums: true,     // For known sets
-    blockAdditionalProperties: true
+    requirePatterns: true, // For sensitive fields
+    requireEnums: true, // For known sets
+    blockAdditionalProperties: true,
   },
   maximum: {
-    maxStringLength: 65536,  // 64KB
+    maxStringLength: 65536, // 64KB
     maxArrayItems: 100,
     requirePatterns: true,
     requireEnums: true,
-    blockAdditionalProperties: true
-  }
+    blockAdditionalProperties: true,
+  },
 };
 
 /**
  * Execute schema hardening analysis
  */
 export async function suggestSecureSchemaTool(
-  args: unknown
+  args: unknown,
 ): Promise<SuggestSecureSchemaResult> {
   const {
     command,
     args: serverArgs = [],
     toolName,
     toolDefinition,
-    strictness = 'balanced'
+    strictness = "balanced",
   } = args as SuggestSecureSchemaArgs;
 
-  logger.info('Starting suggestSecureSchema', {
+  logger.info("Starting suggestSecureSchema", {
     metadata: {
       command,
       toolName,
       hasToolDefinition: !!toolDefinition,
-      strictness
-    }
+      strictness,
+    },
   });
 
   try {
@@ -110,7 +110,7 @@ export async function suggestSecureSchemaTool(
     }
     // Case 2: Fetch tool from server
     else if (command && toolName) {
-      logger.info('Fetching tool from server', { command, toolName });
+      logger.info("Fetching tool from server", { command, toolName });
 
       const transport = StdioTransport.create(command, serverArgs);
       const validator = new MCPValidator(transport);
@@ -121,37 +121,45 @@ export async function suggestSecureSchemaTool(
         return {
           content: [
             {
-              type: 'text',
-              text: JSON.stringify({
-                status: 'error',
-                error: handshake.error || t.mcp_error_handshake_failed,
-                message: t.mcp_error_failed_to_connect
-              }, null, 2)
-            }
+              type: "text",
+              text: JSON.stringify(
+                {
+                  status: "error",
+                  error: handshake.error || t.mcp_error_handshake_failed,
+                  message: t.mcp_error_failed_to_connect,
+                },
+                null,
+                2,
+              ),
+            },
           ],
-          isError: true
+          isError: true,
         };
       }
 
       // Discover capabilities
       const discovery = await validator.discoverCapabilities();
-      const foundTool = discovery.tools?.find(tool => tool.name === toolName);
+      const foundTool = discovery.tools?.find((tool) => tool.name === toolName);
 
       if (!foundTool) {
         validator.cleanup();
         return {
           content: [
             {
-              type: 'text',
-              text: JSON.stringify({
-                status: 'error',
-                error: `Tool "${toolName}" not found`,
-                message: `Available tools: ${discovery.tools?.map(t => t.name).join(', ') || 'none'}`,
-                availableTools: discovery.tools?.map(t => t.name) || []
-              }, null, 2)
-            }
+              type: "text",
+              text: JSON.stringify(
+                {
+                  status: "error",
+                  error: `Tool "${toolName}" not found`,
+                  message: `Available tools: ${discovery.tools?.map((t) => t.name).join(", ") || "none"}`,
+                  availableTools: discovery.tools?.map((t) => t.name) || [],
+                },
+                null,
+                2,
+              ),
+            },
           ],
-          isError: true
+          isError: true,
         };
       }
 
@@ -163,19 +171,25 @@ export async function suggestSecureSchemaTool(
       return {
         content: [
           {
-            type: 'text',
-            text: JSON.stringify({
-              status: 'error',
-              error: 'Missing required arguments',
-              message: 'Provide either: (1) toolDefinition, or (2) command + toolName',
-              usage: {
-                option1: 'suggestSecureSchema({ toolDefinition: {...} })',
-                option2: 'suggestSecureSchema({ command: "node server.js", toolName: "my_tool" })'
-              }
-            }, null, 2)
-          }
+            type: "text",
+            text: JSON.stringify(
+              {
+                status: "error",
+                error: "Missing required arguments",
+                message:
+                  "Provide either: (1) toolDefinition, or (2) command + toolName",
+                usage: {
+                  option1: "suggestSecureSchema({ toolDefinition: {...} })",
+                  option2:
+                    'suggestSecureSchema({ command: "node server.js", toolName: "my_tool" })',
+                },
+              },
+              null,
+              2,
+            ),
+          },
         ],
-        isError: true
+        isError: true,
       };
     }
 
@@ -185,35 +199,41 @@ export async function suggestSecureSchemaTool(
       return {
         content: [
           {
-            type: 'text',
-            text: JSON.stringify({
-              status: 'no_schema',
-              message: `Tool "${targetTool.name}" has no input schema to harden`,
-              recommendation: 'This tool accepts no parameters or has no schema defined'
-            }, null, 2)
-          }
-        ]
+            type: "text",
+            text: JSON.stringify(
+              {
+                status: "no_schema",
+                message: `Tool "${targetTool.name}" has no input schema to harden`,
+                recommendation:
+                  "This tool accepts no parameters or has no schema defined",
+              },
+              null,
+              2,
+            ),
+          },
+        ],
       };
     }
 
     const hardeningResult = hardenSchema(
       originalSchema,
       targetTool.name,
-      strictness
+      strictness,
     );
 
     // Build response
     const response = {
-      status: 'completed',
+      status: "completed",
       tool: targetTool.name,
       strictness_level: strictness,
 
-      llm_summary: hardeningResult.changes.length > 0
-        ? `🛡️  Schema hardening complete: Applied ${hardeningResult.changes.length} security improvements to "${targetTool.name}". ` +
-          `${hardeningResult.criticalChanges} CRITICAL, ${hardeningResult.highChanges} HIGH priority changes. ` +
-          `Suggested schema blocks ${hardeningResult.attackVectorsMitigated.length} attack vector(s).`
-        : `✅ Schema for "${targetTool.name}" is already well-constrained. ` +
-          `No significant hardening needed for ${strictness} strictness level.`,
+      llm_summary:
+        hardeningResult.changes.length > 0
+          ? `🛡️  Schema hardening complete: Applied ${hardeningResult.changes.length} security improvements to "${targetTool.name}". ` +
+            `${hardeningResult.criticalChanges} CRITICAL, ${hardeningResult.highChanges} HIGH priority changes. ` +
+            `Suggested schema blocks ${hardeningResult.attackVectorsMitigated.length} attack vector(s).`
+          : `✅ Schema for "${targetTool.name}" is already well-constrained. ` +
+            `No significant hardening needed for ${strictness} strictness level.`,
 
       original_schema: originalSchema,
       hardened_schema: hardeningResult.hardenedSchema,
@@ -223,78 +243,91 @@ export async function suggestSecureSchemaTool(
         critical_changes: hardeningResult.criticalChanges,
         high_changes: hardeningResult.highChanges,
         medium_changes: hardeningResult.mediumChanges,
-        attack_vectors_mitigated: hardeningResult.attackVectorsMitigated
+        attack_vectors_mitigated: hardeningResult.attackVectorsMitigated,
       },
 
-      changes: hardeningResult.changes.map(change => ({
+      changes: hardeningResult.changes.map((change) => ({
         parameter: change.parameter,
         priority: change.priority,
         category: change.category,
         before: change.before,
         after: change.after,
         rationale: change.rationale,
-        attack_mitigated: change.attackMitigated
+        attack_mitigated: change.attackMitigated,
       })),
 
       implementation_guide: {
-        schema_diff: hardeningResult.changes.map(c =>
-          `${c.parameter}: ${c.before} → ${c.after}`
+        schema_diff: hardeningResult.changes.map(
+          (c) => `${c.parameter}: ${c.before} → ${c.after}`,
         ),
-        code_example: generateCodeExample(targetTool.name, hardeningResult.hardenedSchema),
-        validation_example: generateValidationExample(targetTool.name)
+        code_example: generateCodeExample(
+          targetTool.name,
+          hardeningResult.hardenedSchema,
+        ),
+        validation_example: generateValidationExample(targetTool.name),
       },
 
-      next_steps: hardeningResult.changes.length > 0 ? [
-        `Apply ${hardeningResult.criticalChanges + hardeningResult.highChanges} critical/high priority changes first`,
-        `Update tool schema in your MCP server implementation`,
-        `Re-validate server: validateServer({ command: "${command || 'N/A'}" })`,
-        `Test with edge cases to ensure constraints work as expected`,
-        hardeningResult.attackVectorsMitigated.length > 0
-          ? `Mitigating: ${hardeningResult.attackVectorsMitigated.join(', ')}`
-          : 'Consider fuzzing to verify hardening: fuzzTool({...})'
-      ] : [
-        `✅ Schema is already secure for ${strictness} strictness`,
-        `Consider ${strictness === 'balanced' ? 'maximum' : 'balanced'} strictness for additional hardening`,
-        `Validate implementation matches schema: validateServer({...})`
-      ]
+      next_steps:
+        hardeningResult.changes.length > 0
+          ? [
+              `Apply ${hardeningResult.criticalChanges + hardeningResult.highChanges} critical/high priority changes first`,
+              `Update tool schema in your MCP server implementation`,
+              `Re-validate server: validateServer({ command: "${command || "N/A"}" })`,
+              `Test with edge cases to ensure constraints work as expected`,
+              hardeningResult.attackVectorsMitigated.length > 0
+                ? `Mitigating: ${hardeningResult.attackVectorsMitigated.join(", ")}`
+                : "Consider fuzzing to verify hardening: fuzzTool({...})",
+            ]
+          : [
+              `✅ Schema is already secure for ${strictness} strictness`,
+              `Consider ${strictness === "balanced" ? "maximum" : "balanced"} strictness for additional hardening`,
+              `Validate implementation matches schema: validateServer({...})`,
+            ],
     };
 
-    logger.info('Schema hardening completed', {
+    logger.info("Schema hardening completed", {
       metadata: {
         toolName: targetTool.name,
         changesApplied: hardeningResult.changes.length,
-        strictness
-      }
+        strictness,
+      },
     });
 
     return {
       content: [
         {
-          type: 'text',
-          text: JSON.stringify(response, null, 2)
-        }
+          type: "text",
+          text: JSON.stringify(response, null, 2),
+        },
       ],
       _meta: {
         toolName: targetTool.name,
         changesCount: hardeningResult.changes.length,
-        strictness
-      }
+        strictness,
+      },
     };
   } catch (error) {
-    logger.error('suggestSecureSchema failed', error as Error);
+    logger.error("suggestSecureSchema failed", error as Error);
     return {
       content: [
         {
-          type: 'text',
-          text: JSON.stringify({
-            status: 'error',
-            error: (error as Error).message,
-            message: 'Schema analysis failed',
-            stack: process.env.NODE_ENV === 'development' ? (error as Error).stack : undefined
-          }, null, 2)
-        }
+          type: "text",
+          text: JSON.stringify(
+            {
+              status: "error",
+              error: (error as Error).message,
+              message: "Schema analysis failed",
+              stack:
+                process.env.NODE_ENV === "development"
+                  ? (error as Error).stack
+                  : undefined,
+            },
+            null,
+            2,
+          ),
+        },
       ],
-      isError: true
+      isError: true,
     };
   }
 }
@@ -305,7 +338,7 @@ export async function suggestSecureSchemaTool(
 function hardenSchema(
   schema: Record<string, unknown>,
   toolName: string,
-  strictness: 'minimal' | 'balanced' | 'maximum'
+  strictness: "minimal" | "balanced" | "maximum",
 ): {
   hardenedSchema: Record<string, unknown>;
   changes: SchemaChange[];
@@ -320,7 +353,10 @@ function hardenSchema(
 
   // Deep clone schema
   const hardenedSchema = JSON.parse(JSON.stringify(schema));
-  const properties = hardenedSchema.properties as Record<string, Record<string, unknown>>;
+  const properties = hardenedSchema.properties as Record<
+    string,
+    Record<string, unknown>
+  >;
 
   if (!properties) {
     return {
@@ -329,7 +365,7 @@ function hardenSchema(
       criticalChanges: 0,
       highChanges: 0,
       mediumChanges: 0,
-      attackVectorsMitigated: []
+      attackVectorsMitigated: [],
     };
   }
 
@@ -338,107 +374,126 @@ function hardenSchema(
     const type = paramSchema.type as string;
 
     // String constraints
-    if (type === 'string') {
+    if (type === "string") {
       // Add maxLength if missing
       if (!paramSchema.maxLength) {
         paramSchema.maxLength = config.maxStringLength;
         changes.push({
           parameter: paramName,
-          priority: 'critical',
-          category: 'DoS Prevention',
-          before: 'No length limit',
+          priority: "critical",
+          category: "DoS Prevention",
+          before: "No length limit",
           after: `maxLength: ${config.maxStringLength}`,
-          rationale: 'Prevents memory exhaustion attacks via unbounded string inputs',
-          attackMitigated: 'DoS via large strings'
+          rationale:
+            "Prevents memory exhaustion attacks via unbounded string inputs",
+          attackMitigated: "DoS via large strings",
         });
-        attackVectors.add('DoS via unbounded input');
+        attackVectors.add("DoS via unbounded input");
       }
 
       // Suggest pattern for sensitive fields
-      if (config.requirePatterns && isSensitiveField(paramName) && !paramSchema.pattern && !paramSchema.enum) {
+      if (
+        config.requirePatterns &&
+        isSensitiveField(paramName) &&
+        !paramSchema.pattern &&
+        !paramSchema.enum
+      ) {
         const suggestedPattern = suggestPattern(paramName);
         if (suggestedPattern) {
           paramSchema.pattern = suggestedPattern.pattern;
           changes.push({
             parameter: paramName,
-            priority: 'high',
-            category: 'Input Validation',
-            before: 'No format validation',
+            priority: "high",
+            category: "Input Validation",
+            before: "No format validation",
             after: `pattern: ${suggestedPattern.pattern}`,
             rationale: suggestedPattern.rationale,
-            attackMitigated: 'Injection via malformed input'
+            attackMitigated: "Injection via malformed input",
           });
-          attackVectors.add('Injection attacks');
+          attackVectors.add("Injection attacks");
         }
       }
     }
 
     // Number constraints
-    if (type === 'number' || type === 'integer') {
-      if (paramSchema.minimum === undefined && paramSchema.maximum === undefined) {
+    if (type === "number" || type === "integer") {
+      if (
+        paramSchema.minimum === undefined &&
+        paramSchema.maximum === undefined
+      ) {
         // Suggest reasonable bounds
         paramSchema.minimum = 0;
-        paramSchema.maximum = type === 'integer' ? 2147483647 : Number.MAX_SAFE_INTEGER;
+        paramSchema.maximum =
+          type === "integer" ? 2147483647 : Number.MAX_SAFE_INTEGER;
         changes.push({
           parameter: paramName,
-          priority: 'medium',
-          category: 'Bounds Checking',
-          before: 'No numeric bounds',
+          priority: "medium",
+          category: "Bounds Checking",
+          before: "No numeric bounds",
           after: `minimum: ${paramSchema.minimum}, maximum: ${paramSchema.maximum}`,
-          rationale: 'Prevents integer overflow/underflow and unexpected behavior',
-          attackMitigated: 'Integer overflow exploitation'
+          rationale:
+            "Prevents integer overflow/underflow and unexpected behavior",
+          attackMitigated: "Integer overflow exploitation",
         });
-        attackVectors.add('Integer overflow');
+        attackVectors.add("Integer overflow");
       }
     }
 
     // Array constraints
-    if (type === 'array') {
+    if (type === "array") {
       if (!paramSchema.maxItems) {
         paramSchema.maxItems = config.maxArrayItems;
         changes.push({
           parameter: paramName,
-          priority: 'critical',
-          category: 'DoS Prevention',
-          before: 'No array size limit',
+          priority: "critical",
+          category: "DoS Prevention",
+          before: "No array size limit",
           after: `maxItems: ${config.maxArrayItems}`,
-          rationale: 'Prevents memory exhaustion via unbounded arrays',
-          attackMitigated: 'DoS via large arrays'
+          rationale: "Prevents memory exhaustion via unbounded arrays",
+          attackMitigated: "DoS via large arrays",
         });
-        attackVectors.add('DoS via unbounded arrays');
+        attackVectors.add("DoS via unbounded arrays");
       }
     }
 
     // Object constraints
-    if (type === 'object') {
-      if (config.blockAdditionalProperties && paramSchema.additionalProperties !== false) {
+    if (type === "object") {
+      if (
+        config.blockAdditionalProperties &&
+        paramSchema.additionalProperties !== false
+      ) {
         paramSchema.additionalProperties = false;
         changes.push({
           parameter: paramName,
-          priority: 'high',
-          category: 'Type Safety',
-          before: 'additionalProperties: true (implicit)',
-          after: 'additionalProperties: false',
-          rationale: 'Prevents prototype pollution and unexpected property injection',
-          attackMitigated: 'Prototype pollution'
+          priority: "high",
+          category: "Type Safety",
+          before: "additionalProperties: true (implicit)",
+          after: "additionalProperties: false",
+          rationale:
+            "Prevents prototype pollution and unexpected property injection",
+          attackMitigated: "Prototype pollution",
         });
-        attackVectors.add('Prototype pollution');
+        attackVectors.add("Prototype pollution");
       }
     }
 
     // Enum suggestions
-    if (config.requireEnums && isFiniteSet(paramName, paramSchema) && !paramSchema.enum) {
+    if (
+      config.requireEnums &&
+      isFiniteSet(paramName, paramSchema) &&
+      !paramSchema.enum
+    ) {
       const suggestedEnum = suggestEnum(paramName);
       if (suggestedEnum) {
         paramSchema.enum = suggestedEnum.values;
         changes.push({
           parameter: paramName,
-          priority: 'medium',
-          category: 'Input Validation',
-          before: 'Accepts any value',
-          after: `enum: [${suggestedEnum.values.join(', ')}]`,
+          priority: "medium",
+          category: "Input Validation",
+          before: "Accepts any value",
+          after: `enum: [${suggestedEnum.values.join(", ")}]`,
           rationale: suggestedEnum.rationale,
-          attackMitigated: 'Unexpected input exploitation'
+          attackMitigated: "Unexpected input exploitation",
         });
       }
     }
@@ -447,39 +502,47 @@ function hardenSchema(
   // Enforce required fields
   const currentRequired = (hardenedSchema.required as string[]) || [];
   const criticalParams = Object.keys(properties).filter(isCriticalParameter);
-  const missingRequired = criticalParams.filter(p => !currentRequired.includes(p));
+  const missingRequired = criticalParams.filter(
+    (p) => !currentRequired.includes(p),
+  );
 
   if (missingRequired.length > 0) {
     hardenedSchema.required = [...currentRequired, ...missingRequired];
     changes.push({
-      parameter: missingRequired.join(', '),
-      priority: 'high',
-      category: 'Required Fields',
-      before: `Optional: ${missingRequired.join(', ')}`,
-      after: `Required: ${missingRequired.join(', ')}`,
-      rationale: 'Critical parameters should be required to prevent undefined behavior',
-      attackMitigated: 'Logic bugs from missing inputs'
+      parameter: missingRequired.join(", "),
+      priority: "high",
+      category: "Required Fields",
+      before: `Optional: ${missingRequired.join(", ")}`,
+      after: `Required: ${missingRequired.join(", ")}`,
+      rationale:
+        "Critical parameters should be required to prevent undefined behavior",
+      attackMitigated: "Logic bugs from missing inputs",
     });
   }
 
   // Block additional properties at schema root
-  if (config.blockAdditionalProperties && hardenedSchema.additionalProperties !== false) {
+  if (
+    config.blockAdditionalProperties &&
+    hardenedSchema.additionalProperties !== false
+  ) {
     hardenedSchema.additionalProperties = false;
     changes.push({
-      parameter: '<root>',
-      priority: 'high',
-      category: 'Type Safety',
-      before: 'additionalProperties: true (implicit)',
-      after: 'additionalProperties: false',
-      rationale: 'Block unexpected top-level properties',
-      attackMitigated: 'Parameter injection'
+      parameter: "<root>",
+      priority: "high",
+      category: "Type Safety",
+      before: "additionalProperties: true (implicit)",
+      after: "additionalProperties: false",
+      rationale: "Block unexpected top-level properties",
+      attackMitigated: "Parameter injection",
     });
   }
 
   // Count by priority
-  const criticalChanges = changes.filter(c => c.priority === 'critical').length;
-  const highChanges = changes.filter(c => c.priority === 'high').length;
-  const mediumChanges = changes.filter(c => c.priority === 'medium').length;
+  const criticalChanges = changes.filter(
+    (c) => c.priority === "critical",
+  ).length;
+  const highChanges = changes.filter((c) => c.priority === "high").length;
+  const mediumChanges = changes.filter((c) => c.priority === "medium").length;
 
   return {
     hardenedSchema,
@@ -487,13 +550,13 @@ function hardenSchema(
     criticalChanges,
     highChanges,
     mediumChanges,
-    attackVectorsMitigated: Array.from(attackVectors)
+    attackVectorsMitigated: Array.from(attackVectors),
   };
 }
 
 interface SchemaChange {
   parameter: string;
-  priority: 'critical' | 'high' | 'medium' | 'low';
+  priority: "critical" | "high" | "medium" | "low";
   category: string;
   before: string;
   after: string;
@@ -506,47 +569,68 @@ interface SchemaChange {
  */
 function isSensitiveField(paramName: string): boolean {
   const sensitivePatterns = [
-    'path', 'file', 'dir', 'folder',
-    'url', 'uri', 'link', 'href',
-    'email', 'username', 'user',
-    'command', 'cmd', 'exec',
-    'query', 'sql', 'search'
+    "path",
+    "file",
+    "dir",
+    "folder",
+    "url",
+    "uri",
+    "link",
+    "href",
+    "email",
+    "username",
+    "user",
+    "command",
+    "cmd",
+    "exec",
+    "query",
+    "sql",
+    "search",
   ];
   const lower = paramName.toLowerCase();
-  return sensitivePatterns.some(pattern => lower.includes(pattern));
+  return sensitivePatterns.some((pattern) => lower.includes(pattern));
 }
 
 /**
  * Suggest regex pattern for parameter
  */
-function suggestPattern(paramName: string): { pattern: string; rationale: string } | null {
+function suggestPattern(
+  paramName: string,
+): { pattern: string; rationale: string } | null {
   const lower = paramName.toLowerCase();
 
-  if (lower.includes('path') || lower.includes('file') || lower.includes('dir')) {
+  if (
+    lower.includes("path") ||
+    lower.includes("file") ||
+    lower.includes("dir")
+  ) {
     return {
-      pattern: '^[a-zA-Z0-9._/-]+$',
-      rationale: 'Restricts file paths to alphanumeric, dots, slashes (blocks traversal patterns like ../)'
+      pattern: "^[a-zA-Z0-9._/-]+$",
+      rationale:
+        "Restricts file paths to alphanumeric, dots, slashes (blocks traversal patterns like ../)",
     };
   }
 
-  if (lower.includes('url') || lower.includes('uri')) {
+  if (lower.includes("url") || lower.includes("uri")) {
     return {
-      pattern: '^https://[a-zA-Z0-9.-]+(/[a-zA-Z0-9._~:/?#\\[\\]@!$&\'()*+,;=-]*)?$',
-      rationale: 'Enforces HTTPS URLs with safe characters (blocks SSRF via file://, javascript:, etc.)'
+      pattern:
+        "^https://[a-zA-Z0-9.-]+(/[a-zA-Z0-9._~:/?#\\[\\]@!$&'()*+,;=-]*)?$",
+      rationale:
+        "Enforces HTTPS URLs with safe characters (blocks SSRF via file://, javascript:, etc.)",
     };
   }
 
-  if (lower.includes('email')) {
+  if (lower.includes("email")) {
     return {
-      pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
-      rationale: 'Standard email format validation'
+      pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+      rationale: "Standard email format validation",
     };
   }
 
-  if (lower.includes('username') || lower.includes('user')) {
+  if (lower.includes("username") || lower.includes("user")) {
     return {
-      pattern: '^[a-zA-Z0-9_-]{3,32}$',
-      rationale: 'Alphanumeric usernames with 3-32 character limit'
+      pattern: "^[a-zA-Z0-9_-]{3,32}$",
+      rationale: "Alphanumeric usernames with 3-32 character limit",
     };
   }
 
@@ -556,47 +640,60 @@ function suggestPattern(paramName: string): { pattern: string; rationale: string
 /**
  * Check if parameter represents a finite set (good enum candidate)
  */
-function isFiniteSet(paramName: string, schema: Record<string, unknown>): boolean {
+function isFiniteSet(
+  paramName: string,
+  schema: Record<string, unknown>,
+): boolean {
   const lower = paramName.toLowerCase();
   const finiteSetPatterns = [
-    'type', 'kind', 'mode', 'status', 'state',
-    'level', 'priority', 'severity',
-    'format', 'encoding', 'method'
+    "type",
+    "kind",
+    "mode",
+    "status",
+    "state",
+    "level",
+    "priority",
+    "severity",
+    "format",
+    "encoding",
+    "method",
   ];
-  return finiteSetPatterns.some(pattern => lower.includes(pattern));
+  return finiteSetPatterns.some((pattern) => lower.includes(pattern));
 }
 
 /**
  * Suggest enum values for parameter
  */
-function suggestEnum(paramName: string): { values: string[]; rationale: string } | null {
+function suggestEnum(
+  paramName: string,
+): { values: string[]; rationale: string } | null {
   const lower = paramName.toLowerCase();
 
-  if (lower.includes('type') || lower.includes('kind')) {
+  if (lower.includes("type") || lower.includes("kind")) {
     return {
-      values: ['type1', 'type2', 'type3'],
-      rationale: 'Replace with actual valid types for your use case'
+      values: ["type1", "type2", "type3"],
+      rationale: "Replace with actual valid types for your use case",
     };
   }
 
-  if (lower.includes('mode')) {
+  if (lower.includes("mode")) {
     return {
-      values: ['read', 'write', 'readwrite'],
-      rationale: 'Restricts to known operation modes'
+      values: ["read", "write", "readwrite"],
+      rationale: "Restricts to known operation modes",
     };
   }
 
-  if (lower.includes('level') || lower.includes('priority')) {
+  if (lower.includes("level") || lower.includes("priority")) {
     return {
-      values: ['low', 'medium', 'high', 'critical'],
-      rationale: 'Standard priority/level values'
+      values: ["low", "medium", "high", "critical"],
+      rationale: "Standard priority/level values",
     };
   }
 
-  if (lower.includes('format')) {
+  if (lower.includes("format")) {
     return {
-      values: ['json', 'xml', 'yaml', 'csv'],
-      rationale: 'Common data format types'
+      values: ["json", "xml", "yaml", "csv"],
+      rationale: "Common data format types",
     };
   }
 
@@ -608,18 +705,30 @@ function suggestEnum(paramName: string): { values: string[]; rationale: string }
  */
 function isCriticalParameter(paramName: string): boolean {
   const criticalPatterns = [
-    'id', 'key', 'name', 'type',
-    'action', 'operation', 'method',
-    'target', 'destination', 'source'
+    "id",
+    "key",
+    "name",
+    "type",
+    "action",
+    "operation",
+    "method",
+    "target",
+    "destination",
+    "source",
   ];
   const lower = paramName.toLowerCase();
-  return criticalPatterns.some(pattern => lower === pattern || lower.endsWith(pattern));
+  return criticalPatterns.some(
+    (pattern) => lower === pattern || lower.endsWith(pattern),
+  );
 }
 
 /**
  * Generate code example for hardened schema
  */
-function generateCodeExample(toolName: string, schema: Record<string, unknown>): string {
+function generateCodeExample(
+  toolName: string,
+  schema: Record<string, unknown>,
+): string {
   return `// TypeScript example for hardened ${toolName} tool
 
 const toolDefinition = {

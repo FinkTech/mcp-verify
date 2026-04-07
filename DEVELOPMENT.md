@@ -12,14 +12,14 @@
 
 ### How to Use CLAUDE.md Files
 
-| File | Purpose | When to Read |
-|------|---------|--------------|
-| [`/CLAUDE.md`](./CLAUDE.md) | **Project overview** | First stop for new contributors |
-| [`/apps/CLAUDE.md`](./apps/CLAUDE.md) | Apps overview (CLI, Web, MCP Server, VSCode) | Working on user-facing apps |
-| [`/libs/CLAUDE.md`](./libs/CLAUDE.md) | Libraries overview | Working on core business logic |
-| [`/libs/core/CLAUDE.md`](./libs/core/CLAUDE.md) | Domain logic, 60 security rules, reporting | Adding security rules or reports |
-| [`/libs/fuzzer/CLAUDE.md`](./libs/fuzzer/CLAUDE.md) | Smart Fuzzer v1.0 architecture | Working on fuzzing engine |
-| [`/apps/cli-verifier/CLAUDE.md`](./apps/cli-verifier/CLAUDE.md) | CLI structure, interactive shell | Working on CLI commands |
+| File                                                            | Purpose                                      | When to Read                     |
+| --------------------------------------------------------------- | -------------------------------------------- | -------------------------------- |
+| [`/CLAUDE.md`](./CLAUDE.md)                                     | **Project overview**                         | First stop for new contributors  |
+| [`/apps/CLAUDE.md`](./apps/CLAUDE.md)                           | Apps overview (CLI, Web, MCP Server, VSCode) | Working on user-facing apps      |
+| [`/libs/CLAUDE.md`](./libs/CLAUDE.md)                           | Libraries overview                           | Working on core business logic   |
+| [`/libs/core/CLAUDE.md`](./libs/core/CLAUDE.md)                 | Domain logic, 60 security rules, reporting   | Adding security rules or reports |
+| [`/libs/fuzzer/CLAUDE.md`](./libs/fuzzer/CLAUDE.md)             | Smart Fuzzer v1.0 architecture               | Working on fuzzing engine        |
+| [`/apps/cli-verifier/CLAUDE.md`](./apps/cli-verifier/CLAUDE.md) | CLI structure, interactive shell             | Working on CLI commands          |
 
 ### Benefits
 
@@ -78,19 +78,19 @@ npm run lint
 
 ## 📋 Prerequisites
 
-| Tool | Version | Purpose |
-|------|---------|---------|
-| **Node.js** | ≥18.0.0 | Runtime |
-| **npm** | ≥9.0.0 | Package manager |
-| **Git** | Latest | Version control |
-| **TypeScript** | 5.x | Type checking (installed via npm) |
+| Tool           | Version | Purpose                           |
+| -------------- | ------- | --------------------------------- |
+| **Node.js**    | ≥18.0.0 | Runtime                           |
+| **npm**        | ≥9.0.0  | Package manager                   |
+| **Git**        | Latest  | Version control                   |
+| **TypeScript** | 5.x     | Type checking (installed via npm) |
 
 ### Optional (for specific features)
 
-| Tool | Version | Purpose |
-|------|---------|---------|
-| **Deno** | ≥1.40 | Sandbox testing |
-| **Ollama** | Latest | LLM semantic analysis testing |
+| Tool       | Version | Purpose                       |
+| ---------- | ------- | ----------------------------- |
+| **Deno**   | ≥1.40   | Sandbox testing               |
+| **Ollama** | Latest  | LLM semantic analysis testing |
 
 ---
 
@@ -193,6 +193,7 @@ mcp-verify/
 ```
 
 **Global State** (per-user):
+
 ```
 ~/.mcp-verify/
 ├── config.json                  # 🆕 Global config (custom profiles, defaults)
@@ -301,26 +302,26 @@ tests/core/domain/security/rules/sql-injection.spec.ts
 
 ```typescript
 // tests/core/domain/security/rules/my-rule.spec.ts
-import { describe, test, expect } from '@jest/globals';
-import { MyRule } from '../../../../../libs/core/domain/security/rules/my-rule';
+import { describe, test, expect } from "@jest/globals";
+import { MyRule } from "../../../../../libs/core/domain/security/rules/my-rule";
 
-describe('MyRule', () => {
-  test('should detect vulnerability', () => {
+describe("MyRule", () => {
+  test("should detect vulnerability", () => {
     const rule = new MyRule();
     const result = rule.analyze({
-      name: 'dangerous_tool',
-      description: 'SQL query: DROP TABLE users'
+      name: "dangerous_tool",
+      description: "SQL query: DROP TABLE users",
     });
 
     expect(result.findings).toHaveLength(1);
-    expect(result.findings[0].severity).toBe('critical');
+    expect(result.findings[0].severity).toBe("critical");
   });
 
-  test('should not flag safe tool', () => {
+  test("should not flag safe tool", () => {
     const rule = new MyRule();
     const result = rule.analyze({
-      name: 'safe_tool',
-      description: 'Get weather data'
+      name: "safe_tool",
+      description: "Get weather data",
     });
 
     expect(result.findings).toHaveLength(0);
@@ -377,12 +378,12 @@ Create `.vscode/launch.json`:
 
 ```typescript
 // Add debug logs
-console.log('[DEBUG] Variable value:', myVar);
+console.log("[DEBUG] Variable value:", myVar);
 
 // Use infrastructure logger
-import { Logger } from '../infrastructure/logging/logger';
+import { Logger } from "../infrastructure/logging/logger";
 const logger = Logger.getInstance();
-logger.debug('Debugging info', { context: myData });
+logger.debug("Debugging info", { context: myData });
 ```
 
 ### Node Inspector
@@ -445,7 +446,7 @@ npm run clean:all       # Clean all generated files
 ```typescript
 // ✅ Good: Clear types, descriptive names
 export interface SecurityFinding {
-  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+  severity: "critical" | "high" | "medium" | "low" | "info";
   message: string;
   component: string;
   suggestion?: string;
@@ -467,21 +468,21 @@ export function a(x: any): any {
 
 ### Naming Conventions
 
-| Type | Convention | Example |
-|------|------------|---------|
-| **Classes** | PascalCase | `SecurityScanner` |
-| **Functions** | camelCase | `analyzeTool` |
-| **Constants** | UPPER_SNAKE_CASE | `MAX_TIMEOUT` |
-| **Interfaces** | PascalCase with `I` prefix | `ITransport` |
-| **Types** | PascalCase | `SecurityFinding` |
-| **Files** | kebab-case | `security-scanner.ts` |
+| Type           | Convention                 | Example               |
+| -------------- | -------------------------- | --------------------- |
+| **Classes**    | PascalCase                 | `SecurityScanner`     |
+| **Functions**  | camelCase                  | `analyzeTool`         |
+| **Constants**  | UPPER_SNAKE_CASE           | `MAX_TIMEOUT`         |
+| **Interfaces** | PascalCase with `I` prefix | `ITransport`          |
+| **Types**      | PascalCase                 | `SecurityFinding`     |
+| **Files**      | kebab-case                 | `security-scanner.ts` |
 
 ### File Organization
 
 ```typescript
 // 1. Imports (grouped: external, internal)
-import { readFile } from 'fs/promises';
-import { McpTool } from '../domain/mcp-server/entities/validation.types';
+import { readFile } from "fs/promises";
+import { McpTool } from "../domain/mcp-server/entities/validation.types";
 
 // 2. Types/Interfaces
 export interface AnalyzerConfig {
@@ -523,7 +524,7 @@ TEST_TIMEOUT=10000
 Load with:
 
 ```typescript
-import * as dotenv from 'dotenv';
+import * as dotenv from "dotenv";
 dotenv.config();
 
 const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -611,22 +612,22 @@ npm audit fix
 ```typescript
 export const translations = {
   en: {
-    my_new_key: 'English translation',
+    my_new_key: "English translation",
     // ...
   },
   es: {
-    my_new_key: 'Traducción en español',
+    my_new_key: "Traducción en español",
     // ...
-  }
+  },
 };
 ```
 
 2. **Use in code**:
 
 ```typescript
-import { t } from '../shared/utils/cli/i18n-helper';
+import { t } from "../shared/utils/cli/i18n-helper";
 
-const message = t('my_new_key');
+const message = t("my_new_key");
 console.log(message);
 ```
 
@@ -651,26 +652,26 @@ mcp-verify validate <target>
 `libs/core/domain/security/rules/my-new-rule.ts`:
 
 ```typescript
-import { ISecurityRule, SecurityFinding } from '../security-scanner';
-import { DiscoveryResult } from '../../mcp-server/entities/validation.types';
+import { ISecurityRule, SecurityFinding } from "../security-scanner";
+import { DiscoveryResult } from "../../mcp-server/entities/validation.types";
 
 export class MyNewRule implements ISecurityRule {
-  readonly code = 'SEC-013';
-  readonly name = 'My New Security Rule';
-  severity: 'critical' | 'high' | 'medium' | 'low' = 'high';
+  readonly code = "SEC-013";
+  readonly name = "My New Security Rule";
+  severity: "critical" | "high" | "medium" | "low" = "high";
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
 
     for (const tool of discovery.tools) {
       // Check tool name/description
-      if (tool.description.includes('dangerous_pattern')) {
+      if (tool.description.includes("dangerous_pattern")) {
         findings.push({
           ruleCode: this.code,
           severity: this.severity,
-          message: 'Dangerous pattern detected',
+          message: "Dangerous pattern detected",
           component: `tool:${tool.name}`,
-          suggestion: 'Remove dangerous pattern or add safeguards'
+          suggestion: "Remove dangerous pattern or add safeguards",
         });
       }
     }
@@ -685,7 +686,7 @@ export class MyNewRule implements ISecurityRule {
 `libs/core/domain/security/security-scanner.ts`:
 
 ```typescript
-import { MyNewRule } from './rules/my-new-rule';
+import { MyNewRule } from "./rules/my-new-rule";
 
 const rules: ISecurityRule[] = [
   // ...existing rules
@@ -698,19 +699,19 @@ const rules: ISecurityRule[] = [
 `tests/core/domain/security/rules/my-new-rule.spec.ts`:
 
 ```typescript
-import { describe, test, expect } from '@jest/globals';
-import { MyNewRule } from '../../../../../libs/core/domain/security/rules/my-new-rule';
+import { describe, test, expect } from "@jest/globals";
+import { MyNewRule } from "../../../../../libs/core/domain/security/rules/my-new-rule";
 
-describe('MyNewRule', () => {
-  test('should detect dangerous pattern', () => {
+describe("MyNewRule", () => {
+  test("should detect dangerous pattern", () => {
     const rule = new MyNewRule();
     const findings = rule.analyze({
-      name: 'bad_tool',
-      description: 'Contains dangerous_pattern'
+      name: "bad_tool",
+      description: "Contains dangerous_pattern",
     });
 
     expect(findings).toHaveLength(1);
-    expect(findings[0].severity).toBe('high');
+    expect(findings[0].severity).toBe("high");
   });
 });
 ```
@@ -767,14 +768,14 @@ Layer 1 rules must be **extremely accurate** (zero false positives) and **fast**
 
 ```typescript
 // libs/core/domain/security/rules/custom-detection.rule.ts
-import { ISecurityRule, SecurityFinding, DiscoveryResult } from '../types';
+import { ISecurityRule, SecurityFinding, DiscoveryResult } from "../types";
 
 export class CustomDetectionRule implements ISecurityRule {
-  readonly readonly code = 'SEC-014'; // Next available ID
-  readonly name = 'Custom Attack Detection';
-  readonly severity = 'critical';
-  readonly cwe = 'CWE-XXX';
-  readonly owasp = 'A0X:2021 - Category';
+  readonly code = "SEC-014"; // Next available ID
+  readonly name = "Custom Attack Detection";
+  readonly severity = "critical";
+  readonly cwe = "CWE-XXX";
+  readonly owasp = "A0X:2021 - Category";
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
@@ -791,11 +792,11 @@ export class CustomDetectionRule implements ISecurityRule {
           component: tool.name,
           cwe: this.cwe,
           owasp: this.owasp,
-          remediation: 'Explain how to fix this vulnerability',
+          remediation: "Explain how to fix this vulnerability",
           evidence: {
             matchedPattern: maliciousPattern.toString(),
-            location: 'tool.description'
-          }
+            location: "tool.description",
+          },
         });
       }
     }
@@ -809,12 +810,12 @@ export class CustomDetectionRule implements ISecurityRule {
 
 ```typescript
 // libs/core/domain/security/security-scanner.ts
-import { CustomDetectionRule } from './rules/custom-detection.rule';
+import { CustomDetectionRule } from "./rules/custom-detection.rule";
 
 export class SecurityScanner {
   private readonly rules: ISecurityRule[] = [
     // ... existing rules
-    new CustomDetectionRule() // Add your rule
+    new CustomDetectionRule(), // Add your rule
   ];
 }
 ```
@@ -823,40 +824,44 @@ export class SecurityScanner {
 
 ```typescript
 // libs/core/domain/security/rules/__tests__/custom-detection.rule.spec.ts
-describe('CustomDetectionRule', () => {
+describe("CustomDetectionRule", () => {
   let rule: CustomDetectionRule;
 
   beforeEach(() => {
     rule = new CustomDetectionRule();
   });
 
-  it('should detect custom attack pattern', () => {
+  it("should detect custom attack pattern", () => {
     const discovery: DiscoveryResult = {
-      tools: [{
-        name: 'vulnerable_tool',
-        description: 'Contains DANGEROUS_PATTERN_HERE',
-        inputSchema: { type: 'object', properties: {} }
-      }],
+      tools: [
+        {
+          name: "vulnerable_tool",
+          description: "Contains DANGEROUS_PATTERN_HERE",
+          inputSchema: { type: "object", properties: {} },
+        },
+      ],
       resources: [],
-      prompts: []
+      prompts: [],
     };
 
     const findings = rule.check(discovery);
 
     expect(findings).toHaveLength(1);
-    expect(findings[0].ruleCode).toBe('SEC-014');
-    expect(findings[0].severity).toBe('critical');
+    expect(findings[0].ruleCode).toBe("SEC-014");
+    expect(findings[0].severity).toBe("critical");
   });
 
-  it('should NOT produce false positives', () => {
+  it("should NOT produce false positives", () => {
     const safeDiscovery: DiscoveryResult = {
-      tools: [{
-        name: 'safe_tool',
-        description: 'This is a safe tool',
-        inputSchema: { type: 'object', properties: {} }
-      }],
+      tools: [
+        {
+          name: "safe_tool",
+          description: "This is a safe tool",
+          inputSchema: { type: "object", properties: {} },
+        },
+      ],
       resources: [],
-      prompts: []
+      prompts: [],
     };
 
     const findings = rule.check(safeDiscovery);
@@ -886,11 +891,14 @@ Layer 2 rules use heuristics and may have false positives. They must run in <50m
 ```typescript
 // libs/core/domain/security/rules/suspicious-behavior.rule.ts
 export class SuspiciousBehaviorRule implements ISecurityRule {
-  readonly readonly code = 'SEC-015';
-  readonly name = 'Suspicious Behavior Detection';
-  readonly severity = 'medium'; // Layer 2 uses medium/low severity
+  readonly code = "SEC-015";
+  readonly name = "Suspicious Behavior Detection";
+  readonly severity = "medium"; // Layer 2 uses medium/low severity
 
-  check(discovery: DiscoveryResult, context?: RequestContext): SecurityFinding[] {
+  check(
+    discovery: DiscoveryResult,
+    context?: RequestContext,
+  ): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
     let suspicionScore = 0;
 
@@ -917,8 +925,8 @@ export class SuspiciousBehaviorRule implements ISecurityRule {
         message: `Suspicious behavior detected (score: ${suspicionScore}/100)`,
         metadata: {
           suspicionScore,
-          reasoning: this.explainScore(suspicionScore)
-        }
+          reasoning: this.explainScore(suspicionScore),
+        },
       });
     }
 
@@ -954,7 +962,7 @@ Layer 3 uses LLM providers for semantic analysis. Response time: 500-2000ms.
 
 ```typescript
 // libs/core/domain/quality/providers/custom-llm-provider.ts
-import { ILLMProvider, LLMAnalysisResult } from './llm-provider.interface';
+import { ILLMProvider, LLMAnalysisResult } from "./llm-provider.interface";
 
 export class CustomLLMProvider implements ILLMProvider {
   async analyzeRequest(request: {
@@ -966,7 +974,7 @@ export class CustomLLMProvider implements ILLMProvider {
     const response = await this.callLLMAPI({
       prompt: this.buildPrompt(request),
       temperature: 0, // Deterministic for security analysis
-      maxTokens: 500
+      maxTokens: 500,
     });
 
     return this.parseResponse(response);
@@ -1002,11 +1010,11 @@ Respond in JSON format:
     const timeout = setTimeout(() => controller.abort(), 2000); // 2s timeout
 
     try {
-      const response = await fetch('https://your-llm-api.com/v1/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("https://your-llm-api.com/v1/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params),
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       return await response.json();
@@ -1021,13 +1029,13 @@ Respond in JSON format:
 
 ```typescript
 // libs/core/domain/quality/semantic-analyzer.ts
-import { CustomLLMProvider } from './providers/custom-llm-provider';
+import { CustomLLMProvider } from "./providers/custom-llm-provider";
 
 export function createLLMProvider(config: LLMConfig): ILLMProvider {
   switch (config.provider) {
-    case 'anthropic':
+    case "anthropic":
       return new AnthropicProvider(config);
-    case 'custom':
+    case "custom":
       return new CustomLLMProvider(config);
     default:
       throw new Error(`Unknown LLM provider: ${config.provider}`);
@@ -1051,24 +1059,27 @@ Guardrails run AFTER the 3-layer gateway passes a request.
 
 #### Available Guardrails
 
-| Guardrail | Purpose | Configuration |
-|-----------|---------|---------------|
-| **HTTPS Enforcer** | Block non-HTTPS URLs | `enforceHttps: true` |
-| **Input Sanitizer** | Sanitize user inputs | `sanitizationRules: []` |
-| **PII Redactor** | Redact sensitive data | `piiPatterns: []` |
-| **Rate Limiter** | Prevent DoS | `maxRequestsPerMinute: 100` |
-| **Command Blocker** | Block shell commands | `blockedCommands: []` |
+| Guardrail           | Purpose               | Configuration               |
+| ------------------- | --------------------- | --------------------------- |
+| **HTTPS Enforcer**  | Block non-HTTPS URLs  | `enforceHttps: true`        |
+| **Input Sanitizer** | Sanitize user inputs  | `sanitizationRules: []`     |
+| **PII Redactor**    | Redact sensitive data | `piiPatterns: []`           |
+| **Rate Limiter**    | Prevent DoS           | `maxRequestsPerMinute: 100` |
+| **Command Blocker** | Block shell commands  | `blockedCommands: []`       |
 
 #### Custom Guardrail
 
 ```typescript
 // libs/core/use-cases/proxy/guardrails/custom-guardrail.ts
-import { Guardrail } from './guardrail.interface';
+import { Guardrail } from "./guardrail.interface";
 
 export class CustomGuardrail implements Guardrail {
-  name = 'CustomGuardrail';
+  name = "CustomGuardrail";
 
-  async check(request: MCPRequest, response?: MCPResponse): Promise<{
+  async check(
+    request: MCPRequest,
+    response?: MCPResponse,
+  ): Promise<{
     allowed: boolean;
     reason?: string;
     modifiedRequest?: MCPRequest;
@@ -1077,7 +1088,7 @@ export class CustomGuardrail implements Guardrail {
     if (this.violatesCustomPolicy(request)) {
       return {
         allowed: false,
-        reason: 'Request violates custom policy'
+        reason: "Request violates custom policy",
       };
     }
 
@@ -1086,7 +1097,7 @@ export class CustomGuardrail implements Guardrail {
 
     return {
       allowed: true,
-      modifiedRequest
+      modifiedRequest,
     };
   }
 
@@ -1123,23 +1134,23 @@ node dist/mcp-verify.js proxy \
 
 ```typescript
 // In your test file
-import { SecurityGateway } from '@mcp-verify/core';
+import { SecurityGateway } from "@mcp-verify/core";
 
 const gateway = new SecurityGateway({
   cacheEnabled: true,
-  cacheTTL: 60000
+  cacheTTL: 60000,
 });
 
 // Enable cache statistics
-gateway.on('cache:hit', (key) => {
+gateway.on("cache:hit", (key) => {
   console.log(`Cache HIT: ${key.substring(0, 16)}...`);
 });
 
-gateway.on('cache:miss', (key) => {
+gateway.on("cache:miss", (key) => {
   console.log(`Cache MISS: ${key.substring(0, 16)}...`);
 });
 
-gateway.on('cache:evict', (key) => {
+gateway.on("cache:evict", (key) => {
   console.log(`Cache EVICT (LRU): ${key.substring(0, 16)}...`);
 });
 ```
@@ -1170,17 +1181,17 @@ jq -s 'group_by(.clientId) | map({
 // Enable layer-by-layer tracing
 const gateway = new SecurityGateway({
   enableLayers: [1, 2, 3],
-  debug: true
+  debug: true,
 });
 
-gateway.on('layer:enter', (layer, request) => {
+gateway.on("layer:enter", (layer, request) => {
   console.log(`→ Entering Layer ${layer}`, { tool: request.params.name });
 });
 
-gateway.on('layer:exit', (layer, result) => {
+gateway.on("layer:exit", (layer, result) => {
   console.log(`← Exiting Layer ${layer}`, {
     blocked: result.blocked,
-    latency: result.latency_ms
+    latency: result.latency_ms,
   });
 });
 ```
@@ -1197,7 +1208,7 @@ const gateway = new SecurityGateway({
   cacheEnabled: true,
   cacheTTL: 300000, // 5 minutes (longer TTL)
   cacheMaxEntries: 5000, // More entries
-  cacheStrategy: 'lru' // Least Recently Used
+  cacheStrategy: "lru", // Least Recently Used
 });
 
 // Memory-constrained configuration
@@ -1205,7 +1216,7 @@ const gateway = new SecurityGateway({
   cacheEnabled: true,
   cacheTTL: 30000, // 30 seconds (shorter TTL)
   cacheMaxEntries: 500, // Fewer entries
-  cacheStrategy: 'lfu' // Least Frequently Used
+  cacheStrategy: "lfu", // Least Frequently Used
 });
 ```
 
@@ -1215,14 +1226,14 @@ const gateway = new SecurityGateway({
 // Production: Skip Layer 3 (LLM) entirely
 const gateway = new SecurityGateway({
   enableLayers: [1, 2], // No LLM layer
-  cacheEnabled: true
+  cacheEnabled: true,
 });
 
 // Development: Enable all layers for testing
 const gateway = new SecurityGateway({
   enableLayers: [1, 2, 3],
-  llmProvider: 'ollama', // Self-hosted (no external calls)
-  cacheEnabled: true
+  llmProvider: "ollama", // Self-hosted (no external calls)
+  cacheEnabled: true,
 });
 ```
 
@@ -1234,8 +1245,8 @@ const gateway = new SecurityGateway({
   panicStopConfig: {
     strike1Backoff: 10000, // 10s
     strike2Backoff: 30000, // 30s
-    strike3: 'permanent'
-  }
+    strike3: "permanent",
+  },
 });
 
 // Lenient (high tolerance)
@@ -1243,8 +1254,8 @@ const gateway = new SecurityGateway({
   panicStopConfig: {
     strike1Backoff: 60000, // 1 minute
     strike2Backoff: 300000, // 5 minutes
-    strike3: 'permanent'
-  }
+    strike3: "permanent",
+  },
 });
 ```
 
@@ -1260,7 +1271,7 @@ export class BadLayer1Rule implements ISecurityRule {
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
     // ❌ WRONG: This will produce false positives
     if (discovery.tools.length > 10) {
-      return [{ message: 'Too many tools!' }]; // False positive!
+      return [{ message: "Too many tools!" }]; // False positive!
     }
   }
 }
@@ -1382,39 +1393,41 @@ npm run build && node dist/apps/cli-verifier/src/bin/index.js
 ```
 
 **Expected Behavior**:
+
 - ✅ Each context has independent target, profile, and config
 - ✅ Switching contexts updates prompt: `(dev:light)` vs. `(prod:aggressive)`
 - ✅ Session state persists to `.mcp-verify/session.json`
 - ✅ Contexts survive shell restarts
 
 **Test Cases**:
+
 ```typescript
 // apps/cli-verifier/src/commands/__tests__/interactive.spec.ts
 
-describe('Multi-Context Workspace', () => {
-  it('should create new context', () => {
-    session.createContext('dev');
-    expect(session.listContexts()).toContain('dev');
+describe("Multi-Context Workspace", () => {
+  it("should create new context", () => {
+    session.createContext("dev");
+    expect(session.listContexts()).toContain("dev");
   });
 
-  it('should switch contexts', () => {
-    session.createContext('dev');
-    session.createContext('prod');
-    session.switchContext('prod');
-    expect(session.state.activeContextName).toBe('prod');
+  it("should switch contexts", () => {
+    session.createContext("dev");
+    session.createContext("prod");
+    session.switchContext("prod");
+    expect(session.state.activeContextName).toBe("prod");
   });
 
-  it('should isolate context configurations', () => {
-    session.createContext('dev');
-    session.setTarget('node dev-server.js');
-    session.createContext('prod');
-    session.setTarget('https://prod.example.com');
+  it("should isolate context configurations", () => {
+    session.createContext("dev");
+    session.setTarget("node dev-server.js");
+    session.createContext("prod");
+    session.setTarget("https://prod.example.com");
 
-    session.switchContext('dev');
-    expect(session.state.target).toBe('node dev-server.js');
+    session.switchContext("dev");
+    expect(session.state.target).toBe("node dev-server.js");
 
-    session.switchContext('prod');
-    expect(session.state.target).toBe('https://prod.example.com');
+    session.switchContext("prod");
+    expect(session.state.target).toBe("https://prod.example.com");
   });
 });
 ```
@@ -1445,11 +1458,13 @@ describe('Multi-Context Workspace', () => {
 ```
 
 **Expected Behavior**:
+
 - ✅ **Light**: 25 payloads, 0 mutations, score ≥60, fail on critical only
 - ✅ **Balanced**: 50 payloads, 3 mutations, score ≥70, fail on critical only
 - ✅ **Aggressive**: 100 payloads, 5 mutations, score ≥90, fail on critical + high
 
 **Profile Override Test**:
+
 ```bash
 # CLI flag should override profile
 > profile set light
@@ -1458,6 +1473,7 @@ describe('Multi-Context Workspace', () => {
 ```
 
 **Configuration Hierarchy Test**:
+
 ```
 Priority (highest to lowest):
 1. CLI Flags (--max-payloads 200)
@@ -1468,20 +1484,21 @@ Priority (highest to lowest):
 ```
 
 **Test Cases**:
+
 ```typescript
 // apps/cli-verifier/src/commands/__tests__/interactive.spec.ts
 
-describe('Security Profiles', () => {
-  it('should apply light profile settings', () => {
-    session.setProfile('light');
+describe("Security Profiles", () => {
+  it("should apply light profile settings", () => {
+    session.setProfile("light");
     const context = session.getActiveContext();
     expect(context.profile.fuzzing.maxPayloadsPerTool).toBe(25);
     expect(context.profile.fuzzing.mutationsPerPayload).toBe(0);
     expect(context.profile.validation.minSecurityScore).toBe(60);
   });
 
-  it('should apply aggressive profile settings', () => {
-    session.setProfile('aggressive');
+  it("should apply aggressive profile settings", () => {
+    session.setProfile("aggressive");
     const context = session.getActiveContext();
     expect(context.profile.fuzzing.maxPayloadsPerTool).toBe(100);
     expect(context.profile.fuzzing.mutationsPerPayload).toBe(5);
@@ -1489,14 +1506,14 @@ describe('Security Profiles', () => {
     expect(context.profile.validation.failOnHigh).toBe(true);
   });
 
-  it('should save custom profile to global config', () => {
-    session.setProfile('balanced');
+  it("should save custom profile to global config", () => {
+    session.setProfile("balanced");
     // Modify settings...
-    session.saveCustomProfile('my-custom');
+    session.saveCustomProfile("my-custom");
 
     // Global config should contain custom profile
     const globalConfig = GlobalConfigManager.load();
-    expect(globalConfig.customProfiles).toHaveProperty('my-custom');
+    expect(globalConfig.customProfiles).toHaveProperty("my-custom");
   });
 });
 ```
@@ -1529,6 +1546,7 @@ npm run build && node dist/apps/cli-verifier/src/bin/index.js
 ```
 
 **Secret Redaction Test**:
+
 ```bash
 # Type command with API key
 > validate node server.js --api-key sk-ant-api03-TESTKEY123
@@ -1540,20 +1558,21 @@ cat ~/.mcp-verify/history.json
 ```
 
 **Test Cases**:
+
 ```typescript
 // apps/cli-verifier/src/commands/managers/__tests__/environment-loader.spec.ts
 
-describe('EnvironmentLoader', () => {
-  it('should parse .env file correctly', () => {
+describe("EnvironmentLoader", () => {
+  it("should parse .env file correctly", () => {
     const env = EnvironmentLoader.load();
-    expect(env.ANTHROPIC_API_KEY).toBe('sk-ant-api03-TESTKEY123');
-    expect(env.mcpVars).toHaveProperty('MCP_TIMEOUT', '5000');
+    expect(env.ANTHROPIC_API_KEY).toBe("sk-ant-api03-TESTKEY123");
+    expect(env.mcpVars).toHaveProperty("MCP_TIMEOUT", "5000");
   });
 
-  it('should detect MCP_* prefixed variables', () => {
+  it("should detect MCP_* prefixed variables", () => {
     const env = EnvironmentLoader.load();
-    expect(env.mcpVars).toHaveProperty('MCP_TIMEOUT');
-    expect(env.mcpVars).toHaveProperty('MCP_HOST');
+    expect(env.mcpVars).toHaveProperty("MCP_TIMEOUT");
+    expect(env.mcpVars).toHaveProperty("MCP_HOST");
   });
 });
 ```
@@ -1589,25 +1608,26 @@ kill $SERVER_PID
 ```
 
 **Test Cases**:
+
 ```typescript
 // apps/cli-verifier/src/commands/managers/__tests__/workspace-health-checker.spec.ts
 
-describe('WorkspaceHealthChecker', () => {
-  it('should detect connected status', async () => {
+describe("WorkspaceHealthChecker", () => {
+  it("should detect connected status", async () => {
     const health = await WorkspaceHealthChecker.check(session);
-    expect(health.connection.status).toBe('connected');
+    expect(health.connection.status).toBe("connected");
     expect(health.connection.serverName).toBeDefined();
   });
 
-  it('should detect unreachable status', async () => {
-    session.setTarget('node non-existent-server.js');
+  it("should detect unreachable status", async () => {
+    session.setTarget("node non-existent-server.js");
     const health = await WorkspaceHealthChecker.check(session);
-    expect(health.connection.status).toBe('unreachable');
+    expect(health.connection.status).toBe("unreachable");
   });
 
-  it('should validate MCP protocol version', async () => {
+  it("should validate MCP protocol version", async () => {
     const health = await WorkspaceHealthChecker.check(session);
-    expect(health.connection.protocolVersion).toBe('2024-11-05');
+    expect(health.connection.protocolVersion).toBe("2024-11-05");
   });
 });
 ```
@@ -1615,6 +1635,7 @@ describe('WorkspaceHealthChecker', () => {
 ### 5. Manual Integration Testing
 
 **Full Workflow Test**:
+
 ```bash
 # 1. Create project-specific workspace
 cd /path/to/my-mcp-project
@@ -1643,6 +1664,7 @@ mcp-verify
 ```
 
 **Expected Files**:
+
 ```
 my-mcp-project/
 ├── .mcp-verify/
@@ -1677,13 +1699,16 @@ npm version major  # 1.0.0 → 2.0.0
 ## [1.0.1] - 2026-02-03
 
 ### Added
+
 - New security rule SEC-013
 - LLM provider support for OpenAI
 
 ### Fixed
+
 - Bug in path validation
 
 ### Changed
+
 - Improved error messages
 ```
 
@@ -1717,21 +1742,25 @@ npm publish
 ## ❓ FAQ
 
 **Q: How do I run a single test?**
+
 ```bash
 npm test -- path/to/file.spec.ts
 ```
 
 **Q: How do I debug a specific command?**
+
 ```bash
 node --inspect-brk dist/mcp-verify.js <command> <args>
 ```
 
 **Q: Tests are failing with "Cannot find module"**
+
 ```bash
 npm run build  # Rebuild TypeScript
 ```
 
 **Q: How do I add a new CLI command?**
+
 1. Create file in `apps/cli-verifier/src/commands/<command>.ts`
 2. Register in `apps/cli-verifier/src/bin/index.ts`
 3. Add tests in `tests/cli-verifier/commands/<command>.spec.ts`
@@ -1740,6 +1769,7 @@ npm run build  # Rebuild TypeScript
 `libs/core/domain/quality/providers/`
 
 **Q: How do I test LLM integration?**
+
 ```bash
 # Set API key
 export ANTHROPIC_API_KEY="sk-ant-..."
@@ -1767,4 +1797,3 @@ mcp-verify validate <target> --llm anthropic:claude-haiku-4-5-20251001
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - Contribution guidelines
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture
 - [TESTING.md](./TESTING.md) - Testing strategy
-

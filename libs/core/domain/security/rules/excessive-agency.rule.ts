@@ -28,25 +28,47 @@
  * - Principle of Least Privilege (PoLP)
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class ExcessiveAgencyRule implements ISecurityRule {
-  code = 'SEC-023';
-  name = 'Excessive Agency / Scope Creep';
-  severity: 'high' = 'high';
+  code = "SEC-023";
+  name = "Excessive Agency / Scope Creep";
+  severity: "high" = "high";
 
   private readonly DESTRUCTIVE_PARAM_NAMES = [
-    'delete', 'remove', 'wipe', 'drop', 'truncate', 'purge',
-    'erase', 'destroy', 'terminate', 'kill', 'force', 'recursive'
+    "delete",
+    "remove",
+    "wipe",
+    "drop",
+    "truncate",
+    "purge",
+    "erase",
+    "destroy",
+    "terminate",
+    "kill",
+    "force",
+    "recursive",
   ];
 
   private readonly READ_ONLY_TOOL_PATTERNS = [
-    /^get_/i, /^fetch_/i, /^retrieve_/i, /^read_/i,
-    /^list_/i, /^show_/i, /^view_/i, /^display_/i,
-    /^query_/i, /^search_/i, /^find_/i, /^check_/i
+    /^get_/i,
+    /^fetch_/i,
+    /^retrieve_/i,
+    /^read_/i,
+    /^list_/i,
+    /^show_/i,
+    /^view_/i,
+    /^display_/i,
+    /^query_/i,
+    /^search_/i,
+    /^find_/i,
+    /^check_/i,
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -63,17 +85,17 @@ export class ExcessiveAgencyRule implements ISecurityRule {
       if (seemsReadOnly && hasDestructiveParams) {
         findings.push({
           severity: this.severity,
-          message: t('sec_023_excessive_agency', {
-            toolName: tool.name
+          message: t("sec_023_excessive_agency", {
+            toolName: tool.name,
           }),
           component: `tool:${tool.name}`,
           ruleCode: this.code,
-          remediation: t('sec_023_recommendation'),
+          remediation: t("sec_023_recommendation"),
           references: [
-            'OWASP LLM Top 10 2025 - LLM08: Excessive Agency',
-            'Principle of Least Privilege (PoLP)',
-            'CWE-250: Execution with Unnecessary Privileges'
-          ]
+            "OWASP LLM Top 10 2025 - LLM08: Excessive Agency",
+            "Principle of Least Privilege (PoLP)",
+            "CWE-250: Execution with Unnecessary Privileges",
+          ],
         });
       }
     }
@@ -82,8 +104,8 @@ export class ExcessiveAgencyRule implements ISecurityRule {
   }
 
   private seemsReadOnlyTool(tool: McpTool): boolean {
-    return this.READ_ONLY_TOOL_PATTERNS.some(pattern =>
-      pattern.test(tool.name)
+    return this.READ_ONLY_TOOL_PATTERNS.some((pattern) =>
+      pattern.test(tool.name),
     );
   }
 
@@ -94,8 +116,8 @@ export class ExcessiveAgencyRule implements ISecurityRule {
 
     for (const propName of Object.keys(tool.inputSchema.properties)) {
       const propLower = propName.toLowerCase();
-      const isDestructive = this.DESTRUCTIVE_PARAM_NAMES.some(keyword =>
-        propLower.includes(keyword)
+      const isDestructive = this.DESTRUCTIVE_PARAM_NAMES.some((keyword) =>
+        propLower.includes(keyword),
       );
 
       if (isDestructive) {

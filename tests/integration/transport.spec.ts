@@ -14,20 +14,20 @@
  * 3. Buffer cleanup after errors
  */
 
-import { StdioTransport } from '@mcp-verify/core';
-import { spawn, ChildProcess } from 'child_process';
-import path from 'path';
-import { writeFileSync, mkdirSync } from 'fs';
+import { StdioTransport } from "@mcp-verify/core";
+import { spawn, ChildProcess } from "child_process";
+import path from "path";
+import { writeFileSync, mkdirSync } from "fs";
 
-describe('StdioTransport Buffer Handling', () => {
+describe("StdioTransport Buffer Handling", () => {
   const MAX_BUFFER_SIZE = 10 * 1024 * 1024; // 10MB
   let testServerPath: string;
 
   beforeAll(() => {
     // Create a temporary test server script
-    const testDir = path.join(__dirname, '__test_servers__');
+    const testDir = path.join(__dirname, "__test_servers__");
     mkdirSync(testDir, { recursive: true });
-    testServerPath = path.join(testDir, 'fragmented-server.js');
+    testServerPath = path.join(testDir, "fragmented-server.js");
 
     // Test server that can send responses in controlled chunks or large payloads
     const serverCode = `
@@ -102,31 +102,31 @@ rl.on('line', (line) => {
     // Cleanup is handled by Jest's temp directory cleanup
   });
 
-  describe('Fragmented JSON Messages', () => {
-    it('should correctly handle JSON message sent in 50 chunks of 1 byte', async () => {
-      const transport = StdioTransport.create('node', [testServerPath], 5000);
+  describe("Fragmented JSON Messages", () => {
+    it("should correctly handle JSON message sent in 50 chunks of 1 byte", async () => {
+      const transport = StdioTransport.create("node", [testServerPath], 5000);
 
       try {
         await transport.connect();
 
         const result = await transport.send({
-          jsonrpc: '2.0',
+          jsonrpc: "2.0",
           id: 1,
-          method: 'test/fragmented',
-          params: {}
+          method: "test/fragmented",
+          params: {},
         });
 
         expect(result).toEqual({
           success: true,
-          message: 'Fragmented response'
+          message: "Fragmented response",
         });
       } finally {
         transport.close();
       }
     }, 20000); // 20s timeout for this test
 
-    it('should handle multiple fragmented messages sequentially', async () => {
-      const transport = StdioTransport.create('node', [testServerPath], 5000);
+    it("should handle multiple fragmented messages sequentially", async () => {
+      const transport = StdioTransport.create("node", [testServerPath], 5000);
 
       try {
         await transport.connect();
@@ -135,19 +135,19 @@ rl.on('line', (line) => {
         const results = [];
         for (let i = 0; i < 3; i++) {
           const result = await transport.send({
-            jsonrpc: '2.0',
+            jsonrpc: "2.0",
             id: i + 1,
-            method: 'test/fragmented',
-            params: {}
+            method: "test/fragmented",
+            params: {},
           });
           results.push(result);
         }
 
         expect(results).toHaveLength(3);
-        results.forEach(result => {
+        results.forEach((result) => {
           expect(result).toEqual({
             success: true,
-            message: 'Fragmented response'
+            message: "Fragmented response",
           });
         });
       } finally {
@@ -156,9 +156,9 @@ rl.on('line', (line) => {
     }, 30000);
   });
 
-  describe('Buffer Overflow Protection', () => {
-    it('should reject payload exceeding MAX_BUFFER_SIZE (10.1 MB)', async () => {
-      const transport = StdioTransport.create('node', [testServerPath], 15000);
+  describe("Buffer Overflow Protection", () => {
+    it("should reject payload exceeding MAX_BUFFER_SIZE (10.1 MB)", async () => {
+      const transport = StdioTransport.create("node", [testServerPath], 15000);
 
       try {
         await transport.connect();
@@ -166,20 +166,19 @@ rl.on('line', (line) => {
         // This should trigger the buffer overflow protection
         await expect(
           transport.send({
-            jsonrpc: '2.0',
+            jsonrpc: "2.0",
             id: 1,
-            method: 'test/oversized',
-            params: {}
-          })
+            method: "test/oversized",
+            params: {},
+          }),
         ).rejects.toThrow(/buffer limit exceeded/i);
-
       } finally {
         transport.close();
       }
     }, 40000); // 40s timeout - large payload test
 
-    it('should terminate connection when buffer limit exceeded', async () => {
-      const transport = StdioTransport.create('node', [testServerPath], 15000);
+    it("should terminate connection when buffer limit exceeded", async () => {
+      const transport = StdioTransport.create("node", [testServerPath], 15000);
 
       try {
         await transport.connect();
@@ -187,12 +186,12 @@ rl.on('line', (line) => {
         // Send oversized payload
         try {
           await transport.send({
-            jsonrpc: '2.0',
+            jsonrpc: "2.0",
             id: 1,
-            method: 'test/oversized',
-            params: {}
+            method: "test/oversized",
+            params: {},
           });
-          fail('Should have thrown buffer limit error');
+          fail("Should have thrown buffer limit error");
         } catch (error) {
           expect((error as Error).message).toMatch(/buffer limit exceeded/i);
         }
@@ -200,42 +199,41 @@ rl.on('line', (line) => {
         // Subsequent requests should fail because process is terminated
         await expect(
           transport.send({
-            jsonrpc: '2.0',
+            jsonrpc: "2.0",
             id: 2,
-            method: 'test/normal',
-            params: {}
-          })
+            method: "test/normal",
+            params: {},
+          }),
         ).rejects.toThrow();
-
       } finally {
         transport.close();
       }
     }, 40000);
   });
 
-  describe('Buffer Cleanup', () => {
-    it('should clear buffer after successful message processing', async () => {
-      const transport = StdioTransport.create('node', [testServerPath], 5000);
+  describe("Buffer Cleanup", () => {
+    it("should clear buffer after successful message processing", async () => {
+      const transport = StdioTransport.create("node", [testServerPath], 5000);
 
       try {
         await transport.connect();
 
         // Send normal request
         const result1 = await transport.send({
-          jsonrpc: '2.0',
+          jsonrpc: "2.0",
           id: 1,
-          method: 'test/normal',
-          params: {}
+          method: "test/normal",
+          params: {},
         });
 
         expect(result1).toEqual({ success: true });
 
         // Send another request - should work if buffer was cleared
         const result2 = await transport.send({
-          jsonrpc: '2.0',
+          jsonrpc: "2.0",
           id: 2,
-          method: 'test/normal',
-          params: {}
+          method: "test/normal",
+          params: {},
         });
 
         expect(result2).toEqual({ success: true });
@@ -244,17 +242,17 @@ rl.on('line', (line) => {
       }
     });
 
-    it('should handle partial line in buffer on close', async () => {
-      const transport = StdioTransport.create('node', [testServerPath], 5000);
+    it("should handle partial line in buffer on close", async () => {
+      const transport = StdioTransport.create("node", [testServerPath], 5000);
 
       try {
         await transport.connect();
 
         const result = await transport.send({
-          jsonrpc: '2.0',
+          jsonrpc: "2.0",
           id: 1,
-          method: 'test/normal',
-          params: {}
+          method: "test/normal",
+          params: {},
         });
 
         expect(result).toEqual({ success: true });
@@ -270,10 +268,14 @@ rl.on('line', (line) => {
     });
   });
 
-  describe('UTF-8 Multibyte Character Handling', () => {
-    it('should correctly handle multibyte characters split across chunks', async () => {
+  describe("UTF-8 Multibyte Character Handling", () => {
+    it("should correctly handle multibyte characters split across chunks", async () => {
       // Create a test server that sends a response with emoji split across chunks
-      const emojiServerPath = path.join(__dirname, '__test_servers__', 'emoji-server.js');
+      const emojiServerPath = path.join(
+        __dirname,
+        "__test_servers__",
+        "emoji-server.js",
+      );
       const emojiServerCode = `
 const readline = require('readline');
 
@@ -309,20 +311,20 @@ rl.on('line', (line) => {
 
       writeFileSync(emojiServerPath, emojiServerCode);
 
-      const transport = StdioTransport.create('node', [emojiServerPath], 5000);
+      const transport = StdioTransport.create("node", [emojiServerPath], 5000);
 
       try {
         await transport.connect();
 
         const result = await transport.send({
-          jsonrpc: '2.0',
+          jsonrpc: "2.0",
           id: 1,
-          method: 'test/emoji',
-          params: {}
+          method: "test/emoji",
+          params: {},
         });
 
         expect(result).toEqual({
-          message: '¡Hola! 👋 Testing UTF-8 émojis 🚀'
+          message: "¡Hola! 👋 Testing UTF-8 émojis 🚀",
         });
       } finally {
         transport.close();
@@ -330,9 +332,13 @@ rl.on('line', (line) => {
     }, 20000);
   });
 
-  describe('Edge Cases', () => {
-    it('should handle empty lines in response', async () => {
-      const emptyLineServerPath = path.join(__dirname, '__test_servers__', 'empty-line-server.js');
+  describe("Edge Cases", () => {
+    it("should handle empty lines in response", async () => {
+      const emptyLineServerPath = path.join(
+        __dirname,
+        "__test_servers__",
+        "empty-line-server.js",
+      );
       const emptyLineServerCode = `
 const readline = require('readline');
 
@@ -362,16 +368,20 @@ rl.on('line', (line) => {
 
       writeFileSync(emptyLineServerPath, emptyLineServerCode);
 
-      const transport = StdioTransport.create('node', [emptyLineServerPath], 5000);
+      const transport = StdioTransport.create(
+        "node",
+        [emptyLineServerPath],
+        5000,
+      );
 
       try {
         await transport.connect();
 
         const result = await transport.send({
-          jsonrpc: '2.0',
+          jsonrpc: "2.0",
           id: 1,
-          method: 'test/empty-lines',
-          params: {}
+          method: "test/empty-lines",
+          params: {},
         });
 
         expect(result).toEqual({ success: true });
@@ -380,8 +390,8 @@ rl.on('line', (line) => {
       }
     });
 
-    it('should handle rapid successive requests', async () => {
-      const transport = StdioTransport.create('node', [testServerPath], 5000);
+    it("should handle rapid successive requests", async () => {
+      const transport = StdioTransport.create("node", [testServerPath], 5000);
 
       try {
         await transport.connect();
@@ -391,18 +401,18 @@ rl.on('line', (line) => {
         for (let i = 0; i < 10; i++) {
           promises.push(
             transport.send({
-              jsonrpc: '2.0',
+              jsonrpc: "2.0",
               id: i + 1,
-              method: 'test/normal',
-              params: {}
-            })
+              method: "test/normal",
+              params: {},
+            }),
           );
         }
 
         const results = await Promise.all(promises);
 
         expect(results).toHaveLength(10);
-        results.forEach(result => {
+        results.forEach((result) => {
           expect(result).toEqual({ success: true });
         });
       } finally {
@@ -411,41 +421,64 @@ rl.on('line', (line) => {
     }, 25000);
   });
 
-  describe('Error Scenarios', () => {
-    it('should reject all pending requests when buffer limit exceeded', async () => {
-      const transport = StdioTransport.create('node', [testServerPath], 15000);
+  describe("Error Scenarios", () => {
+    it("should reject all pending requests when buffer limit exceeded", async () => {
+      const transport = StdioTransport.create("node", [testServerPath], 15000);
 
       try {
         await transport.connect();
 
         // Send multiple requests, including one that will exceed buffer
         const promises = [
-          transport.send({ jsonrpc: '2.0', id: 1, method: 'test/normal', params: {} }),
-          transport.send({ jsonrpc: '2.0', id: 2, method: 'test/oversized', params: {} }),
-          transport.send({ jsonrpc: '2.0', id: 3, method: 'test/normal', params: {} })
+          transport.send({
+            jsonrpc: "2.0",
+            id: 1,
+            method: "test/normal",
+            params: {},
+          }),
+          transport.send({
+            jsonrpc: "2.0",
+            id: 2,
+            method: "test/oversized",
+            params: {},
+          }),
+          transport.send({
+            jsonrpc: "2.0",
+            id: 3,
+            method: "test/normal",
+            params: {},
+          }),
         ];
 
         // All should be rejected when buffer limit is exceeded
         const results = await Promise.allSettled(promises);
 
         // At least the oversized one should be rejected
-        const rejectedCount = results.filter(r => r.status === 'rejected').length;
+        const rejectedCount = results.filter(
+          (r) => r.status === "rejected",
+        ).length;
         expect(rejectedCount).toBeGreaterThan(0);
 
         // The rejection should mention buffer limit
         const bufferLimitError = results.find(
-          r => r.status === 'rejected' &&
-            (r as PromiseRejectedResult).reason.message.includes('buffer limit')
+          (r) =>
+            r.status === "rejected" &&
+            (r as PromiseRejectedResult).reason.message.includes(
+              "buffer limit",
+            ),
         );
         expect(bufferLimitError).toBeDefined();
-
       } finally {
         transport.close();
       }
     }, 40000);
 
-    it('should handle malformed JSON gracefully', async () => {
-      const malformedServerPath = path.join(__dirname, '__test_servers__', 'malformed-server.js');
+    it("should handle malformed JSON gracefully", async () => {
+      const malformedServerPath = path.join(
+        __dirname,
+        "__test_servers__",
+        "malformed-server.js",
+      );
       const malformedServerCode = `
 const readline = require('readline');
 
@@ -477,17 +510,21 @@ rl.on('line', (line) => {
 
       writeFileSync(malformedServerPath, malformedServerCode);
 
-      const transport = StdioTransport.create('node', [malformedServerPath], 25000);
+      const transport = StdioTransport.create(
+        "node",
+        [malformedServerPath],
+        25000,
+      );
 
       try {
         await transport.connect();
 
         // Should still receive valid response despite malformed JSON
         const result = await transport.send({
-          jsonrpc: '2.0',
+          jsonrpc: "2.0",
           id: 1,
-          method: 'test/malformed',
-          params: {}
+          method: "test/malformed",
+          params: {},
         });
 
         expect(result).toEqual({ success: true });

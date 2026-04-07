@@ -32,20 +32,32 @@
  * - CWE-400: Uncontrolled Resource Consumption
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class ModelDosViaToolsRule implements ISecurityRule {
-  code = 'SEC-028';
-  name = 'Model Denial of Service via Tool Abuse';
-  severity: 'high' = 'high';
+  code = "SEC-028";
+  name = "Model Denial of Service via Tool Abuse";
+  severity: "high" = "high";
 
   private readonly EXPENSIVE_TOOL_PATTERNS = [
-    /process.*all/i, /batch/i, /bulk/i, /mass/i,
-    /recursive/i, /iterate/i, /loop/i, /crawl/i,
-    /scan/i, /search.*all/i, /fetch.*all/i, /list.*all/i
+    /process.*all/i,
+    /batch/i,
+    /bulk/i,
+    /mass/i,
+    /recursive/i,
+    /iterate/i,
+    /loop/i,
+    /crawl/i,
+    /scan/i,
+    /search.*all/i,
+    /fetch.*all/i,
+    /list.*all/i,
   ];
 
   private readonly SAFE_MAX_ITEMS = 100;
@@ -63,22 +75,22 @@ export class ModelDosViaToolsRule implements ISecurityRule {
       const isExpensiveTool = this.isExpensiveTool(tool);
 
       if (unboundedParams.length > 0) {
-        const severity = isExpensiveTool ? 'high' : 'medium';
+        const severity = isExpensiveTool ? "high" : "medium";
 
         findings.push({
           severity,
-          message: t('sec_028_model_dos', {
+          message: t("sec_028_model_dos", {
             toolName: tool.name,
-            params: unboundedParams.join(', ')
+            params: unboundedParams.join(", "),
           }),
           component: `tool:${tool.name}`,
           ruleCode: this.code,
-          remediation: t('sec_028_recommendation'),
+          remediation: t("sec_028_recommendation"),
           references: [
-            'OWASP LLM Top 10 2025 - LLM04: Model Denial of Service',
-            'CWE-400: Uncontrolled Resource Consumption',
-            'OWASP API Security - Rate Limiting'
-          ]
+            "OWASP LLM Top 10 2025 - LLM04: Model Denial of Service",
+            "CWE-400: Uncontrolled Resource Consumption",
+            "OWASP API Security - Rate Limiting",
+          ],
         });
       }
     }
@@ -93,7 +105,9 @@ export class ModelDosViaToolsRule implements ISecurityRule {
       return unbounded;
     }
 
-    for (const [propName, propSchema] of Object.entries(tool.inputSchema.properties)) {
+    for (const [propName, propSchema] of Object.entries(
+      tool.inputSchema.properties,
+    )) {
       const schema = propSchema as {
         type?: string | string[];
         maxItems?: number;
@@ -105,14 +119,14 @@ export class ModelDosViaToolsRule implements ISecurityRule {
       const types = Array.isArray(schema.type) ? schema.type : [schema.type];
 
       // Check array parameters
-      if (types.includes('array')) {
+      if (types.includes("array")) {
         if (!schema.maxItems || schema.maxItems > this.SAFE_MAX_ITEMS) {
           unbounded.push(`${propName} (array without maxItems)`);
         }
       }
 
       // Check string parameters
-      if (types.includes('string')) {
+      if (types.includes("string")) {
         if (!schema.maxLength || schema.maxLength > this.SAFE_MAX_LENGTH) {
           unbounded.push(`${propName} (string without maxLength)`);
         }
@@ -124,16 +138,16 @@ export class ModelDosViaToolsRule implements ISecurityRule {
 
   private isExpensiveTool(tool: McpTool): boolean {
     // Check name pattern
-    const nameMatches = this.EXPENSIVE_TOOL_PATTERNS.some(pattern =>
-      pattern.test(tool.name)
+    const nameMatches = this.EXPENSIVE_TOOL_PATTERNS.some((pattern) =>
+      pattern.test(tool.name),
     );
     if (nameMatches) return true;
 
     // Check description
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
-      const descMatches = this.EXPENSIVE_TOOL_PATTERNS.some(pattern =>
-        pattern.test(descLower)
+      const descMatches = this.EXPENSIVE_TOOL_PATTERNS.some((pattern) =>
+        pattern.test(descLower),
       );
       if (descMatches) return true;
     }

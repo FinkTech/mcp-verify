@@ -12,8 +12,8 @@
  * to help network administrators identify mcp-verify traffic.
  */
 
-const PACKAGE_VERSION = '1.0.0';
-const GITHUB_URL = 'https://github.com/FinkTech/mcp-verify';
+const PACKAGE_VERSION = "1.0.0";
+const GITHUB_URL = "https://github.com/FinkTech/mcp-verify";
 
 /**
  * Get the User-Agent string for HTTP requests
@@ -27,13 +27,15 @@ export function getUserAgent(): string {
 /**
  * Get default headers including User-Agent and Audit markers
  */
-export function getDefaultHeaders(customHeaders: Record<string, string> = {}): Record<string, string> {
+export function getDefaultHeaders(
+  customHeaders: Record<string, string> = {},
+): Record<string, string> {
   return {
-    'User-Agent': getUserAgent(),
-    'X-Audit-Tool': 'mcp-verify',
-    'X-Audit-Version': PACKAGE_VERSION,
-    'X-Scanner': 'mcp-verify',
-    ...customHeaders
+    "User-Agent": getUserAgent(),
+    "X-Audit-Tool": "mcp-verify",
+    "X-Audit-Version": PACKAGE_VERSION,
+    "X-Scanner": "mcp-verify",
+    ...customHeaders,
   };
 }
 

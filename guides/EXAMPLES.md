@@ -65,7 +65,7 @@ mcp-verify validate http://localhost:3000 --transport http
 
 ```bash
 # Basic security scan
-mcp-verify validate "node server.js" 
+mcp-verify validate "node server.js"
 
 # Security scan with detailed output
 mcp-verify validate \"node server.js\" --verbose
@@ -110,7 +110,7 @@ mcp-verify validate "node server.js" \
 
 ```bash
 # Quality analysis only
-mcp-verify validate "node server.js" 
+mcp-verify validate "node server.js"
 
 # Quality with detailed report
 mcp-verify validate \"node server.js\" --verbose
@@ -204,7 +204,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Install dependencies
         run: npm install
@@ -244,9 +244,9 @@ mcp_validation:
     - npm install
     - npm run build
     - node dist/mcp-verify.js validate \
-        "node ../server.js" \
-         \
-        --format json
+      "node ../server.js" \
+      \
+      --format json
   artifacts:
     reports:
       coverage_report:
@@ -278,7 +278,7 @@ jobs:
             cd mcp-verify
             node dist/mcp-verify.js validate \
               "node ../server.js" \
-              
+
 ```
 
 ### With LLM in CI/CD
@@ -557,10 +557,7 @@ Update your Claude Desktop config (`~/Library/Application Support/Claude/claude_
   "mcpServers": {
     "my-protected-server": {
       "command": "node",
-      "args": [
-        "/path/to/stdio-proxy-client.js",
-        "http://localhost:3000"
-      ]
+      "args": ["/path/to/stdio-proxy-client.js", "http://localhost:3000"]
     }
   }
 }
@@ -670,7 +667,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Install mcp-verify
         run: |
@@ -725,6 +722,7 @@ mcp-verify validate "node your-server.js"
 ```
 
 **Expected Output:**
+
 ```
 ✓ Testing handshake
 ✓ Discovering capabilities
@@ -847,7 +845,7 @@ mcp-verify validate "node server.js" --json-stdout | \
 mcp-verify validate "node server.js"
 
 # Then add features incrementally
-mcp-verify validate "node server.js" 
+mcp-verify validate "node server.js"
 mcp-verify validate \"node server.js\" --llm ollama:llama3.2
 ```
 
@@ -871,7 +869,7 @@ fi
 # TypeScript + ESLint + mcp-verify
 npm run type-check && \
 npm run lint && \
-mcp-verify validate "node server.js" 
+mcp-verify validate "node server.js"
 ```
 
 ### Tip 4: Cache LLM Results
@@ -909,6 +907,7 @@ mcp-verify validate "python server.py" --no-sandbox
 
 **Q: How do I know which format to use?**
 A:
+
 - JSON: Programmatic processing
 - HTML: Human review
 - SARIF: GitHub Security tab
@@ -916,9 +915,9 @@ A:
 
 **Q: Can I validate multiple servers at once?**
 A: Not yet (planned for v1.2). Use shell scripts for now:
+
 ```bash
 for server in server1.js server2.js; do
   mcp-verify validate "node $server"
 done
 ```
-

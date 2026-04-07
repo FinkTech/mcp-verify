@@ -11,12 +11,15 @@
  * Provides translation functions for CLI messages
  */
 
-import { Language, translations } from '../../../../libs/core/domain/reporting/i18n';
-import * as os from 'os';
-import * as fs from 'fs';
-import * as path from 'path';
+import {
+  Language,
+  translations,
+} from "../../../../libs/core/domain/reporting/i18n";
+import * as os from "os";
+import * as fs from "fs";
+import * as path from "path";
 
-let currentLanguage: Language = 'en';
+let currentLanguage: Language = "en";
 
 /**
  * Get user's preferred language from:
@@ -28,17 +31,17 @@ let currentLanguage: Language = 'en';
 export function detectLanguage(): Language {
   // 1. Check environment variable
   const envLang = process.env.MCP_VERIFY_LANG;
-  if (envLang === 'es' || envLang === 'en') {
+  if (envLang === "es" || envLang === "en") {
     return envLang;
   }
 
   // 2. Check config file
   try {
-    const configDir = path.join(os.homedir(), '.mcp-verify');
-    const configFile = path.join(configDir, 'config.json');
+    const configDir = path.join(os.homedir(), ".mcp-verify");
+    const configFile = path.join(configDir, "config.json");
     if (fs.existsSync(configFile)) {
-      const config = JSON.parse(fs.readFileSync(configFile, 'utf-8'));
-      if (config.language === 'es' || config.language === 'en') {
+      const config = JSON.parse(fs.readFileSync(configFile, "utf-8"));
+      if (config.language === "es" || config.language === "en") {
         return config.language;
       }
     }
@@ -48,12 +51,12 @@ export function detectLanguage(): Language {
 
   // 3. Check system locale
   const locale = Intl.DateTimeFormat().resolvedOptions().locale;
-  if (locale.startsWith('es')) {
-    return 'es';
+  if (locale.startsWith("es")) {
+    return "es";
   }
 
   // 4. Default to English
-  return 'en';
+  return "en";
 }
 
 /**
@@ -82,7 +85,11 @@ export function setLanguage(lang: Language): void {
  * Translate a key with optional parameters
  * Usage: t('welcome_user', { name: 'Fink' }) -> "Welcome, Fink!"
  */
-export function t(key: keyof typeof translations.en, params?: Record<string, string | number>, lang?: Language): string {
+export function t(
+  key: keyof typeof translations.en,
+  params?: Record<string, string | number>,
+  lang?: Language,
+): string {
   const targetLang = lang || currentLanguage;
   let translation = (translations[targetLang] as typeof translations.en)[key];
   if (!translation) {
@@ -91,8 +98,11 @@ export function t(key: keyof typeof translations.en, params?: Record<string, str
   }
 
   if (params) {
-    Object.keys(params).forEach(param => {
-      translation = translation.replace(new RegExp(`{${param}}`, 'g'), String(params[param]));
+    Object.keys(params).forEach((param) => {
+      translation = translation.replace(
+        new RegExp(`{${param}}`, "g"),
+        String(params[param]),
+      );
     });
   }
 
@@ -104,8 +114,8 @@ export function t(key: keyof typeof translations.en, params?: Record<string, str
  */
 export function saveLanguagePreference(lang: Language): void {
   try {
-    const configDir = path.join(os.homedir(), '.mcp-verify');
-    const configFile = path.join(configDir, 'config.json');
+    const configDir = path.join(os.homedir(), ".mcp-verify");
+    const configFile = path.join(configDir, "config.json");
 
     if (!fs.existsSync(configDir)) {
       fs.mkdirSync(configDir, { recursive: true });
@@ -113,7 +123,7 @@ export function saveLanguagePreference(lang: Language): void {
 
     let config: Record<string, unknown> = {};
     if (fs.existsSync(configFile)) {
-      config = JSON.parse(fs.readFileSync(configFile, 'utf-8'));
+      config = JSON.parse(fs.readFileSync(configFile, "utf-8"));
     }
 
     config.language = lang;

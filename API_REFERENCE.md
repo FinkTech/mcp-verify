@@ -7,6 +7,7 @@ Guide for generating and maintaining API documentation for mcp-verify using Type
 ## 🎯 Overview
 
 This document explains how to:
+
 - Document your code with JSDoc comments
 - Generate API documentation with TypeDoc
 - Follow documentation best practices
@@ -37,6 +38,7 @@ start docs/api/index.html # Windows
 ### What is TypeDoc?
 
 TypeDoc is a documentation generator for TypeScript projects. It:
+
 - Parses TypeScript source files
 - Extracts JSDoc comments
 - Generates structured HTML documentation
@@ -74,11 +76,7 @@ npm install --save-dev typedoc
     "apps/cli-verifier/src/index.ts"
   ],
   "out": "docs/api",
-  "exclude": [
-    "**/*.test.ts",
-    "**/__tests__/**",
-    "**/node_modules/**"
-  ],
+  "exclude": ["**/*.test.ts", "**/__tests__/**", "**/node_modules/**"],
   "excludePrivate": true,
   "excludeProtected": false,
   "excludeInternal": false,
@@ -122,7 +120,7 @@ Add to `package.json`:
 
 ### Basic JSDoc Template
 
-```typescript
+````typescript
 /**
  * Brief description of what the function/class does.
  *
@@ -146,7 +144,7 @@ Add to `package.json`:
 export function myFunction(paramName: string, options: Options): Result {
   // Implementation
 }
-```
+````
 
 ---
 
@@ -156,7 +154,7 @@ export function myFunction(paramName: string, options: Options): Result {
 
 **File**: `libs/core/domain/security/rules/sql-injection-rule.ts`
 
-```typescript
+````typescript
 /**
  * Detects potential SQL injection vulnerabilities in MCP tool definitions.
  *
@@ -265,15 +263,15 @@ export class SqlInjectionRule implements ISecurityRule {
    */
   getRuleMetadata(): RuleMetadata {
     return {
-      id: 'SEC-001',
-      name: 'SQL Injection Detection',
-      description: 'Detects SQL injection vulnerabilities',
-      severity: 'critical',
-      category: 'injection',
+      id: "SEC-001",
+      name: "SQL Injection Detection",
+      description: "Detects SQL injection vulnerabilities",
+      severity: "critical",
+      category: "injection",
       references: [
-        'https://owasp.org/www-community/attacks/SQL_Injection',
-        'https://cwe.mitre.org/data/definitions/89.html'
-      ]
+        "https://owasp.org/www-community/attacks/SQL_Injection",
+        "https://cwe.mitre.org/data/definitions/89.html",
+      ],
     };
   }
 
@@ -289,13 +287,13 @@ export class SqlInjectionRule implements ISecurityRule {
     return [];
   }
 }
-```
+````
 
 ### Example 2: Transport Interface
 
 **File**: `libs/transport/types.ts`
 
-```typescript
+````typescript
 /**
  * Configuration options for transport connections.
  *
@@ -321,7 +319,7 @@ export interface TransportOptions {
    * - `none`: No retries
    * @defaultValue 'exponential'
    */
-  retryStrategy?: 'exponential' | 'linear' | 'none';
+  retryStrategy?: "exponential" | "linear" | "none";
 
   /**
    * Initial delay between retries in milliseconds.
@@ -469,13 +467,13 @@ export interface ITransport {
    */
   isConnected(): boolean;
 }
-```
+````
 
 ### Example 3: Validator Use Case
 
 **File**: `libs/core/use-cases/validator/validator.ts`
 
-```typescript
+````typescript
 /**
  * Configuration options for the MCP validator.
  *
@@ -495,7 +493,7 @@ export interface ValidatorOptions {
    */
   llmConfig?: {
     /** Provider name: 'anthropic', 'openai', or 'ollama' */
-    provider: 'anthropic' | 'openai' | 'ollama';
+    provider: "anthropic" | "openai" | "ollama";
     /** Model identifier (e.g., 'claude-3-haiku-20240307') */
     model: string;
     /** API key (not needed for Ollama) */
@@ -512,7 +510,7 @@ export interface ValidatorOptions {
    * Report formats to generate.
    * @defaultValue ['json']
    */
-  formats?: Array<'json' | 'html' | 'sarif' | 'markdown'>;
+  formats?: Array<"json" | "html" | "sarif" | "markdown">;
 
   /**
    * Minimum security score to pass validation (0-100).
@@ -618,11 +616,11 @@ export class MCPValidator {
     this.transport = transport;
     this.options = {
       enableLLM: false,
-      outputDir: './reportes',
-      formats: ['json'],
+      outputDir: "./reportes",
+      formats: ["json"],
       minSecurityScore: 50,
       includeDetails: true,
-      ...options
+      ...options,
     };
 
     this.securityScanner = new SecurityScanner();
@@ -696,7 +694,7 @@ export class MCPValidator {
     return {} as HandshakeResult;
   }
 }
-```
+````
 
 ---
 
@@ -740,7 +738,9 @@ Content-Type: application/json
   "id": 1,
   "result": {
     "success": true,
-    "data": { /* tool response */ }
+    "data": {
+      /* tool response */
+    }
   }
 }
 ```
@@ -813,6 +813,7 @@ x-client-id: my-custom-client-123
 ```
 
 **Priority Chain**:
+
 1. `x-client-id` header (highest priority)
 2. `x-forwarded-for` header (first IP in chain)
 3. `req.socket.remoteAddress` (direct connection IP)
@@ -874,22 +875,22 @@ jq -s 'group_by(.layer) | map({layer: .[0].layer, avgLatency: (map(.latency_ms) 
 
 ### Error Codes
 
-| Code | Meaning | Description |
-|------|---------|-------------|
-| `-32003` | Security Block | Request blocked by Security Gateway |
-| `429` | Too Many Requests | Client in backoff period (Strike 1 or 2) |
-| `503` | Service Unavailable | Client in PANIC MODE (Strike 3, permanent block) |
-| `-32700` | Parse Error | Invalid JSON |
-| `-32600` | Invalid Request | Not JSON-RPC 2.0 |
-| `-32601` | Method Not Found | Unknown method |
-| `-32602` | Invalid Params | Malformed parameters |
+| Code     | Meaning             | Description                                      |
+| -------- | ------------------- | ------------------------------------------------ |
+| `-32003` | Security Block      | Request blocked by Security Gateway              |
+| `429`    | Too Many Requests   | Client in backoff period (Strike 1 or 2)         |
+| `503`    | Service Unavailable | Client in PANIC MODE (Strike 3, permanent block) |
+| `-32700` | Parse Error         | Invalid JSON                                     |
+| `-32600` | Invalid Request     | Not JSON-RPC 2.0                                 |
+| `-32601` | Method Not Found    | Unknown method                                   |
+| `-32602` | Invalid Params      | Malformed parameters                             |
 
 ---
 
 ### TypeScript Client Example
 
 ```typescript
-import fetch from 'node-fetch';
+import fetch from "node-fetch";
 
 interface ProxyClient {
   call(tool: string, args: any): Promise<any>;
@@ -900,30 +901,30 @@ class MCPProxyClient implements ProxyClient {
 
   constructor(
     private readonly proxyUrl: string,
-    private readonly clientId?: string
+    private readonly clientId?: string,
   ) {}
 
   async call(tool: string, args: any): Promise<any> {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json",
     };
 
     if (this.clientId) {
-      headers['x-client-id'] = this.clientId;
+      headers["x-client-id"] = this.clientId;
     }
 
     const response = await fetch(this.proxyUrl, {
-      method: 'POST',
+      method: "POST",
       headers,
       body: JSON.stringify({
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         id: ++this.requestId,
-        method: 'tools/call',
+        method: "tools/call",
         params: {
           name: tool,
-          arguments: args
-        }
-      })
+          arguments: args,
+        },
+      }),
     });
 
     const result = await response.json();
@@ -936,7 +937,9 @@ class MCPProxyClient implements ProxyClient {
         // Panic Mode
         throw new PanicModeError(result.error.data);
       } else {
-        throw new Error(`RPC Error ${result.error.code}: ${result.error.message}`);
+        throw new Error(
+          `RPC Error ${result.error.code}: ${result.error.message}`,
+        );
       }
     }
 
@@ -957,18 +960,18 @@ class PanicModeError extends Error {
 }
 
 // Usage
-const client = new MCPProxyClient('http://localhost:3000', 'my-app-v1.0');
+const client = new MCPProxyClient("http://localhost:3000", "my-app-v1.0");
 
 try {
-  const result = await client.call('get_user', { userId: '123' });
-  console.log('Success:', result);
+  const result = await client.call("get_user", { userId: "123" });
+  console.log("Success:", result);
 } catch (error) {
   if (error instanceof SecurityBlockError) {
-    console.error('Blocked:', error.data.findings);
+    console.error("Blocked:", error.data.findings);
   } else if (error instanceof PanicModeError) {
-    console.error('Panic Mode:', error.data);
+    console.error("Panic Mode:", error.data);
   } else {
-    console.error('Error:', error);
+    console.error("Error:", error);
   }
 }
 ```
@@ -1075,14 +1078,14 @@ jq -s '[.[] | select(.cacheHit != null)] | group_by(.cacheHit) | map({cached: .[
 
 Expected latencies under normal operation:
 
-| Metric | Target | Notes |
-|--------|--------|-------|
-| Layer 1 (Fast Rules) | <10ms | Pattern-based detection |
-| Layer 2 (Suspicious) | <50ms | Heuristic analysis |
-| Layer 3 (LLM) | 500-2000ms | External API call (opt-in) |
-| Cache Hit | <1ms | SHA-256 lookup |
-| Full Request (L1+L2, cache miss) | <60ms | Most common case |
-| Full Request (L1+L2, cache hit) | <2ms | Ideal case |
+| Metric                           | Target     | Notes                      |
+| -------------------------------- | ---------- | -------------------------- |
+| Layer 1 (Fast Rules)             | <10ms      | Pattern-based detection    |
+| Layer 2 (Suspicious)             | <50ms      | Heuristic analysis         |
+| Layer 3 (LLM)                    | 500-2000ms | External API call (opt-in) |
+| Cache Hit                        | <1ms       | SHA-256 lookup             |
+| Full Request (L1+L2, cache miss) | <60ms      | Most common case           |
+| Full Request (L1+L2, cache hit)  | <2ms       | Ideal case                 |
 
 **Throughput**: ~1000 requests/second (Layers 1+2 only, with cache)
 
@@ -1127,7 +1130,7 @@ node dist/mcp-verify.js proxy \
 
 ### 2. Include Examples
 
-```typescript
+````typescript
 // ❌ Bad: No example
 /**
  * Validates a tool definition.
@@ -1156,11 +1159,11 @@ node dist/mcp-verify.js proxy \
  * }
  * ```
  */
-```
+````
 
 ### 3. Document Edge Cases
 
-```typescript
+````typescript
 /**
  * Calculates security score from findings.
  *
@@ -1188,7 +1191,7 @@ node dist/mcp-verify.js proxy \
 function calculateScore(findings: SecurityFinding[]): number {
   // Implementation
 }
-```
+````
 
 ### 4. Use Proper Type Annotations
 
@@ -1206,7 +1209,10 @@ function calculateScore(findings: SecurityFinding[]): number {
  * @param options.retries - Maximum retry attempts
  * @returns Promise resolving to the connection result
  */
-function connect(options: { timeout: number; retries: number }): Promise<Result>
+function connect(options: {
+  timeout: number;
+  retries: number;
+}): Promise<Result>;
 ```
 
 ### 5. Link Related Documentation
@@ -1227,7 +1233,7 @@ export interface ISecurityRule {
 
 ### 6. Document Deprecations
 
-```typescript
+````typescript
 /**
  * Legacy method for validation.
  *
@@ -1246,25 +1252,25 @@ export interface ISecurityRule {
 runValidation(): ValidationResult {
   // Implementation
 }
-```
+````
 
 ---
 
 ## 📊 JSDoc Tags Reference
 
-| Tag | Purpose | Example |
-|-----|---------|---------|
-| `@param` | Document parameters | `@param name - User's name` |
-| `@returns` | Document return value | `@returns User object` |
-| `@throws` | Document thrown errors | `@throws {Error} When invalid` |
-| `@example` | Show usage example | See examples above |
-| `@see` | Link related docs | `@see {@link OtherClass}` |
-| `@category` | Group in docs | `@category Security` |
-| `@deprecated` | Mark as deprecated | `@deprecated Use newFunc` |
-| `@internal` | Mark as internal | `@internal` |
-| `@defaultValue` | Default value | `@defaultValue 5000` |
-| `@remarks` | Additional notes | `@remarks This is async` |
-| `@typeParam` | Generic type param | `@typeParam T - Item type` |
+| Tag             | Purpose                | Example                        |
+| --------------- | ---------------------- | ------------------------------ |
+| `@param`        | Document parameters    | `@param name - User's name`    |
+| `@returns`      | Document return value  | `@returns User object`         |
+| `@throws`       | Document thrown errors | `@throws {Error} When invalid` |
+| `@example`      | Show usage example     | See examples above             |
+| `@see`          | Link related docs      | `@see {@link OtherClass}`      |
+| `@category`     | Group in docs          | `@category Security`           |
+| `@deprecated`   | Mark as deprecated     | `@deprecated Use newFunc`      |
+| `@internal`     | Mark as internal       | `@internal`                    |
+| `@defaultValue` | Default value          | `@defaultValue 5000`           |
+| `@remarks`      | Additional notes       | `@remarks This is async`       |
+| `@typeParam`    | Generic type param     | `@typeParam T - Item type`     |
 
 ---
 
@@ -1349,4 +1355,3 @@ Before submitting code, ensure:
 - [TSDoc Standard](https://tsdoc.org/)
 - [JSDoc Cheat Sheet](https://devhints.io/jsdoc)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
-

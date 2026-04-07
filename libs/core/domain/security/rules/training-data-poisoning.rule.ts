@@ -30,26 +30,46 @@
  * - Backdoor Attacks on Language Models
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class TrainingDataPoisoningRule implements ISecurityRule {
-  code = 'SEC-027';
-  name = 'Training Data Poisoning via MCP';
-  severity: 'medium' = 'medium';
+  code = "SEC-027";
+  name = "Training Data Poisoning via MCP";
+  severity: "medium" = "medium";
 
   private readonly TRAINING_TOOL_PATTERNS = [
-    /train/i, /finetune/i, /fine.*tune/i, /retrain/i,
-    /index/i, /embed/i, /vectorize/i, /ingest/i,
-    /update.*model/i, /improve.*model/i, /learn/i
+    /train/i,
+    /finetune/i,
+    /fine.*tune/i,
+    /retrain/i,
+    /index/i,
+    /embed/i,
+    /vectorize/i,
+    /ingest/i,
+    /update.*model/i,
+    /improve.*model/i,
+    /learn/i,
   ];
 
   private readonly TRAINING_KEYWORDS = [
-    'training_data', 'train_data', 'corpus', 'dataset',
-    'documents', 'examples', 'samples', 'labels',
-    'annotations', 'embeddings', 'vectors', 'feedback'
+    "training_data",
+    "train_data",
+    "corpus",
+    "dataset",
+    "documents",
+    "examples",
+    "samples",
+    "labels",
+    "annotations",
+    "embeddings",
+    "vectors",
+    "feedback",
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -68,17 +88,17 @@ export class TrainingDataPoisoningRule implements ISecurityRule {
         if (!hasValidation) {
           findings.push({
             severity: this.severity,
-            message: t('sec_027_training_poisoning', {
-              toolName: tool.name
+            message: t("sec_027_training_poisoning", {
+              toolName: tool.name,
             }),
             component: `tool:${tool.name}`,
             ruleCode: this.code,
-            remediation: t('sec_027_recommendation'),
+            remediation: t("sec_027_recommendation"),
             references: [
-              'OWASP LLM Top 10 2025 - LLM03: Training Data Poisoning',
-              'CWE-506: Embedded Malicious Code',
-              'Backdoor Attacks on Language Models (2023)'
-            ]
+              "OWASP LLM Top 10 2025 - LLM03: Training Data Poisoning",
+              "CWE-506: Embedded Malicious Code",
+              "Backdoor Attacks on Language Models (2023)",
+            ],
           });
         }
       }
@@ -89,16 +109,16 @@ export class TrainingDataPoisoningRule implements ISecurityRule {
 
   private isTrainingRelatedTool(tool: McpTool): boolean {
     // Check tool name
-    const nameMatches = this.TRAINING_TOOL_PATTERNS.some(pattern =>
-      pattern.test(tool.name)
+    const nameMatches = this.TRAINING_TOOL_PATTERNS.some((pattern) =>
+      pattern.test(tool.name),
     );
     if (nameMatches) return true;
 
     // Check description
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
-      const descMatches = this.TRAINING_TOOL_PATTERNS.some(pattern =>
-        pattern.test(descLower)
+      const descMatches = this.TRAINING_TOOL_PATTERNS.some((pattern) =>
+        pattern.test(descLower),
       );
       if (descMatches) return true;
     }
@@ -107,8 +127,8 @@ export class TrainingDataPoisoningRule implements ISecurityRule {
     if (tool.inputSchema?.properties) {
       for (const propName of Object.keys(tool.inputSchema.properties)) {
         const propLower = propName.toLowerCase();
-        const hasTrainingParam = this.TRAINING_KEYWORDS.some(keyword =>
-          propLower.includes(keyword)
+        const hasTrainingParam = this.TRAINING_KEYWORDS.some((keyword) =>
+          propLower.includes(keyword),
         );
         if (hasTrainingParam) return true;
       }
@@ -123,10 +143,12 @@ export class TrainingDataPoisoningRule implements ISecurityRule {
     }
 
     // Check if training data parameters have validation constraints
-    for (const [propName, propSchema] of Object.entries(tool.inputSchema.properties)) {
+    for (const [propName, propSchema] of Object.entries(
+      tool.inputSchema.properties,
+    )) {
       const propLower = propName.toLowerCase();
-      const isTrainingParam = this.TRAINING_KEYWORDS.some(keyword =>
-        propLower.includes(keyword)
+      const isTrainingParam = this.TRAINING_KEYWORDS.some((keyword) =>
+        propLower.includes(keyword),
       );
 
       if (isTrainingParam) {

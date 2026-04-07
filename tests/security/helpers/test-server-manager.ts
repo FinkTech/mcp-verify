@@ -5,14 +5,14 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import { spawn, ChildProcess } from 'child_process';
-import * as path from 'path';
-import * as net from 'net';
+import { spawn, ChildProcess } from "child_process";
+import * as path from "path";
+import * as net from "net";
 
 export interface TestServerOptions {
   profile: string;
   lang?: string;
-  transport?: 'stdio' | 'http' | 'sse';
+  transport?: "stdio" | "http" | "sse";
   timeout?: number;
 }
 
@@ -33,15 +33,18 @@ export interface TestServerOptions {
  */
 export class TestServerManager {
   private process: ChildProcess | null = null;
-  private profile: string = '';
-  private lang: string = 'en';
-  private transport: 'stdio' | 'http' | 'sse' = 'stdio';
+  private profile: string = "";
+  private lang: string = "en";
+  private transport: "stdio" | "http" | "sse" = "stdio";
   private port: number = 0;
   private serverPath: string;
 
   constructor() {
     // Path to configurable-server.ts
-    this.serverPath = path.resolve(__dirname, '../../fixtures/vulnerable_servers/configurable-server.ts');
+    this.serverPath = path.resolve(
+      __dirname,
+      "../../fixtures/vulnerable_servers/configurable-server.ts",
+    );
   }
 
   /**
@@ -54,13 +57,13 @@ export class TestServerManager {
     return new Promise((resolve, reject) => {
       const server = net.createServer();
       server.unref();
-      server.on('error', reject);
+      server.on("error", reject);
 
       server.listen(0, () => {
         const address = server.address();
-        if (!address || typeof address === 'string') {
+        if (!address || typeof address === "string") {
           server.close();
-          reject(new Error('Failed to allocate port'));
+          reject(new Error("Failed to allocate port"));
           return;
         }
 
@@ -78,23 +81,23 @@ export class TestServerManager {
    */
   async start(options: TestServerOptions): Promise<void> {
     if (this.process) {
-      throw new Error('Server is already running. Call stop() first.');
+      throw new Error("Server is already running. Call stop() first.");
     }
 
     this.profile = options.profile;
-    this.lang = options.lang || 'en';
-    this.transport = options.transport || 'stdio';
+    this.lang = options.lang || "en";
+    this.transport = options.transport || "stdio";
 
     // Allocate port for HTTP/SSE transports
-    if (this.transport === 'http' || this.transport === 'sse') {
+    if (this.transport === "http" || this.transport === "sse") {
       this.port = await this.allocatePort();
     }
 
     // Build command arguments
-    const isTs = this.serverPath.endsWith('.ts');
-    const executable = isTs ? 'npx' : 'node';
-    const args = isTs ? ['ts-node', this.serverPath] : [this.serverPath];
-    
+    const isTs = this.serverPath.endsWith(".ts");
+    const executable = isTs ? "npx" : "node";
+    const args = isTs ? ["ts-node", this.serverPath] : [this.serverPath];
+
     args.push(`--profile=${this.profile}`);
     args.push(`--lang=${this.lang}`);
 
@@ -104,27 +107,27 @@ export class TestServerManager {
 
     // Spawn server process
     this.process = spawn(executable, args, {
-      stdio: this.transport === 'stdio' ? ['pipe', 'pipe', 'pipe'] : 'ignore',
-      shell: process.platform === 'win32', // Required for npx on Windows
+      stdio: this.transport === "stdio" ? ["pipe", "pipe", "pipe"] : "ignore",
+      shell: process.platform === "win32", // Required for npx on Windows
       env: {
         ...process.env,
-        NODE_ENV: 'test',
+        NODE_ENV: "test",
       },
     });
 
     // Error handling
-    this.process.on('error', (error) => {
+    this.process.on("error", (error) => {
       throw new Error(`Failed to start test server: ${error.message}`);
     });
 
-    this.process.on('exit', (code, signal) => {
+    this.process.on("exit", (code, signal) => {
       if (code !== 0 && code !== null && !signal) {
         console.error(`Test server exited unexpectedly with code ${code}`);
       }
     });
 
     // Wait for server to be ready (stdio servers are immediately ready)
-    if (this.transport === 'stdio') {
+    if (this.transport === "stdio") {
       await this.waitForReady(options.timeout || 10000);
     } else {
       // For HTTP/SSE, wait for port to be listening
@@ -164,18 +167,20 @@ export class TestServerManager {
     return new Promise((resolve, reject) => {
       const checkPort = () => {
         if (Date.now() - startTime > timeout) {
-          reject(new Error(`Server port ${port} not listening within ${timeout}ms`));
+          reject(
+            new Error(`Server port ${port} not listening within ${timeout}ms`),
+          );
           return;
         }
 
-        const socket = net.createConnection(port, 'localhost');
+        const socket = net.createConnection(port, "localhost");
 
-        socket.on('connect', () => {
+        socket.on("connect", () => {
           socket.destroy();
           resolve();
         });
 
-        socket.on('error', () => {
+        socket.on("error", () => {
           // Port not ready yet, retry
           setTimeout(checkPort, 100);
         });
@@ -203,11 +208,11 @@ export class TestServerManager {
       // Force kill after 3 seconds
       const forceKillTimer = setTimeout(() => {
         if (!terminated) {
-          process.kill('SIGKILL');
+          process.kill("SIGKILL");
         }
       }, 3000);
 
-      process.on('exit', () => {
+      process.on("exit", () => {
         terminated = true;
         clearTimeout(forceKillTimer);
         this.process = null;
@@ -215,7 +220,7 @@ export class TestServerManager {
       });
 
       // Send graceful termination signal
-      process.kill('SIGTERM');
+      process.kill("SIGTERM");
     });
   }
 
@@ -225,13 +230,15 @@ export class TestServerManager {
    * @returns string - Target specification for mcp-verify
    */
   getTarget(): string {
-    if (this.transport === 'stdio') {
-      const isTs = this.serverPath.endsWith('.ts');
-      const cmd = isTs ? `npx ts-node "${this.serverPath}"` : `node "${this.serverPath}"`;
+    if (this.transport === "stdio") {
+      const isTs = this.serverPath.endsWith(".ts");
+      const cmd = isTs
+        ? `npx ts-node "${this.serverPath}"`
+        : `node "${this.serverPath}"`;
       return `${cmd} --profile=${this.profile} --lang=${this.lang}`;
-    } else if (this.transport === 'http') {
+    } else if (this.transport === "http") {
       return `http://localhost:${this.port}`;
-    } else if (this.transport === 'sse') {
+    } else if (this.transport === "sse") {
       return `http://localhost:${this.port}/sse`;
     }
 

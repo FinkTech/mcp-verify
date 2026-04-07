@@ -12,50 +12,55 @@
  * Now dynamically generates suggestions from core translations for all rules (SEC-001 to SEC-060).
  */
 
-import * as vscode from 'vscode';
-import * as path from 'path';
-import * as fs from 'fs';
-import { translations, Language } from '@mcp-verify/core';
+import * as vscode from "vscode";
+import * as path from "path";
+import * as fs from "fs";
+import { translations, Language } from "@mcp-verify/core";
 
 /**
  * Get user language setting
  */
 function getLanguage(): Language {
-    const config = vscode.workspace.getConfiguration('mcpVerify');
-    const lang = config.get<string>('language');
+  const config = vscode.workspace.getConfiguration("mcpVerify");
+  const lang = config.get<string>("language");
 
-    if (lang === 'es' || lang === 'en') {
-        return lang;
-    }
+  if (lang === "es" || lang === "en") {
+    return lang;
+  }
 
-    return vscode.env.language.startsWith('es') ? 'es' : 'en';
+  return vscode.env.language.startsWith("es") ? "es" : "en";
 }
 
 /**
  * Get translated message
  */
 function t(key: string): string {
-    const lang = getLanguage();
-    // @ts-ignore
-    return translations[lang][key] || translations['en'][key] || key;
+  const lang = getLanguage();
+  // @ts-ignore
+  return translations[lang][key] || translations["en"][key] || key;
 }
 
 /**
  * Security rule suggestions for rules SEC-001 to SEC-021 (hardcoded legacy format)
  * Note: Rules SEC-022 to SEC-060 are dynamically generated from core translations
  */
-const LEGACY_SECURITY_SUGGESTIONS: Record<string, {
+const LEGACY_SECURITY_SUGGESTIONS: Record<
+  string,
+  {
     title: string;
     problem: string;
     solution: string;
     example: string;
     references: string[];
-}> = {
-    'SEC-001': {
-        title: 'SQL Injection Prevention',
-        problem: 'Direct string interpolation in SQL queries allows attackers to inject malicious SQL code, potentially leading to data theft, modification, or deletion.',
-        solution: 'Use parameterized queries or prepared statements. Never concatenate user input directly into SQL strings.',
-        example: `// Vulnerable
+  }
+> = {
+  "SEC-001": {
+    title: "SQL Injection Prevention",
+    problem:
+      "Direct string interpolation in SQL queries allows attackers to inject malicious SQL code, potentially leading to data theft, modification, or deletion.",
+    solution:
+      "Use parameterized queries or prepared statements. Never concatenate user input directly into SQL strings.",
+    example: `// Vulnerable
 const query = \`SELECT * FROM users WHERE id = \${userId}\`;
 
 // Secure - Parameterized query
@@ -64,16 +69,18 @@ db.query(query, [userId]);
 
 // Secure - ORM with escaping
 await User.findOne({ where: { id: userId } });`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/89.html'
-        ]
-    },
-    'SEC-002': {
-        title: 'Command Injection Prevention',
-        problem: 'Executing shell commands with user-controlled input allows attackers to run arbitrary system commands.',
-        solution: 'Avoid shell execution when possible. Use array-based APIs, validate input strictly, and escape special characters.',
-        example: `// Vulnerable
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/89.html",
+    ],
+  },
+  "SEC-002": {
+    title: "Command Injection Prevention",
+    problem:
+      "Executing shell commands with user-controlled input allows attackers to run arbitrary system commands.",
+    solution:
+      "Avoid shell execution when possible. Use array-based APIs, validate input strictly, and escape special characters.",
+    example: `// Vulnerable
 exec(\`ls \${userInput}\`);
 
 // Secure - Array form (no shell interpretation)
@@ -84,16 +91,18 @@ if (!/^[a-zA-Z0-9_-]+$/.test(userInput)) {
     throw new Error('Invalid input');
 }
 execFile('ls', [userInput]);`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/OS_Command_Injection_Defense_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/78.html'
-        ]
-    },
-    'SEC-003': {
-        title: 'SSRF Protection',
-        problem: 'Server-Side Request Forgery allows attackers to make the server fetch arbitrary URLs, potentially accessing internal services.',
-        solution: 'Validate URLs against an allowlist of permitted domains. Block private IP ranges and local addresses.',
-        example: `// Vulnerable
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/OS_Command_Injection_Defense_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/78.html",
+    ],
+  },
+  "SEC-003": {
+    title: "SSRF Protection",
+    problem:
+      "Server-Side Request Forgery allows attackers to make the server fetch arbitrary URLs, potentially accessing internal services.",
+    solution:
+      "Validate URLs against an allowlist of permitted domains. Block private IP ranges and local addresses.",
+    example: `// Vulnerable
 fetch(userProvidedUrl);
 
 // Secure - Domain allowlist
@@ -107,16 +116,18 @@ if (isPrivateIP(url.hostname)) {
     throw new Error('Private IPs not allowed');
 }
 fetch(url.toString());`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/918.html'
-        ]
-    },
-    'SEC-004': {
-        title: 'Path Traversal Prevention',
-        problem: 'Path traversal allows attackers to access files outside intended directories using sequences like "../".',
-        solution: 'Normalize paths and verify they stay within allowed directories. Use path.resolve() and check prefixes.',
-        example: `// Vulnerable
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/918.html",
+    ],
+  },
+  "SEC-004": {
+    title: "Path Traversal Prevention",
+    problem:
+      'Path traversal allows attackers to access files outside intended directories using sequences like "../".',
+    solution:
+      "Normalize paths and verify they stay within allowed directories. Use path.resolve() and check prefixes.",
+    example: `// Vulnerable
 const filePath = \`./data/\${userInput}\`;
 fs.readFileSync(filePath);
 
@@ -128,16 +139,18 @@ if (!requestedPath.startsWith(baseDir)) {
     throw new Error('Path traversal detected');
 }
 fs.readFileSync(requestedPath);`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/22.html'
-        ]
-    },
-    'SEC-005': {
-        title: 'Data Leakage Prevention',
-        problem: 'Sensitive data may be exposed through error messages, logs, or responses containing PII, credentials, or internal details.',
-        solution: 'Sanitize outputs, use generic error messages, and implement proper logging that redacts sensitive data.',
-        example: `// Vulnerable - Exposes internal details
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/22.html",
+    ],
+  },
+  "SEC-005": {
+    title: "Data Leakage Prevention",
+    problem:
+      "Sensitive data may be exposed through error messages, logs, or responses containing PII, credentials, or internal details.",
+    solution:
+      "Sanitize outputs, use generic error messages, and implement proper logging that redacts sensitive data.",
+    example: `// Vulnerable - Exposes internal details
 catch (error) {
     return { error: error.stack, dbQuery: query };
 }
@@ -151,16 +164,18 @@ catch (error) {
 // Secure - PII redaction
 const sanitized = redactPII(userData);
 logger.info('User action', { user: sanitized });`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/Error_Handling_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/200.html'
-        ]
-    },
-    'SEC-006': {
-        title: 'XXE Injection Prevention',
-        problem: 'XML External Entity injection allows attackers to read files, perform SSRF, or cause denial of service through malicious XML.',
-        solution: 'Disable external entity processing in XML parsers. Use JSON when possible.',
-        example: `// Vulnerable - Default XML parsing
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Error_Handling_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/200.html",
+    ],
+  },
+  "SEC-006": {
+    title: "XXE Injection Prevention",
+    problem:
+      "XML External Entity injection allows attackers to read files, perform SSRF, or cause denial of service through malicious XML.",
+    solution:
+      "Disable external entity processing in XML parsers. Use JSON when possible.",
+    example: `// Vulnerable - Default XML parsing
 const parser = new DOMParser();
 parser.parseFromString(userXml, 'text/xml');
 
@@ -175,16 +190,18 @@ parser.parseFromString(userXml, 'text/xml', {
 
 // Best - Use JSON instead of XML
 const data = JSON.parse(userInput);`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/611.html'
-        ]
-    },
-    'SEC-007': {
-        title: 'Insecure Deserialization Prevention',
-        problem: 'Deserializing untrusted data can lead to remote code execution, injection attacks, or privilege escalation.',
-        solution: 'Never deserialize untrusted data. Use safe formats like JSON. Implement integrity checks.',
-        example: `// Vulnerable - Unsafe eval/deserialize
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/611.html",
+    ],
+  },
+  "SEC-007": {
+    title: "Insecure Deserialization Prevention",
+    problem:
+      "Deserializing untrusted data can lead to remote code execution, injection attacks, or privilege escalation.",
+    solution:
+      "Never deserialize untrusted data. Use safe formats like JSON. Implement integrity checks.",
+    example: `// Vulnerable - Unsafe eval/deserialize
 const obj = eval('(' + userInput + ')');
 const data = unserialize(userInput);
 
@@ -197,16 +214,18 @@ const { data, signature } = payload;
 if (!verifySignature(data, signature, secretKey)) {
     throw new Error('Invalid signature');
 }`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/502.html'
-        ]
-    },
-    'SEC-008': {
-        title: 'ReDoS Prevention',
-        problem: 'Regular Expression Denial of Service occurs when crafted input causes catastrophic backtracking in regex patterns.',
-        solution: 'Avoid nested quantifiers and overlapping alternatives. Use atomic groups or possessive quantifiers. Set timeouts.',
-        example: `// Vulnerable - Catastrophic backtracking
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/502.html",
+    ],
+  },
+  "SEC-008": {
+    title: "ReDoS Prevention",
+    problem:
+      "Regular Expression Denial of Service occurs when crafted input causes catastrophic backtracking in regex patterns.",
+    solution:
+      "Avoid nested quantifiers and overlapping alternatives. Use atomic groups or possessive quantifiers. Set timeouts.",
+    example: `// Vulnerable - Catastrophic backtracking
 const regex = /^(a+)+$/;  // Evil: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaX"
 
 // Secure - Linear time complexity
@@ -220,16 +239,18 @@ const regex = new RE2('^(a+)+$');
 if (input.length > 1000) {
     throw new Error('Input too long');
 }`,
-        references: [
-            'https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS',
-            'https://cwe.mitre.org/data/definitions/1333.html'
-        ]
-    },
-    'SEC-009': {
-        title: 'Authentication Bypass Prevention',
-        problem: 'Weak authentication checks or missing authorization can allow attackers to access resources without proper credentials.',
-        solution: 'Implement proper authentication middleware. Use constant-time comparisons. Never trust client-side auth state.',
-        example: `// Vulnerable - Weak comparison
+    references: [
+      "https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS",
+      "https://cwe.mitre.org/data/definitions/1333.html",
+    ],
+  },
+  "SEC-009": {
+    title: "Authentication Bypass Prevention",
+    problem:
+      "Weak authentication checks or missing authorization can allow attackers to access resources without proper credentials.",
+    solution:
+      "Implement proper authentication middleware. Use constant-time comparisons. Never trust client-side auth state.",
+    example: `// Vulnerable - Weak comparison
 if (userToken == adminToken) { ... }
 
 // Vulnerable - Missing auth check
@@ -248,16 +269,18 @@ if (crypto.timingSafeEqual(Buffer.from(userToken), Buffer.from(adminToken))) {
 app.get('/admin', requireAuth, requireRole('admin'), (req, res) => {
     res.send(sensitiveData);
 });`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/287.html'
-        ]
-    },
-    'SEC-010': {
-        title: 'Sensitive Data Exposure Prevention',
-        problem: 'API keys, passwords, tokens, or other secrets may be exposed in code, logs, or responses.',
-        solution: 'Use environment variables for secrets. Never commit credentials. Implement secret scanning in CI/CD.',
-        example: `// Vulnerable - Hardcoded secrets
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/287.html",
+    ],
+  },
+  "SEC-010": {
+    title: "Sensitive Data Exposure Prevention",
+    problem:
+      "API keys, passwords, tokens, or other secrets may be exposed in code, logs, or responses.",
+    solution:
+      "Use environment variables for secrets. Never commit credentials. Implement secret scanning in CI/CD.",
+    example: `// Vulnerable - Hardcoded secrets
 const apiKey = 'sk-1234567890abcdef';
 const dbPassword = 'admin123';
 
@@ -270,16 +293,18 @@ const { SecretManager } = require('@google-cloud/secret-manager');
 const apiKey = await secretManager.accessSecretVersion({
     name: 'projects/my-project/secrets/api-key/versions/latest'
 });`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/798.html'
-        ]
-    },
-    'SEC-011': {
-        title: 'Rate Limiting Implementation',
-        problem: 'Missing rate limiting allows attackers to perform brute force attacks, DoS, or resource exhaustion.',
-        solution: 'Implement rate limiting at multiple levels. Use exponential backoff for failed attempts.',
-        example: `// No rate limiting
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/798.html",
+    ],
+  },
+  "SEC-011": {
+    title: "Rate Limiting Implementation",
+    problem:
+      "Missing rate limiting allows attackers to perform brute force attacks, DoS, or resource exhaustion.",
+    solution:
+      "Implement rate limiting at multiple levels. Use exponential backoff for failed attempts.",
+    example: `// No rate limiting
 app.post('/login', async (req, res) => {
     // Unlimited attempts!
 });
@@ -304,16 +329,18 @@ function checkRateLimit(userId) {
     if (attempts >= 5) throw new Error('Rate limited');
     userLimiter.set(userId, attempts + 1);
 }`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/770.html'
-        ]
-    },
-    'SEC-012': {
-        title: 'Weak Cryptography Prevention',
-        problem: 'Using weak or deprecated cryptographic algorithms (MD5, SHA1, DES) provides inadequate security.',
-        solution: 'Use modern algorithms: SHA-256+, AES-256, Argon2/bcrypt for passwords. Keep libraries updated.',
-        example: `// Vulnerable - Weak algorithms
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/770.html",
+    ],
+  },
+  "SEC-012": {
+    title: "Weak Cryptography Prevention",
+    problem:
+      "Using weak or deprecated cryptographic algorithms (MD5, SHA1, DES) provides inadequate security.",
+    solution:
+      "Use modern algorithms: SHA-256+, AES-256, Argon2/bcrypt for passwords. Keep libraries updated.",
+    example: `// Vulnerable - Weak algorithms
 const hash = crypto.createHash('md5').update(password).digest('hex');
 const cipher = crypto.createCipher('des', key);
 
@@ -326,16 +353,18 @@ const hash = await argon2.hash(password);
 
 // Secure - AES-256-GCM encryption
 const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/327.html'
-        ]
-    },
-    'SEC-013': {
-        title: 'Prompt Injection Prevention',
-        problem: 'Prompt injection allows attackers to manipulate LLM behavior through crafted inputs, potentially bypassing safety measures or extracting sensitive information.',
-        solution: 'Separate system and user content. Implement input validation. Use output filtering and monitoring.',
-        example: `// Vulnerable - Direct user input to prompt
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/327.html",
+    ],
+  },
+  "SEC-013": {
+    title: "Prompt Injection Prevention",
+    problem:
+      "Prompt injection allows attackers to manipulate LLM behavior through crafted inputs, potentially bypassing safety measures or extracting sensitive information.",
+    solution:
+      "Separate system and user content. Implement input validation. Use output filtering and monitoring.",
+    example: `// Vulnerable - Direct user input to prompt
 const response = await llm.complete(\`
     You are a helpful assistant.
     User message: \${userInput}
@@ -376,16 +405,18 @@ function validateOutput(output) {
     }
     return output;
 }`,
-        references: [
-            'https://owasp.org/www-project-top-10-for-large-language-model-applications/',
-            'https://simonwillison.net/2022/Sep/12/prompt-injection/'
-        ]
-    },
-    'SEC-014': {
-        title: 'Exposed Network Endpoint Prevention',
-        problem: 'MCP servers exposed on public network interfaces (0.0.0.0, ::) can be accessed by unauthorized clients, enabling direct protocol attacks, prompt injection, and data exfiltration.',
-        solution: 'Bind servers to localhost only. Use network-level protection (firewalls, VPNs). Implement IP allowlists and authentication.',
-        example: `// Vulnerable - Exposed on all interfaces
+    references: [
+      "https://owasp.org/www-project-top-10-for-large-language-model-applications/",
+      "https://simonwillison.net/2022/Sep/12/prompt-injection/",
+    ],
+  },
+  "SEC-014": {
+    title: "Exposed Network Endpoint Prevention",
+    problem:
+      "MCP servers exposed on public network interfaces (0.0.0.0, ::) can be accessed by unauthorized clients, enabling direct protocol attacks, prompt injection, and data exfiltration.",
+    solution:
+      "Bind servers to localhost only. Use network-level protection (firewalls, VPNs). Implement IP allowlists and authentication.",
+    example: `// Vulnerable - Exposed on all interfaces
 const server = createServer({
     host: '0.0.0.0',  // Accessible from any network
     port: 8080
@@ -414,16 +445,18 @@ server.use((req, res, next) => {
 //     auth_basic "Restricted";
 //     auth_basic_user_file /etc/nginx/.htpasswd;
 // }`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/Network_Segmentation_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/16.html'
-        ]
-    },
-    'SEC-015': {
-        title: 'Missing Authentication Implementation',
-        problem: 'MCP servers and tools lacking authentication allow unauthorized access to sensitive operations and data.',
-        solution: 'Implement authentication for all endpoints. Use API keys, OAuth, or mTLS. Never trust unauthenticated requests.',
-        example: `// Vulnerable - No authentication
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Network_Segmentation_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/16.html",
+    ],
+  },
+  "SEC-015": {
+    title: "Missing Authentication Implementation",
+    problem:
+      "MCP servers and tools lacking authentication allow unauthorized access to sensitive operations and data.",
+    solution:
+      "Implement authentication for all endpoints. Use API keys, OAuth, or mTLS. Never trust unauthenticated requests.",
+    example: `// Vulnerable - No authentication
 app.post('/tools/execute', async (req, res) => {
     const result = await executeTool(req.body);
     res.json(result);
@@ -456,16 +489,18 @@ app.post('/tools/execute', requireAuth, requireScope('tools:execute'), async (re
     const result = await executeTool(req.body);
     res.json(result);
 });`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/287.html'
-        ]
-    },
-    'SEC-016': {
-        title: 'Insecure URI Scheme Prevention',
-        problem: 'Using insecure URI schemes (http://, ftp://, file://) exposes data in transit and enables man-in-the-middle attacks.',
-        solution: 'Use secure schemes only: https://, wss://. Validate all URIs. Block dangerous schemes like file://, javascript:.',
-        example: `// Vulnerable - Insecure schemes allowed
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/287.html",
+    ],
+  },
+  "SEC-016": {
+    title: "Insecure URI Scheme Prevention",
+    problem:
+      "Using insecure URI schemes (http://, ftp://, file://) exposes data in transit and enables man-in-the-middle attacks.",
+    solution:
+      "Use secure schemes only: https://, wss://. Validate all URIs. Block dangerous schemes like file://, javascript:.",
+    example: `// Vulnerable - Insecure schemes allowed
 const resourceUrl = userInput;  // Could be http:// or file://
 const data = await fetch(resourceUrl);
 
@@ -497,16 +532,18 @@ function isSecureScheme(uri) {
     }
     return true;
 }`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/319.html'
-        ]
-    },
-    'SEC-017': {
-        title: 'Excessive Permissions Prevention',
-        problem: 'Tools with overprivileged access violate the principle of least privilege, increasing attack surface and potential damage.',
-        solution: 'Grant minimal required permissions. Implement role-based access control (RBAC). Audit permission usage regularly.',
-        example: `// Vulnerable - Overprivileged tool
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/319.html",
+    ],
+  },
+  "SEC-017": {
+    title: "Excessive Permissions Prevention",
+    problem:
+      "Tools with overprivileged access violate the principle of least privilege, increasing attack surface and potential damage.",
+    solution:
+      "Grant minimal required permissions. Implement role-based access control (RBAC). Audit permission usage regularly.",
+    example: `// Vulnerable - Overprivileged tool
 {
     "name": "read_user_file",
     "permissions": [
@@ -547,16 +584,18 @@ function auditPermissionUse(user, permission, resource) {
         timestamp: new Date()
     });
 }`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/250.html'
-        ]
-    },
-    'SEC-018': {
-        title: 'Sensitive Data in Descriptions Prevention',
-        problem: 'Sensitive information (API keys, credentials, PII) leaked in tool descriptions and parameters is exposed to all users.',
-        solution: 'Never include secrets in descriptions. Use placeholders. Implement secret scanning in CI/CD. Rotate exposed credentials.',
-        example: `// Vulnerable - Secrets in description
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/250.html",
+    ],
+  },
+  "SEC-018": {
+    title: "Sensitive Data in Descriptions Prevention",
+    problem:
+      "Sensitive information (API keys, credentials, PII) leaked in tool descriptions and parameters is exposed to all users.",
+    solution:
+      "Never include secrets in descriptions. Use placeholders. Implement secret scanning in CI/CD. Rotate exposed credentials.",
+    example: `// Vulnerable - Secrets in description
 {
     "name": "send_email",
     "description": "Sends email using API key: sk-1234567890abcdef",
@@ -605,16 +644,18 @@ function sanitizeDescription(text) {
     }
     return sanitized;
 }`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/200.html'
-        ]
-    },
-    'SEC-019': {
-        title: 'Missing Input Constraints Prevention',
-        problem: 'Tools without input validation constraints (maxLength, pattern, enum) are vulnerable to DoS, injection, and overflow attacks.',
-        solution: 'Define JSON schema constraints for all inputs. Enforce maxLength, pattern validation, and enums. Reject oversized inputs early.',
-        example: `// Vulnerable - No input constraints
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/200.html",
+    ],
+  },
+  "SEC-019": {
+    title: "Missing Input Constraints Prevention",
+    problem:
+      "Tools without input validation constraints (maxLength, pattern, enum) are vulnerable to DoS, injection, and overflow attacks.",
+    solution:
+      "Define JSON schema constraints for all inputs. Enforce maxLength, pattern validation, and enums. Reject oversized inputs early.",
+    example: `// Vulnerable - No input constraints
 {
     "name": "process_data",
     "inputSchema": {
@@ -672,16 +713,18 @@ app.use((req, res, next) => {
     }
     next();
 });`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/20.html'
-        ]
-    },
-    'SEC-020': {
-        title: 'Dangerous Tool Chaining Prevention',
-        problem: 'Tools that generate executable code can be chained with execution tools, creating injection vulnerabilities through LLM-generated malicious code.',
-        solution: 'Validate and sanitize code generation outputs. Implement sandboxing for execution. Add safety warnings and user confirmation.',
-        example: `// Vulnerable - Code generation without validation
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/20.html",
+    ],
+  },
+  "SEC-020": {
+    title: "Dangerous Tool Chaining Prevention",
+    problem:
+      "Tools that generate executable code can be chained with execution tools, creating injection vulnerabilities through LLM-generated malicious code.",
+    solution:
+      "Validate and sanitize code generation outputs. Implement sandboxing for execution. Add safety warnings and user confirmation.",
+    example: `// Vulnerable - Code generation without validation
 {
     "name": "generate_script",
     "description": "Generates executable script from description"
@@ -743,16 +786,18 @@ async function executeScript(code) {
     "name": "generate_script",
     "description": "⚠️ Generates executable script. ALWAYS review before execution. Never pipe directly to execution tools."
 }`,
-        references: [
-            'https://owasp.org/www-community/attacks/Code_Injection',
-            'https://cwe.mitre.org/data/definitions/94.html'
-        ]
-    },
-    'SEC-021': {
-        title: 'Unencrypted Credential Storage Prevention',
-        problem: 'Storing credentials in plaintext or using weak encryption exposes them to unauthorized access and theft.',
-        solution: 'Use OS keychains or secret managers. Encrypt credentials at rest with strong algorithms. Never log or display credentials.',
-        example: `// Vulnerable - Plaintext storage
+    references: [
+      "https://owasp.org/www-community/attacks/Code_Injection",
+      "https://cwe.mitre.org/data/definitions/94.html",
+    ],
+  },
+  "SEC-021": {
+    title: "Unencrypted Credential Storage Prevention",
+    problem:
+      "Storing credentials in plaintext or using weak encryption exposes them to unauthorized access and theft.",
+    solution:
+      "Use OS keychains or secret managers. Encrypt credentials at rest with strong algorithms. Never log or display credentials.",
+    example: `// Vulnerable - Plaintext storage
 const credentials = {
     apiKey: 'sk-1234567890',
     password: 'admin123'
@@ -800,200 +845,219 @@ const encrypted = sodium.crypto_secretbox_easy(
 
 // Store key in secure location (HSM, KMS, keychain)
 await storeKey(key);`,
-        references: [
-            'https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html',
-            'https://cwe.mitre.org/data/definitions/522.html'
-        ]
-    }
+    references: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html",
+      "https://cwe.mitre.org/data/definitions/522.html",
+    ],
+  },
 };
 
 /**
  * Dynamically generate security suggestion for any rule (SEC-001 to SEC-060)
  * Falls back to legacy suggestions for SEC-001 to SEC-021 if available
  */
-function getSecuritySuggestion(ruleCode: string): {
-    title: string;
-    problem: string;
-    solution: string;
-    example: string;
-    references: string[];
-} | undefined {
-    // Use legacy suggestion if available (SEC-001 to SEC-021)
-    if (LEGACY_SECURITY_SUGGESTIONS[ruleCode]) {
-        return LEGACY_SECURITY_SUGGESTIONS[ruleCode];
+function getSecuritySuggestion(ruleCode: string):
+  | {
+      title: string;
+      problem: string;
+      solution: string;
+      example: string;
+      references: string[];
     }
+  | undefined {
+  // Use legacy suggestion if available (SEC-001 to SEC-021)
+  if (LEGACY_SECURITY_SUGGESTIONS[ruleCode]) {
+    return LEGACY_SECURITY_SUGGESTIONS[ruleCode];
+  }
 
-    // Dynamically generate from core translations (SEC-022 to SEC-060)
-    // Rule code format: SEC-XXX
-    const ruleNumber = ruleCode.replace('SEC-', '').toLowerCase();
-    const ruleKey = `sec_${ruleNumber.padStart(3, '0')}`;
+  // Dynamically generate from core translations (SEC-022 to SEC-060)
+  // Rule code format: SEC-XXX
+  const ruleNumber = ruleCode.replace("SEC-", "").toLowerCase();
+  const ruleKey = `sec_${ruleNumber.padStart(3, "0")}`;
 
-    // Check if translation exists for this rule
-    const titleKey = ruleKey;
-    const recommendationKey = `${ruleKey}_recommendation`;
+  // Check if translation exists for this rule
+  const titleKey = ruleKey;
+  const recommendationKey = `${ruleKey}_recommendation`;
 
-    const title = t(titleKey);
-    const recommendation = t(recommendationKey);
+  const title = t(titleKey);
+  const recommendation = t(recommendationKey);
 
-    // If translations don't exist, return undefined
-    if (title === titleKey || recommendation === recommendationKey) {
-        return undefined;
-    }
+  // If translations don't exist, return undefined
+  if (title === titleKey || recommendation === recommendationKey) {
+    return undefined;
+  }
 
-    // Generate dynamic suggestion
-    return {
-        title: title,
-        problem: title, // Use rule title as problem description
-        solution: recommendation,
-        example: `// Review your code and apply the following recommendation:\n// ${recommendation}\n\n// For detailed guidance, consult OWASP and CWE references.`,
-        references: [
-            'https://owasp.org/www-project-top-10/',
-            'https://owasp.org/www-project-top-10-for-large-language-model-applications/',
-            'https://cwe.mitre.org/'
-        ]
-    };
+  // Generate dynamic suggestion
+  return {
+    title: title,
+    problem: title, // Use rule title as problem description
+    solution: recommendation,
+    example: `// Review your code and apply the following recommendation:\n// ${recommendation}\n\n// For detailed guidance, consult OWASP and CWE references.`,
+    references: [
+      "https://owasp.org/www-project-top-10/",
+      "https://owasp.org/www-project-top-10-for-large-language-model-applications/",
+      "https://cwe.mitre.org/",
+    ],
+  };
 }
 
 /**
  * Get all available security suggestions (SEC-001 to SEC-060)
  */
-function getAllSecuritySuggestions(): Record<string, ReturnType<typeof getSecuritySuggestion>> {
-    const suggestions: Record<string, ReturnType<typeof getSecuritySuggestion>> = {};
+function getAllSecuritySuggestions(): Record<
+  string,
+  ReturnType<typeof getSecuritySuggestion>
+> {
+  const suggestions: Record<
+    string,
+    ReturnType<typeof getSecuritySuggestion>
+  > = {};
 
-    // Generate for all 60 rules
-    for (let i = 1; i <= 60; i++) {
-        const ruleCode = `SEC-${String(i).padStart(3, '0')}`;
-        const suggestion = getSecuritySuggestion(ruleCode);
-        if (suggestion) {
-            suggestions[ruleCode] = suggestion;
-        }
+  // Generate for all 60 rules
+  for (let i = 1; i <= 60; i++) {
+    const ruleCode = `SEC-${String(i).padStart(3, "0")}`;
+    const suggestion = getSecuritySuggestion(ruleCode);
+    if (suggestion) {
+      suggestions[ruleCode] = suggestion;
     }
+  }
 
-    return suggestions;
+  return suggestions;
 }
 
 /**
  * Code Action Provider for MCP Verify
  */
 export class McpCodeActionProvider implements vscode.CodeActionProvider {
-    public static readonly providedCodeActionKinds = [
-        vscode.CodeActionKind.QuickFix
-    ];
+  public static readonly providedCodeActionKinds = [
+    vscode.CodeActionKind.QuickFix,
+  ];
 
-    provideCodeActions(
-        document: vscode.TextDocument,
-        range: vscode.Range | vscode.Selection,
-        context: vscode.CodeActionContext,
-        token: vscode.CancellationToken
-    ): vscode.CodeAction[] | undefined {
-        const actions: vscode.CodeAction[] = [];
+  provideCodeActions(
+    document: vscode.TextDocument,
+    range: vscode.Range | vscode.Selection,
+    context: vscode.CodeActionContext,
+    token: vscode.CancellationToken,
+  ): vscode.CodeAction[] | undefined {
+    const actions: vscode.CodeAction[] = [];
 
-        // Filter for MCP Verify diagnostics
-        const mcpDiagnostics = context.diagnostics.filter(
-            d => d.source === 'MCP Security' || d.source === 'mcp-verify'
-        );
+    // Filter for MCP Verify diagnostics
+    const mcpDiagnostics = context.diagnostics.filter(
+      (d) => d.source === "MCP Security" || d.source === "mcp-verify",
+    );
 
-        for (const diagnostic of mcpDiagnostics) {
-            // Create quick fix action
-            const action = new vscode.CodeAction(
-                'Generate fix suggestion',
-                vscode.CodeActionKind.QuickFix
-            );
+    for (const diagnostic of mcpDiagnostics) {
+      // Create quick fix action
+      const action = new vscode.CodeAction(
+        "Generate fix suggestion",
+        vscode.CodeActionKind.QuickFix,
+      );
 
-            action.diagnostics = [diagnostic];
-            action.command = {
-                command: 'mcp-verify.generateSuggestion',
-                title: 'Generate Suggestion File',
-                arguments: [document, diagnostic]
-            };
+      action.diagnostics = [diagnostic];
+      action.command = {
+        command: "mcp-verify.generateSuggestion",
+        title: "Generate Suggestion File",
+        arguments: [document, diagnostic],
+      };
 
-            actions.push(action);
+      actions.push(action);
 
-            // Add "Learn more" action if we have a rule code
-            const ruleCode = String(diagnostic.code || '');
-            if (ruleCode.startsWith('SEC-')) {
-                const suggestion = getSecuritySuggestion(ruleCode);
-                if (suggestion) {
-                    const learnAction = new vscode.CodeAction(
-                        `Learn about ${ruleCode}`,
-                        vscode.CodeActionKind.QuickFix
-                    );
-                    learnAction.diagnostics = [diagnostic];
-                    learnAction.command = {
-                        command: 'vscode.open',
-                        title: 'Open OWASP Reference',
-                        arguments: [vscode.Uri.parse(suggestion.references[0])]
-                    };
-                    actions.push(learnAction);
-                }
-            }
+      // Add "Learn more" action if we have a rule code
+      const ruleCode = String(diagnostic.code || "");
+      if (ruleCode.startsWith("SEC-")) {
+        const suggestion = getSecuritySuggestion(ruleCode);
+        if (suggestion) {
+          const learnAction = new vscode.CodeAction(
+            `Learn about ${ruleCode}`,
+            vscode.CodeActionKind.QuickFix,
+          );
+          learnAction.diagnostics = [diagnostic];
+          learnAction.command = {
+            command: "vscode.open",
+            title: "Open OWASP Reference",
+            arguments: [vscode.Uri.parse(suggestion.references[0])],
+          };
+          actions.push(learnAction);
         }
-
-        return actions;
+      }
     }
+
+    return actions;
+  }
 }
 
 /**
  * Generate a suggestion file for a security finding
  */
 export async function generateSuggestionFile(
-    document: vscode.TextDocument,
-    diagnostic: vscode.Diagnostic
+  document: vscode.TextDocument,
+  diagnostic: vscode.Diagnostic,
 ): Promise<void> {
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-    if (!workspaceFolder) {
-        vscode.window.showErrorMessage('No workspace folder found');
-        return;
-    }
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+  if (!workspaceFolder) {
+    vscode.window.showErrorMessage("No workspace folder found");
+    return;
+  }
 
-    // Create .mcp-verify/suggestions directory
-    const suggestionsDir = path.join(workspaceFolder.uri.fsPath, '.mcp-verify', 'suggestions');
-    if (!fs.existsSync(suggestionsDir)) {
-        fs.mkdirSync(suggestionsDir, { recursive: true });
-    }
+  // Create .mcp-verify/suggestions directory
+  const suggestionsDir = path.join(
+    workspaceFolder.uri.fsPath,
+    ".mcp-verify",
+    "suggestions",
+  );
+  if (!fs.existsSync(suggestionsDir)) {
+    fs.mkdirSync(suggestionsDir, { recursive: true });
+  }
 
-    // Extract rule code
-    const ruleCode = String(diagnostic.code || 'UNKNOWN');
-    const suggestion = getSecuritySuggestion(ruleCode);
+  // Extract rule code
+  const ruleCode = String(diagnostic.code || "UNKNOWN");
+  const suggestion = getSecuritySuggestion(ruleCode);
 
-    // Generate filename
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const filename = `${ruleCode}_${timestamp}.md`;
-    const filepath = path.join(suggestionsDir, filename);
+  // Generate filename
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  const filename = `${ruleCode}_${timestamp}.md`;
+  const filepath = path.join(suggestionsDir, filename);
 
-    // Get context from document
-    const line = document.lineAt(diagnostic.range.start.line);
-    const lineText = line.text.trim();
+  // Get context from document
+  const line = document.lineAt(diagnostic.range.start.line);
+  const lineText = line.text.trim();
 
-    // Generate content
-    const content = generateSuggestionContent(ruleCode, lineText, diagnostic.message, suggestion);
+  // Generate content
+  const content = generateSuggestionContent(
+    ruleCode,
+    lineText,
+    diagnostic.message,
+    suggestion,
+  );
 
-    // Write and open file
-    fs.writeFileSync(filepath, content, 'utf-8');
-    const doc = await vscode.workspace.openTextDocument(filepath);
-    await vscode.window.showTextDocument(doc, { preview: false });
+  // Write and open file
+  fs.writeFileSync(filepath, content, "utf-8");
+  const doc = await vscode.workspace.openTextDocument(filepath);
+  await vscode.window.showTextDocument(doc, { preview: false });
 
-    vscode.window.showInformationMessage(`Security suggestion created: ${filename}`);
+  vscode.window.showInformationMessage(
+    `Security suggestion created: ${filename}`,
+  );
 }
 
 /**
  * Generate markdown content for suggestion
  */
 function generateSuggestionContent(
-    ruleCode: string,
-    problematicCode: string,
-    diagnosticMessage: string,
-    suggestion?: ReturnType<typeof getSecuritySuggestion>
+  ruleCode: string,
+  problematicCode: string,
+  diagnosticMessage: string,
+  suggestion?: ReturnType<typeof getSecuritySuggestion>,
 ): string {
-    const template = suggestion || {
-        title: 'Security Issue',
-        problem: 'A security vulnerability was detected.',
-        solution: 'Review the code and apply security best practices.',
-        example: '// No specific example available',
-        references: ['https://owasp.org']
-    };
+  const template = suggestion || {
+    title: "Security Issue",
+    problem: "A security vulnerability was detected.",
+    solution: "Review the code and apply security best practices.",
+    example: "// No specific example available",
+    references: ["https://owasp.org"],
+  };
 
-    return `# Security Fix: ${template.title}
+  return `# Security Fix: ${template.title}
 
 **Rule:** ${ruleCode}
 **Generated:** ${new Date().toLocaleString()}
@@ -1040,7 +1104,7 @@ ${template.example}
 
 ## References
 
-${template.references.map(ref => `- ${ref}`).join('\n')}
+${template.references.map((ref) => `- ${ref}`).join("\n")}
 
 ---
 

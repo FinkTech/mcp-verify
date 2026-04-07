@@ -16,7 +16,7 @@ export interface GeneratorConfig {
   /** Maximum number of payloads to generate */
   maxPayloads?: number;
   /** Minimum severity level to include */
-  minSeverity?: 'low' | 'medium' | 'high' | 'critical';
+  minSeverity?: "low" | "medium" | "high" | "critical";
   /** Enable mutations on generated payloads */
   enableMutations?: boolean;
   /** Custom seed for reproducible generation */
@@ -31,7 +31,7 @@ export interface GeneratedPayload {
   /** Specific attack type within category */
   type: string;
   /** Severity of the attack */
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   /** Human-readable description */
   description: string;
   /** The parameter to target for injection */
@@ -69,6 +69,6 @@ export interface IPayloadGenerator {
    */
   generateForSchema?(
     toolSchema: Record<string, unknown>,
-    config?: GeneratorConfig
+    config?: GeneratorConfig,
   ): GeneratedPayload[];
 }

@@ -30,19 +30,22 @@
  * - CWE-1104: Use of Unmaintained Third Party Components
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import { t } from "@mcp-verify/shared";
 
 export class SupplyChainToolDepsRule implements ISecurityRule {
-  code = 'SEC-025';
-  name = 'Supply Chain Vulnerabilities in Tool Dependencies';
-  severity: 'high' = 'high';
+  code = "SEC-025";
+  name = "Supply Chain Vulnerabilities in Tool Dependencies";
+  severity: "high" = "high";
 
   private readonly UNPINNED_VERSION_PATTERNS = [
-    /^\^/,    // ^1.0.0
-    /^~/,     // ~1.0.0
-    /^\*/,    // *
+    /^\^/, // ^1.0.0
+    /^~/, // ~1.0.0
+    /^\*/, // *
     /^latest$/i,
     /^x$/i,
   ];
@@ -56,32 +59,35 @@ export class SupplyChainToolDepsRule implements ISecurityRule {
 
       const allDeps = {
         ...(metadata.dependencies || {}),
-        ...(metadata.devDependencies || {})
+        ...(metadata.devDependencies || {}),
       };
 
       const unpinnedDeps: string[] = [];
 
       for (const [depName, depVersion] of Object.entries(allDeps)) {
-        if (typeof depVersion === 'string' && this.isUnpinnedVersion(depVersion)) {
+        if (
+          typeof depVersion === "string" &&
+          this.isUnpinnedVersion(depVersion)
+        ) {
           unpinnedDeps.push(`${depName}@${depVersion}`);
         }
       }
 
       if (unpinnedDeps.length > 0) {
         findings.push({
-          severity: 'medium',
-          message: t('sec_025_unpinned_deps', {
+          severity: "medium",
+          message: t("sec_025_unpinned_deps", {
             count: unpinnedDeps.length,
-            deps: unpinnedDeps.slice(0, 3).join(', ')
+            deps: unpinnedDeps.slice(0, 3).join(", "),
           }),
-          component: 'server',
+          component: "server",
           ruleCode: this.code,
-          remediation: t('sec_025_recommendation'),
+          remediation: t("sec_025_recommendation"),
           references: [
-            'OWASP LLM Top 10 2025 - LLM05: Supply-Chain Vulnerabilities',
-            'OWASP Dependency-Check',
-            'CWE-1104: Use of Unmaintained Third Party Components'
-          ]
+            "OWASP LLM Top 10 2025 - LLM05: Supply-Chain Vulnerabilities",
+            "OWASP Dependency-Check",
+            "CWE-1104: Use of Unmaintained Third Party Components",
+          ],
         });
       }
     }
@@ -93,14 +99,14 @@ export class SupplyChainToolDepsRule implements ISecurityRule {
       // (it might be loading them dynamically or using native modules)
       if (!discovery.serverInfo.dependencies) {
         findings.push({
-          severity: 'low',
-          message: t('sec_025_no_deps_declared'),
-          component: 'server',
+          severity: "low",
+          message: t("sec_025_no_deps_declared"),
+          component: "server",
           ruleCode: this.code,
-          remediation: t('sec_025_declare_deps_recommendation'),
+          remediation: t("sec_025_declare_deps_recommendation"),
           references: [
-            'OWASP LLM Top 10 2025 - LLM05: Supply-Chain Vulnerabilities'
-          ]
+            "OWASP LLM Top 10 2025 - LLM05: Supply-Chain Vulnerabilities",
+          ],
         });
       }
     }
@@ -109,8 +115,8 @@ export class SupplyChainToolDepsRule implements ISecurityRule {
   }
 
   private isUnpinnedVersion(version: string): boolean {
-    return this.UNPINNED_VERSION_PATTERNS.some(pattern =>
-      pattern.test(version)
+    return this.UNPINNED_VERSION_PATTERNS.some((pattern) =>
+      pattern.test(version),
     );
   }
 }

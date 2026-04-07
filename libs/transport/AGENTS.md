@@ -26,6 +26,7 @@
 ## 🛠️ Extension Guide
 
 When moving a transport here:
+
 1. Copy implementation from `core`.
 2. Update imports to use `@mcp-verify/shared` for utilities (User-Agent, Logger).
 3. Export from `index.ts`.

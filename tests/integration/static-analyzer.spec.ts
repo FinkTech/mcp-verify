@@ -5,16 +5,16 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import { SafeJSStaticAnalyzer } from '@mcp-verify/core/use-cases/sandbox/static-analyzer';
+import { SafeJSStaticAnalyzer } from "@mcp-verify/core/use-cases/sandbox/static-analyzer";
 
-describe('SafeJSStaticAnalyzer', () => {
+describe("SafeJSStaticAnalyzer", () => {
   let analyzer: SafeJSStaticAnalyzer;
 
   beforeEach(() => {
     analyzer = new SafeJSStaticAnalyzer();
   });
 
-  test('✅ Should accept safe standard code', () => {
+  test("✅ Should accept safe standard code", () => {
     const code = `
       function add(a, b) { return a + b; }
       const res = add(1, 2);
@@ -25,7 +25,7 @@ describe('SafeJSStaticAnalyzer', () => {
     expect(result.violations).toHaveLength(0);
   });
 
-  test('✅ Should accept modern ES features', () => {
+  test("✅ Should accept modern ES features", () => {
     const code = `
       const sum = (a, b) => a + b;
       async function main() {
@@ -75,7 +75,7 @@ describe('SafeJSStaticAnalyzer', () => {
     expect(result.violations[0]).toContain("prototype");
   });
 
-  test('❌ Should handle Syntax Errors gracefully', () => {
+  test("❌ Should handle Syntax Errors gracefully", () => {
     const code = `function broken( {`; // Syntax error
     const result = analyzer.analyze(code);
     expect(result.isSafe).toBe(false);

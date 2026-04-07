@@ -7,6 +7,7 @@
 This library serves as the single source of truth for MCP protocol compliance. It contains the official message schemas, type guards, and protocol versioning used by `mcp-verify`.
 
 ### Refactoring Status
+
 - [ ] Move MCP JSON Schemas from `core/domain/mcp-server/`
 - [ ] Move TypeScript interfaces
 - [ ] Implement version-specific validation (v1 vs v-next)
@@ -20,4 +21,5 @@ This library serves as the single source of truth for MCP protocol compliance. I
 - `v-next/`: Emerging specification features for future-proofing.
 
 ---
-*Part of the mcp-verify project.*
+
+_Part of the mcp-verify project._

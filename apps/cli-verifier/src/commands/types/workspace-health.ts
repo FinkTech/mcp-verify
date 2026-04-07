@@ -17,10 +17,10 @@
  * Determined via testHandshake() with 2s timeout
  */
 export type ConnectionStatus =
-  | 'connected'          // MCP server responded with valid handshake
-  | 'unreachable'        // Network/connection error
-  | 'protocol_mismatch'  // Server responded but not valid MCP protocol
-  | 'not_configured';    // No target configured
+  | "connected" // MCP server responded with valid handshake
+  | "unreachable" // Network/connection error
+  | "protocol_mismatch" // Server responded but not valid MCP protocol
+  | "not_configured"; // No target configured
 
 /**
  * Comprehensive workspace health information

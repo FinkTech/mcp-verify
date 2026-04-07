@@ -1,26 +1,26 @@
-const http = require('http');
-const url = require('url');
+const http = require("http");
+const url = require("url");
 
 const PORT = 3000;
 
 const server = http.createServer((req, res) => {
   // CORS headers para evitar problemas
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  
+  res.setHeader("Access-Control-Allow-Origin", "*");
+
   const parsedUrl = url.parse(req.url, true);
   const messageParam = parsedUrl.query.message;
 
   if (!messageParam) {
     res.writeHead(400);
-    res.end('Missing message parameter');
+    res.end("Missing message parameter");
     return;
   }
 
   // Preparamos headers para SSE (Server-Sent Events)
   res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
   });
 
   try {
@@ -31,49 +31,49 @@ const server = http.createServer((req, res) => {
 
     // Simulamos las respuestas según el método
     switch (jsonRpc.method) {
-      case 'initialize':
+      case "initialize":
         result = {
-          protocolVersion: '2024-11-05',
+          protocolVersion: "2024-11-05",
           serverInfo: {
-            name: 'mock-mcp-server',
-            version: '1.0.0'
-          }
+            name: "mock-mcp-server",
+            version: "1.0.0",
+          },
         };
         break;
 
-      case 'tools/list':
+      case "tools/list":
         result = {
           tools: [
             {
-              name: 'calculate_sum',
-              description: 'Adds two numbers together',
-              inputSchema: { type: 'object' }
+              name: "calculate_sum",
+              description: "Adds two numbers together",
+              inputSchema: { type: "object" },
             },
             {
-              name: 'fetch_weather',
-              description: 'Gets weather for a location'
-            }
-          ]
+              name: "fetch_weather",
+              description: "Gets weather for a location",
+            },
+          ],
         };
         break;
 
-      case 'resources/list':
+      case "resources/list":
         result = {
           resources: [
             {
-              name: 'app-logs',
-              uri: 'file:///var/log/app.log',
-              mimeType: 'text/plain'
-            }
-          ]
+              name: "app-logs",
+              uri: "file:///var/log/app.log",
+              mimeType: "text/plain",
+            },
+          ],
         };
         break;
 
-      case 'prompts/list':
+      case "prompts/list":
         result = {
           prompts: [
-            { name: 'debug-error', description: 'Analyze an error log' }
-          ]
+            { name: "debug-error", description: "Analyze an error log" },
+          ],
         };
         break;
 
@@ -84,15 +84,14 @@ const server = http.createServer((req, res) => {
 
     // Enviamos la respuesta en formato JSON-RPC envuelto en SSE
     const response = {
-      jsonrpc: '2.0',
+      jsonrpc: "2.0",
       id: jsonRpc.id,
-      result: result
+      result: result,
     };
 
     res.write(`data: ${JSON.stringify(response)}\n\n`);
-
   } catch (error) {
-    console.error('Error parsing JSON:', error);
+    console.error("Error parsing JSON:", error);
   }
 
   // Cerramos la conexión después de enviar (simulando respuesta única del validator actual)
@@ -102,5 +101,5 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`\n🚀 Dummy MCP Server running at http://localhost:${PORT}`);
-  console.log('Esperando conexiones de mcp-verify...\n');
+  console.log("Esperando conexiones de mcp-verify...\n");
 });

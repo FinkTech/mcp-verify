@@ -26,14 +26,17 @@
  * - JSON Schema versioning best practices
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import { t } from "@mcp-verify/shared";
 
 export class SchemaVersioningAbsentRule implements ISecurityRule {
-  code = 'SEC-044';
-  name = 'Schema Versioning Absent';
-  severity: 'medium' = 'medium';
+  code = "SEC-044";
+  name = "Schema Versioning Absent";
+  severity: "medium" = "medium";
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
@@ -44,10 +47,10 @@ export class SchemaVersioningAbsentRule implements ISecurityRule {
     if (!hasServerVersion) {
       findings.push({
         severity: this.severity,
-        message: t('sec_044_no_server_version'),
-        component: 'server',
+        message: t("sec_044_no_server_version"),
+        component: "server",
         ruleCode: this.code,
-        remediation: t('sec_044_recommendation')
+        remediation: t("sec_044_recommendation"),
       });
     }
 

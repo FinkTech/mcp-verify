@@ -11,21 +11,21 @@
  * Extracted from interactive.ts - Section 10
  */
 
-import { getCurrentLanguage } from '@mcp-verify/shared';
-import { runMockAction } from '../../mock';
-import { ShellParser } from '../parser';
-import type { Language } from '../types';
+import { getCurrentLanguage } from "@mcp-verify/shared";
+import { runMockAction } from "../../mock";
+import { ShellParser } from "../parser";
+import type { Language } from "../types";
 
 export async function handleMock(args: string[]): Promise<void> {
   const flags = ShellParser.extractFlags(args);
 
   const options: Record<string, string | true> = {
-    port: '3000',
+    port: "3000",
     lang: getCurrentLanguage() as Language,
     ...flags,
   };
 
-  console.log('');
+  console.log("");
   await runMockAction(options);
-  console.log('');
+  console.log("");
 }

@@ -5,9 +5,9 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import * as os from 'node:os';
+import * as fs from "node:fs";
+import * as path from "node:path";
+import * as os from "node:os";
 
 export interface RawServerEntry {
   command: string;
@@ -22,50 +22,76 @@ export interface ConfigSource {
   parseError?: string;
 }
 
-export function buildConfigLocations(customPath?: string): Array<{ label: string; path: string }> {
+export function buildConfigLocations(
+  customPath?: string,
+): Array<{ label: string; path: string }> {
   const home = os.homedir();
   const platform = os.platform();
   const cwd = process.cwd();
 
   if (customPath) {
-    return [{ label: 'Custom Config', path: customPath }];
+    return [{ label: "Custom Config", path: customPath }];
   }
 
   return [
     {
-      label: 'Claude Desktop (Global)',
-      path: platform === 'win32'
-        ? path.join(process.env.APPDATA ?? '', 'Claude', 'claude_desktop_config.json')
-        : platform === 'darwin'
-          ? path.join(home, 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json')
-          : path.join(home, '.config', 'Claude', 'claude_desktop_config.json'),
+      label: "Claude Desktop (Global)",
+      path:
+        platform === "win32"
+          ? path.join(
+              process.env.APPDATA ?? "",
+              "Claude",
+              "claude_desktop_config.json",
+            )
+          : platform === "darwin"
+            ? path.join(
+                home,
+                "Library",
+                "Application Support",
+                "Claude",
+                "claude_desktop_config.json",
+              )
+            : path.join(
+                home,
+                ".config",
+                "Claude",
+                "claude_desktop_config.json",
+              ),
     },
     {
-      label: 'Gemini CLI (Global)',
-      path: path.join(home, '.gemini', 'settings.json'),
+      label: "Gemini CLI (Global)",
+      path: path.join(home, ".gemini", "settings.json"),
     },
     {
-      label: 'Gemini CLI (Local)',
-      path: path.join(cwd, '.gemini', 'settings.json'),
+      label: "Gemini CLI (Local)",
+      path: path.join(cwd, ".gemini", "settings.json"),
     },
     {
-      label: 'Cursor',
-      path: platform === 'win32'
-        ? path.join(process.env.APPDATA ?? '', 'Cursor', 'User', 'settings.json')
-        : path.join(home, '.cursor', 'mcp.json'),
+      label: "Cursor",
+      path:
+        platform === "win32"
+          ? path.join(
+              process.env.APPDATA ?? "",
+              "Cursor",
+              "User",
+              "settings.json",
+            )
+          : path.join(home, ".cursor", "mcp.json"),
     },
     {
-      label: 'Zed',
-      path: path.join(home, '.config', 'zed', 'settings.json'),
+      label: "Zed",
+      path: path.join(home, ".config", "zed", "settings.json"),
     },
   ];
 }
 
-export function extractMcpServers(raw: unknown): Record<string, RawServerEntry> {
-  if (typeof raw !== 'object' || raw === null) return {};
+export function extractMcpServers(
+  raw: unknown,
+): Record<string, RawServerEntry> {
+  if (typeof raw !== "object" || raw === null) return {};
   const obj = raw as Record<string, unknown>;
-  if (obj['mcpServers'] && typeof obj['mcpServers'] === 'object') {
-    return obj['mcpServers'] as Record<string, RawServerEntry>;
+  if (obj["mcpServers"] && typeof obj["mcpServers"] === "object") {
+    return obj["mcpServers"] as Record<string, RawServerEntry>;
   }
   return {};
 }
@@ -78,7 +104,7 @@ export function discoverConfigs(customPath?: string): ConfigSource[] {
     if (!fs.existsSync(loc.path)) continue;
 
     try {
-      const raw = JSON.parse(fs.readFileSync(loc.path, 'utf8')) as unknown;
+      const raw = JSON.parse(fs.readFileSync(loc.path, "utf8")) as unknown;
       sources.push({
         label: loc.label,
         path: loc.path,

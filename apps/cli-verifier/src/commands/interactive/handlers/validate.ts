@@ -11,25 +11,30 @@
  * Extracted from interactive.ts - Section 10
  */
 
-import readline from 'readline';
-import chalk from 'chalk';
-import { t } from '@mcp-verify/shared';
-import { runValidationAction } from '../../validate';
-import { ShellParser } from '../parser';
-import type { ShellSession } from '../session';
-import { resolveTarget, mergeOptions } from './shared';
+import readline from "readline";
+import chalk from "chalk";
+import { t } from "@mcp-verify/shared";
+import { runValidationAction } from "../../validate";
+import { ShellParser } from "../parser";
+import type { ShellSession } from "../session";
+import { resolveTarget, mergeOptions } from "./shared";
 
 export async function handleValidate(
   args: string[],
   session: ShellSession,
-  rl: readline.Interface
+  rl: readline.Interface,
 ): Promise<void> {
-  const target = await resolveTarget(args, session, rl, 'validate "node server.js"');
+  const target = await resolveTarget(
+    args,
+    session,
+    rl,
+    'validate "node server.js"',
+  );
   if (!target) return;
 
   session.setTarget(target);
   const flags = ShellParser.extractFlags(args);
-  const merged = mergeOptions('validate', session, flags);
+  const merged = mergeOptions("validate", session, flags);
 
   // Apply security profile settings
   const context = session.getActiveContext();
@@ -37,8 +42,8 @@ export async function handleValidate(
 
   const options: Record<string, unknown> = {
     server: target,
-    output: './reports',
-    lang:   session.state.lang,
+    output: "./reports",
+    lang: session.state.lang,
 
     // Apply profile validation settings
     minSecurityScore: profile.validation.minSecurityScore,
@@ -49,8 +54,12 @@ export async function handleValidate(
     ...merged,
   };
 
-  console.log(chalk.dim(`  ${t('interactive_using_profile')}: ${chalk.yellow(profile.name)}`));
-  console.log('');
+  console.log(
+    chalk.dim(
+      `  ${t("interactive_using_profile")}: ${chalk.yellow(profile.name)}`,
+    ),
+  );
+  console.log("");
   await runValidationAction(target, options);
-  console.log('');
+  console.log("");
 }

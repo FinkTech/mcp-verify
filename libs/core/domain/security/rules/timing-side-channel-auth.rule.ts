@@ -25,13 +25,16 @@
  * - OWASP Authentication Cheat Sheet
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
 
 export class TimingSideChannelAuthRule implements ISecurityRule {
-  code = 'SEC-049';
-  name = 'Timing Side-Channel in Authentication';
-  severity: 'medium' = 'medium';
+  code = "SEC-049";
+  name = "Timing Side-Channel in Authentication";
+  severity: "medium" = "medium";
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
@@ -41,39 +44,62 @@ export class TimingSideChannelAuthRule implements ISecurityRule {
     }
 
     // Keywords indicating authentication operations
-    const AUTH_KEYWORDS = ['login', 'authenticate', 'auth', 'signin', 'verify', 'check_password', 'check_credentials', 'secret', 'password_check'];
+    const AUTH_KEYWORDS = [
+      "login",
+      "authenticate",
+      "auth",
+      "signin",
+      "verify",
+      "check_password",
+      "check_credentials",
+      "secret",
+      "password_check",
+    ];
 
     // Red flags for timing vulnerabilities
-    const UNSAFE_COMPARISON = ['===', '==', 'equals', 'strcmp', 'compare'];
-    const TIMING_SAFE_INDICATORS = ['constant time', 'timing-safe', 'constant_time', 'timing_safe', 'secure_compare', 'crypto.timingSafeEqual'];
+    const UNSAFE_COMPARISON = ["===", "==", "equals", "strcmp", "compare"];
+    const TIMING_SAFE_INDICATORS = [
+      "constant time",
+      "timing-safe",
+      "constant_time",
+      "timing_safe",
+      "secure_compare",
+      "crypto.timingSafeEqual",
+    ];
 
     for (const tool of discovery.tools) {
-      const toolText = `${tool.name} ${tool.description || ''}`.toLowerCase();
+      const toolText = `${tool.name} ${tool.description || ""}`.toLowerCase();
 
       // Check if this is an authentication tool
-      const isAuthTool = AUTH_KEYWORDS.some(kw => toolText.includes(kw));
+      const isAuthTool = AUTH_KEYWORDS.some((kw) => toolText.includes(kw));
 
       if (!isAuthTool) continue;
 
       // Check for timing-safe indicators
-      const hasTimingSafe = TIMING_SAFE_INDICATORS.some(ind => toolText.includes(ind));
+      const hasTimingSafe = TIMING_SAFE_INDICATORS.some((ind) =>
+        toolText.includes(ind),
+      );
 
       // Check for unsafe comparison indicators
-      const hasUnsafeComparison = UNSAFE_COMPARISON.some(cmp => toolText.includes(cmp));
+      const hasUnsafeComparison = UNSAFE_COMPARISON.some((cmp) =>
+        toolText.includes(cmp),
+      );
 
       // If auth tool lacks timing-safe comparison, flag it
       if (!hasTimingSafe) {
         findings.push({
           ruleCode: this.code,
-          severity: 'medium',
+          severity: "medium",
           message: `Tool "${tool.name}" performs authentication without documented timing-safe comparison`,
           component: `tool:${tool.name}`,
-          location: { type: 'tool', name: tool.name },
+          location: { type: "tool", name: tool.name },
           evidence: {
-            risk: 'Timing attacks can reveal valid usernames/passwords through response time analysis',
-            detectedOperation: 'Authentication operation without timing-safe guarantees'
+            risk: "Timing attacks can reveal valid usernames/passwords through response time analysis",
+            detectedOperation:
+              "Authentication operation without timing-safe guarantees",
           },
-          remediation: 'Use constant-time comparison functions (crypto.timingSafeEqual in Node.js, hmac.compare_digest in Python) for credential verification'
+          remediation:
+            "Use constant-time comparison functions (crypto.timingSafeEqual in Node.js, hmac.compare_digest in Python) for credential verification",
         });
       }
 
@@ -81,15 +107,16 @@ export class TimingSideChannelAuthRule implements ISecurityRule {
       if (hasUnsafeComparison && !hasTimingSafe) {
         findings.push({
           ruleCode: this.code,
-          severity: 'high',
+          severity: "high",
           message: `Tool "${tool.name}" uses unsafe comparison method for authentication`,
           component: `tool:${tool.name}`,
-          location: { type: 'tool', name: tool.name },
+          location: { type: "tool", name: tool.name },
           evidence: {
-            risk: 'Direct string comparison leaks timing information',
-            detectedMethod: 'Non-constant-time comparison detected'
+            risk: "Direct string comparison leaks timing information",
+            detectedMethod: "Non-constant-time comparison detected",
           },
-          remediation: 'Replace direct comparison with timing-safe alternatives'
+          remediation:
+            "Replace direct comparison with timing-safe alternatives",
         });
       }
     }

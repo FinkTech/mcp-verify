@@ -45,17 +45,20 @@ src/extension.ts → activate()
 ## Key Components
 
 ### 1. DiagnosticsProvider
+
 **File**: `src/providers/diagnostics.ts`
 
 Maps security findings to VSCode diagnostic API (squiggly lines in editor).
 
 **Key methods:**
+
 - `updateDiagnostics(document: TextDocument): void` - Refresh diagnostics for file
 - `mapSeverity(severity: string): DiagnosticSeverity` - Convert 'critical'/'high'/'medium'/'low' to VSCode enum
 - `createDiagnostic(finding: SecurityFinding, range: Range): Diagnostic` - Create VSCode Diagnostic object
 - `clear(): void` - Clear all diagnostics
 
 **Example integration:**
+
 ```typescript
 // When scan completes
 const findings = await validator.validate();
@@ -63,6 +66,7 @@ diagnosticsProvider.updateDiagnostics(document, findings);
 ```
 
 **Severity mapping:**
+
 - `critical` → `DiagnosticSeverity.Error` (red squiggly)
 - `high` → `DiagnosticSeverity.Error` (red squiggly)
 - `medium` → `DiagnosticSeverity.Warning` (yellow squiggly)
@@ -71,53 +75,64 @@ diagnosticsProvider.updateDiagnostics(document, findings);
 ---
 
 ### 2. CodeActionsProvider
+
 **File**: `src/providers/code-actions.ts`
 
 Provides quick fixes for security findings (💡 lightbulb in editor).
 
 **Key methods:**
+
 - `provideCodeActions(document, range, context): CodeAction[]` - Return available fixes
 - `createQuickFix(finding: SecurityFinding): CodeAction` - Generate fix action
 - `applyFix(document, finding): WorkspaceEdit` - Apply fix to document
 
 **Supported fix types:**
+
 - Add input validation (schema constraints)
 - Fix insecure patterns (e.g., SQL injection → parameterized queries)
 - Add authentication checks
 - Remove hardcoded secrets
 
 **Example quick fix:**
+
 ```typescript
 // Finding: Missing input validation
-const quickFix = new CodeAction('Add input constraints', CodeActionKind.QuickFix);
+const quickFix = new CodeAction(
+  "Add input constraints",
+  CodeActionKind.QuickFix,
+);
 quickFix.edit = new WorkspaceEdit();
 quickFix.edit.replace(
   document.uri,
   range,
-  `{ type: "string", maxLength: 100, pattern: "^[a-zA-Z0-9]+$" }`
+  `{ type: "string", maxLength: 100, pattern: "^[a-zA-Z0-9]+$" }`,
 );
 ```
 
 ---
 
 ### 3. ReportPanelProvider
+
 **File**: `src/providers/report-panel.ts`
 
 Renders HTML reports in VSCode webview panel.
 
 **Key methods:**
+
 - `show(report: ValidationReport): void` - Display report in panel
 - `getHtmlContent(report): string` - Generate webview HTML
 - `handleMessage(message: any): void` - Process messages from webview (e.g., copy, export)
 - `dispose(): void` - Cleanup webview resources
 
 **Webview features:**
+
 - Interactive charts (security score, rule distribution)
 - Collapsible finding sections
 - Copy-to-clipboard buttons
 - Export to JSON/HTML/SARIF
 
 **Security:**
+
 ```typescript
 const panel = vscode.window.createWebviewPanel(
   'mcpVerifyReport',
@@ -138,14 +153,17 @@ const panel = vscode.window.createWebviewPanel(
 ---
 
 ### 4. Tree Views (4 Providers)
+
 **Location**: `src/views/`
 
 #### ServersTreeProvider
+
 **File**: `src/views/servers-tree.ts`
 
 Shows discovered MCP servers from Claude Desktop / Gemini CLI / Cursor configs.
 
 **Tree structure:**
+
 ```
 Servers
 ├── 📦 my-mcp-server (Active)
@@ -156,11 +174,13 @@ Servers
 ```
 
 #### FindingsTreeProvider
+
 **File**: `src/views/findings-tree.ts`
 
 Lists security findings grouped by severity.
 
 **Tree structure:**
+
 ```
 Findings (12 total)
 ├── 🔴 Critical (2)
@@ -171,11 +191,13 @@ Findings (12 total)
 ```
 
 #### ToolsTreeProvider
+
 **File**: `src/views/tools-tree.ts`
 
 Displays server tools, resources, prompts.
 
 #### HistoryTreeProvider
+
 **File**: `src/views/history-tree.ts`
 
 Shows scan history with timestamps.
@@ -186,22 +208,22 @@ Shows scan history with timestamps.
 
 **Registered in `package.json` → `contributes.commands`:**
 
-| Command ID | Title | Keybinding |
-|------------|-------|------------|
-| `mcp-verify.validate` | Validate MCP Server | `Ctrl+Shift+V M` |
-| `mcp-verify.scan` | Security Scan | `Ctrl+Shift+V S` |
-| `mcp-verify.quickScan` | Quick Scan | `Ctrl+Shift+V Q` |
-| `mcp-verify.doctor` | Run Doctor | - |
-| `mcp-verify.showReport` | Show Report | - |
-| `mcp-verify.clearDiagnostics` | Clear Diagnostics | - |
-| `mcp-verify.refreshServers` | Refresh Servers | - |
-| `mcp-verify.openServerConfig` | Open Server Config | - |
-| `mcp-verify.exportReport` | Export Report | - |
-| `mcp-verify.compareBaseline` | Compare Baseline | - |
-| `mcp-verify.saveBaseline` | Save Baseline | - |
-| `mcp-verify.viewHistory` | View History | - |
-| `mcp-verify.clearHistory` | Clear History | - |
-| `mcp-verify.openSettings` | Open Settings | - |
+| Command ID                    | Title               | Keybinding       |
+| ----------------------------- | ------------------- | ---------------- |
+| `mcp-verify.validate`         | Validate MCP Server | `Ctrl+Shift+V M` |
+| `mcp-verify.scan`             | Security Scan       | `Ctrl+Shift+V S` |
+| `mcp-verify.quickScan`        | Quick Scan          | `Ctrl+Shift+V Q` |
+| `mcp-verify.doctor`           | Run Doctor          | -                |
+| `mcp-verify.showReport`       | Show Report         | -                |
+| `mcp-verify.clearDiagnostics` | Clear Diagnostics   | -                |
+| `mcp-verify.refreshServers`   | Refresh Servers     | -                |
+| `mcp-verify.openServerConfig` | Open Server Config  | -                |
+| `mcp-verify.exportReport`     | Export Report       | -                |
+| `mcp-verify.compareBaseline`  | Compare Baseline    | -                |
+| `mcp-verify.saveBaseline`     | Save Baseline       | -                |
+| `mcp-verify.viewHistory`      | View History        | -                |
+| `mcp-verify.clearHistory`     | Clear History       | -                |
+| `mcp-verify.openSettings`     | Open Settings       | -                |
 
 ---
 
@@ -210,16 +232,18 @@ Shows scan history with timestamps.
 ### Add new command
 
 **1. Create command handler** (`src/commands/my-command.ts`):
+
 ```typescript
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
 export async function myCommand(): Promise<void> {
-  vscode.window.showInformationMessage('My command executed!');
+  vscode.window.showInformationMessage("My command executed!");
   // Implementation...
 }
 ```
 
 **2. Register in `package.json`**:
+
 ```json
 {
   "contributes": {
@@ -235,17 +259,19 @@ export async function myCommand(): Promise<void> {
 ```
 
 **3. Register in `src/extension.ts`** (activate function):
+
 ```typescript
-import { myCommand } from './commands/my-command';
+import { myCommand } from "./commands/my-command";
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    vscode.commands.registerCommand('mcp-verify.myCommand', myCommand)
+    vscode.commands.registerCommand("mcp-verify.myCommand", myCommand),
   );
 }
 ```
 
 **4. (Optional) Add keybinding** in `package.json`:
+
 ```json
 {
   "contributes": {
@@ -265,11 +291,14 @@ export function activate(context: vscode.ExtensionContext) {
 ### Add new tree view
 
 **1. Create provider** (`src/views/my-view.ts`):
+
 ```typescript
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
 export class MyTreeProvider implements vscode.TreeDataProvider<MyTreeItem> {
-  private _onDidChangeTreeData = new vscode.EventEmitter<MyTreeItem | undefined>();
+  private _onDidChangeTreeData = new vscode.EventEmitter<
+    MyTreeItem | undefined
+  >();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
   refresh(): void {
@@ -293,6 +322,7 @@ class MyTreeItem extends vscode.TreeItem {
 ```
 
 **2. Register in `package.json`**:
+
 ```json
 {
   "contributes": {
@@ -318,13 +348,14 @@ class MyTreeItem extends vscode.TreeItem {
 ```
 
 **3. Register in `src/extension.ts`**:
+
 ```typescript
-import { MyTreeProvider } from './views/my-view';
+import { MyTreeProvider } from "./views/my-view";
 
 export function activate(context: vscode.ExtensionContext) {
   const myTreeProvider = new MyTreeProvider();
   context.subscriptions.push(
-    vscode.window.registerTreeDataProvider('mcpVerifyMyView', myTreeProvider)
+    vscode.window.registerTreeDataProvider("mcpVerifyMyView", myTreeProvider),
   );
 }
 ```
@@ -348,6 +379,7 @@ npm run watch
 ```
 
 **Test scenarios:**
+
 1. Open workspace with MCP server
 2. Run "MCP Verify: Validate Server" command
 3. Verify diagnostics appear in Problems panel
@@ -360,30 +392,35 @@ npm run watch
 ## Troubleshooting
 
 ### Command not appearing in palette
+
 - **Check**: Is command in `package.json` → `contributes.commands`?
 - **Check**: Is command registered in `extension.ts` activate()?
 - **Check**: Did you rebuild? (`npm run compile`)
 - **Check**: Did you reload window? (`Developer: Reload Window`)
 
 ### Diagnostics not updating
+
 - **Check**: Is file watcher active? (look for console logs)
 - **Check**: Is `updateDiagnostics()` called on document change?
 - **Check**: Is diagnostic collection cleared before updating?
 - **Debug**: Add `console.log` in `onDidSave` handler
 
 ### Webview not loading
+
 - **Check**: Is `getHtmlContent()` returning valid HTML?
 - **Check**: Are CSP headers correct? (check DevTools console)
 - **Check**: Are resource URIs using `webview.asWebviewUri()`?
 - **Debug**: Open webview DevTools (`Developer: Open Webview Developer Tools`)
 
 ### Tree view empty
+
 - **Check**: Is `getChildren()` returning items?
 - **Check**: Is `refresh()` being called after data changes?
 - **Check**: Is tree view registered with correct ID?
 - **Debug**: Add `console.log` in `getChildren()`
 
 ### Keybinding not working
+
 - **Check**: Is keybinding in `package.json` → `contributes.keybindings`?
 - **Check**: Is `when` clause correct? (e.g., `editorTextFocus`)
 - **Check**: Is there a conflict? (File → Preferences → Keyboard Shortcuts)
@@ -418,10 +455,11 @@ npm run watch
 ```
 
 **Access settings in code:**
+
 ```typescript
-const config = vscode.workspace.getConfiguration('mcp-verify');
-const enableRealTime = config.get<boolean>('enableRealTimeScanning');
-const profile = config.get<string>('securityProfile');
+const config = vscode.workspace.getConfiguration("mcp-verify");
+const enableRealTime = config.get<boolean>("enableRealTimeScanning");
+const profile = config.get<string>("securityProfile");
 ```
 
 ---
@@ -432,16 +470,16 @@ const profile = config.get<string>('securityProfile');
 
 ```typescript
 // Global state (persists across sessions)
-context.globalState.update('lastScanTime', Date.now());
-const lastScan = context.globalState.get<number>('lastScanTime');
+context.globalState.update("lastScanTime", Date.now());
+const lastScan = context.globalState.get<number>("lastScanTime");
 
 // Workspace state (persists per workspace)
-context.workspaceState.update('serverPath', '/path/to/server');
-const serverPath = context.workspaceState.get<string>('serverPath');
+context.workspaceState.update("serverPath", "/path/to/server");
+const serverPath = context.workspaceState.get<string>("serverPath");
 
 // Secrets (encrypted storage)
-context.secrets.store('apiKey', 'sk-...');
-const apiKey = await context.secrets.get('apiKey');
+context.secrets.store("apiKey", "sk-...");
+const apiKey = await context.secrets.get("apiKey");
 ```
 
 ---

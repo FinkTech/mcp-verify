@@ -11,8 +11,11 @@
  * Manage disclaimer preferences (reset, status)
  */
 
-import chalk from 'chalk';
-import { DisclaimerManager, type DisclaimerType } from '../utils/disclaimer-manager';
+import chalk from "chalk";
+import {
+  DisclaimerManager,
+  type DisclaimerType,
+} from "../utils/disclaimer-manager";
 
 interface DisclaimersOptions {
   reset?: boolean;

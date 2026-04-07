@@ -14,6 +14,7 @@ This file is optimized for Claude Code. Other AI coding agents should reference 
 - **VSCode Extension**: Real-time diagnostics, code actions, 4 tree views
 
 **Decision guide**:
+
 - Add CLI command → `cli-verifier/src/commands/`
 - Add MCP tool → `mcp-server/src/tools/`
 - Add VSCode command → `vscode-extension/src/commands/`

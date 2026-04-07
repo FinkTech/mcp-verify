@@ -10,7 +10,10 @@
  *
  * Provides translation functions for CLI messages
  */
-import { Language, translations } from '../../../../libs/core/domain/reporting/i18n';
+import {
+  Language,
+  translations,
+} from "../../../../libs/core/domain/reporting/i18n";
 /**
  * Get user's preferred language from:
  * 1. Environment variable MCP_VERIFY_LANG
@@ -35,7 +38,10 @@ export declare function setLanguage(lang: Language): void;
  * Translate a key with optional parameters
  * Usage: t('welcome_user', { name: 'Fink' }) -> "Welcome, Fink!"
  */
-export declare function t(key: keyof typeof translations.en, params?: Record<string, string | number>): string;
+export declare function t(
+  key: keyof typeof translations.en,
+  params?: Record<string, string | number>,
+): string;
 /**
  * Save language preference to config
  */

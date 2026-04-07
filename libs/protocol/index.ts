@@ -24,5 +24,5 @@
 // export * from './v1/schemas';
 // export * from './v1/messages';
 
-export const PROTOCOL_VERSION = '2024-11-05';
-export const MCP_SPEC_URL = 'https://spec.modelcontextprotocol.io/';
+export const PROTOCOL_VERSION = "2024-11-05";
+export const MCP_SPEC_URL = "https://spec.modelcontextprotocol.io/";

@@ -11,34 +11,39 @@
  * Extracted from interactive.ts - Section 10
  */
 
-import readline from 'readline';
-import chalk from 'chalk';
-import { runFuzzAction } from '../../fuzz';
-import { ShellParser } from '../parser';
-import type { ShellSession } from '../session';
-import { resolveTarget, mergeOptions } from './shared';
+import readline from "readline";
+import chalk from "chalk";
+import { runFuzzAction } from "../../fuzz";
+import { ShellParser } from "../parser";
+import type { ShellSession } from "../session";
+import { resolveTarget, mergeOptions } from "./shared";
 
 export async function handleFuzz(
   args: string[],
   session: ShellSession,
-  rl: readline.Interface
+  rl: readline.Interface,
 ): Promise<void> {
-  const target = await resolveTarget(args, session, rl, 'fuzz "node server.js" --tool "Echo Tool"');
+  const target = await resolveTarget(
+    args,
+    session,
+    rl,
+    'fuzz "node server.js" --tool "Echo Tool"',
+  );
   if (!target) return;
 
   session.setTarget(target);
   const flags = ShellParser.extractFlags(args);
-  const merged = mergeOptions('fuzz', session, flags);
+  const merged = mergeOptions("fuzz", session, flags);
 
   // Apply security profile settings
   const context = session.getActiveContext();
   const profile = context.profile;
 
   const options: Record<string, unknown> = {
-    transport:   'http',
-    concurrency: '1',
-    timeout:     '5000',
-    lang:        session.state.lang,
+    transport: "http",
+    concurrency: "1",
+    timeout: "5000",
+    lang: session.state.lang,
 
     // Apply profile settings
     maxPayloadsPerTool: String(profile.fuzzing.maxPayloadsPerTool),
@@ -60,7 +65,7 @@ export async function handleFuzz(
   };
 
   console.log(chalk.dim(`  Using profile: ${chalk.yellow(profile.name)}`));
-  console.log('');
+  console.log("");
   await runFuzzAction(target, options);
-  console.log('');
+  console.log("");
 }

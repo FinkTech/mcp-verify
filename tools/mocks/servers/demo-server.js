@@ -24,7 +24,9 @@ function send(obj) {
 
 function isPromptInjection(val) {
   if (typeof val !== "string") return false;
-  return /ignore previous|forget your|system prompt|<system>|jailbreak|DAN|do anything now/i.test(val);
+  return /ignore previous|forget your|system prompt|<system>|jailbreak|DAN|do anything now/i.test(
+    val,
+  );
 }
 
 function isSQLi(val) {

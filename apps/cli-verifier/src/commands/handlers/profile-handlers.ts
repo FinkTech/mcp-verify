@@ -15,10 +15,14 @@
  * - profile show: Show current profile details
  */
 
-import chalk from 'chalk';
-import { t } from '@mcp-verify/shared';
-import type { ShellSession } from '../interactive/session';
-import { SECURITY_PROFILES, getAvailableProfiles, isPresetProfile } from '../profiles/security-profiles';
+import chalk from "chalk";
+import { t } from "@mcp-verify/shared";
+import type { ShellSession } from "../interactive/session";
+import {
+  SECURITY_PROFILES,
+  getAvailableProfiles,
+  isPresetProfile,
+} from "../profiles/security-profiles";
 
 /**
  * Main profile command dispatcher
@@ -26,7 +30,10 @@ import { SECURITY_PROFILES, getAvailableProfiles, isPresetProfile } from '../pro
  * @param args - Command arguments [subcommand, ...args]
  * @param session - Shell session
  */
-export function handleProfileCommand(args: string[], session: ShellSession): void {
+export function handleProfileCommand(
+  args: string[],
+  session: ShellSession,
+): void {
   if (args.length === 0) {
     showProfileHelp();
     return;
@@ -35,19 +42,19 @@ export function handleProfileCommand(args: string[], session: ShellSession): voi
   const [subcommand, ...rest] = args;
 
   switch (subcommand) {
-    case 'set':
+    case "set":
       setProfile(rest, session);
       break;
 
-    case 'save':
+    case "save":
       saveProfile(rest, session);
       break;
 
-    case 'list':
+    case "list":
       listProfiles(session);
       break;
 
-    case 'show':
+    case "show":
       showCurrentProfile(session);
       break;
 
@@ -65,14 +72,18 @@ export function handleProfileCommand(args: string[], session: ShellSession): voi
  */
 function setProfile(args: string[], session: ShellSession): void {
   if (args.length === 0) {
-    console.log(chalk.red('✗ Error: Profile name required'));
-    console.log(chalk.dim('  Usage: profile set <name>'));
-    console.log(chalk.dim('  Available: light, balanced, aggressive, or custom profiles'));
+    console.log(chalk.red("✗ Error: Profile name required"));
+    console.log(chalk.dim("  Usage: profile set <name>"));
+    console.log(
+      chalk.dim("  Available: light, balanced, aggressive, or custom profiles"),
+    );
     return;
   }
 
   const profileName = args[0];
-  const availableProfiles = getAvailableProfiles(session.state.globalConfig.customProfiles);
+  const availableProfiles = getAvailableProfiles(
+    session.state.globalConfig.customProfiles,
+  );
 
   // Check if profile exists
   if (!availableProfiles.includes(profileName)) {
@@ -85,9 +96,13 @@ function setProfile(args: string[], session: ShellSession): void {
   session.setProfile(profileName);
 
   const isPreset = isPresetProfile(profileName);
-  const typeLabel = isPreset ? chalk.dim('(preset)') : chalk.dim('(custom)');
+  const typeLabel = isPreset ? chalk.dim("(preset)") : chalk.dim("(custom)");
 
-  console.log(chalk.green(`✓ Switched to profile: ${chalk.bold(profileName)} ${typeLabel}`));
+  console.log(
+    chalk.green(
+      `✓ Switched to profile: ${chalk.bold(profileName)} ${typeLabel}`,
+    ),
+  );
   console.log(chalk.dim(`  Context: ${session.state.activeContextName}`));
 }
 
@@ -99,8 +114,8 @@ function setProfile(args: string[], session: ShellSession): void {
  */
 function saveProfile(args: string[], session: ShellSession): void {
   if (args.length === 0) {
-    console.log(chalk.red('✗ Error: Profile name required'));
-    console.log(chalk.dim('  Usage: profile save <name>'));
+    console.log(chalk.red("✗ Error: Profile name required"));
+    console.log(chalk.dim("  Usage: profile save <name>"));
     return;
   }
 
@@ -108,18 +123,27 @@ function saveProfile(args: string[], session: ShellSession): void {
 
   // Check if trying to overwrite a preset
   if (isPresetProfile(profileName)) {
-    console.log(chalk.red('✗ Cannot overwrite preset profile'));
-    console.log(chalk.dim('  Preset profiles: light, balanced, aggressive'));
-    console.log(chalk.dim('  Choose a different name for your custom profile'));
+    console.log(chalk.red("✗ Cannot overwrite preset profile"));
+    console.log(chalk.dim("  Preset profiles: light, balanced, aggressive"));
+    console.log(chalk.dim("  Choose a different name for your custom profile"));
     return;
   }
 
   // Save the profile
   session.saveCustomProfile(profileName);
 
-  console.log(chalk.green(`✓ Saved custom profile: ${chalk.bold(profileName)}`));
-  console.log(chalk.dim('  Based on current settings in context: ' + session.state.activeContextName));
-  console.log(chalk.dim('  Use "profile set ' + profileName + '" to switch to it'));
+  console.log(
+    chalk.green(`✓ Saved custom profile: ${chalk.bold(profileName)}`),
+  );
+  console.log(
+    chalk.dim(
+      "  Based on current settings in context: " +
+        session.state.activeContextName,
+    ),
+  );
+  console.log(
+    chalk.dim('  Use "profile set ' + profileName + '" to switch to it'),
+  );
 }
 
 /**
@@ -132,14 +156,14 @@ function listProfiles(session: ShellSession): void {
   const availableProfiles = getAvailableProfiles(customProfiles);
   const currentProfile = session.getActiveContext().profile.name;
 
-  console.log(chalk.bold.white('\n  Available Profiles:\n'));
+  console.log(chalk.bold.white("\n  Available Profiles:\n"));
 
   // Preset profiles
-  console.log(chalk.dim('  Presets:'));
+  console.log(chalk.dim("  Presets:"));
   for (const name of Object.keys(SECURITY_PROFILES)) {
     const profile = SECURITY_PROFILES[name as keyof typeof SECURITY_PROFILES];
     const isCurrent = name === currentProfile;
-    const marker = isCurrent ? chalk.green('●') : chalk.dim('○');
+    const marker = isCurrent ? chalk.green("●") : chalk.dim("○");
     const nameDisplay = isCurrent
       ? chalk.green.bold(name.padEnd(12))
       : chalk.cyan(name.padEnd(12));
@@ -154,15 +178,17 @@ function listProfiles(session: ShellSession): void {
   // Custom profiles (if any)
   const customProfileNames = Object.keys(customProfiles);
   if (customProfileNames.length > 0) {
-    console.log(chalk.dim('\n  Custom:'));
+    console.log(chalk.dim("\n  Custom:"));
     for (const name of customProfileNames.sort()) {
       const isCurrent = name === currentProfile;
-      const marker = isCurrent ? chalk.green('●') : chalk.dim('○');
+      const marker = isCurrent ? chalk.green("●") : chalk.dim("○");
       const nameDisplay = isCurrent
         ? chalk.green.bold(name.padEnd(12))
         : chalk.cyan(name.padEnd(12));
 
-      console.log(`    ${marker} ${nameDisplay}  ${chalk.dim('(user-defined)')}`);
+      console.log(
+        `    ${marker} ${nameDisplay}  ${chalk.dim("(user-defined)")}`,
+      );
     }
   }
 
@@ -180,36 +206,60 @@ function showCurrentProfile(session: ShellSession): void {
 
   console.log(chalk.bold.white(`\n  Profile: ${chalk.yellow(profile.name)}\n`));
 
-  const typeLabel = profile.isPreset ? chalk.dim('Preset') : chalk.dim('Custom');
+  const typeLabel = profile.isPreset
+    ? chalk.dim("Preset")
+    : chalk.dim("Custom");
   console.log(`  Type: ${typeLabel}`);
   console.log(`  Context: ${chalk.cyan(session.state.activeContextName)}\n`);
 
   // Fuzzing settings
-  console.log(chalk.bold('  Fuzzing:'));
+  console.log(chalk.bold("  Fuzzing:"));
   console.log(`    Max Payloads:       ${profile.fuzzing.maxPayloadsPerTool}`);
-  console.log(`    Mutations:          ${profile.fuzzing.useMutations ? profile.fuzzing.mutationsPerPayload : 'disabled'}`);
-  console.log(`    Feedback Loop:      ${profile.fuzzing.enableFeedbackLoop ? 'enabled' : 'disabled'}`);
+  console.log(
+    `    Mutations:          ${profile.fuzzing.useMutations ? profile.fuzzing.mutationsPerPayload : "disabled"}`,
+  );
+  console.log(
+    `    Feedback Loop:      ${profile.fuzzing.enableFeedbackLoop ? "enabled" : "disabled"}`,
+  );
 
   // Validation settings
-  console.log(chalk.bold('\n  Validation:'));
+  console.log(chalk.bold("\n  Validation:"));
   console.log(`    Min Security Score: ${profile.validation.minSecurityScore}`);
-  console.log(`    Fail on Critical:   ${profile.validation.failOnCritical ? 'yes' : 'no'}`);
-  console.log(`    Fail on High:       ${profile.validation.failOnHigh ? 'yes' : 'no'}`);
+  console.log(
+    `    Fail on Critical:   ${profile.validation.failOnCritical ? "yes" : "no"}`,
+  );
+  console.log(
+    `    Fail on High:       ${profile.validation.failOnHigh ? "yes" : "no"}`,
+  );
 
   // Generators
-  console.log(chalk.bold('\n  Generators:'));
-  console.log(`    Prompt Injection:   ${profile.generators.enablePromptInjection ? 'enabled' : 'disabled'}`);
-  console.log(`    Classic Payloads:   ${profile.generators.enableClassicPayloads ? 'enabled' : 'disabled'}`);
-  console.log(`    Prototype Pollution: ${profile.generators.enablePrototypePollution ? 'enabled' : 'disabled'}`);
-  console.log(`    JWT Attacks:        ${profile.generators.enableJwtAttacks ? 'enabled' : 'disabled'}`);
+  console.log(chalk.bold("\n  Generators:"));
+  console.log(
+    `    Prompt Injection:   ${profile.generators.enablePromptInjection ? "enabled" : "disabled"}`,
+  );
+  console.log(
+    `    Classic Payloads:   ${profile.generators.enableClassicPayloads ? "enabled" : "disabled"}`,
+  );
+  console.log(
+    `    Prototype Pollution: ${profile.generators.enablePrototypePollution ? "enabled" : "disabled"}`,
+  );
+  console.log(
+    `    JWT Attacks:        ${profile.generators.enableJwtAttacks ? "enabled" : "disabled"}`,
+  );
 
   // Detectors
-  console.log(chalk.bold('\n  Detectors:'));
-  console.log(`    Timing Detection:   ${profile.detectors.enableTimingDetection ? 'enabled' : 'disabled'}`);
+  console.log(chalk.bold("\n  Detectors:"));
+  console.log(
+    `    Timing Detection:   ${profile.detectors.enableTimingDetection ? "enabled" : "disabled"}`,
+  );
   if (profile.detectors.enableTimingDetection) {
-    console.log(`    Timing Multiplier:  ${profile.detectors.timingAnomalyMultiplier}x`);
+    console.log(
+      `    Timing Multiplier:  ${profile.detectors.timingAnomalyMultiplier}x`,
+    );
   }
-  console.log(`    Error Detection:    ${profile.detectors.enableErrorDetection ? 'enabled' : 'disabled'}`);
+  console.log(
+    `    Error Detection:    ${profile.detectors.enableErrorDetection ? "enabled" : "disabled"}`,
+  );
 
   console.log(); // Empty line at end
 }
@@ -218,9 +268,17 @@ function showCurrentProfile(session: ShellSession): void {
  * Show help for profile commands
  */
 function showProfileHelp(): void {
-  console.log(chalk.bold.white(`\n  ${t('profile_help_title')}\n`));
-  console.log(`    ${chalk.cyan('profile set <name>')}      ${t('profile_help_set')}`);
-  console.log(`    ${chalk.cyan('profile save <name>')}     ${t('profile_help_save')}`);
-  console.log(`    ${chalk.cyan('profile list')}            ${t('profile_help_list')}`);
-  console.log(`    ${chalk.cyan('profile show')}            ${t('profile_help_show')}\n`);
+  console.log(chalk.bold.white(`\n  ${t("profile_help_title")}\n`));
+  console.log(
+    `    ${chalk.cyan("profile set <name>")}      ${t("profile_help_set")}`,
+  );
+  console.log(
+    `    ${chalk.cyan("profile save <name>")}     ${t("profile_help_save")}`,
+  );
+  console.log(
+    `    ${chalk.cyan("profile list")}            ${t("profile_help_list")}`,
+  );
+  console.log(
+    `    ${chalk.cyan("profile show")}            ${t("profile_help_show")}\n`,
+  );
 }

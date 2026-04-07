@@ -22,45 +22,45 @@
  * 3. Behavioral Probing: How the server handles malformed input
  */
 
-import type { FuzzTarget } from '../engine/fuzzer-engine';
-import type { GeneratedPayload } from '../generators/generator.interface';
+import type { FuzzTarget } from "../engine/fuzzer-engine";
+import type { GeneratedPayload } from "../generators/generator.interface";
 
 // ==================== TYPES ====================
 
 export type ServerLanguage =
-  | 'nodejs'
-  | 'python'
-  | 'rust'
-  | 'go'
-  | 'java'
-  | 'csharp'
-  | 'ruby'
-  | 'php'
-  | 'unknown';
+  | "nodejs"
+  | "python"
+  | "rust"
+  | "go"
+  | "java"
+  | "csharp"
+  | "ruby"
+  | "php"
+  | "unknown";
 
 export type ServerFramework =
-  | 'fastmcp'      // Python FastMCP
-  | 'mcp-sdk-ts'   // Official TypeScript SDK
-  | 'mcp-sdk-py'   // Official Python SDK
-  | 'express'      // Node.js Express
-  | 'fastify'      // Node.js Fastify
-  | 'flask'        // Python Flask
-  | 'django'       // Python Django
-  | 'actix'        // Rust Actix
-  | 'axum'         // Rust Axum
-  | 'gin'          // Go Gin
-  | 'echo'         // Go Echo
-  | 'spring'       // Java Spring
-  | 'unknown';
+  | "fastmcp" // Python FastMCP
+  | "mcp-sdk-ts" // Official TypeScript SDK
+  | "mcp-sdk-py" // Official Python SDK
+  | "express" // Node.js Express
+  | "fastify" // Node.js Fastify
+  | "flask" // Python Flask
+  | "django" // Python Django
+  | "actix" // Rust Actix
+  | "axum" // Rust Axum
+  | "gin" // Go Gin
+  | "echo" // Go Echo
+  | "spring" // Java Spring
+  | "unknown";
 
 export type DatabaseType =
-  | 'postgresql'
-  | 'mysql'
-  | 'sqlite'
-  | 'mongodb'
-  | 'redis'
-  | 'none'
-  | 'unknown';
+  | "postgresql"
+  | "mysql"
+  | "sqlite"
+  | "mongodb"
+  | "redis"
+  | "none"
+  | "unknown";
 
 export interface ServerFingerprint {
   /** Detected programming language */
@@ -122,7 +122,7 @@ export class Fingerprinter {
     this.config = {
       probeTimeout: config.probeTimeout ?? 3000,
       minConfidence: config.minConfidence ?? 0.6,
-      verbose: config.verbose ?? false
+      verbose: config.verbose ?? false,
     };
   }
 
@@ -135,59 +135,59 @@ export class Fingerprinter {
     // 1. Type confusion - triggers TypeError in dynamic languages
     {
       value: JSON.stringify({ __proto__: null, toString: null }),
-      category: 'fingerprint',
-      type: 'type-confusion-probe',
-      description: 'Type confusion probe',
-      severity: 'low'
+      category: "fingerprint",
+      type: "type-confusion-probe",
+      description: "Type confusion probe",
+      severity: "low",
     },
     // 2. Invalid JSON-RPC - revela la implementación del protocolo
     {
       value: '{"jsonrpc": "invalid", "method": 123, "id": "test"}',
-      category: 'fingerprint',
-      type: 'invalid-jsonrpc-probe',
-      description: 'Invalid JSON-RPC probe',
-      severity: 'low'
+      category: "fingerprint",
+      type: "invalid-jsonrpc-probe",
+      description: "Invalid JSON-RPC probe",
+      severity: "low",
     },
     // 3. Deeply nested object - triggers stack overflow in some parsers
     {
       value: JSON.stringify(this.generateDeepObject(50)),
-      category: 'fingerprint',
-      type: 'deep-nesting-probe',
-      description: 'Deep nesting probe',
-      severity: 'medium'
+      category: "fingerprint",
+      type: "deep-nesting-probe",
+      description: "Deep nesting probe",
+      severity: "medium",
     },
     // 4. SQL-like string - puede disparar error SQL si el backend usa SQL
     {
       value: "' OR '1'='1",
-      category: 'fingerprint',
-      type: 'sql-probe',
-      description: 'SQL probe',
-      severity: 'low'
+      category: "fingerprint",
+      type: "sql-probe",
+      description: "SQL probe",
+      severity: "low",
     },
     // 5. Path traversal - revela el estilo de error del sistema de archivos
     {
-      value: '../../../etc/passwd',
-      category: 'fingerprint',
-      type: 'path-traversal-probe',
-      description: 'Path traversal probe',
-      severity: 'medium'
+      value: "../../../etc/passwd",
+      category: "fingerprint",
+      type: "path-traversal-probe",
+      description: "Path traversal probe",
+      severity: "medium",
     },
     // 6. Unicode edge case - reveals encoding handling
     {
-      value: '\u0000\uFFFF\uD800',
-      category: 'fingerprint',
-      type: 'unicode-probe',
-      description: 'Unicode probe',
-      severity: 'low'
+      value: "\u0000\uFFFF\uD800",
+      category: "fingerprint",
+      type: "unicode-probe",
+      description: "Unicode probe",
+      severity: "low",
     },
     // 7. Large number - triggers overflow errors
     {
       value: String(Number.MAX_SAFE_INTEGER + 1),
-      category: 'fingerprint',
-      type: 'large-number-probe',
-      description: 'Large number probe',
-      severity: 'low'
-    }
+      category: "fingerprint",
+      type: "large-number-probe",
+      description: "Large number probe",
+      severity: "low",
+    },
   ];
 
   // ==================== SIGNATURE PATTERNS ====================
@@ -199,7 +199,7 @@ export class Fingerprinter {
   }> = [
     // Node.js / JavaScript
     {
-      language: 'nodejs',
+      language: "nodejs",
       patterns: [
         /TypeError:.*at\s+\S+\s+\(/i,
         /at\s+Object\.<anonymous>/,
@@ -210,13 +210,13 @@ export class Fingerprinter {
         /node_modules/,
         /Cannot read propert(y|ies) of/,
         /undefined is not a function/,
-        /ENOENT|EACCES|EPERM/
+        /ENOENT|EACCES|EPERM/,
       ],
-      confidence: 0.9
+      confidence: 0.9,
     },
     // Python
     {
-      language: 'python',
+      language: "python",
       patterns: [
         /Traceback \(most recent call last\)/,
         /File ".*\.py", line \d+/,
@@ -227,13 +227,13 @@ export class Fingerprinter {
         /ValueError:/,
         /ImportError:/,
         /ModuleNotFoundError:/,
-        /IndentationError:/
+        /IndentationError:/,
       ],
-      confidence: 0.95
+      confidence: 0.95,
     },
     // Rust
     {
-      language: 'rust',
+      language: "rust",
       patterns: [
         /panicked at/,
         /thread '.*' panicked/,
@@ -242,26 +242,26 @@ export class Fingerprinter {
         /called `Option::unwrap\(\)` on a `None` value/,
         /called `Result::unwrap\(\)` on an `Err` value/,
         /index out of bounds/,
-        /assertion failed/
+        /assertion failed/,
       ],
-      confidence: 0.95
+      confidence: 0.95,
     },
     // Go
     {
-      language: 'go',
+      language: "go",
       patterns: [
         /panic:.*runtime error/,
         /goroutine \d+ \[running\]/,
         /\.go:\d+\s+\+0x[0-9a-f]+/,
         /runtime\.goexit/,
         /nil pointer dereference/,
-        /invalid memory address/
+        /invalid memory address/,
       ],
-      confidence: 0.9
+      confidence: 0.9,
     },
     // Java
     {
-      language: 'java',
+      language: "java",
       patterns: [
         /at\s+[\w.]+\([\w]+\.java:\d+\)/,
         /Exception in thread/,
@@ -269,49 +269,49 @@ export class Fingerprinter {
         /NullPointerException/,
         /ArrayIndexOutOfBoundsException/,
         /ClassNotFoundException/,
-        /\.class\)/
+        /\.class\)/,
       ],
-      confidence: 0.9
+      confidence: 0.9,
     },
     // C# / .NET
     {
-      language: 'csharp',
+      language: "csharp",
       patterns: [
         /at\s+[\w.]+\sin\s+.*\.cs:line\s+\d+/,
         /System\.\w+Exception/,
         /NullReferenceException/,
         /ArgumentException/,
         /InvalidOperationException/,
-        /Microsoft\.AspNetCore/
+        /Microsoft\.AspNetCore/,
       ],
-      confidence: 0.9
+      confidence: 0.9,
     },
     // Ruby
     {
-      language: 'ruby',
+      language: "ruby",
       patterns: [
         /from\s+.*\.rb:\d+:in\s+`/,
         /NoMethodError/,
         /NameError/,
         /ArgumentError.*wrong number of arguments/,
         /RuntimeError/,
-        /LoadError/
+        /LoadError/,
       ],
-      confidence: 0.85
+      confidence: 0.85,
     },
     // PHP
     {
-      language: 'php',
+      language: "php",
       patterns: [
         /PHP\s+(Fatal|Warning|Notice|Parse)\s+error/i,
         /on line \d+ in .*\.php/,
         /Stack trace:.*#\d+/s,
         /Uncaught\s+\w+Exception/,
         /Call to undefined function/,
-        /Cannot use object of type/
+        /Cannot use object of type/,
       ],
-      confidence: 0.9
-    }
+      confidence: 0.9,
+    },
   ];
 
   private readonly frameworkSignatures: Array<{
@@ -321,122 +321,80 @@ export class Fingerprinter {
   }> = [
     // FastMCP (Python)
     {
-      framework: 'fastmcp',
-      patterns: [
-        /fastmcp/i,
-        /FastMCP/,
-        /mcp\.server\.fastmcp/
-      ],
-      confidence: 0.95
+      framework: "fastmcp",
+      patterns: [/fastmcp/i, /FastMCP/, /mcp\.server\.fastmcp/],
+      confidence: 0.95,
     },
     // Official MCP SDK (TypeScript)
     {
-      framework: 'mcp-sdk-ts',
-      patterns: [
-        /@modelcontextprotocol\/sdk/,
-        /mcp-typescript/i,
-        /McpServer/
-      ],
-      confidence: 0.9
+      framework: "mcp-sdk-ts",
+      patterns: [/@modelcontextprotocol\/sdk/, /mcp-typescript/i, /McpServer/],
+      confidence: 0.9,
     },
     // Official MCP SDK (Python)
     {
-      framework: 'mcp-sdk-py',
-      patterns: [
-        /mcp\.server/,
-        /from mcp import/,
-        /mcp-python/i
-      ],
-      confidence: 0.85
+      framework: "mcp-sdk-py",
+      patterns: [/mcp\.server/, /from mcp import/, /mcp-python/i],
+      confidence: 0.85,
     },
     // Express
     {
-      framework: 'express',
-      patterns: [
-        /express/i,
-        /at Layer\.handle/,
-        /at Route\./
-      ],
-      confidence: 0.8
+      framework: "express",
+      patterns: [/express/i, /at Layer\.handle/, /at Route\./],
+      confidence: 0.8,
     },
     // Fastify
     {
-      framework: 'fastify',
-      patterns: [
-        /fastify/i,
-        /at onSendEnd/
-      ],
-      confidence: 0.8
+      framework: "fastify",
+      patterns: [/fastify/i, /at onSendEnd/],
+      confidence: 0.8,
     },
     // Flask
     {
-      framework: 'flask',
-      patterns: [
-        /flask/i,
-        /werkzeug/i,
-        /from flask import/
-      ],
-      confidence: 0.8
+      framework: "flask",
+      patterns: [/flask/i, /werkzeug/i, /from flask import/],
+      confidence: 0.8,
     },
     // Django
     {
-      framework: 'django',
-      patterns: [
-        /django/i,
-        /from django/,
-        /django\.core/
-      ],
-      confidence: 0.85
+      framework: "django",
+      patterns: [/django/i, /from django/, /django\.core/],
+      confidence: 0.85,
     },
     // Actix (Rust)
     {
-      framework: 'actix',
-      patterns: [
-        /actix_server/i,
-        /actix_rt/i,
-        /actix-web/i
-      ],
-      confidence: 0.9
+      framework: "actix",
+      patterns: [/actix_server/i, /actix_rt/i, /actix-web/i],
+      confidence: 0.9,
     },
     // Axum (Rust)
     {
-      framework: 'axum',
-      patterns: [
-        /\baxum::/i,
-        /\bhyper::/i,
-        /tokio::runtime/
-      ],
-      confidence: 0.85
+      framework: "axum",
+      patterns: [/\baxum::/i, /\bhyper::/i, /tokio::runtime/],
+      confidence: 0.85,
     },
     // Gin (Go)
     {
-      framework: 'gin',
-      patterns: [
-        /gin-gonic\/gin/i,
-        /\[GIN\]/i,
-        /GIN_MODE/
-      ],
-      confidence: 0.95
+      framework: "gin",
+      patterns: [/gin-gonic\/gin/i, /\[GIN\]/i, /GIN_MODE/],
+      confidence: 0.95,
     },
     // Echo (Go)
     {
-      framework: 'echo',
-      patterns: [
-        /labstack\/echo/i,
-        /echo\.Context/
-      ],
-      confidence: 0.9
+      framework: "echo",
+      patterns: [/labstack\/echo/i, /echo\.Context/],
+      confidence: 0.9,
     },
     // Spring (Java)
     {
-      framework: 'spring',
+      framework: "spring",
       patterns: [
         /org\.springframework\./i,
         /Spring\s+Framework/i,
-        /SpringApplication/
+        /SpringApplication/,
       ],
-      confidence: 0.95
-    }
+      confidence: 0.95,
+    },
   ];
 
   private readonly databaseSignatures: Array<{
@@ -445,59 +403,44 @@ export class Fingerprinter {
     confidence: number;
   }> = [
     {
-      database: 'postgresql',
+      database: "postgresql",
       patterns: [
         /PostgreSQL/i,
         /pg_catalog/,
         /SQLSTATE/,
         /psycopg2/,
-        /node-postgres/
+        /node-postgres/,
       ],
-      confidence: 0.9
+      confidence: 0.9,
     },
     {
-      database: 'mysql',
-      patterns: [
-        /MySQL/i,
-        /mysql2?:/,
-        /ER_\w+:/,
-        /SQLSTATE\[HY/
-      ],
-      confidence: 0.9
+      database: "mysql",
+      patterns: [/MySQL/i, /mysql2?:/, /ER_\w+:/, /SQLSTATE\[HY/],
+      confidence: 0.9,
     },
     {
-      database: 'sqlite',
-      patterns: [
-        /SQLite/i,
-        /sqlite3/,
-        /SQLITE_/
-      ],
-      confidence: 0.85
+      database: "sqlite",
+      patterns: [/SQLite/i, /sqlite3/, /SQLITE_/],
+      confidence: 0.85,
     },
     {
-      database: 'mongodb',
-      patterns: [
-        /MongoDB/i,
-        /MongoError/,
-        /mongoose/i,
-        /BSONTypeError/
-      ],
-      confidence: 0.9
+      database: "mongodb",
+      patterns: [/MongoDB/i, /MongoError/, /mongoose/i, /BSONTypeError/],
+      confidence: 0.9,
     },
     {
-      database: 'redis',
-      patterns: [
-        /Redis/i,
-        /WRONGTYPE/,
-        /ReplyError/
-      ],
-      confidence: 0.85
-    }
+      database: "redis",
+      patterns: [/Redis/i, /WRONGTYPE/, /ReplyError/],
+      confidence: 0.85,
+    },
   ];
 
   // ==================== MAIN FINGERPRINT METHOD ====================
 
-  async fingerprint(target: FuzzTarget, toolName: string): Promise<ServerFingerprint> {
+  async fingerprint(
+    target: FuzzTarget,
+    toolName: string,
+  ): Promise<ServerFingerprint> {
     const startTime = Date.now();
     const evidence: FingerprintEvidence[] = [];
 
@@ -505,31 +448,55 @@ export class Fingerprinter {
     for (const probe of this.probes) {
       try {
         const result = await target.execute(probe);
-        const responseStr = this.stringifyResponse(result.response, result.error);
+        const responseStr = this.stringifyResponse(
+          result.response,
+          result.error,
+        );
 
         // Analyze response for signatures
-        const languageMatches = this.matchSignatures(responseStr, this.languageSignatures);
-        const frameworkMatches = this.matchSignatures(responseStr, this.frameworkSignatures);
-        const databaseMatches = this.matchSignatures(responseStr, this.databaseSignatures);
+        const languageMatches = this.matchSignatures(
+          responseStr,
+          this.languageSignatures,
+        );
+        const frameworkMatches = this.matchSignatures(
+          responseStr,
+          this.frameworkSignatures,
+        );
+        const databaseMatches = this.matchSignatures(
+          responseStr,
+          this.databaseSignatures,
+        );
 
         // Collect evidence
-        for (const match of [...languageMatches, ...frameworkMatches, ...databaseMatches]) {
+        for (const match of [
+          ...languageMatches,
+          ...frameworkMatches,
+          ...databaseMatches,
+        ]) {
           evidence.push({
             probe: probe.description,
             pattern: match.pattern,
             detection: match.type,
             confidence: match.confidence,
-            excerpt: this.extractExcerpt(responseStr, match.pattern)
+            excerpt: this.extractExcerpt(responseStr, match.pattern),
           });
         }
 
         if (this.config.verbose) {
-          console.log(`[Fingerprint] Probe "${probe.description}": ${languageMatches.length} language, ${frameworkMatches.length} framework, ${databaseMatches.length} database matches`);
+          console.log(
+            `[Fingerprint] Probe "${probe.description}": ${languageMatches.length} language, ${frameworkMatches.length} framework, ${databaseMatches.length} database matches`,
+          );
         }
       } catch (error) {
         // Even errors can provide fingerprinting info
-        const errorStr = error instanceof Error ? error.message + (error.stack || '') : String(error);
-        const languageMatches = this.matchSignatures(errorStr, this.languageSignatures);
+        const errorStr =
+          error instanceof Error
+            ? error.message + (error.stack || "")
+            : String(error);
+        const languageMatches = this.matchSignatures(
+          errorStr,
+          this.languageSignatures,
+        );
 
         for (const match of languageMatches) {
           evidence.push({
@@ -537,7 +504,7 @@ export class Fingerprinter {
             pattern: match.pattern,
             detection: match.type,
             confidence: match.confidence,
-            excerpt: this.extractExcerpt(errorStr, match.pattern)
+            excerpt: this.extractExcerpt(errorStr, match.pattern),
           });
         }
       }
@@ -545,22 +512,25 @@ export class Fingerprinter {
 
     // Aggregate results
     const language = this.aggregateDetection<ServerLanguage>(
-      evidence.filter(e => this.isLanguage(e.detection)),
-      'unknown'
+      evidence.filter((e) => this.isLanguage(e.detection)),
+      "unknown",
     );
 
     const framework = this.aggregateDetection<ServerFramework>(
-      evidence.filter(e => this.isFramework(e.detection)),
-      'unknown'
+      evidence.filter((e) => this.isFramework(e.detection)),
+      "unknown",
     );
 
     const database = this.aggregateDetection<DatabaseType>(
-      evidence.filter(e => this.isDatabase(e.detection)),
-      'unknown'
+      evidence.filter((e) => this.isDatabase(e.detection)),
+      "unknown",
     );
 
     // Determine generator recommendations
-    const { recommended, disabled } = this.getGeneratorRecommendations(language.value, framework.value);
+    const { recommended, disabled } = this.getGeneratorRecommendations(
+      language.value,
+      framework.value,
+    );
 
     const durationMs = Date.now() - startTime;
 
@@ -574,7 +544,7 @@ export class Fingerprinter {
       recommendedGenerators: recommended,
       disabledGenerators: disabled,
       summary: this.generateSummary(language, framework, database, disabled),
-      durationMs
+      durationMs,
     };
   }
 
@@ -582,7 +552,7 @@ export class Fingerprinter {
 
   private matchSignatures<T extends string>(
     text: string,
-    signatures: Array<{ [key: string]: T | RegExp[] | number }>
+    signatures: Array<{ [key: string]: T | RegExp[] | number }>,
   ): Array<{ type: T; pattern: string; confidence: number }> {
     const matches: Array<{ type: T; pattern: string; confidence: number }> = [];
 
@@ -596,7 +566,7 @@ export class Fingerprinter {
           matches.push({
             type,
             pattern: pattern.source,
-            confidence: baseConfidence
+            confidence: baseConfidence,
           });
         }
       }
@@ -607,7 +577,7 @@ export class Fingerprinter {
 
   private aggregateDetection<T extends string>(
     evidence: FingerprintEvidence[],
-    defaultValue: T
+    defaultValue: T,
   ): { value: T; confidence: number } {
     if (evidence.length === 0) {
       return { value: defaultValue, confidence: 0 };
@@ -621,11 +591,17 @@ export class Fingerprinter {
         counts[e.detection] = { count: 0, maxConfidence: 0 };
       }
       counts[e.detection].count++;
-      counts[e.detection].maxConfidence = Math.max(counts[e.detection].maxConfidence, e.confidence);
+      counts[e.detection].maxConfidence = Math.max(
+        counts[e.detection].maxConfidence,
+        e.confidence,
+      );
     }
 
     // Find the detection with highest weighted score
-    let best: { type: string; score: number } = { type: defaultValue, score: 0 };
+    let best: { type: string; score: number } = {
+      type: defaultValue,
+      score: 0,
+    };
 
     for (const [type, data] of Object.entries(counts)) {
       // Score = count * maxConfidence
@@ -640,33 +616,34 @@ export class Fingerprinter {
 
     return {
       value: best.type as T,
-      confidence: finalConfidence >= this.config.minConfidence ? finalConfidence : 0
+      confidence:
+        finalConfidence >= this.config.minConfidence ? finalConfidence : 0,
     };
   }
 
   private getGeneratorRecommendations(
     language: ServerLanguage,
-    framework: ServerFramework
+    framework: ServerFramework,
   ): { recommended: string[]; disabled: string[] } {
     const allGenerators = [
-      'PromptInjectionGenerator',
-      'JsonRpcGenerator',
-      'SchemaConfusionGenerator',
-      'ClassicPayloadGenerator',
-      'SqlInjectionGenerator',
-      'XssGenerator',
-      'CommandInjectionGenerator',
-      'PathTraversalGenerator',
-      'SsrfGenerator',
-      'XxeGenerator',
-      'NoSqlInjectionGenerator',
-      'TemplateInjectionGenerator',
-      'BufferOverflowGenerator',
-      'LdapInjectionGenerator',
-      'FormatStringGenerator',
-      'JwtAttackGenerator',
-      'PrototypePollutionGenerator',
-      'TimeBasedPayloadGenerator'
+      "PromptInjectionGenerator",
+      "JsonRpcGenerator",
+      "SchemaConfusionGenerator",
+      "ClassicPayloadGenerator",
+      "SqlInjectionGenerator",
+      "XssGenerator",
+      "CommandInjectionGenerator",
+      "PathTraversalGenerator",
+      "SsrfGenerator",
+      "XxeGenerator",
+      "NoSqlInjectionGenerator",
+      "TemplateInjectionGenerator",
+      "BufferOverflowGenerator",
+      "LdapInjectionGenerator",
+      "FormatStringGenerator",
+      "JwtAttackGenerator",
+      "PrototypePollutionGenerator",
+      "TimeBasedPayloadGenerator",
     ];
 
     const disabled: string[] = [];
@@ -674,63 +651,63 @@ export class Fingerprinter {
 
     // Language-specific filtering
     switch (language) {
-      case 'rust':
-      case 'go':
+      case "rust":
+      case "go":
         // No prototype pollution in compiled languages
-        disabled.push('PrototypePollutionGenerator');
+        disabled.push("PrototypePollutionGenerator");
         // Buffer overflows less likely in memory-safe languages
-        disabled.push('BufferOverflowGenerator');
+        disabled.push("BufferOverflowGenerator");
         // Format string attacks unlikely
-        disabled.push('FormatStringGenerator');
+        disabled.push("FormatStringGenerator");
         break;
 
-      case 'nodejs':
+      case "nodejs":
         // Prototype pollution is HIGH priority
-        recommended.push('PrototypePollutionGenerator');
+        recommended.push("PrototypePollutionGenerator");
         // NoSQL common in Node.js
-        recommended.push('NoSqlInjectionGenerator');
+        recommended.push("NoSqlInjectionGenerator");
         // Template injection (EJS, Handlebars)
-        recommended.push('TemplateInjectionGenerator');
+        recommended.push("TemplateInjectionGenerator");
         break;
 
-      case 'python':
+      case "python":
         // Template injection (Jinja2)
-        recommended.push('TemplateInjectionGenerator');
+        recommended.push("TemplateInjectionGenerator");
         // Command injection more common
-        recommended.push('CommandInjectionGenerator');
+        recommended.push("CommandInjectionGenerator");
         // No prototype pollution
-        disabled.push('PrototypePollutionGenerator');
+        disabled.push("PrototypePollutionGenerator");
         break;
 
-      case 'java':
+      case "java":
         // XXE is common in Java
-        recommended.push('XxeGenerator');
+        recommended.push("XxeGenerator");
         // No prototype pollution
-        disabled.push('PrototypePollutionGenerator');
+        disabled.push("PrototypePollutionGenerator");
         break;
 
-      case 'php':
+      case "php":
         // PHP has many classic vulns
-        recommended.push('SqlInjectionGenerator');
-        recommended.push('CommandInjectionGenerator');
-        recommended.push('PathTraversalGenerator');
+        recommended.push("SqlInjectionGenerator");
+        recommended.push("CommandInjectionGenerator");
+        recommended.push("PathTraversalGenerator");
         // No prototype pollution
-        disabled.push('PrototypePollutionGenerator');
+        disabled.push("PrototypePollutionGenerator");
         break;
 
-      case 'csharp':
+      case "csharp":
         // No prototype pollution
-        disabled.push('PrototypePollutionGenerator');
+        disabled.push("PrototypePollutionGenerator");
         break;
     }
 
     // Always recommended (universal attacks)
     const universal = [
-      'PromptInjectionGenerator',  // MCP-specific, always relevant
-      'JsonRpcGenerator',          // Protocol-level
-      'SchemaConfusionGenerator',  // Type attacks
-      'JwtAttackGenerator',        // JWT is common
-      'TimeBasedPayloadGenerator'  // Blind detection
+      "PromptInjectionGenerator", // MCP-specific, always relevant
+      "JsonRpcGenerator", // Protocol-level
+      "SchemaConfusionGenerator", // Type attacks
+      "JwtAttackGenerator", // JWT is common
+      "TimeBasedPayloadGenerator", // Blind detection
     ];
 
     for (const gen of universal) {
@@ -753,37 +730,45 @@ export class Fingerprinter {
     language: { value: ServerLanguage; confidence: number },
     framework: { value: ServerFramework; confidence: number },
     database: { value: DatabaseType; confidence: number },
-    disabled: string[]
+    disabled: string[],
   ): string {
     const parts: string[] = [];
 
-    if (language.value !== 'unknown' && language.confidence > 0) {
-      parts.push(`Language: ${language.value} (${(language.confidence * 100).toFixed(0)}% confidence)`);
+    if (language.value !== "unknown" && language.confidence > 0) {
+      parts.push(
+        `Language: ${language.value} (${(language.confidence * 100).toFixed(0)}% confidence)`,
+      );
     } else {
-      parts.push('Language: Unknown');
+      parts.push("Language: Unknown");
     }
 
-    if (framework.value !== 'unknown' && framework.confidence > 0) {
-      parts.push(`Framework: ${framework.value} (${(framework.confidence * 100).toFixed(0)}% confidence)`);
+    if (framework.value !== "unknown" && framework.confidence > 0) {
+      parts.push(
+        `Framework: ${framework.value} (${(framework.confidence * 100).toFixed(0)}% confidence)`,
+      );
     }
 
-    if (database.value !== 'unknown' && database.value !== 'none') {
+    if (database.value !== "unknown" && database.value !== "none") {
       parts.push(`Database: ${database.value}`);
     }
 
     if (disabled.length > 0) {
-      parts.push(`Disabled generators: ${disabled.join(', ')}`);
+      parts.push(`Disabled generators: ${disabled.join(", ")}`);
     }
 
-    return parts.join(' | ');
+    return parts.join(" | ");
   }
 
-  private stringifyResponse(response: unknown, error?: { code: number; message: string }): string {
-    let result = '';
+  private stringifyResponse(
+    response: unknown,
+    error?: { code: number; message: string },
+  ): string {
+    let result = "";
 
     if (response) {
       try {
-        result += typeof response === 'string' ? response : JSON.stringify(response);
+        result +=
+          typeof response === "string" ? response : JSON.stringify(response);
       } catch {
         result += String(response);
       }
@@ -797,51 +782,80 @@ export class Fingerprinter {
   }
 
   private extractExcerpt(text: string, pattern: string): string {
-    const regex = new RegExp(pattern, 'i');
+    const regex = new RegExp(pattern, "i");
     const match = text.match(regex);
 
-    if (!match) return '';
+    if (!match) return "";
 
     const index = match.index || 0;
     const start = Math.max(0, index - 50);
     const end = Math.min(text.length, index + match[0].length + 50);
 
     let excerpt = text.substring(start, end);
-    if (start > 0) excerpt = '...' + excerpt;
-    if (end < text.length) excerpt += '...';
+    if (start > 0) excerpt = "..." + excerpt;
+    if (end < text.length) excerpt += "...";
 
-    return excerpt.replace(/\n/g, ' ').trim();
+    return excerpt.replace(/\n/g, " ").trim();
   }
 
   private generateDeepObject(depth: number): Record<string, unknown> {
-    if (depth <= 0) return { value: 'leaf' };
+    if (depth <= 0) return { value: "leaf" };
     return { nested: this.generateDeepObject(depth - 1) };
   }
 
   private isLanguage(detection: string): boolean {
-    return ['nodejs', 'python', 'rust', 'go', 'java', 'csharp', 'ruby', 'php'].includes(detection);
+    return [
+      "nodejs",
+      "python",
+      "rust",
+      "go",
+      "java",
+      "csharp",
+      "ruby",
+      "php",
+    ].includes(detection);
   }
 
   private isFramework(detection: string): boolean {
-    return ['fastmcp', 'mcp-sdk-ts', 'mcp-sdk-py', 'express', 'fastify', 'flask', 'django', 'actix', 'axum', 'gin', 'echo', 'spring'].includes(detection);
+    return [
+      "fastmcp",
+      "mcp-sdk-ts",
+      "mcp-sdk-py",
+      "express",
+      "fastify",
+      "flask",
+      "django",
+      "actix",
+      "axum",
+      "gin",
+      "echo",
+      "spring",
+    ].includes(detection);
   }
 
   private isDatabase(detection: string): boolean {
-    return ['postgresql', 'mysql', 'sqlite', 'mongodb', 'redis'].includes(detection);
+    return ["postgresql", "mysql", "sqlite", "mongodb", "redis"].includes(
+      detection,
+    );
   }
 
   /**
    * Get a quick fingerprint (fewer probes, faster)
    */
-  async quickFingerprint(target: FuzzTarget, toolName: string): Promise<ServerFingerprint> {
+  async quickFingerprint(
+    target: FuzzTarget,
+    toolName: string,
+  ): Promise<ServerFingerprint> {
     // Use only first 3 probes for speed
     const originalProbes = [...this.probes];
-    (this as unknown as { probes: GeneratedPayload[] }).probes = originalProbes.slice(0, 3);
+    (this as unknown as { probes: GeneratedPayload[] }).probes =
+      originalProbes.slice(0, 3);
 
     try {
       return await this.fingerprint(target, toolName);
     } finally {
-      (this as unknown as { probes: GeneratedPayload[] }).probes = originalProbes;
+      (this as unknown as { probes: GeneratedPayload[] }).probes =
+        originalProbes;
     }
   }
 }

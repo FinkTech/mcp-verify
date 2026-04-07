@@ -13,6 +13,7 @@ mcp-verify calculates a **Technical Vulnerability Score (0-100)** based on stati
 > ⚠️ **Important Disclaimer**
 >
 > This score measures **technical vulnerability indicators**, NOT overall security posture.
+>
 > - A score of 100 means "no known vulnerability patterns detected"
 > - It does **NOT** mean "perfectly secure" or "production-ready"
 > - It does **NOT** analyze business logic, authentication correctness, or runtime behavior
@@ -28,19 +29,19 @@ Every server starts with **100 points** (maximum security). mcp-verify v1.0 uses
 
 Deductions based on declarative schema analysis (60 rules).
 
-| Severity | Penalty | Examples |
-|----------|---------|----------|
-| **CRITICAL** | -40 | Command execution, SQL injection, SSRF |
-| **HIGH** | -25 | File system modification, credential exposure |
-| **MEDIUM** | -15 | Network requests, weak crypto, no maxLength |
-| **LOW** | -5 | Missing mimeType, no pattern |
+| Severity     | Penalty | Examples                                      |
+| ------------ | ------- | --------------------------------------------- |
+| **CRITICAL** | -40     | Command execution, SQL injection, SSRF        |
+| **HIGH**     | -25     | File system modification, credential exposure |
+| **MEDIUM**   | -15     | Network requests, weak crypto, no maxLength   |
+| **LOW**      | -5      | Missing mimeType, no pattern                  |
 
 ### 2. Fuzzer Penalty (Confirmed Vulnerabilities)
 
 Vulnerabilities actually triggered during fuzzing have a **1.75x multiplier** because they represent a real exploit, not just a risk.
 
 | Fuzzer Severity | High Confidence (1.0) | Med Confidence (0.75) | Low Confidence (0.5) |
-|-----------------|-----------------------|-----------------------|----------------------|
+| --------------- | --------------------- | --------------------- | -------------------- |
 | **CRITICAL**    | -70 points            | -52.5 points          | -35 points           |
 | **HIGH**        | -43.75 points         | -32.8 points          | -21.8 points         |
 | **MEDIUM**      | -26.25 points         | -19.6 points          | -13.1 points         |
@@ -57,12 +58,12 @@ Maximum = 100
 
 ## 🎨 Risk Levels
 
-| Score Range | Risk Level | Color | Meaning | Action Required |
-|-------------|-----------|-------|---------|-----------------|
-| **90-100** | ✅ **EXCELLENT** | 🟢 Green | Production-ready, minimal risk | ✅ Safe to deploy |
-| **70-89** | ⚠️ **GOOD** | 🟡 Yellow | Some risks detected, review recommended | ⚠️ Review findings, fix high-severity issues |
-| **50-69** | 🟠 **FAIR** | 🟠 Orange | Multiple risks, caution advised | 🔍 Thorough review required before production |
-| **<50** | 🔴 **POOR** | 🔴 Red | Critical issues detected | ❌ **DO NOT USE** in production |
+| Score Range | Risk Level       | Color     | Meaning                                 | Action Required                               |
+| ----------- | ---------------- | --------- | --------------------------------------- | --------------------------------------------- |
+| **90-100**  | ✅ **EXCELLENT** | 🟢 Green  | Production-ready, minimal risk          | ✅ Safe to deploy                             |
+| **70-89**   | ⚠️ **GOOD**      | 🟡 Yellow | Some risks detected, review recommended | ⚠️ Review findings, fix high-severity issues  |
+| **50-69**   | 🟠 **FAIR**      | 🟠 Orange | Multiple risks, caution advised         | 🔍 Thorough review required before production |
+| **<50**     | 🔴 **POOR**      | 🔴 Red    | Critical issues detected                | ❌ **DO NOT USE** in production               |
 
 ---
 
@@ -71,21 +72,27 @@ Maximum = 100
 The scanner evaluates 60 rules organized into specialized security blocks:
 
 ### 1. Block OWASP: Industry Standard Risks (13 rules)
+
 - **SEC-001 to SEC-013**: Auth Bypass, Command Injection, SQL Injection, SSRF, XXE, Insecure Deserialization, Path Traversal, Data Leakage, Sensitive Exposure, Rate Limiting, ReDoS, Weak Cryptography, and Prompt Injection.
 
 ### 2. Block MCP: Protocol-Specific Risks (8 rules)
+
 - **SEC-014 to SEC-021**: Exposed Endpoints, Missing Authentication, Insecure URI Schemes, Excessive Permissions, Secrets in Descriptions, Missing Input Constraints, Dangerous Tool Chaining, Unencrypted Credentials.
 
 ### 3. Block A: OWASP LLM Top 10 (9 rules)
+
 - **SEC-022 to SEC-030**: Insecure Output Handling, Excessive Agency, Prompt Injection via Tools, Supply Chain Tool Dependencies, Sensitive Data in Tool Responses, Training Data Poisoning, Model DoS via Tools, Insecure Plugin Design, Excessive Data Disclosure.
 
 ### 4. Block B: Multi-Agent & Agentic Attacks (11 rules)
+
 - **SEC-031 to SEC-041**: Agent Identity Spoofing, Tool Result Tampering, Recursive Agent Loop, Multi-Agent Privilege Escalation, Agent State Poisoning, Distributed Agent DDoS, Cross-Agent Prompt Injection, Agent Reputation Hijacking, Tool Chaining Path Traversal, Agent Swarm Coordination, Agent Memory Injection.
 
 ### 5. Block C: Operational & Enterprise Compliance (9 rules)
+
 - **SEC-042 to SEC-050**: Missing Audit Logging, Insecure Session Management, Schema Versioning Absent, Insufficient Error Granularity, Missing CORS Validation, Insecure Default Configuration, Missing Capability Negotiation, Timing Side-Channel in Auth, Insufficient Output Entropy.
 
 ### 6. Block D: AI Weaponization & Supply Chain (10 rules)
+
 - **SEC-051 to SEC-060**: Weaponized MCP Fuzzer, Autonomous MCP Backdoor, Malicious Config File, API Endpoint Hijacking, Jailbreak-as-a-Service, Phishing via MCP, Data Exfiltration via Steganography, Self-Replicating MCP, Unvalidated Tool Authorization, Missing Transaction Semantics.
 
 ---
@@ -103,13 +110,14 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 **Severity**: MEDIUM (-10) / LOW (-5)
 
 **Example**:
+
 ```json
 {
   "name": "ask_ai",
   "description": "Ask anything to the AI",
   "inputSchema": {
     "properties": {
-      "user_prompt": { "type": "string" }  // ❌ No maxLength or pattern
+      "user_prompt": { "type": "string" } // ❌ No maxLength or pattern
     }
   }
 }
@@ -126,13 +134,14 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 **Severity**: CRITICAL (-30)
 
 **Example**:
+
 ```json
 {
   "name": "read_file",
   "description": "Read any file from disk",
   "inputSchema": {
     "properties": {
-      "path": { "type": "string" }  // ❌ No validation
+      "path": { "type": "string" } // ❌ No validation
     }
   }
 }
@@ -149,13 +158,14 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 **Severity**: CRITICAL (-30)
 
 **Example**:
+
 ```json
 {
   "name": "run_command",
   "description": "Execute system command",
   "inputSchema": {
     "properties": {
-      "command": { "type": "string" }  // ❌ Arbitrary execution
+      "command": { "type": "string" } // ❌ Arbitrary execution
     }
   }
 }
@@ -172,13 +182,14 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 **Severity**: CRITICAL (-30)
 
 **Example**:
+
 ```json
 {
   "name": "fetch_url",
   "description": "Fetch content from URL",
   "inputSchema": {
     "properties": {
-      "url": { "type": "string" }  // ❌ No URL validation
+      "url": { "type": "string" } // ❌ No URL validation
     }
   }
 }
@@ -195,10 +206,11 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 **Severity**: HIGH (-15)
 
 **Example**:
+
 ```json
 {
   "name": "fetch_data",
-  "description": "Fetch data using API key: sk-abc123"  // ❌ Exposed secret
+  "description": "Fetch data using API key: sk-abc123" // ❌ Exposed secret
 }
 ```
 
@@ -213,10 +225,11 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 **Severity**: HIGH (-15)
 
 **Example**:
+
 ```json
 {
   "name": "parse_xml",
-  "description": "Parse XML document"  // ❌ No XXE protection mentioned
+  "description": "Parse XML document" // ❌ No XXE protection mentioned
 }
 ```
 
@@ -231,10 +244,11 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 **Severity**: HIGH (-15)
 
 **Example**:
+
 ```json
 {
   "name": "load_object",
-  "description": "Load Python pickle object"  // ❌ RCE risk
+  "description": "Load Python pickle object" // ❌ RCE risk
 }
 ```
 
@@ -249,13 +263,14 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 **Severity**: CRITICAL (-30)
 
 **Example**:
+
 ```json
 {
   "name": "execute_query",
   "description": "Execute SQL query",
   "inputSchema": {
     "properties": {
-      "query": { "type": "string" }  // ❌ Raw SQL
+      "query": { "type": "string" } // ❌ Raw SQL
     }
   }
 }
@@ -272,10 +287,11 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 **Severity**: MEDIUM (-10)
 
 **Example**:
+
 ```json
 {
   "name": "validate_input",
-  "description": "Validate with regex: (a+)+"  // ❌ Exponential backtracking
+  "description": "Validate with regex: (a+)+" // ❌ Exponential backtracking
 }
 ```
 
@@ -290,6 +306,7 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 **Severity**: HIGH (-15)
 
 **Example**:
+
 ```json
 {
   "name": "login",
@@ -297,7 +314,7 @@ Below are details for the 13 OWASP-aligned rules from the main block:
     "properties": {
       "password": {
         "type": "string",
-        "minLength": 4  // ❌ Too short
+        "minLength": 4 // ❌ Too short
       }
     }
   }
@@ -315,12 +332,13 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 **Severity**: HIGH (-15)
 
 **Example**:
+
 ```json
 {
   "name": "backup",
   "inputSchema": {
     "properties": {
-      "api_key": { "type": "string" }  // ❌ Credential in parameter
+      "api_key": { "type": "string" } // ❌ Credential in parameter
     }
   }
 }
@@ -337,10 +355,11 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 **Severity**: MEDIUM (-10)
 
 **Example**:
+
 ```json
 {
   "name": "generate_report",
-  "description": "Generate PDF report"  // ❌ No rate limit mentioned
+  "description": "Generate PDF report" // ❌ No rate limit mentioned
 }
 ```
 
@@ -355,10 +374,11 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 **Severity**: MEDIUM (-10)
 
 **Example**:
+
 ```json
 {
   "name": "hash_password",
-  "description": "Hash password using MD5"  // ❌ Weak algorithm
+  "description": "Hash password using MD5" // ❌ Weak algorithm
 }
 ```
 
@@ -387,6 +407,7 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 ```
 
 **Analysis**:
+
 - ✅ No dangerous patterns detected
 - ✅ Read-only operation
 - ✅ Simple input validation
@@ -405,7 +426,7 @@ Below are details for the 13 OWASP-aligned rules from the main block:
       "description": "Read file contents",
       "inputSchema": {
         "properties": {
-          "path": { "type": "string" }  // ❌ No path validation
+          "path": { "type": "string" } // ❌ No path validation
         }
       }
     }
@@ -414,6 +435,7 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 ```
 
 **Analysis**:
+
 - ❌ **SEC-007**: Path traversal risk (-30)
 - ⚠️ File system access without restrictions
 
@@ -440,6 +462,7 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 ```
 
 **Analysis**:
+
 - ❌ **SEC-002**: Command injection (-30)
 - ❌ **SEC-008**: Exposed secret in description (-15)
 - ❌ **SEC-009**: Credential exposure (-15)
@@ -452,21 +475,21 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 
 ### Production Environments
 
-| Environment Type | Minimum Score | Recommendation |
-|------------------|---------------|----------------|
-| **Public-Facing APIs** | 90+ | Only deploy servers with EXCELLENT rating |
-| **Internal Tools** | 80+ | Good-Excellent rating, review all findings |
-| **Development/Staging** | 70+ | Fair rating acceptable, but fix before production |
-| **Local Development** | 50+ | Any rating, but understand risks |
+| Environment Type        | Minimum Score | Recommendation                                    |
+| ----------------------- | ------------- | ------------------------------------------------- |
+| **Public-Facing APIs**  | 90+           | Only deploy servers with EXCELLENT rating         |
+| **Internal Tools**      | 80+           | Good-Excellent rating, review all findings        |
+| **Development/Staging** | 70+           | Fair rating acceptable, but fix before production |
+| **Local Development**   | 50+           | Any rating, but understand risks                  |
 
 ### Use Case Matrix
 
-| Use Case | Acceptable Score | Rationale |
-|----------|------------------|-----------|
-| **Third-Party MCP Server** | 90+ | You don't control the code, require high confidence |
-| **Your Own Server (Public)** | 85+ | You control it, but exposed to internet |
-| **Internal Server (Private Network)** | 75+ | Lower risk due to network isolation |
-| **Prototype/POC** | 60+ | Testing only, not production |
+| Use Case                              | Acceptable Score | Rationale                                           |
+| ------------------------------------- | ---------------- | --------------------------------------------------- |
+| **Third-Party MCP Server**            | 90+              | You don't control the code, require high confidence |
+| **Your Own Server (Public)**          | 85+              | You control it, but exposed to internet             |
+| **Internal Server (Private Network)** | 75+              | Lower risk due to network isolation                 |
+| **Prototype/POC**                     | 60+              | Testing only, not production                        |
 
 ---
 
@@ -477,11 +500,13 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 **Meaning**: Server follows security best practices. Minimal attack surface detected.
 
 **What to do**:
+
 - ✅ Safe for production deployment
 - ✅ Proceed with deployment
 - ⚠️ Still review LLM semantic findings (if enabled)
 
 **Example Servers**:
+
 - Weather API (read-only)
 - Documentation search
 - Read-only database queries
@@ -493,12 +518,14 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 **Meaning**: Some security concerns detected. Likely safe but requires review.
 
 **What to do**:
+
 - ⚠️ Review all findings before deployment
 - ⚠️ Fix HIGH-severity issues
 - ⚠️ Document accepted risks
 - ✅ Deploy after review
 
 **Example Servers**:
+
 - File readers with path validation
 - Write operations with whitelisting
 - Network requests with domain restrictions
@@ -510,12 +537,14 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 **Meaning**: Multiple security issues detected. Use with caution.
 
 **What to do**:
+
 - 🔍 Thorough security review required
 - 🔍 Fix all CRITICAL issues
 - 🔍 Consider alternative servers
 - ⚠️ Only deploy to isolated environments
 
 **Example Servers**:
+
 - File writers without proper validation
 - Database tools with dynamic queries
 - Network tools without SSRF protection
@@ -527,12 +556,14 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 **Meaning**: Critical security vulnerabilities detected. Likely unsafe.
 
 **What to do**:
+
 - ❌ **DO NOT DEPLOY** to production
 - ❌ Fix critical issues immediately
 - ❌ Consider complete redesign
 - ✅ Use only for testing/learning
 
 **Example Servers**:
+
 - Arbitrary command executors
 - Unprotected SQL query tools
 - File system access without restrictions
@@ -544,21 +575,25 @@ Below are details for the 13 OWASP-aligned rules from the main block:
 The security score is one metric. Also consider:
 
 ### 1. **Source Trust**
+
 - Who developed the server?
 - Is it open source?
 - Has it been audited?
 
 ### 2. **Network Exposure**
+
 - Is it internet-facing?
 - Behind VPN/firewall?
 - Local-only?
 
 ### 3. **Data Sensitivity**
+
 - What data does it access?
 - PII, financial, health records?
 - Public data only?
 
 ### 4. **Usage Context**
+
 - Production vs. development
 - Number of users
 - Criticality to business
@@ -664,4 +699,3 @@ The security score is a **risk indicator**, not a guarantee. mcp-verify:
 - ❌ Does NOT test implementation quality
 
 **Use mcp-verify as one layer in defense-in-depth, not as the only security measure.**
-

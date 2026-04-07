@@ -8,18 +8,18 @@
 
 ## 🎯 "I want to..." Quick Reference
 
-| I want to... | Edit this file | Location |
-|--------------|----------------|----------|
-| **Add a new security rule** | `libs/core/domain/security/rules/<rule>.ts` | [Security Rules](#security-rules) |
-| **Add a new CLI command** | `apps/cli-verifier/src/commands/<cmd>.ts` | [CLI Commands](#cli-commands) |
-| **Add a new LLM provider** | `libs/core/domain/quality/providers/<provider>.ts` | [LLM Providers](#llm-providers) |
-| **Change validation logic** | `libs/core/use-cases/validator/validator.ts` | [Validator](#validator) |
-| **Add i18n translation** | `libs/core/domain/reporting/i18n.ts` | [I18n](#internationalization) |
-| **Modify report format** | `libs/core/domain/reporting/<format>-generator.ts` | [Reporters](#report-generators) |
-| **Add transport type** | `libs/core/domain/transport.ts` | [Transports](#transports) |
-| **Change exit codes** | `apps/cli-verifier/src/commands/validate.ts` | [Exit Codes](#exit-codes) |
-| **Add fuzzing rule** | `libs/fuzzer/generators/` | [Fuzzer](#fuzzer-new-modular-architecture) |
-| **Modify scoring algorithm** | `libs/core/domain/security/security-scanner.ts` | [Security Scanner](#security-scanner) |
+| I want to...                 | Edit this file                                     | Location                                   |
+| ---------------------------- | -------------------------------------------------- | ------------------------------------------ |
+| **Add a new security rule**  | `libs/core/domain/security/rules/<rule>.ts`        | [Security Rules](#security-rules)          |
+| **Add a new CLI command**    | `apps/cli-verifier/src/commands/<cmd>.ts`          | [CLI Commands](#cli-commands)              |
+| **Add a new LLM provider**   | `libs/core/domain/quality/providers/<provider>.ts` | [LLM Providers](#llm-providers)            |
+| **Change validation logic**  | `libs/core/use-cases/validator/validator.ts`       | [Validator](#validator)                    |
+| **Add i18n translation**     | `libs/core/domain/reporting/i18n.ts`               | [I18n](#internationalization)              |
+| **Modify report format**     | `libs/core/domain/reporting/<format>-generator.ts` | [Reporters](#report-generators)            |
+| **Add transport type**       | `libs/core/domain/transport.ts`                    | [Transports](#transports)                  |
+| **Change exit codes**        | `apps/cli-verifier/src/commands/validate.ts`       | [Exit Codes](#exit-codes)                  |
+| **Add fuzzing rule**         | `libs/fuzzer/generators/`                          | [Fuzzer](#fuzzer-new-modular-architecture) |
+| **Modify scoring algorithm** | `libs/core/domain/security/security-scanner.ts`    | [Security Scanner](#security-scanner)      |
 
 ---
 
@@ -95,19 +95,21 @@ mcp-verify/
 **Purpose**: CLI application entry point, command registration
 
 **Key Code**:
+
 ```typescript
 const program = new Command();
 
 program
-  .command('validate <target>')
-  .option('--security', 'Enable security scanning')
-  .option('--llm <provider:model>', 'LLM provider')
+  .command("validate <target>")
+  .option("--security", "Enable security scanning")
+  .option("--llm <provider:model>", "LLM provider")
   .action(runValidationAction);
 
 program.parse(process.argv);
 ```
 
 **Edit when**:
+
 - Adding new global CLI flags
 - Adding new commands
 - Changing default behavior
@@ -119,6 +121,7 @@ program.parse(process.argv);
 **Directory**: `apps/cli-verifier/src/commands/`
 
 **Files**:
+
 - `validate.ts` - Main validation command
 - `doctor.ts` - Connection diagnostics
 - `stress.ts` - Load testing
@@ -130,10 +133,11 @@ program.parse(process.argv);
 - `interactive.ts` - Interactive shell
 
 **Structure (validate.ts example)**:
+
 ```typescript
 export async function runValidationAction(
   target: string,
-  options: any
+  options: any,
 ): Promise<void> {
   // 1. Parse options
   const enableSecurity = options.security;
@@ -145,7 +149,7 @@ export async function runValidationAction(
   // 3. Create validator
   const validator = new MCPValidator(transport, undefined, {
     enableSemanticCheck: options.llm !== undefined,
-    llmProvider: options.llm
+    llmProvider: options.llm,
   });
 
   // 4. Run validation
@@ -160,6 +164,7 @@ export async function runValidationAction(
 ```
 
 **Edit when**:
+
 - Adding new command options
 - Changing command behavior
 - Modifying output format
@@ -173,6 +178,7 @@ export async function runValidationAction(
 **Purpose**: Main validation orchestrator, coordinates all checks
 
 **Key Methods**:
+
 ```typescript
 export class MCPValidator {
   async validate(): Promise<ValidationReport> {
@@ -196,13 +202,14 @@ export class MCPValidator {
       discovery,
       schema: schemaReport,
       security: securityReport,
-      quality: qualityReport
+      quality: qualityReport,
     };
   }
 }
 ```
 
 **Edit when**:
+
 - Adding new validation steps
 - Changing validation flow
 - Modifying report structure
@@ -214,6 +221,7 @@ export class MCPValidator {
 **Directory**: `libs/core/domain/security/rules/`
 
 **Files**:
+
 - `sql-injection.ts` - SEC-003: SQL injection
 - `command-injection.ts` - SEC-002: Command execution
 - `path-traversal.ts` - SEC-007: File path manipulation
@@ -228,26 +236,31 @@ export class MCPValidator {
 - `weak-crypto.ts` - SEC-012: Weak cryptography
 
 **Structure**:
+
 ```typescript
 export class SqlInjectionRule implements ISecurityRule {
-  readonly code = 'SEC-003';
-  readonly name = 'SQL Injection';
-  severity: 'critical' = 'critical';
+  readonly code = "SEC-003";
+  readonly name = "SQL Injection";
+  severity: "critical" = "critical";
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
 
     // Check patterns in name/description
-    const dangerousPatterns = /\b(sql|query|database|drop|delete|insert|update)\b/i;
+    const dangerousPatterns =
+      /\b(sql|query|database|drop|delete|insert|update)\b/i;
 
     for (const tool of discovery.tools) {
-      if (dangerousPatterns.test(tool.name) || dangerousPatterns.test(tool.description)) {
+      if (
+        dangerousPatterns.test(tool.name) ||
+        dangerousPatterns.test(tool.description)
+      ) {
         findings.push({
           ruleCode: this.code,
           severity: this.severity,
           message: `SQL injection pattern detected in tool "${tool.name}"`,
           component: `tool:${tool.name}`,
-          suggestion: 'Use parameterized queries or ORM instead of dynamic SQL'
+          suggestion: "Use parameterized queries or ORM instead of dynamic SQL",
         });
       }
     }
@@ -258,6 +271,7 @@ export class SqlInjectionRule implements ISecurityRule {
 ```
 
 **Edit when**:
+
 - Adding new security rule
 - Modifying existing rule patterns
 - Changing severity levels
@@ -271,6 +285,7 @@ export class SqlInjectionRule implements ISecurityRule {
 **Purpose**: Orchestrates security rules, calculates security score
 
 **Key Code**:
+
 ```typescript
 export class SecurityScanner {
   private rules: ISecurityRule[] = [
@@ -299,11 +314,21 @@ export class SecurityScanner {
 
     for (const finding of findings) {
       switch (finding.severity) {
-        case 'critical': score -= 30; break;
-        case 'high': score -= 15; break;
-        case 'medium': score -= 10; break;
-        case 'low': score -= 5; break;
-        case 'info': score -= 2; break;
+        case "critical":
+          score -= 30;
+          break;
+        case "high":
+          score -= 15;
+          break;
+        case "medium":
+          score -= 10;
+          break;
+        case "low":
+          score -= 5;
+          break;
+        case "info":
+          score -= 2;
+          break;
       }
     }
 
@@ -313,6 +338,7 @@ export class SecurityScanner {
 ```
 
 **Edit when**:
+
 - Changing scoring algorithm
 - Modifying severity penalties
 - Adding new rule types
@@ -324,12 +350,14 @@ export class SecurityScanner {
 **Directory**: `libs/core/domain/quality/providers/`
 
 **Files**:
+
 - `llm-provider.interface.ts` - Provider interface
 - `anthropic-provider.ts` - Anthropic Claude implementation
 - `ollama-provider.ts` - Ollama (local) implementation
 - `openai-provider.ts` - OpenAI GPT implementation
 
 **Structure**:
+
 ```typescript
 export class AnthropicProvider implements ILLMProvider {
   private client: Anthropic | null = null;
@@ -354,6 +382,7 @@ export class AnthropicProvider implements ILLMProvider {
 ```
 
 **Edit when**:
+
 - Adding new LLM provider
 - Changing API integration
 - Modifying error handling
@@ -367,9 +396,13 @@ export class AnthropicProvider implements ILLMProvider {
 **Purpose**: Orchestrates LLM analysis, parses findings
 
 **Key Methods**:
+
 ```typescript
 export class LLMSemanticAnalyzer {
-  async analyze(discovery: DiscoveryResult, options: LLMAnalysisOptions): Promise<LLMSemanticResult> {
+  async analyze(
+    discovery: DiscoveryResult,
+    options: LLMAnalysisOptions,
+  ): Promise<LLMSemanticResult> {
     // 1. Initialize provider
     await this.initializeProvider(options.llmProvider);
 
@@ -377,7 +410,9 @@ export class LLMSemanticAnalyzer {
     const prompt = this.buildAnalysisPrompt(discovery);
 
     // 3. Call LLM
-    const response = await this.provider.complete([{ role: 'user', content: prompt }]);
+    const response = await this.provider.complete([
+      { role: "user", content: prompt },
+    ]);
 
     // 4. Parse findings
     const findings = this.parseFindings(response.text);
@@ -388,6 +423,7 @@ export class LLMSemanticAnalyzer {
 ```
 
 **Edit when**:
+
 - Changing LLM prompt
 - Modifying finding parsing logic
 - Adding new analysis types
@@ -399,15 +435,20 @@ export class LLMSemanticAnalyzer {
 **Directory**: `libs/core/domain/reporting/`
 
 **Files**:
+
 - `html-generator.ts` - HTML report (human-friendly)
 - `markdown-generator.ts` - Markdown summary
 - `sarif-generator.ts` - SARIF (GitHub Security)
 - `badge-generator.ts` - SVG badges
 
 **Structure**:
+
 ```typescript
 export class HtmlReportGenerator {
-  async generate(report: ValidationReport, outputPath: string): Promise<string> {
+  async generate(
+    report: ValidationReport,
+    outputPath: string,
+  ): Promise<string> {
     // 1. Build HTML template
     const html = `
       <!DOCTYPE html>
@@ -433,6 +474,7 @@ export class HtmlReportGenerator {
 ```
 
 **Edit when**:
+
 - Changing report format
 - Adding new sections
 - Modifying styles
@@ -444,6 +486,7 @@ export class HtmlReportGenerator {
 **File**: `libs/core/domain/transport.ts`
 
 **Transport types**:
+
 - `StdioTransport` - STDIO (Node.js child process)
 - `SSETransport` - Server-Sent Events
 - `HttpTransport` - HTTP requests (includes User-Agent header)
@@ -451,6 +494,7 @@ export class HtmlReportGenerator {
 **Future location**: `libs/transport/` (refactoring planned)
 
 **Structure**:
+
 ```typescript
 export class StdioTransport implements ITransport {
   private process: ChildProcess | null = null;
@@ -475,6 +519,7 @@ export class HttpTransport implements ITransport {
 ```
 
 **Edit when**:
+
 - Adding new transport type
 - Changing protocol implementation
 - Fixing connection issues
@@ -488,35 +533,38 @@ export class HttpTransport implements ITransport {
 **Purpose**: Translation strings for all languages
 
 **Structure**:
+
 ```typescript
 export const translations = {
   en: {
-    cmd_validate_desc: 'Run validation scan',
-    security_score: 'Security Score',
-    llm_analysis_using: '🧠 LLM analysis: {provider}',
+    cmd_validate_desc: "Run validation scan",
+    security_score: "Security Score",
+    llm_analysis_using: "🧠 LLM analysis: {provider}",
     // ... 1000+ keys
   },
   es: {
-    cmd_validate_desc: 'Ejecutar escaneo de validación',
-    security_score: 'Puntaje de Seguridad',
-    llm_analysis_using: '🧠 Análisis LLM: {provider}',
+    cmd_validate_desc: "Ejecutar escaneo de validación",
+    security_score: "Puntaje de Seguridad",
+    llm_analysis_using: "🧠 Análisis LLM: {provider}",
     // ... 1000+ keys
-  }
+  },
 };
 ```
 
 **Edit when**:
+
 - Adding new user-facing strings
 - Adding new language
 - Fixing translation errors
 
 **Helper Function**:
+
 ```typescript
-import { t } from '../shared/utils/cli/i18n-helper';
+import { t } from "../shared/utils/cli/i18n-helper";
 
 // Usage
-const message = t('security_score');  // "Security Score" or "Puntaje de Seguridad"
-const withParam = t('llm_analysis_using', { provider: 'ollama' });  // "🧠 LLM analysis: ollama"
+const message = t("security_score"); // "Security Score" or "Puntaje de Seguridad"
+const withParam = t("llm_analysis_using", { provider: "ollama" }); // "🧠 LLM analysis: ollama"
 ```
 
 ---
@@ -528,6 +576,7 @@ const withParam = t('llm_analysis_using', { provider: 'ollama' });  // "🧠 LLM
 **Purpose**: Advanced security fuzzing with modular generators and detectors
 
 **Architecture**:
+
 ```
 libs/fuzzer/
 ├── index.ts              # Public API exports
@@ -547,6 +596,7 @@ libs/fuzzer/
 ```
 
 **Key Usage**:
+
 ```typescript
 import {
   FuzzerEngine,
@@ -554,27 +604,25 @@ import {
   ClassicPayloadGenerator,
   PromptLeakDetector,
   JailbreakDetector,
-  TimingDetector
-} from '@mcp-verify/fuzzer';
+  TimingDetector,
+} from "@mcp-verify/fuzzer";
 
 const engine = new FuzzerEngine({
-  generators: [
-    new PromptInjectionGenerator(),
-    new ClassicPayloadGenerator(),
-  ],
+  generators: [new PromptInjectionGenerator(), new ClassicPayloadGenerator()],
   detectors: [
     new PromptLeakDetector(),
     new JailbreakDetector(),
-    new TimingDetector()
+    new TimingDetector(),
   ],
   enableFingerprinting: true, // Auto-disable irrelevant generators
-  concurrency: 5
+  concurrency: 5,
 });
 
-const session = await engine.fuzz(target, 'tool-name');
+const session = await engine.fuzz(target, "tool-name");
 ```
 
 **Edit when**:
+
 - Adding new attack generators
 - Adding new vulnerability detectors
 - Modifying fingerprinting logic
@@ -589,6 +637,7 @@ const session = await engine.fuzz(target, 'tool-name');
 **Purpose**: Basic chaos testing (deprecated, use `@mcp-verify/fuzzer` for new features)
 
 **Edit when**:
+
 - Maintaining backwards compatibility
 
 ---
@@ -600,16 +649,17 @@ const session = await engine.fuzz(target, 'tool-name');
 **Purpose**: Determine CLI exit codes based on report
 
 **Key Code**:
+
 ```typescript
 function getExitCode(report: ValidationReport): number {
   // Critical security issues
   if (report.security.criticalCount > 0) {
-    return 2;  // Critical
+    return 2; // Critical
   }
 
   // Validation failures
   if (!report.schema.valid) {
-    return 1;  // Invalid
+    return 1; // Invalid
   }
 
   // Success
@@ -621,11 +671,13 @@ process.exit(getExitCode(report));
 ```
 
 **Exit Codes**:
+
 - `0` - Success (no issues)
 - `1` - Validation failed (non-critical)
 - `2` - Critical security issues detected
 
 **Edit when**:
+
 - Changing exit code logic
 - Adding new exit codes
 - Modifying failure conditions
@@ -694,21 +746,25 @@ Validator (validator.ts)
 ## 🎓 Learning Path
 
 **Day 1**: Understand structure
+
 - Read this CODE_MAP.md
 - Browse directory structure
 - Run `npm test` to see what works
 
 **Day 2**: Make small change
+
 - Add translation key
 - Fix typo in error message
 - Add test case
 
 **Day 3**: Medium complexity
+
 - Add new security rule
 - Modify report format
 - Add CLI option
 
 **Week 2**: Advanced contributions
+
 - Add new LLM provider
 - Add new transport type
 - Refactor complex component
@@ -720,6 +776,7 @@ Validator (validator.ts)
 **Can't find what you need?**
 
 1. **Search the codebase**:
+
    ```bash
    grep -r "keyword" libs/
    ```

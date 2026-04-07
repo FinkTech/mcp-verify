@@ -5,6 +5,7 @@ These are test MCP servers for validating mcp-verify functionality.
 ## Available Servers
 
 ### 1. simple-server.js ✅
+
 **A clean, valid MCP server**
 
 - Follows all MCP protocol specifications
@@ -14,10 +15,12 @@ These are test MCP servers for validating mcp-verify functionality.
 - **Quality Score**: ~95-100%
 
 **Tools**:
+
 - `get_weather` - Get weather for a location
 - `calculate` - Perform math operations
 
 **Usage**:
+
 ```bash
 # Test with mcp-verify CLI
 node dist/mcp-verify.js validate --server "node tools/mocks/servers/simple-server.js"
@@ -29,28 +32,31 @@ node dist/mcp-verify.js validate --server "node tools/mocks/servers/simple-serve
 ---
 
 ### 2. vulnerable-server.js ⚠️
+
 **A server with intentional security vulnerabilities**
 
 Contains multiple security issues for testing detection:
 
-| Vulnerability | Rule Code | Severity |
-|--------------|-----------|----------|
-| SQL Injection | SEC-003 | Critical |
-| Command Injection | SEC-002 | Critical |
-| SSRF | SEC-004 | Critical |
-| Data Leakage | SEC-008 | High |
-| Path Traversal | SEC-007 | Critical |
-| Sensitive Data Exposure | SEC-009 | High |
-| XXE Injection | SEC-005 | High |
-| Insecure Deserialization | SEC-006 | High |
+| Vulnerability            | Rule Code | Severity |
+| ------------------------ | --------- | -------- |
+| SQL Injection            | SEC-003   | Critical |
+| Command Injection        | SEC-002   | Critical |
+| SSRF                     | SEC-004   | Critical |
+| Data Leakage             | SEC-008   | High     |
+| Path Traversal           | SEC-007   | Critical |
+| Sensitive Data Exposure  | SEC-009   | High     |
+| XXE Injection            | SEC-005   | High     |
+| Insecure Deserialization | SEC-006   | High     |
 
 **Expected Results**:
+
 - **Security Score**: ~20-40% (LOW)
 - **Critical Findings**: 4+
 - **High Findings**: 3+
 - **Status**: INVALID
 
 **Usage**:
+
 ```bash
 # Should detect multiple security issues
 node dist/mcp-verify.js validate --server "node tools/mocks/servers/vulnerable-server.js"
@@ -59,11 +65,13 @@ node dist/mcp-verify.js validate --server "node tools/mocks/servers/vulnerable-s
 ---
 
 ### 3. broken-server.js ❌
+
 **A server with protocol violations**
 
 Contains multiple MCP protocol issues:
 
 **Issues**:
+
 - Missing required fields (tool names, descriptions)
 - Invalid JSON-RPC responses
 - Wrong protocol version (2023-01-01 instead of 2024-11-05)
@@ -72,11 +80,13 @@ Contains multiple MCP protocol issues:
 - Inconsistent response structures
 
 **Expected Results**:
+
 - **Schema Valid**: false
 - **Protocol Compliance**: Failed tests
 - **Status**: INVALID
 
 **Usage**:
+
 ```bash
 # Should detect protocol violations
 node dist/mcp-verify.js validate --server "node tools/mocks/servers/broken-server.js"
@@ -156,11 +166,11 @@ tools/call analyzeQuality {
 
 ## Expected Validation Matrix
 
-| Server | Schema Valid | Security Score | Quality Score | Status |
-|--------|-------------|----------------|---------------|--------|
-| simple-server.js | ✅ Yes | 95-100% | 95-100% | ✅ VALID |
-| vulnerable-server.js | ✅ Yes | 20-40% | 60-80% | ❌ INVALID |
-| broken-server.js | ❌ No | N/A | N/A | ❌ INVALID |
+| Server               | Schema Valid | Security Score | Quality Score | Status     |
+| -------------------- | ------------ | -------------- | ------------- | ---------- |
+| simple-server.js     | ✅ Yes       | 95-100%        | 95-100%       | ✅ VALID   |
+| vulnerable-server.js | ✅ Yes       | 20-40%         | 60-80%        | ❌ INVALID |
+| broken-server.js     | ❌ No        | N/A            | N/A           | ❌ INVALID |
 
 ---
 
@@ -171,50 +181,50 @@ Template:
 ```javascript
 #!/usr/bin/env node
 
-const readline = require('readline');
+const readline = require("readline");
 
 const serverInfo = {
-  name: 'my-server',
-  version: '1.0.0'
+  name: "my-server",
+  version: "1.0.0",
 };
 
 const tools = [
   {
-    name: 'my_tool',
-    description: 'Clear description of what this tool does',
+    name: "my_tool",
+    description: "Clear description of what this tool does",
     inputSchema: {
-      type: 'object',
+      type: "object",
       properties: {
         param: {
-          type: 'string',
-          description: 'Parameter description'
-        }
+          type: "string",
+          description: "Parameter description",
+        },
       },
-      required: ['param']
-    }
-  }
+      required: ["param"],
+    },
+  },
 ];
 
 function handleMessage(message) {
   const { jsonrpc, id, method, params } = message;
 
   switch (method) {
-    case 'initialize':
+    case "initialize":
       return {
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         id,
         result: {
-          protocolVersion: '2024-11-05',
+          protocolVersion: "2024-11-05",
           capabilities: { tools: {} },
-          serverInfo
-        }
+          serverInfo,
+        },
       };
 
-    case 'tools/list':
+    case "tools/list":
       return {
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         id,
-        result: { tools }
+        result: { tools },
       };
 
     // ... handle other methods
@@ -225,20 +235,22 @@ function handleMessage(message) {
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
-  terminal: false
+  terminal: false,
 });
 
-rl.on('line', (line) => {
+rl.on("line", (line) => {
   try {
     const message = JSON.parse(line);
     const response = handleMessage(message);
     console.log(JSON.stringify(response));
   } catch (error) {
-    console.log(JSON.stringify({
-      jsonrpc: '2.0',
-      id: null,
-      error: { code: -32700, message: 'Parse error' }
-    }));
+    console.log(
+      JSON.stringify({
+        jsonrpc: "2.0",
+        id: null,
+        error: { code: -32700, message: "Parse error" },
+      }),
+    );
   }
 });
 ```
@@ -248,6 +260,7 @@ rl.on('line', (line) => {
 ## Troubleshooting
 
 ### Server won't start
+
 ```bash
 # Check Node.js version
 node --version  # Should be >= 18.0.0
@@ -260,11 +273,13 @@ node tools/mocks/servers/simple-server.js
 ```
 
 ### Can't connect
+
 - Ensure server is running via stdio (stdin/stdout)
 - Check that JSON-RPC messages are newline-delimited
 - Verify server responds to `initialize` method
 
 ### Validation fails unexpectedly
+
 - Check server logs for errors
 - Verify JSON-RPC 2.0 compliance
 - Ensure all required fields are present

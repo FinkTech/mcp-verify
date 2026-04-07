@@ -11,7 +11,7 @@
  * Extracted from interactive.ts - Section 1
  */
 
-export type Language = 'en' | 'es';
+export type Language = "en" | "es";
 
 /**
  * Mutable in-memory state of the active session.
@@ -23,34 +23,37 @@ export interface SessionState {
   activeContextName: string;
 
   /** Map of context name → context data */
-  contexts: Record<string, import('../types/workspace-context').WorkspaceContext>;
+  contexts: Record<
+    string,
+    import("../types/workspace-context").WorkspaceContext
+  >;
 
   /** Global user configuration from ~/.mcp-verify/config.json */
-  globalConfig: import('../types/global-config').GlobalConfig;
+  globalConfig: import("../types/global-config").GlobalConfig;
 
   /** Environment variables loaded from .env (session-scoped) */
-  environment: import('../types/environment-vars').EnvironmentVars | undefined;
+  environment: import("../types/environment-vars").EnvironmentVars | undefined;
 
   // ── Legacy Compatibility Fields ──────────────────────────────────────
   // These fields point to the active context for backward compatibility
-  target:    string | undefined;
-  lang:      Language;
-  config:    Record<string, unknown>; // user-defined defaults
+  target: string | undefined;
+  lang: Language;
+  config: Record<string, unknown>; // user-defined defaults
 
   // ── Session Metadata ─────────────────────────────────────────────────
-  history:   string[];          // commands executed this session
+  history: string[]; // commands executed this session
   workspace: string | undefined; // name of the working directory
   startedAt: Date;
-  availableTools?: string[];    // cached tool names from tools/list
+  availableTools?: string[]; // cached tool names from tools/list
 }
 
 /**
  * Format of the .mcp-verify/session.json file persisted in the workspace.
  */
 export interface WorkspaceSession {
-  target?:  string;
-  lang?:    Language;
-  config?:  Record<string, unknown>;
+  target?: string;
+  lang?: Language;
+  config?: Record<string, unknown>;
   savedAt?: string;
 }
 
@@ -58,7 +61,7 @@ export interface WorkspaceSession {
  * Result of ShellParser: clean tokens + extracted redirection.
  */
 export interface ParseResult {
-  tokens:         string[];
-  redirectTo:     string | undefined;
+  tokens: string[];
+  redirectTo: string | undefined;
   redirectAppend: boolean;
 }

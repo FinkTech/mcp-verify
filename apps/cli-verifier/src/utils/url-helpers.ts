@@ -17,7 +17,7 @@
  * @returns true if valid HTTP/HTTPS URL
  */
 export function isHttpUrl(str: string): boolean {
-  return str.startsWith('http://') || str.startsWith('https://');
+  return str.startsWith("http://") || str.startsWith("https://");
 }
 
 /**
@@ -67,7 +67,7 @@ export function getPort(url: string): number | null {
  * @returns normalized URL with protocol
  */
 export function normalizeUrl(url: string): string {
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
     return `http://${url}`;
   }
   return url;
@@ -80,7 +80,11 @@ export function normalizeUrl(url: string): string {
  */
 export function isLocalhost(url: string): boolean {
   const hostname = getHostname(url);
-  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0';
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "0.0.0.0"
+  );
 }
 
 /**
@@ -89,7 +93,10 @@ export function isLocalhost(url: string): boolean {
  * @param params Query parameters
  * @returns Complete URL with query string
  */
-export function buildUrlWithParams(base: string, params: Record<string, string>): string {
+export function buildUrlWithParams(
+  base: string,
+  params: Record<string, string>,
+): string {
   const url = new URL(base);
   Object.entries(params).forEach(([key, value]) => {
     url.searchParams.append(key, value);

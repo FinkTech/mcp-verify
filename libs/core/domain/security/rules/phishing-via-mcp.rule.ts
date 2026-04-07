@@ -33,32 +33,57 @@
  * - CWE-1021: Improper Restriction of Rendered UI Layers
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class PhishingViaMcpRule implements ISecurityRule {
-  code = 'SEC-056';
-  name = 'Phishing via MCP Tools';
-  severity: 'high' = 'high';
+  code = "SEC-056";
+  name = "Phishing via MCP Tools";
+  severity: "high" = "high";
 
   private readonly PHISHING_PATTERNS = [
-    /create.*login.*page/i, /generate.*auth.*form/i,
-    /craft.*email/i, /phishing.*template/i, /social.*engineer/i,
-    /fake.*page/i, /clone.*site/i, /spoof.*domain/i,
-    /credential.*harvest/i, /collect.*password/i
+    /create.*login.*page/i,
+    /generate.*auth.*form/i,
+    /craft.*email/i,
+    /phishing.*template/i,
+    /social.*engineer/i,
+    /fake.*page/i,
+    /clone.*site/i,
+    /spoof.*domain/i,
+    /credential.*harvest/i,
+    /collect.*password/i,
   ];
 
   private readonly DECEPTION_KEYWORDS = [
-    'deceive', 'trick', 'manipulate', 'impersonate',
-    'pretend', 'disguise', 'masquerade', 'spoof',
-    'fake', 'counterfeit', 'mimic', 'clone'
+    "deceive",
+    "trick",
+    "manipulate",
+    "impersonate",
+    "pretend",
+    "disguise",
+    "masquerade",
+    "spoof",
+    "fake",
+    "counterfeit",
+    "mimic",
+    "clone",
   ];
 
   private readonly MALICIOUS_PARAM_NAMES = [
-    'victim', 'target', 'mark', 'prey', 'subject',
-    'credential', 'password', 'username', 'login'
+    "victim",
+    "target",
+    "mark",
+    "prey",
+    "subject",
+    "credential",
+    "password",
+    "username",
+    "login",
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -74,17 +99,17 @@ export class PhishingViaMcpRule implements ISecurityRule {
       if (isPhishingTool) {
         findings.push({
           severity: this.severity,
-          message: t('sec_056_phishing_tool', {
-            toolName: tool.name
+          message: t("sec_056_phishing_tool", {
+            toolName: tool.name,
           }),
           component: `tool:${tool.name}`,
           ruleCode: this.code,
-          remediation: t('sec_056_recommendation'),
+          remediation: t("sec_056_recommendation"),
           references: [
-            'NIST Phishing Detection Guidelines',
-            'Anti-Phishing Working Group (APWG)',
-            'CWE-1021: Improper Restriction of Rendered UI Layers'
-          ]
+            "NIST Phishing Detection Guidelines",
+            "Anti-Phishing Working Group (APWG)",
+            "CWE-1021: Improper Restriction of Rendered UI Layers",
+          ],
         });
       }
     }
@@ -94,8 +119,8 @@ export class PhishingViaMcpRule implements ISecurityRule {
 
   private isPhishingRelated(tool: McpTool): boolean {
     // Check name pattern
-    const nameMatches = this.PHISHING_PATTERNS.some(pattern =>
-      pattern.test(tool.name)
+    const nameMatches = this.PHISHING_PATTERNS.some((pattern) =>
+      pattern.test(tool.name),
     );
     if (nameMatches) return true;
 
@@ -103,18 +128,21 @@ export class PhishingViaMcpRule implements ISecurityRule {
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
 
-      const descMatches = this.PHISHING_PATTERNS.some(pattern =>
-        pattern.test(descLower)
+      const descMatches = this.PHISHING_PATTERNS.some((pattern) =>
+        pattern.test(descLower),
       );
       if (descMatches) return true;
 
       // Check for deception keywords
-      const hasDeception = this.DECEPTION_KEYWORDS.some(keyword =>
-        descLower.includes(keyword)
+      const hasDeception = this.DECEPTION_KEYWORDS.some((keyword) =>
+        descLower.includes(keyword),
       );
 
       // Check for email/message generation combined with deception
-      const isMessagingTool = descLower.includes('email') || descLower.includes('message') || descLower.includes('sms');
+      const isMessagingTool =
+        descLower.includes("email") ||
+        descLower.includes("message") ||
+        descLower.includes("sms");
 
       if (hasDeception && isMessagingTool) return true;
     }
@@ -123,19 +151,27 @@ export class PhishingViaMcpRule implements ISecurityRule {
     if (tool.inputSchema?.properties) {
       for (const propName of Object.keys(tool.inputSchema.properties)) {
         const propLower = propName.toLowerCase();
-        const hasMaliciousParam = this.MALICIOUS_PARAM_NAMES.some(name =>
-          propLower.includes(name)
+        const hasMaliciousParam = this.MALICIOUS_PARAM_NAMES.some((name) =>
+          propLower.includes(name),
         );
 
         if (hasMaliciousParam) {
           // If parameter is named "victim" or "target", highly suspicious
-          if (propLower === 'victim' || propLower === 'target' || propLower === 'mark') {
+          if (
+            propLower === "victim" ||
+            propLower === "target" ||
+            propLower === "mark"
+          ) {
             return true;
           }
 
           // If tool also generates content, it's suspicious
           const nameLower = tool.name.toLowerCase();
-          if (nameLower.includes('generate') || nameLower.includes('create') || nameLower.includes('craft')) {
+          if (
+            nameLower.includes("generate") ||
+            nameLower.includes("create") ||
+            nameLower.includes("craft")
+          ) {
             return true;
           }
         }

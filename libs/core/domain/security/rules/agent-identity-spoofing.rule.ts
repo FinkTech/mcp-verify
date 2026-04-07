@@ -30,70 +30,73 @@
  * - NIST AI Security Guidelines
  */
 
-import type { ISecurityRule } from '../rule.interface';
-import type { DiscoveryResult, SecurityFinding } from '../../mcp-server/entities/validation.types';
-import type { McpTool } from '../../shared/common.types';
-import { t } from '@mcp-verify/shared';
+import type { ISecurityRule } from "../rule.interface";
+import type {
+  DiscoveryResult,
+  SecurityFinding,
+} from "../../mcp-server/entities/validation.types";
+import type { McpTool } from "../../shared/common.types";
+import { t } from "@mcp-verify/shared";
 
 export class AgentIdentitySpoofingRule implements ISecurityRule {
-  code = 'SEC-031';
-  name = 'Agent Identity Spoofing';
-  severity: 'critical' = 'critical';
+  code = "SEC-031";
+  name = "Agent Identity Spoofing";
+  severity: "critical" = "critical";
 
   /**
    * Keywords that indicate privileged/dangerous operations
    */
   private readonly PRIVILEGED_KEYWORDS = [
-    'admin',
-    'delete',
-    'remove',
-    'wipe',
-    'drop',
-    'terminate',
-    'kill',
-    'execute',
-    'exec',
-    'run',
-    'sudo',
-    'root',
-    'privilege',
-    'elevated',
-    'system'
+    "admin",
+    "delete",
+    "remove",
+    "wipe",
+    "drop",
+    "terminate",
+    "kill",
+    "execute",
+    "exec",
+    "run",
+    "sudo",
+    "root",
+    "privilege",
+    "elevated",
+    "system",
   ];
 
   /**
    * Authentication-related parameter names
    */
   private readonly AUTH_PARAM_NAMES = [
-    'api_key',
-    'apiKey',
-    'api-key',
-    'token',
-    'auth',
-    'authorization',
-    'credentials',
-    'agent_id',
-    'agentId',
-    'agent-id',
-    'client_id',
-    'clientId',
-    'session_id',
-    'sessionId'
+    "api_key",
+    "apiKey",
+    "api-key",
+    "token",
+    "auth",
+    "authorization",
+    "credentials",
+    "agent_id",
+    "agentId",
+    "agent-id",
+    "client_id",
+    "clientId",
+    "session_id",
+    "sessionId",
   ];
 
   /**
    * Keywords in descriptions that suggest authentication is implemented
    */
   private readonly AUTH_DESCRIPTION_KEYWORDS = [
-    'authenticated',
-    'authorized',
-    'verified',
-    'requires authentication',
-    'requires authorization',
-    'requires api key',
-    'requires token',
-    'agent verification',
-    'identity verification'
+    "authenticated",
+    "authorized",
+    "verified",
+    "requires authentication",
+    "requires authorization",
+    "requires api key",
+    "requires token",
+    "agent verification",
+    "identity verification",
   ];
 
   evaluate(discovery: DiscoveryResult): SecurityFinding[] {
@@ -113,15 +116,15 @@ export class AgentIdentitySpoofingRule implements ISecurityRule {
       if (!hasAuthentication) {
         findings.push({
           severity: this.severity,
-          message: t('sec_031_agent_spoofing', { toolName: tool.name }),
+          message: t("sec_031_agent_spoofing", { toolName: tool.name }),
           component: `tool:${tool.name}`,
           ruleCode: this.code,
-          remediation: t('sec_031_recommendation'),
+          remediation: t("sec_031_recommendation"),
           references: [
-            'Multi-Agent Security Framework (MASF) 2024',
-            'NIST AI Security Guidelines - Agent Authentication',
-            'CWE-287: Improper Authentication'
-          ]
+            "Multi-Agent Security Framework (MASF) 2024",
+            "NIST AI Security Guidelines - Agent Authentication",
+            "CWE-287: Improper Authentication",
+          ],
         });
       }
     }
@@ -133,11 +136,11 @@ export class AgentIdentitySpoofingRule implements ISecurityRule {
    * Identify tools that perform privileged/dangerous operations
    */
   private identifyPrivilegedTools(tools: McpTool[]): McpTool[] {
-    return tools.filter(tool => {
+    return tools.filter((tool) => {
       // Check tool name
       const nameLower = tool.name.toLowerCase();
-      const nameHasPrivilegedKeyword = this.PRIVILEGED_KEYWORDS.some(kw =>
-        nameLower.includes(kw)
+      const nameHasPrivilegedKeyword = this.PRIVILEGED_KEYWORDS.some((kw) =>
+        nameLower.includes(kw),
       );
 
       if (nameHasPrivilegedKeyword) {
@@ -147,8 +150,8 @@ export class AgentIdentitySpoofingRule implements ISecurityRule {
       // Check description
       if (tool.description) {
         const descLower = tool.description.toLowerCase();
-        const descHasPrivilegedKeyword = this.PRIVILEGED_KEYWORDS.some(kw =>
-          descLower.includes(kw)
+        const descHasPrivilegedKeyword = this.PRIVILEGED_KEYWORDS.some((kw) =>
+          descLower.includes(kw),
         );
 
         if (descHasPrivilegedKeyword) {
@@ -166,10 +169,12 @@ export class AgentIdentitySpoofingRule implements ISecurityRule {
   private hasAuthenticationMechanism(tool: McpTool): boolean {
     // 1. Check for authentication parameters in inputSchema
     if (tool.inputSchema?.properties) {
-      const propertyNames = Object.keys(tool.inputSchema.properties).map(p => p.toLowerCase());
+      const propertyNames = Object.keys(tool.inputSchema.properties).map((p) =>
+        p.toLowerCase(),
+      );
 
-      const hasAuthParam = this.AUTH_PARAM_NAMES.some(authParam =>
-        propertyNames.includes(authParam.toLowerCase())
+      const hasAuthParam = this.AUTH_PARAM_NAMES.some((authParam) =>
+        propertyNames.includes(authParam.toLowerCase()),
       );
 
       if (hasAuthParam) {
@@ -181,8 +186,8 @@ export class AgentIdentitySpoofingRule implements ISecurityRule {
     if (tool.description) {
       const descLower = tool.description.toLowerCase();
 
-      const mentionsAuth = this.AUTH_DESCRIPTION_KEYWORDS.some(keyword =>
-        descLower.includes(keyword.toLowerCase())
+      const mentionsAuth = this.AUTH_DESCRIPTION_KEYWORDS.some((keyword) =>
+        descLower.includes(keyword.toLowerCase()),
       );
 
       if (mentionsAuth) {

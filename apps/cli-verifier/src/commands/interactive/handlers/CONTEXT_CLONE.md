@@ -15,6 +15,7 @@ context clone <source> <new_name> [--target "new_url"]
 ## Description
 
 Clones an existing workspace context into a new one, preserving:
+
 - **Security profile** (deep copy with `structuredClone()`)
 - **Configuration overrides** (context-specific settings)
 - **Language preference**
@@ -27,6 +28,7 @@ Clones an existing workspace context into a new one, preserving:
 ## Examples
 
 ### 1. Basic Clone
+
 ```bash
 > context clone dev staging
 ✓ Context cloned: dev → staging
@@ -39,6 +41,7 @@ Clones an existing workspace context into a new one, preserving:
 ```
 
 ### 2. Clone with Target Override
+
 ```bash
 > context clone dev prod --target "http://prod.example.com"
 ✓ Context cloned: dev → prod
@@ -53,6 +56,7 @@ Clones an existing workspace context into a new one, preserving:
 ```
 
 ### 3. Error Cases
+
 ```bash
 # Source doesn't exist
 > context clone nonexistent staging
@@ -74,12 +78,14 @@ Clones an existing workspace context into a new one, preserving:
 The implementation uses `structuredClone()` (Node.js 17+) instead of shallow spread operator:
 
 **Before (createContext with baseOnActive: true)**:
+
 ```typescript
 // ❌ Shallow copy - shared references!
 const newContext = { ...activeContext };
 ```
 
 **After (cloneContext)**:
+
 ```typescript
 // ✅ Deep copy - no shared references
 const clonedContext = structuredClone(sourceContext);
@@ -108,6 +114,7 @@ Without deep copy, modifying `clonedContext.profile.fuzzing.useMutations` would 
 ## Files Modified
 
 ### 1. `session.ts`
+
 ```typescript
 cloneContext(
   source: string,
@@ -115,6 +122,7 @@ cloneContext(
   overrides?: Partial<WorkspaceContext>
 ): boolean
 ```
+
 - Verifies source exists and target doesn't exist
 - Deep copies using `structuredClone()`
 - Applies overrides (target, profile, config, etc.)
@@ -122,6 +130,7 @@ cloneContext(
 - Persists atomically via `persistContext()`
 
 ### 2. `handlers/context-clone.ts` (NEW)
+
 - Parses arguments with `ShellParser.extractPositionals()` and `extractFlags()`
 - Validates syntax (requires source + target name)
 - Extracts `--target` flag override
@@ -129,15 +138,18 @@ cloneContext(
 - Shows cloned configuration details
 
 ### 3. `router.ts`
+
 - Imports `handleContextClone`
 - Adds `case 'clone'` in `handleContextDispatch()` switch
 - Updates `showContextHelp()` with clone documentation and examples
 
 ### 4. `completer.ts`
+
 - Adds `'clone'` to `COMMAND_FLAGS['context']` array
 - Enables TAB completion: `context c[TAB]` → `context clone`
 
 ### 5. `handlers/info.ts`
+
 - Updates `showHelp()` to include `clone` in context subcommands
 
 ---
