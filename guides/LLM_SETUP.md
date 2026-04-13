@@ -15,7 +15,7 @@ mcp-verify includes **optional** AI-powered semantic analysis that detects:
 - **Security concerns** - Tool descriptions that hide dangerous capabilities
 - **Ambiguous parameters** - Unclear what inputs do
 
-**Without LLM**: You get 60 security rules (SQL injection, command injection, etc.)
+**Without LLM**: You get 61 security rules (SQL injection, command injection, etc.)
 **With LLM**: You get those + deep semantic understanding
 
 ---
@@ -464,7 +464,7 @@ mcp-verify validate "node server.js"
 
 **What you still get:**
 
-- ✅ 60 security rules (SQL injection, command injection, etc.)
+- ✅ 61 security rules (SQL injection, command injection, etc.)
 - ✅ Protocol compliance validation
 - ✅ Quality scoring
 - ✅ JSON/HTML/SARIF reports
@@ -529,3 +529,4 @@ A: Not yet. This feature is planned for a future release.
 - [Security Scoring](../SECURITY_SCORING.md) - How scoring works
 - [CI/CD Integration](./CI_CD.md) - GitHub Actions, GitLab CI
 - [Contributing](../CONTRIBUTING.md) - Development guide
+

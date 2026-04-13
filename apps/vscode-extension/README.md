@@ -14,7 +14,7 @@ This VS Code extension provides **production-ready** enterprise-grade security v
 
 **Core Features (Stable):**
 
-- ✅ Full security validation with **60 security rules across 6 threat categories**
+- ✅ Full security validation with **61 security rules across 6 threat categories**
 - ✅ Advanced fuzzing engine with smart payload generation
 - ✅ Real-time diagnostics in Problems panel
 - ✅ Tree views for servers, findings, tools, and history
@@ -39,7 +39,7 @@ This VS Code extension provides **production-ready** enterprise-grade security v
 
 ### Key Features
 
-- **60 Security Rules** - Complete threat coverage across 6 blocks: OWASP fundamentals (13), MCP-specific vulnerabilities (8), OWASP LLM Top 10 (9), Multi-Agent Attacks (11), Enterprise Compliance (9), and AI Weaponization (10)
+- **61 security rules** - Complete threat coverage across 6 blocks: OWASP fundamentals (13), MCP-specific vulnerabilities (8), OWASP LLM Top 10 (9), Multi-Agent Attacks (11), Enterprise Compliance (9), and AI Weaponization (10)
 - **Smart Fuzzing Engine** - Production-ready automated vulnerability discovery with 8 payload generators and 9 vulnerability detectors
 - **Shield Pattern** - Automated secure schema generation that hardens JSON schemas without modifying original files
 - **Stress Testing** - Load testing to identify performance and DoS vulnerabilities
@@ -150,7 +150,7 @@ Past validation results:
 
 ## Security Rules
 
-The extension validates against **60 security rules** organized in **6 threat category blocks**:
+The extension validates against **61 security rules** organized in **6 threat category blocks**:
 
 ### Block OWASP: OWASP Top 10 Aligned (SEC-001 to SEC-013)
 
@@ -227,7 +227,7 @@ The extension validates against **60 security rules** organized in **6 threat ca
 | SEC-049 | Medium   | Timing Side-Channel Auth       |
 | SEC-050 | Medium   | Insufficient Output Entropy    |
 
-### Block D: AI Weaponization & Supply Chain (SEC-051 to SEC-060)
+### Block D: AI Weaponization & Supply Chain (SEC-051 to SEC-061)
 
 | Rule    | Severity | Description                         | Default     |
 | ------- | -------- | ----------------------------------- | ----------- |
@@ -514,13 +514,13 @@ AGPL-3.0 - See [LICENSE](https://github.com/FinkTech/mcp-verify/blob/main/LICENS
 ## Development Status
 
 **Current Version**: 1.0.0 (Enterprise-Ready)
-**Last Updated**: 2026-02-25
+**Last Updated**: 2026-04-08
 
 ### Stability Matrix
 
 | Feature                | Status     | Notes                                       |
 | ---------------------- | ---------- | ------------------------------------------- |
-| Security Validation    | ✅ Stable  | Full 60 rules across 6 threat categories    |
+| Security Validation    | ✅ Stable  | Full 61 rules across 6 threat categories    |
 | Diagnostics Provider   | ✅ Stable  | Problems panel integration                  |
 | Fuzzing Engine         | ✅ Stable  | 8 generators, 9 detectors, production-ready |
 | Shield Pattern         | ✅ Stable  | Secure schema generation (SEC-019)          |
@@ -538,3 +538,4 @@ AGPL-3.0 - See [LICENSE](https://github.com/FinkTech/mcp-verify/blob/main/LICENS
 **Made by [FinkTech](https://github.com/FinkTech)**
 
 hello.finksystems@gmail.com
+

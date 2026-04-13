@@ -291,7 +291,7 @@ export class SecurityScanner {
   private rules: ISecurityRule[] = [
     new SqlInjectionRule(),
     new CommandInjectionRule(),
-    // ... all 60 rules
+    // ... all 61 rules
   ];
 
   async scan(discovery: DiscoveryResult): Promise<SecurityReport> {

@@ -384,7 +384,7 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
-    "bundle": "esbuild src/extension.ts --bundle --platform=node --target=node18 --external:vscode --outfile=dist/extension.js --minify --sourcemap",
+    "bundle": "node build.js",
     "package": "npm run bundle"
   },
   "devDependencies": {

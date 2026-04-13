@@ -282,7 +282,7 @@ All commands have strict timeouts (default 120s):
 validate <target> [--tool Tool1,Tool2] [--format html] [--output report.html]
 ```
 
-Security validation with 60 rules (13 OWASP + 8 MCP + 39 advanced threats).
+Security validation with 61 rules (13 OWASP + 8 MCP + 39 advanced threats).
 
 ### 2. fuzz
 
@@ -473,3 +473,4 @@ describe("ShellParser", () => {
 ---
 
 **Last Updated**: 2026-03-26
+

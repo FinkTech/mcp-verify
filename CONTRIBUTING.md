@@ -203,7 +203,7 @@ mcp-verify/
 │
 ├── libs/                           # Shared business logic
 │   ├── core/                      # Core validation engine
-│   │   ├── domain/                # Business rules (60 security rules, reporting)
+│   │   ├── domain/                # Business rules (61 security rules, reporting)
 │   │   ├── infrastructure/        # External adapters (logging, sandbox)
 │   │   └── use-cases/             # Workflows (validator, fuzzer, proxy)
 │   │

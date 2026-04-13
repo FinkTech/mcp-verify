@@ -459,6 +459,7 @@ export const translations = {
       'Tool "{toolName}" performs multi-step critical operations without transaction semantics. No rollback/undo mechanism if operation fails mid-way.',
     sec_060_recommendation:
       "Implement transaction semantics: add rollback_on_error parameter, provide undo mechanism, use transaction_id for atomic operations, implement dry-run mode.",
+    sec_061: "Homoglyph / Unicode Spoofing",
     sec_061_server_name:
       'Server name "{name}" contains non-ASCII characters from confusable Unicode blocks ({blocks}) mixed with ASCII letters: {positions}. This enables homoglyph spoofing — the name appears identical to a legitimate server name but differs at the codepoint level, bypassing allowlist checks.',
     sec_061_tool_name:
@@ -482,7 +483,7 @@ export const translations = {
     // End HTML Report Keys
     about_feature_i18n: "Internationalization (EN/ES)",
     about_feature_llm: "LLM semantic analysis (optional)",
-    about_feature_owasp: "60 security rules (6 blocks)",
+    about_feature_owasp: "61 security rules (6 blocks)",
     about_feature_protocol: "MCP protocol validation",
     about_feature_reports: "Multiple report formats (JSON, HTML, SARIF, MD)",
     active_guardrails: "🛡️  Active Guardrails (v1.0):",
@@ -2304,6 +2305,9 @@ export const translations = {
     proxy_save_md: "Save as .md (Markdown)",
     proxy_save_format_question: "Select export format:",
     proxy_filename_prompt: "Enter filename:",
+    security_analysis: "Security Analysis",
+    rate_limit_backoff: "Rate Limit Backoff",
+    panic_mode_active: "Panic Mode Active",
   },
   es: {
     // HTML Report Keys
@@ -3129,6 +3133,7 @@ export const translations = {
       'La herramienta "{toolName}" realiza operaciones críticas multi-paso sin semántica de transacción. Sin mecanismo de rollback/deshacer si la operación falla a mitad de camino.',
     sec_060_recommendation:
       "Implementar semántica de transacción: agregar parámetro rollback_on_error, proporcionar mecanismo de deshacer, usar transaction_id para operaciones atómicas, implementar modo dry-run.",
+    sec_061: "Homoglyph / Unicode Spoofing",
     sec_061_server_name:
       'El nombre del servidor "{name}" contiene caracteres no-ASCII de bloques Unicode confusables ({blocks}) mezclados con letras ASCII: {positions}. Esto habilita spoofing por homoglifos — el nombre parece idéntico a un servidor legítimo pero difiere a nivel de codepoint, evadiendo verificaciones de listas blancas.',
     sec_061_tool_name:
@@ -4593,6 +4598,9 @@ export const translations = {
     proxy_save_md: "Guardar como .md (Markdown)",
     proxy_save_format_question: "Selecciona el formato de exportación:",
     proxy_filename_prompt: "Introduce el nombre del archivo:",
+    security_analysis: "Análisis de Seguridad",
+    rate_limit_backoff: "Limitación de Tasa",
+    panic_mode_active: "Modo Pánico",
 
     // Block A: OWASP LLM Top 10 (SEC-023 to SEC-030)
     sec_023_excessive_agency:

@@ -8,8 +8,8 @@
 /**
  * MCP Verify - Code Actions Provider
  *
- * Provides quick fixes and suggestions for all 60 security rules.
- * Now dynamically generates suggestions from core translations for all rules (SEC-001 to SEC-060).
+ * Provides quick fixes and suggestions for all 61 security rules.
+ * Now dynamically generates suggestions from core translations for all rules (SEC-001 to SEC-061).
  */
 
 import * as vscode from "vscode";
@@ -42,7 +42,7 @@ function t(key: string): string {
 
 /**
  * Security rule suggestions for rules SEC-001 to SEC-021 (hardcoded legacy format)
- * Note: Rules SEC-022 to SEC-060 are dynamically generated from core translations
+ * Note: Rules SEC-022 to SEC-061 are dynamically generated from core translations
  */
 const LEGACY_SECURITY_SUGGESTIONS: Record<
   string,
@@ -902,7 +902,7 @@ function getSecuritySuggestion(ruleCode: string):
 }
 
 /**
- * Get all available security suggestions (SEC-001 to SEC-060)
+ * Get all available security suggestions (SEC-001 to SEC-061)
  */
 function getAllSecuritySuggestions(): Record<
   string,
@@ -913,8 +913,8 @@ function getAllSecuritySuggestions(): Record<
     ReturnType<typeof getSecuritySuggestion>
   > = {};
 
-  // Generate for all 60 rules
-  for (let i = 1; i <= 60; i++) {
+  // Generate for all 61 rules
+  for (let i = 1; i <= 61; i++) {
     const ruleCode = `SEC-${String(i).padStart(3, "0")}`;
     const suggestion = getSecuritySuggestion(ruleCode);
     if (suggestion) {

@@ -46,7 +46,7 @@ mcp-verify/
 │   ├── mcp-server/         # MCP server that validates other MCP servers
 │   └── vscode-extension/   # VS Code extension for real-time scanning
 ├── libs/
-│   ├── core/               # Security (60 rules), validation, reporting, transport
+│   ├── core/               # Security (61 rules), validation, reporting, transport
 │   ├── fuzzer/             # Fuzzing engine (9 generators, 10 detectors)
 │   ├── protocol/           # MCP protocol types (auto-generated)
 │   ├── shared/             # i18n, logging, path/url/regex guards, user-agent
@@ -130,7 +130,7 @@ See `TESTING.md` for full strategy and CI/CD integration.
 
 - `apps/cli-verifier/AGENTS.md` — 13 commands, interactive shell, workspace
 - `apps/mcp-server/AGENTS.md` — 7 MCP tools, LLM formatting
-- `libs/core/AGENTS.md` — 60 security rules, 5 report formats, 4 LLM providers
+- `libs/core/AGENTS.md` — 61 security rules, 5 report formats, 4 LLM providers
 - `libs/fuzzer/AGENTS.md` — 9 generators, 10 detectors, mutation engine
 - `libs/shared/AGENTS.md` — security perimeter, Tier-S guards, Zero Internal Imports
 

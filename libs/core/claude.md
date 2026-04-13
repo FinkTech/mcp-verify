@@ -9,7 +9,7 @@ This file is optimized for Claude Code. Other AI coding agents should reference 
 ## Quick Reference
 
 - **Clean Architecture**: 3-layer design (Use Cases → Domain → Infrastructure)
-- **60 Security Rules**: OWASP (13) + MCP (8) + LLM Top 10 (9) + Multi-Agent (11) + Compliance (9) + Weaponization (10)
+- **61 security rules**: OWASP (13) + MCP (8) + LLM Top 10 (9) + Multi-Agent (11) + Compliance (9) + Weaponization (10)
 - **5 Report Formats**: HTML, Markdown, SARIF, JSON, Text
 - **3 Transports**: stdio, HTTP, SSE
 - **4 LLM Providers**: Anthropic, OpenAI, Ollama, Gemini
@@ -20,3 +20,4 @@ See [AGENTS.md](./AGENTS.md) for complete architecture, security rules catalog, 
 ---
 
 **Last Updated**: 2026-03-26
+

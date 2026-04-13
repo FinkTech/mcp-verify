@@ -37,7 +37,7 @@ libs/core/
 │   │   └── entities/         # Tool, Resource, Prompt types
 │   │
 ├── security/             # Security analysis
-│   ├── rules/            # 60 security rules (6 threat category blocks)
+│   ├── rules/            # 61 security rules (6 threat category blocks)
 │   └── security-scanner.ts  # Rule orchestrator + scoring
 │   │
 │   ├── quality/              # Quality analysis
@@ -691,3 +691,4 @@ test("Validator orchestrates workflow", async () => {
 3. Ask in [GitHub Discussions](https://github.com/FinkTech/mcp-verify/discussions)
 
 **General rule**: If it's a business rule → domain/. If it's I/O → infrastructure/. If it's orchestration → use-cases/.
+

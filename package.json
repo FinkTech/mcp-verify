@@ -135,6 +135,7 @@
     "@typescript-eslint/eslint-plugin": "^8.57.2",
     "@typescript-eslint/parser": "^8.57.2",
     "esbuild": "^0.27.2",
+    "esbuild-plugin-tsconfig-paths": "^1.0.2",
     "eslint": "^8.50.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-security": "^1.7.1",

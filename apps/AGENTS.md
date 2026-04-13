@@ -323,7 +323,7 @@ npm test -- --coverage
 
 ### Libs Documentation
 
-- **`libs/core/AGENTS.md`** - Domain logic, 60 security rules, 5 report formats, 3 transports
+- **`libs/core/AGENTS.md`** - Domain logic, 61 security rules, 5 report formats, 3 transports
 - **`libs/fuzzer/AGENTS.md`** - Smart Fuzzer engine, 9 generators, 10 detectors, mutation strategies
 
 ### Other Documentation
@@ -335,3 +335,4 @@ npm test -- --coverage
 ---
 
 **Last Updated**: 2026-03-26
+

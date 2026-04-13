@@ -6,7 +6,7 @@
 - [Security Model](#security-model)
 - [API Key Management](#api-key-management)
 - [What We Secure](#what-we-secure)
-  - [Static Analysis (60 Security Rules)](#static-analysis-60-security-rules)
+  - [Static Analysis (61 security rules)](#static-analysis-60-security-rules)
   - [Protocol Compliance](#protocol-compliance-json-rpc-20)
   - [Runtime Security (Proxy Guardrails)](#runtime-security-proxy-guardrails)
   - [Smart Fuzzer v1.0 Security](#smart-fuzzer-v10-security)
@@ -136,9 +136,9 @@ When using mcp-verify as an MCP server within Claude Desktop:
 
 ## What We Secure
 
-### Static Analysis (60 Security Rules)
+### Static Analysis (61 security rules)
 
-mcp-verify detects vulnerability patterns across 60 security rules organized in 6 threat category blocks (OWASP Top 10, MCP-specific, OWASP LLM Top 10, Multi-Agent Attacks, Enterprise Compliance, AI Weaponization). Below are the core OWASP and MCP-specific rules (first 21 of 60 total):
+mcp-verify detects vulnerability patterns across 61 security rules organized in 6 threat category blocks (OWASP Top 10, MCP-specific, OWASP LLM Top 10, Multi-Agent Attacks, Enterprise Compliance, AI Weaponization). Below are the core OWASP and MCP-specific rules (first 21 of 61 total):
 
 | Code        | Rule                     | Description                                  |
 | ----------- | ------------------------ | -------------------------------------------- |
@@ -1500,6 +1500,14 @@ CRITICAL: Boundary overflow - age exceeds maximum (121 > 120)
 // Reality: Server validated correctly → FALSE POSITIVE
 ```
 
+### Static "Exotic" Security Rules
+
+**Limitation**: Rules for advanced multi-agent and supply-chain attacks (SEC-033, SEC-038, SEC-040, SEC-057) currently use static keyword-based analysis.
+
+**Impact**: This method may produce false negatives if tool descriptions are obfuscated or use indirect language. These rules should be considered "Experimental" in v1.0.0.
+
+**Roadmap**: Future versions will implement tiered semantic analysis and behavioral detectors to provide runtime verification for these advanced threat vectors.
+
 **Impact**: Security teams may waste time investigating non-issues.
 
 **Mitigation**:
@@ -1737,5 +1745,6 @@ For questions, open a GitHub issue: https://github.com/FinkTech/mcp-verify/issue
 
 ---
 
-**Last Updated**: 2026-02-24
+**Last Updated**: 2026-04-08
 **Version**: 1.0.0
+

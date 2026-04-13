@@ -6,7 +6,7 @@ This guide explains how to run and contribute to the MCP Verify security test su
 
 ## Overview
 
-MCP Verify includes 60 security rules organized into 6 blocks:
+MCP Verify includes 61 security rules organized into 6 blocks:
 
 | Block     | Range              | Description                         | Status                 |
 | --------- | ------------------ | ----------------------------------- | ---------------------- |
@@ -15,7 +15,7 @@ MCP Verify includes 60 security rules organized into 6 blocks:
 | **A**     | SEC-022 to SEC-030 | OWASP LLM Top 10 in MCP Context     | ✅ Enabled             |
 | **B**     | SEC-031 to SEC-041 | Multi-Agent & Agentic Attacks       | ✅ Enabled             |
 | **C**     | SEC-042 to SEC-050 | Operational & Enterprise Compliance | ✅ Enabled             |
-| **D**     | SEC-051 to SEC-060 | AI Weaponization & Supply Chain     | ⚠️ Disabled by default |
+| **D**     | SEC-051 to SEC-061 | AI Weaponization & Supply Chain     | ⚠️ Disabled by default |
 
 ---
 
@@ -35,6 +35,7 @@ Block D contains **advanced security rules** designed to detect sophisticated at
 - SEC-058: Self-Replicating MCP
 - SEC-059: Unvalidated Tool Authorization
 - SEC-060: Missing Transaction Semantics
+- SEC-061: Malicious Tool Overshadowing
 
 These rules are **intentionally disabled by default** because:
 
@@ -126,7 +127,7 @@ npm test -- tests/security/rules/sec-04[0-1]*.spec.ts --runInBand
 npm test -- tests/security/rules/sec-04[2-9]*.spec.ts --runInBand
 npm test -- tests/security/rules/sec-050*.spec.ts --runInBand
 
-# Block D (SEC-051 to SEC-060) - REQUIRES EXPLICIT ENABLE
+# Block D (SEC-051 to SEC-061) - REQUIRES EXPLICIT ENABLE
 MCP_VERIFY_ENABLE_BLOCK_D=true npm test -- tests/security/rules/sec-05*.spec.ts --runInBand
 MCP_VERIFY_ENABLE_BLOCK_D=true npm test -- tests/security/rules/sec-060*.spec.ts --runInBand
 ```
@@ -318,7 +319,7 @@ afterAll(async () => {
 
 ### Block D Tests Fail
 
-**Symptom**: All SEC-051 to SEC-060 tests fail with no findings
+**Symptom**: All SEC-051 to SEC-061 tests fail with no findings
 
 **Solution**: Enable Block D with environment variable:
 
@@ -409,3 +410,4 @@ When adding new security rules:
 
 **Last Updated**: 2026-04-02
 **Maintained by**: FinkTech
+

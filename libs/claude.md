@@ -9,7 +9,7 @@ This file is optimized for Claude Code. Other AI coding agents should reference 
 ## Quick Reference
 
 - **4 Libraries**: core, fuzzer, shared, protocol, transport
-- **Core**: 60 security rules, 5 report formats, 3 transports, 4 LLM providers
+- **Core**: 61 security rules, 5 report formats, 3 transports, 4 LLM providers
 - **Fuzzer**: 9 generators, 10 detectors, 12 mutation strategies
 - **Shared**: i18n, logging, formatters (ZERO dependencies)
 
@@ -32,3 +32,4 @@ See [AGENTS.md](./AGENTS.md) for complete architecture, dependency rules, common
 ---
 
 **Last Updated**: 2026-03-26
+

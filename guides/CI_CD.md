@@ -129,7 +129,7 @@ This section explains how to integrate mcp-verify into your own CI/CD pipeline t
 
 **Benefits**:
 
-- ✅ Block PRs with security vulnerabilities (60 security rules)
+- ✅ Block PRs with security vulnerabilities (61 security rules)
 - ✅ Run servers in isolated Sandbox (Deno/Docker)
 - ✅ Track security score trends over time
 - ✅ Prevent regressions (baseline comparison)
@@ -1328,3 +1328,4 @@ permissions:
 - [Examples](./EXAMPLES.md) - CLI usage examples
 - [LLM Setup](./LLM_SETUP.md) - Configure LLM providers
 - [Security Scoring](../SECURITY_SCORING.md) - Understand scores
+

@@ -27,7 +27,7 @@
 
 **Contains**:
 
-- **60 security rules** across 6 threat categories (OWASP, MCP, LLM, Multi-Agent, Compliance, Weaponization)
+- **61 security rules** across 6 threat categories (OWASP, MCP, LLM, Multi-Agent, Compliance, Weaponization)
 - **5 report formats** (HTML, Markdown, SARIF, JSON, Text)
 - **3 transports** (stdio, HTTP, SSE)
 - **4 LLM providers** (Anthropic, OpenAI, Ollama, Gemini)
@@ -45,7 +45,7 @@
 - Adding new LLM provider
 - Changing validation logic
 
-**See**: `core/AGENTS.md` for complete architecture and 60 security rules catalog.
+**See**: `core/AGENTS.md` for complete architecture and 61 security rules catalog.
 
 ---
 
@@ -186,7 +186,7 @@ libs/shared/  (ZERO dependencies, most stable)
 2. Export from `domain/security/rules/index.ts`
 3. Add to `rules` array in `security-scanner.ts` constructor
 4. Write tests in `domain/security/rules/__tests__/my-rule.spec.ts`
-5. Current count: 60 rules (assign SEC-061, SEC-062, etc.)
+5. Current count: 61 rules (assign SEC-061, SEC-062, etc.)
 
 **See**: `core/AGENTS.md` for security rules architecture.
 
@@ -357,7 +357,7 @@ npm test -- --coverage
 
 ### Library-Specific Documentation
 
-- **`core/AGENTS.md`** - Domain logic, 60 security rules, 5 report formats, 3 transports, 4 LLM providers
+- **`core/AGENTS.md`** - Domain logic, 61 security rules, 5 report formats, 3 transports, 4 LLM providers
 - **`fuzzer/AGENTS.md`** - Smart Fuzzer engine, 9 generators, 10 detectors, mutation strategies
 - **`shared/README.md`** - Utilities catalog, i18n, logging, formatters
 
@@ -376,3 +376,4 @@ npm test -- --coverage
 ---
 
 **Last Updated**: 2026-03-26
+

@@ -6,12 +6,16 @@
     "outDir": "dist",
     "lib": ["es2020", "dom"],
     "sourceMap": true,
-    // "rootDir": "src",
-    "strict": true,
-    "paths": {
-      "@mcp-verify/core": ["../../libs/core/index.ts"]
-    }
+    "rootDir": "src",
+    "strict": true
   },
-  "include": ["src/**/*", "../../libs/**/*"],
-  "exclude": ["node_modules", ".vscode-test"]
+  "include": [
+    "src/**/*",
+    "../../libs/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    ".vscode-test",
+    "dist"
+  ]
 }

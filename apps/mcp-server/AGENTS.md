@@ -23,7 +23,7 @@
 This is the **first MCP server** that allows AI agents (Claude, GPT, etc.) to:
 
 - Validate MCP servers before deployment
-- Scan for security vulnerabilities (60 rules across 6 threat categories)
+- Scan for security vulnerabilities (61 rules across 6 threat categories)
 - **Deep Fuzzing**: Target individual tools with smart attack payloads
 - **Semantic Intent Analysis**: Detect malicious tools using advanced LLM reasoning
 - **Automatic Hardening**: Suggest secure JSON schemas using the "Shield Pattern"
@@ -50,7 +50,7 @@ Comprehensive validation (handshake, discovery, schema, security, quality, proto
 
 ### 2. scanSecurity
 
-Security-focused scan with 60 rules across 6 threat categories: OWASP Top 10 (13 rules), MCP-specific (8 rules), OWASP LLM Top 10 (9 rules), Multi-Agent Attacks (11 rules), Enterprise Compliance (9 rules), and AI Weaponization (10 rules).
+Security-focused scan with 61 rules across 6 threat categories: OWASP Top 10 (13 rules), MCP-specific (8 rules), OWASP LLM Top 10 (9 rules), Multi-Agent Attacks (11 rules), Enterprise Compliance (9 rules), and AI Weaponization (11 rules).
 
 **Input**: `{ command: string; args?: string[]; rules?: string[] }`
 
@@ -479,3 +479,4 @@ npx @modelcontextprotocol/inspector node dist/index.js
 ---
 
 **Last Updated**: 2026-03-26
+

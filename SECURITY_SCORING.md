@@ -27,7 +27,7 @@ Every server starts with **100 points** (maximum security). mcp-verify v1.0 uses
 
 ### 1. Static Penalty (Theoretical Risk)
 
-Deductions based on declarative schema analysis (60 rules).
+Deductions based on declarative schema analysis (61 rules).
 
 | Severity     | Penalty | Examples                                      |
 | ------------ | ------- | --------------------------------------------- |
@@ -67,9 +67,9 @@ Maximum = 100
 
 ---
 
-## 🚩 Detection Rule Blocks (60 Rules Total)
+## 🚩 Detection Rule Blocks (61 Rules Total)
 
-The scanner evaluates 60 rules organized into specialized security blocks:
+The scanner evaluates 61 rules organized into specialized security blocks:
 
 ### 1. Block OWASP: Industry Standard Risks (13 rules)
 
@@ -91,9 +91,9 @@ The scanner evaluates 60 rules organized into specialized security blocks:
 
 - **SEC-042 to SEC-050**: Missing Audit Logging, Insecure Session Management, Schema Versioning Absent, Insufficient Error Granularity, Missing CORS Validation, Insecure Default Configuration, Missing Capability Negotiation, Timing Side-Channel in Auth, Insufficient Output Entropy.
 
-### 6. Block D: AI Weaponization & Supply Chain (10 rules)
+### 6. Block D: AI Weaponization & Supply Chain (11 rules)
 
-- **SEC-051 to SEC-060**: Weaponized MCP Fuzzer, Autonomous MCP Backdoor, Malicious Config File, API Endpoint Hijacking, Jailbreak-as-a-Service, Phishing via MCP, Data Exfiltration via Steganography, Self-Replicating MCP, Unvalidated Tool Authorization, Missing Transaction Semantics.
+- **SEC-051 to SEC-061**: Weaponized MCP Fuzzer, Autonomous MCP Backdoor, Malicious Config File, API Endpoint Hijacking, Jailbreak-as-a-Service, Phishing via MCP, Data Exfiltration via Steganography, Self-Replicating MCP, Unvalidated Tool Authorization, Missing Transaction Semantics.
 
 ---
 

@@ -393,7 +393,7 @@ mcp-verify mock --port 3000
 
 | Command       | Purpose                                                                    | Documentation                                      |
 | ------------- | -------------------------------------------------------------------------- | -------------------------------------------------- |
-| `validate`    | Full security validation with 60 security rules across 6 threat categories | [EXAMPLES.md](./guides/EXAMPLES.md)                |
+| `validate`    | Full security validation with 61 security rules across 6 threat categories | [EXAMPLES.md](./guides/EXAMPLES.md)                |
 | `fuzz`        | Smart fuzzer with feedback loop & mutations                                | [COMMANDS.md](./COMMANDS.md#fuzz)                  |
 | `stress`      | Load/concurrency testing                                                   | [EXAMPLES.md](./guides/EXAMPLES.md)                |
 | `doctor`      | Diagnostics, environment checks & binary integrity verification            | [Doctor Section](#-doctor--diagnostics--integrity) |
@@ -627,14 +627,14 @@ The Smart Fuzzer is an **intelligent payload generation engine** that learns fro
 
 ### Key Features
 
-| Feature                        | Description                                                                                                      |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| **Feedback Loop**              | Analyzes responses for anomalies (timing, crashes, errors) and generates mutations                               |
-| **12 Mutation Strategies**     | SQL depth, null-byte injection, unicode bypass, timing probes, buffer stress, quote variation, etc.              |
-| **Automatic Fingerprinting**   | Detects server language/framework and disables irrelevant generators (saves 40-60% time)                         |
-| **9 Payload Generators**       | Prompt injection, SQL/XSS/CMD injection, JWT attacks, prototype pollution, JSON-RPC violations, schema confusion |
-| **10 Vulnerability Detectors** | Timing anomalies, error disclosure, XSS, prompt leaks, jailbreaks, path traversal, weak IDs, info disclosure     |
-| **Baseline Calibration**       | Establishes clean timing/size baselines before anomaly detection                                                 |
+| Feature                        | Description                                                                                                                             |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **Feedback Loop**              | Analyzes responses for anomalies (timing, crashes, errors) and generates mutations                                                      |
+| **12 Mutation Strategies**     | SQL depth, null-byte injection, unicode bypass, timing probes, buffer stress, quote variation, etc.                                     |
+| **Automatic Fingerprinting**   | Detects server language/framework and disables irrelevant generators (saves 40-60% time)                                                |
+| **9 Payload Generators**       | Prompt injection, SQL/XSS/CMD injection, JWT attacks, prototype pollution, JSON-RPC violations, schema confusion, path traversal        |
+| **10 Vulnerability Detectors** | Timing, error disclosure, XSS, prompt leaks, jailbreaks, path traversal, weak IDs, info disclosure, protocol violations, etc.           |
+| **Baseline Calibration**       | Establishes clean timing/size baselines before anomaly detection                                                                        |
 
 ### How It Works
 
@@ -1019,6 +1019,7 @@ mcp-verify generates multiple report formats:
 - **Interactive Shell** - Multi-context workspaces, autocomplete, history, profiles
 - **CLI Commands** - 11 security tools (validate, fuzz, stress, doctor, proxy, play, dashboard, mock, init, examples, fingerprint)
 - **MCP Server** - 7 tools for AI agents (validateServer, scanSecurity, etc.)
+- **VSCode Extension** - Real-time scanning, diagnostics, 4 tree views, code actions (Ready for Marketplace)
 - **Report Formats** - JSON, SARIF, HTML, Markdown, SVG badges
 - **LLM Analysis** - Gemini (FREE tier), Anthropic, Ollama, OpenAI support
 - **Internationalization** - English + Spanish (i18n)
@@ -1028,8 +1029,15 @@ mcp-verify generates multiple report formats:
 
 - **Runtime Proxy** - Transparent proxy with 5 security guardrails
 - **Deno Sandbox** - Isolated execution (requires Deno, Node.js/Deno only)
-- **VSCode Extension** - Real-time scanning, diagnostics, 4 tree views ([in development](./apps/vscode-extension/README.md))
 - **Web Dashboard** - Real-time monitoring ([experimental](./apps/web-dashboard/README.md))
+
+### 🚀 Roadmap
+
+- **Modular Libraries** - In future releases (v1.1+), internal modules (`core`, `fuzzer`, `shared`, etc.) will be published as independent NPM packages for specialized usage.
+- **Enhanced LLM Layer** - Deeper semantic analysis with support for more reasoning models.
+- **Extended Runtime Sandboxing** - Support for Python, Go, and Ruby servers in isolated environments.
+
+---
 
 Try experimental features:
 
@@ -1125,7 +1133,7 @@ mcp-verify validate "node server.js"  # Works without Deno
 | **[apps/mcp-server/CLAUDE.md](./apps/mcp-server/CLAUDE.md)**             | 7 MCP tools, LLM formatting                  | AI Agents  |
 | **[apps/vscode-extension/CLAUDE.md](./apps/vscode-extension/CLAUDE.md)** | Extension architecture, providers, views     | AI Agents  |
 | **[libs/CLAUDE.md](./libs/CLAUDE.md)**                                   | Libraries overview                           | AI Agents  |
-| **[libs/core/CLAUDE.md](./libs/core/CLAUDE.md)**                         | Domain logic, 60 security rules, reporting   | AI Agents  |
+| **[libs/core/CLAUDE.md](./libs/core/CLAUDE.md)**                         | Domain logic, 61 security rules, reporting   | AI Agents  |
 | **[libs/fuzzer/CLAUDE.md](./libs/fuzzer/CLAUDE.md)**                     | Smart Fuzzer v1.0 internals                  | AI Agents  |
 | **[libs/shared/CLAUDE.md](libs/shared/CLAUDE.md)**                       | i18n, CLI helpers, utilities                 | AI Agents  |
 | **[libs/README.md](./libs/README.md)**                                   | Library architecture & dependency rules      | Developers |
@@ -1409,7 +1417,15 @@ curl -fsSL https://deno.land/install.sh | sh  # Linux/macOS
 irm https://deno.land/install.ps1 | iex       # Windows
 ```
 
-### 4. LLM Semantic Analysis (Optional Feature)
+### 4. Static "Exotic" Security Rules
+
+**Limitation**: Advanced security rules (e.g., SEC-033: Recursive Loops, SEC-040: Swarm Attacks, SEC-057: Steganography) currently rely on static keyword-based analysis of tool descriptions.
+
+**Impact**: These rules may miss vulnerabilities if tool descriptions use synonyms or describe malicious behavior implicitly. They are less robust than the core OWASP rules (SEC-001–013).
+
+**Roadmap**: These rules are scheduled for an upgrade in future releases to include tiered semantic analysis and behavioral fuzzer detectors for runtime verification.
+
+### 5. LLM Semantic Analysis (Optional Feature)
 
 **Limitation**: LLM semantic analysis requires:
 
@@ -1417,7 +1433,7 @@ irm https://deno.land/install.ps1 | iex       # Windows
 - API keys (Anthropic or OpenAI) OR
 - Local Ollama installation
 
-**Impact**: Without LLM setup, you get static analysis only (still comprehensive with 60 security rules across 6 threat categories).
+**Impact**: Without LLM setup, you get static analysis only (still comprehensive with 61 security rules across 6 threat categories).
 
 **Workaround**: Use free Google Gemini:
 
@@ -1441,7 +1457,7 @@ mcp-verify validate "node server.js" --llm ollama:llama3.2
 
 **See**: [guides/LLM_SETUP.md](./guides/LLM_SETUP.md) for detailed setup
 
-### 5. Report Generation
+### 6. Report Generation
 
 **Limitation**: SARIF reports require explicit `--format sarif` flag.
 

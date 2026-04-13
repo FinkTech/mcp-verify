@@ -30,6 +30,9 @@ import {
   type BlockAuditEvent,
   type ResponseAuditEvent,
   type ErrorAuditEvent,
+  type SecurityAnalysisAuditEvent,
+  type RateLimitBackoffAuditEvent,
+  type PanicModeAuditEvent,
 } from "@mcp-verify/core/use-cases/proxy/proxy-server";
 import {
   SensitiveCommandBlocker,
@@ -93,17 +96,17 @@ function formatAuditEvent(event: ProxyAuditEvent): string {
       break;
     }
     case "security-analysis": {
-      const e = event as any;
-      message = `SECURITY: ${e.message}`;
+      const e = event as SecurityAnalysisAuditEvent;
+      message = `SECURITY: ${e.method} layer ${e.layer} - ${e.result} (${e.latencyMs}ms)`;
       break;
     }
     case "rate-limit-backoff": {
-      const e = event as any;
+      const e = event as RateLimitBackoffAuditEvent;
       message = `BACKOFF: ${e.message}`;
       break;
     }
     case "panic-mode-activated": {
-      const e = event as any;
+      const e = event as PanicModeAuditEvent;
       message = `PANIC: ${e.message}`;
       break;
     }
@@ -180,19 +183,25 @@ function renderAuditEvent(event: ProxyAuditEvent): void {
 
     // ── Security analysis completed ─────────────────────────────────────────
     case "security-analysis": {
-      const e = event as any; // SecurityAnalysisAuditEvent
+      const e = event as SecurityAnalysisAuditEvent;
+      const status = e.result === "blocked" ? chalk.red("BLOCKED") : chalk.green("PASSED");
       console.log(
-        `${time} ${chalk.bold.magenta("🔒 Security Analysis")} ` +
-          `${chalk.gray(`(${e.message})`)}`,
+        `${time} ${chalk.bold.magenta("🔒 " + t("security_analysis"))} ` +
+          `${chalk.white(e.method)} [Layer ${e.layer}] -> ${status} ${chalk.gray(`(${e.latencyMs}ms)`)}`,
       );
+      if (e.findings && e.findings.length > 0) {
+        e.findings.forEach((f) => {
+          console.log(`       ${chalk.yellow("⚠")} ${chalk.yellow(f.ruleCode)}: ${f.message}`);
+        });
+      }
       break;
     }
 
     // ── Rate limit backoff activated ────────────────────────────────────────
     case "rate-limit-backoff": {
-      const e = event as any; // RateLimitBackoffAuditEvent
+      const e = event as RateLimitBackoffAuditEvent;
       console.log(
-        `${time} ${chalk.bold.yellow("⏱️  Rate Limit Backoff")} ` +
+        `${time} ${chalk.bold.yellow("⏱️  " + t("rate_limit_backoff"))} ` +
           `${chalk.yellow(e.message)}`,
       );
       break;
@@ -200,9 +209,9 @@ function renderAuditEvent(event: ProxyAuditEvent): void {
 
     // ── Panic mode activated ────────────────────────────────────────────────
     case "panic-mode-activated": {
-      const e = event as any; // PanicModeAuditEvent
+      const e = event as PanicModeAuditEvent;
       console.log(
-        `${time} ${chalk.bold.red("🚨 PANIC MODE")} ` +
+        `${time} ${chalk.bold.red("🚨 " + t("panic_mode_active"))} ` +
           `${chalk.red(e.message)}`,
       );
       break;

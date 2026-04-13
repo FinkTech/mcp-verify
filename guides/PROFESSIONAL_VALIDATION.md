@@ -80,7 +80,7 @@ mcp-verify validate "npx -y @modelcontextprotocol/server-github"
 ✓ Testing handshake
 ✓ Discovering capabilities
 ✓ Validating schema
-✓ Running security audit (60 rules)
+✓ Running security audit (61 rules)
 ✓ Generating report
 
 Validation Report:
@@ -619,3 +619,4 @@ mcp-verify validate "node server.js" \
 💼 LinkedIn: [Ariel Fink](https://linkedin.com/in/ariel-fink)
 🐙 GitHub: [@FinkTech](https://github.com/FinkTech)
 🐛 Issues: [mcp-verify Issues](https://github.com/FinkTech/mcp-verify/issues)
+

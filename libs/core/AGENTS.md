@@ -1,13 +1,13 @@
 # @mcp-verify/core — Agent Context
 
-**Mission**: Domain library for MCP security validation, quality analysis, and reporting. Clean architecture, framework-agnostic, 60 security rules.
+**Mission**: Domain library for MCP security validation, quality analysis, and reporting. Clean architecture, framework-agnostic, 61 security rules.
 
 ---
 
 ## Quick Start
 
 1. Identify what to modify:
-   - Security rules → `domain/security/rules/` (60 rules, plugin pattern)
+   - Security rules → `domain/security/rules/` (61 rules, plugin pattern)
    - Report formats → `domain/reporting/` (5 formats)
    - LLM providers → `domain/quality/providers/` (4 providers)
    - Transports → `domain/transport.ts` (3 transports)
@@ -170,3 +170,4 @@ npm test -- use-cases/
 ---
 
 **Last Updated**: 2026-03-31 | Maintainer: @FinkTech via Claude Code
+

@@ -1,16 +1,16 @@
 # 🛡️ MCP Verify v1.0.0 — The Birth of MCP Security
 
-**Release Date:** TBD  
+**Release Date:** April 8, 2026  
 **License:** AGPL-3.0  
 **Author:** Ariel A. Fink — [FinkTech](https://github.com/FinkTech)
 
 ---
 
-The MCP ecosystem just got its first enterprise-grade security scanner. **mcp-verify v1.0.0** ships with **60 security rules**, a **Smart Fuzzer** that learns from live server responses, an interactive shell built for professionals, and a reporting engine that turns vulnerability data into surgical-precision visual intelligence. Whether you're shipping MCP servers to production or vetting third-party integrations, this is the tool that stands between your infrastructure and the next zero-day.
+The MCP ecosystem just got its first enterprise-grade security scanner. **mcp-verify v1.0.0** ships with **61 security rules**, a **Smart Fuzzer** that learns from live server responses, an interactive shell built for professionals, and a reporting engine that turns vulnerability data into surgical-precision visual intelligence. Whether you're shipping MCP servers to production or vetting third-party integrations, this is the tool that stands between your infrastructure and the next zero-day.
 
 ---
 
-## 🔐 60 Security Rules — 6 Threat Categories
+## 🔐 61 Security Rules — 6 Threat Categories
 
 The most comprehensive rule engine ever built for the Model Context Protocol.
 
@@ -21,7 +21,7 @@ The most comprehensive rule engine ever built for the Model Context Protocol.
 | **Block A**      | OWASP LLM Top 10                | SEC-022 → SEC-030 (9)  | Excessive Agency, Supply Chain Dependencies, Model DoS                    |
 | **Block B**      | Multi-Agent Attacks             | SEC-031 → SEC-041 (11) | Agent Swarm Coordination, Identity Spoofing, Cross-Agent Prompt Injection |
 | **Block C**      | Enterprise Compliance           | SEC-042 → SEC-050 (9)  | Audit Logging, Session Management, Timing Side-Channels                   |
-| **Block D**      | AI Weaponization & Supply Chain | SEC-051 → SEC-060 (10) | CVE-2025-59536, CVE-2026-21852, Self-Replicating MCP Detection            |
+| **Block D**      | AI Weaponization & Supply Chain | SEC-051 → SEC-061 (11) | CVE-2025-59536, CVE-2026-21852, Self-Replicating MCP Detection            |
 
 Every rule maps to an industry standard. Every finding scores on a 0–100 Unified Scoring Engine.
 
@@ -108,7 +108,7 @@ Real-time detection of malicious configuration patterns and adversarial MCP abus
 - **Autonomous Backdoor Detection** (SEC-052) — Catches hidden persistence mechanisms in MCP servers
 - **Jailbreak-as-a-Service Detection** (SEC-055) — Flags servers designed to bypass LLM guardrails
 
-> ⚠️ Block D rules (SEC-051 to SEC-060) are **disabled by default** due to their adversarial nature. Enable with caution in controlled environments only. Three rules (SEC-054, SEC-059, SEC-060) ship enabled for passive defense.
+> ⚠️ Block D rules (SEC-051 to SEC-061) are **disabled by default** due to their adversarial nature. Enable with caution in controlled environments only. Three rules (SEC-054, SEC-059, SEC-060) ship enabled for passive defense.
 
 ---
 

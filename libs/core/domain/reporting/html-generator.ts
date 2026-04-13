@@ -9,6 +9,7 @@ import type { Report, SecurityFinding } from "../mcp-server/entities/validation.
 import { translations } from "./i18n";
 import type { Language } from "./i18n";
 import { GraphGenerator } from "./graph-generator";
+import { ICONS } from "./assets";
 
 export interface BaselineComparison {
   baseline: {
@@ -153,7 +154,7 @@ export class HtmlReportGenerator {
         <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-4">
             <div class="flex gap-5">
                 <div class="mt-1 p-2 rounded-lg bg-${sevColor}/10 border border-${sevColor}/20 text-${sevColor} shadow-[0_0_15px_rgba(${getSeverityRgba(sev)},0.2)] h-fit">
-                    <span class="material-symbols-outlined text-xl">${ruleIcon}</span>
+                    ${ICONS.alert}
                 </div>
                 <div>
                     <div class="flex items-center gap-3 mb-2">
@@ -168,7 +169,7 @@ export class HtmlReportGenerator {
                           .map(
                             (tag) => `
                         <div class="agency-tag px-2 py-0.5 rounded flex items-center gap-1.5 text-[10px] text-slate-400 group/tag cursor-help">
-                            <span class="material-symbols-outlined text-[12px] text-${tag.color}-400 neon-icon-glow">${tag.icon}</span>
+                            <span class="size-3 text-${tag.color}-400 neon-icon-glow">${ICONS.shield}</span>
                             <span class="group-hover/tag:text-${tag.color}-100 transition-colors">${tag.label}</span>
                         </div>
                         `,
@@ -531,6 +532,11 @@ export class HtmlReportGenerator {
         .neon-icon-glow {
             filter: drop-shadow(0 0 4px currentColor);
         }
+        .lucide-icon {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
         /* Mermaid */
         .mermaid {
             display: flex;
@@ -840,7 +846,7 @@ export class HtmlReportGenerator {
                                 .join("")
                             : `
                         <div class="flex items-center gap-2 p-3 rounded bg-emerald-500/5 border border-emerald-500/10">
-                            <span class="material-symbols-outlined text-emerald-400 text-sm">check_circle</span>
+                            <span class="size-4 text-emerald-400">${ICONS.check}</span>
                             <span class="text-xs text-emerald-400">${t.no_major_findings || "No major findings"}</span>
                         </div>
                         `
@@ -945,7 +951,7 @@ export class HtmlReportGenerator {
 
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
                 <!-- OWASP -->
-                <div class="glass-panel-depth p-4 text-center group hover:border-emerald-500/30 transition-all">
+                <div class="glass-panel-depth p-6 text-center group hover:border-emerald-500/30 transition-all">
                     <div class="text-xs text-slate-500 uppercase tracking-wider mb-2">${t.owasp_top_10 || "OWASP Top 10"}</div>
                     <div class="text-3xl font-mono font-bold mb-1 ${complianceData.owasp >= 90 ? "text-emerald-400" : complianceData.owasp >= 70 ? "text-yellow-400" : "text-critical"}">${complianceData.owasp}%</div>
                     <div class="text-[10px] text-slate-600">${complianceData.mappings.filter((m) => m.owasp).length}/${complianceData.mappings.length} mapped</div>
@@ -973,7 +979,7 @@ export class HtmlReportGenerator {
                 </div>
 
                 <!-- ISO 27001 -->
-                <div class="glass-panel-depth p-4 text-center group hover:border-emerald-500/30 transition-all">
+                <div class="glass-panel-depth p-6 text-center group hover:border-emerald-500/30 transition-all">
                     <div class="text-xs text-slate-500 uppercase tracking-wider mb-2">${t.iso_27001 || "ISO 27001"}</div>
                     <div class="text-3xl font-mono font-bold mb-1 ${complianceData.iso >= 90 ? "text-emerald-400" : complianceData.iso >= 70 ? "text-yellow-400" : "text-critical"}">${complianceData.iso}%</div>
                     <div class="text-[10px] text-slate-600">${complianceData.mappings.filter((m) => m.iso).length}/${complianceData.mappings.length} mapped</div>

@@ -158,7 +158,7 @@ graph TD
     G --> I[Execute MCP Server]
     H --> I
 
-    I --> J[Static Analysis<br/>SEC-001 to SEC-060]
+    I --> J[Static Analysis<br/>SEC-001 to SEC-061]
     J --> K[LLM Semantic Analysis<br/>⚠️ Optional]
     K --> L[Report Generation<br/>⚠️ Redact Sensitive Data]
     L --> M[Output Files<br/>⚠️ Secure Storage]
@@ -422,8 +422,8 @@ This is where the magic happens. This code is agnostic (it doesn't know if it ru
 ```
 libs/core/
 ├── domain/                      # Pure business logic (NO I/O)
-│   ├── security/                # 60 security rules (6 threat category blocks)
-│   │   ├── rules/               # Individual rule implementations (SEC-001 to SEC-060)
+│   ├── security/                # 61 security rules (6 threat category blocks)
+│   │   ├── rules/               # Individual rule implementations (SEC-001 to SEC-061)
 │   │   │   ├── auth-bypass.rule.ts          # SEC-009: Authentication Bypass
 │   │   │   ├── command-injection.rule.ts    # SEC-002: Command Injection
 │   │   │   ├── sql-injection.rule.ts        # SEC-001: SQL Injection
@@ -437,8 +437,8 @@ libs/core/
 │   │   │   ├── redos-detection.rule.ts      # SEC-008: ReDoS
 │   │   │   ├── weak-crypto.rule.ts          # SEC-012: Weak Crypto
 │   │   │   ├── prompt-injection.rule.ts     # SEC-013: Prompt Injection
-│   │   │   ├── ... (47 more rules in 6 blocks)
-│   │   └── security-scanner.ts  # Rule orchestrator (all 60 rules)
+│   │   │   ├── ... (48 more rules in 6 blocks)
+│   │   └── security-scanner.ts  # Rule orchestrator (all 61 rules)
 │   │
 │   ├── quality/                 # Quality analysis
 │   │   ├── providers/           # LLM provider implementations
@@ -728,7 +728,7 @@ sequenceDiagram
 
     Note over UC: Security Analysis
     UC->>D: scan(discovery)
-    Note over D: Apply 60 security rules (6 blocks)
+    Note over D: Apply 61 security rules (6 blocks)
     D-->>UC: SecurityFindings[]
 
     Note over UC: Generate Report
@@ -824,14 +824,14 @@ Each module has ONE reason to change:
    - Network isolation
    - Resource limits
 
-4. **Static Analysis** (domain/)
-   - 60 security rules organized in 6 threat category blocks
+4. Static Analysis (domain/)
+   - 61 security rules organized in 6 threat category blocks
      - Block OWASP: 13 rules (SEC-001 to SEC-013)
      - Block MCP: 8 rules (SEC-014 to SEC-021)
      - Block A: 9 rules (SEC-022 to SEC-030) - OWASP LLM Top 10
      - Block B: 11 rules (SEC-031 to SEC-041) - Multi-Agent Attacks
      - Block C: 9 rules (SEC-042 to SEC-050) - Enterprise Compliance
-     - Block D: 10 rules (SEC-051 to SEC-060) - AI Weaponization
+     - Block D: 11 rules (SEC-051 to SEC-061) - AI Weaponization
    - Pattern matching (SQL injection, command injection, prompt injection, etc.)
    - Severity scoring
 

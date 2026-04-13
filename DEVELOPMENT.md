@@ -17,7 +17,7 @@
 | [`/CLAUDE.md`](./CLAUDE.md)                                     | **Project overview**                         | First stop for new contributors  |
 | [`/apps/CLAUDE.md`](./apps/CLAUDE.md)                           | Apps overview (CLI, Web, MCP Server, VSCode) | Working on user-facing apps      |
 | [`/libs/CLAUDE.md`](./libs/CLAUDE.md)                           | Libraries overview                           | Working on core business logic   |
-| [`/libs/core/CLAUDE.md`](./libs/core/CLAUDE.md)                 | Domain logic, 60 security rules, reporting   | Adding security rules or reports |
+| [`/libs/core/CLAUDE.md`](./libs/core/CLAUDE.md)                 | Domain logic, 61 security rules, reporting   | Adding security rules or reports |
 | [`/libs/fuzzer/CLAUDE.md`](./libs/fuzzer/CLAUDE.md)             | Smart Fuzzer v1.0 architecture               | Working on fuzzing engine        |
 | [`/apps/cli-verifier/CLAUDE.md`](./apps/cli-verifier/CLAUDE.md) | CLI structure, interactive shell             | Working on CLI commands          |
 

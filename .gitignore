@@ -60,6 +60,9 @@ temp/
 demo-vhs/
 *.tape
 
+# Brand content and marketing materials
+brand-content/
+
 # Backup files
 *.backup
 .i18n-cache.json

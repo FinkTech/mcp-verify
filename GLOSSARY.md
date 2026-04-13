@@ -8,7 +8,7 @@ This glossary defines the key concepts, technologies, and specific terminology u
 
 ### Anti-Weaponization Engine
 
-The **Anti-Weaponization Engine** is a specialized detection system that identifies malicious patterns in MCP server configuration and behavior. It detects threats such as malicious configuration injection (CVE-2025-59536), API endpoint hijacking, self-replicating servers, and autonomous backdoors. These rules (SEC-051 to SEC-060) are disabled by default due to their adversarial nature.
+The **Anti-Weaponization Engine** is a specialized detection system that identifies malicious patterns in MCP server configuration and behavior. It detects threats such as malicious configuration injection (CVE-2025-59536), API endpoint hijacking, self-replicating servers, and autonomous backdoors. These rules (SEC-051 to SEC-061) are disabled by default due to their adversarial nature.
 
 - @see `RELEASE_NOTES.md` for the complete list of detected CVEs.
 - @see `SECURITY.md` for ethical implications of using these rules.
@@ -249,7 +249,7 @@ The **Integrity Lab** is the Build Integrity subsystem that implements SHA-256 b
 
 **OWASP** (Open Web Application Security Project) is the non-profit organization that publishes the most critical web vulnerability lists (OWASP Top 10) and security standards. `mcp-verify` maps each security rule to OWASP categories (e.g., A03:2021 - Injection, A01:2021 - Broken Access Control). This facilitates communication with security teams and compliance frameworks.
 
-- @see `SECURITY_SCORING.md` for complete mapping of 60 rules to OWASP categories.
+- @see `SECURITY_SCORING.md` for complete mapping of 61 rules to OWASP categories.
 - @see https://owasp.org/www-project-top-ten/ for the updated OWASP Top 10.
 
 ---
@@ -328,7 +328,7 @@ The **Sandbox** is the isolated execution environment (Deno-based) that `mcp-ver
 
 ### Security Score
 
-The **Security Score** is the unified 0-100 metric that `mcp-verify` calculates based on all detected security findings. The score maps to operational tiers: ≥90 = Production-ready, ≥70 = Staging-ready, ≥50 = Internal tools only, <50 = Not recommended. Scoring considers severity (critical=20pts, high=10pts, medium=5pts, low=2pts), number of findings, and coverage of the 60 security rules.
+The **Security Score** is the unified 0-100 metric that `mcp-verify` calculates based on all detected security findings. The score maps to operational tiers: ≥90 = Production-ready, ≥70 = Staging-ready, ≥50 = Internal tools only, <50 = Not recommended. Scoring considers severity (critical=20pts, high=10pts, medium=5pts, low=2pts), number of findings, and coverage of the 61 security rules.
 
 - @see `SECURITY_SCORING.md` for exact score calculation formula.
 - @see `README.md` table "Security Score Tiers" for score interpretation.
@@ -409,3 +409,4 @@ A **Real Vulnerability** is a genuine security weakness in code that can be expl
 **Project Version**: v1.0.0
 
 For suggestions or corrections to this glossary, open an issue in the GitHub repository.
+

@@ -160,8 +160,8 @@ const MOCK_REPORT: Report = {
 };
 
 function main() {
-  const outputDir = path.join(ROOT, "reportes", "html");
-  const outputPath = path.join(outputDir, "preview.html");
+  const outputDir = path.join(ROOT, "reports", "preview");
+  const outputPath = path.join(outputDir, "html-preview.html");
 
   fs.mkdirSync(outputDir, { recursive: true });
 

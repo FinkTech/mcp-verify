@@ -31,7 +31,7 @@ This project uses **enterprise-grade `CLAUDE.md` documentation files** throughou
 
 **Libraries:**
 
-- [`/libs/core/CLAUDE.md`](./libs/core/CLAUDE.md) - Domain logic, 60 security rules, validators, reporting
+- [`/libs/core/CLAUDE.md`](./libs/core/CLAUDE.md) - Domain logic, 61 security rules, validators, reporting
 - [`/libs/fuzzer/CLAUDE.md`](./libs/fuzzer/CLAUDE.md) - Smart Fuzzer v1.0, detectors, generators, mutations
 - [`/libs/shared/CLAUDE.md`](./libs/shared/CLAUDE.md) - i18n, CLI helpers, path validator, utilities
 
