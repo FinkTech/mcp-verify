@@ -116,4 +116,4 @@ Tests at: `libs/shared/src/__tests__/` (mirrors `src/` structure).
 
 ---
 
-**Last Updated**: 2026-03-31 | Maintainer: @FinkTech via Claude Code
+**Last Updated**: 2026-04-08 | Maintainer: @FinkTech via Claude Code

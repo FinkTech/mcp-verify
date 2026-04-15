@@ -1,6 +1,6 @@
 # 🛡️ Technical Vulnerability Scoring System
 
-**Last Updated**: 2026-02-12
+**Last Updated**: 2026-04-08
 **Target Audience**: Security Engineers, DevOps
 **Purpose**: Understand how mcp-verify calculates vulnerability scores
 

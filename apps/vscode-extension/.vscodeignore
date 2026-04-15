@@ -27,6 +27,7 @@
 !README.md
 !CHANGELOG.md
 !LICENSE
+!CLAUDE.md
 
 # ── 3. Exclusiones de seguridad (redundantes con el ** inicial, ────────────
 #        pero explícitas para claridad y evitar bugs futuros con vsce)

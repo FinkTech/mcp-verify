@@ -1,7 +1,7 @@
 # MCP Verify — Agent Context Index
 
 > Enterprise-grade security validation and fuzzing for MCP servers
-> Version: 1.0.0 | License: AGPL-3.0 | Monorepo: pnpm workspaces
+> Version: 1.0.0 | License: AGPL-3.0 | Monorepo: npm workspaces
 
 ---
 
@@ -64,7 +64,7 @@ mcp-verify/
 | Area       | Stack                              |
 | ---------- | ---------------------------------- |
 | Runtime    | Node.js 20+, TypeScript 5.x strict |
-| Monorepo   | pnpm workspaces                    |
+| Monorepo   | npm workspaces                    |
 | CLI/UI     | chalk, ora, inquirer, blessed      |
 | Testing    | Jest + ts-jest                     |
 | Validation | Zod schemas                        |
@@ -136,4 +136,4 @@ See `TESTING.md` for full strategy and CI/CD integration.
 
 ---
 
-**Last Updated**: 2026-03-31 | Maintainer: @FinkTech via Claude Code
+**Last Updated**: 2026-04-08 | Maintainer: @FinkTech via Claude Code

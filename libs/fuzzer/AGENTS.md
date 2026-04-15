@@ -139,4 +139,4 @@ npm test -- engine/fuzzer-engine.spec.ts   # full feedback loop
 
 ---
 
-**Last Updated**: 2026-03-31 | Maintainer: @FinkTech via Claude Code
+**Last Updated**: 2026-04-08 | Maintainer: @FinkTech via Claude Code

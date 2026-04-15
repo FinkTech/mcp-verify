@@ -468,7 +468,7 @@ apps/vscode-extension/
 
 - **[CLAUDE.md](./CLAUDE.md)** - 📚 **Complete architecture & development guide** (for contributors)
 - [MCP Verify Documentation](https://github.com/FinkTech/mcp-verify#readme) - Main project README
-- [Security Scoring Guide](https://github.com/FinkTech/mcp-verify/blob/main/SECURITY_SCORING.md) - Understanding security scores
+- [Security Scoring Guide](https://github.com/FinkTech/mcp-verify/blob/develop/SECURITY_SCORING.md) - Understanding security scores
 - [Model Context Protocol](https://modelcontextprotocol.io/) - MCP specification
 
 ### Support & Community
@@ -507,7 +507,7 @@ npm run watch
 
 ## License
 
-AGPL-3.0 - See [LICENSE](https://github.com/FinkTech/mcp-verify/blob/main/LICENSE)
+AGPL-3.0 - See [LICENSE](../../LICENSE)
 
 ---
 

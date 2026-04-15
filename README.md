@@ -876,7 +876,7 @@ rate limiting on the expensive_operation tool.
 
 ## 📦 Project Structure (Monorepo)
 
-mcp-verify is organized as a **pnpm workspace monorepo** with clear separation of concerns:
+mcp-verify is organized as a **npm workspaces monorepo** with clear separation of concerns:
 
 ```
 mcp-verify/

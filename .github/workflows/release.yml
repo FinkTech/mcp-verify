@@ -251,8 +251,8 @@ jobs:
   publish-npm:
     name: Publish to npm
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [validate, release]
+    timeout-minutes: 15
+    needs: [release]
     if: needs.validate.outputs.is-prerelease == 'false'
 
     steps:
@@ -272,10 +272,46 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Publish to npm
+      - name: Publish Main Package
         run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish MCP Server Package
+        run: npm publish -w apps/mcp-server --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # Job 7: Publish to VS Code Marketplace
+  publish-vscode:
+    name: Publish to VS Code
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [release]
+    if: needs.validate.outputs.is-prerelease == 'false'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Build Extension Bundle
+        run: |
+          cd apps/vscode-extension
+          node build.js
+
+      - name: Publish to Marketplace
+        run: |
+          cd apps/vscode-extension
+          npx @vscode/vsce publish -p ${{ secrets.VSCE_PAT }} --no-dependencies
 
   # Job 7: Create Docker Image (if applicable)
   docker:

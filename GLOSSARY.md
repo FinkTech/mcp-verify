@@ -236,10 +236,10 @@ The **Integrity Lab** is the Build Integrity subsystem that implements SHA-256 b
 
 ### Monorepo
 
-**Monorepo** is the code organization strategy where multiple related applications and libraries live in a single Git repository. `mcp-verify` uses pnpm workspaces to manage 4 apps (`cli-verifier`, `mcp-server`, `vscode-extension`, `web-dashboard`) and 5 shared libs (`core`, `fuzzer`, `protocol`, `shared`, `transport`). This facilitates code sharing, integrated testing, and coordinated versioning.
+**Monorepo** is the code organization strategy where multiple related applications and libraries live in a single Git repository. `mcp-verify` uses npm workspaces to manage 4 apps (`cli-verifier`, `mcp-server`, `vscode-extension`, `web-dashboard`) and 5 shared libs (`core`, `fuzzer`, `protocol`, `shared`, `transport`). This facilitates code sharing, integrated testing, and coordinated versioning.
 
 - @see `ARCHITECTURE.md` section "Project Structure" for complete monorepo tree.
-- @see root `package.json` for pnpm workspace configuration.
+- @see root `package.json` for npm workspaces configuration.
 
 ---
 
@@ -384,7 +384,7 @@ The **Transport** (Transport Layer) is the communication layer that `mcp-verify`
 
 ### Validation
 
-**Validation** is the core `mcp-verify` process that verifies an MCP server complies with the protocol spec, has no security vulnerabilities, and maintains quality standards. Includes: (1) Protocol Compliance (handshake, discovery, schema validation), (2) Security Analysis (60 OWASP-aligned rules), (3) Quality Analysis (naming consistency, documentation). Executed with the `mcp-verify validate` command.
+**Validation** is the core `mcp-verify` process that verifies an MCP server complies with the protocol spec, has no security vulnerabilities, and maintains quality standards. Includes: (1) Protocol Compliance (handshake, discovery, schema validation), (2) Security Analysis (61 OWASP-aligned rules), (3) Quality Analysis (naming consistency, documentation). Executed with the `mcp-verify validate` command.
 
 - @see `QUICKSTART.md` for basic validation examples.
 - @see `libs/core/use-cases/validator/validator.ts` for validator implementation.
@@ -405,7 +405,7 @@ A **Real Vulnerability** is a genuine security weakness in code that can be expl
 
 ---
 
-**Last Updated**: 2026-03-08
+**Last Updated**: 2026-04-08
 **Project Version**: v1.0.0
 
 For suggestions or corrections to this glossary, open an issue in the GitHub repository.

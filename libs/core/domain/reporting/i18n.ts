@@ -2147,7 +2147,7 @@ export const translations = {
     sec_025_unpinned_deps:
       "Server declares {count} dependencies with unpinned versions: {deps}. Allows supply chain attacks through malicious package updates (typosquatting, compromised maintainer).",
     sec_025_recommendation:
-      "Pin all dependencies to exact versions (remove ^, ~, *, latest). Use lockfiles (package-lock.json, pnpm-lock.yaml). Implement SCA scanning (npm audit, Snyk, Dependabot).",
+      "Pin all dependencies to exact versions (remove ^, ~, *, latest). Use lockfiles (package-lock.json, npm-lock.yaml). Implement SCA scanning (npm audit, Snyk, Dependabot).",
     sec_025_no_deps_declared:
       "Server does not declare dependencies in serverInfo. If using external packages, this prevents supply chain auditing.",
     sec_025_declare_deps_recommendation:
@@ -4634,7 +4634,7 @@ export const translations = {
     sec_025_unpinned_deps:
       "El servidor declara {count} dependencias con versiones sin fijar: {deps}. Permite ataques de cadena de suministro mediante actualizaciones maliciosas de paquetes (typosquatting, mantenedor comprometido).",
     sec_025_recommendation:
-      "Fijar todas las dependencias a versiones exactas (eliminar ^, ~, *, latest). Usar archivos de bloqueo (package-lock.json, pnpm-lock.yaml). Implementar escaneo SCA (npm audit, Snyk, Dependabot).",
+      "Fijar todas las dependencias a versiones exactas (eliminar ^, ~, *, latest). Usar archivos de bloqueo (package-lock.json, npm-lock.yaml). Implementar escaneo SCA (npm audit, Snyk, Dependabot).",
     sec_025_no_deps_declared:
       "El servidor no declara dependencias en serverInfo. Si usa paquetes externos, esto impide auditoría de cadena de suministro.",
     sec_025_declare_deps_recommendation:
