@@ -1,5 +1,5 @@
 {
-  "name": "@mcp-verify/server",
+  "name": "@finktech/mcp-server",
   "version": "1.0.0",
   "description": "MCP Server wrapper for mcp-verify - Expose validation capabilities as MCP tools",
   "main": "dist/index.js",
@@ -23,7 +23,7 @@
   "license": "AGPL-3.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.3",
-    "@mcp-verify/core": "1.0.0"
+    "@finktech/core": "1.0.0"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",

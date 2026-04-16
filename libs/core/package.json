@@ -1,5 +1,5 @@
 {
-  "name": "@mcp-verify/core",
+  "name": "@finktech/core",
   "version": "1.0.0",
   "description": "Core domain logic, security rules, and validators for mcp-verify",
   "main": "index.ts",
@@ -7,8 +7,8 @@
   "private": true,
   "license": "AGPL-3.0",
   "dependencies": {
-    "@mcp-verify/shared": "1.0.0",
-    "@mcp-verify/transport": "1.0.0",
+    "@finktech/shared": "1.0.0",
+    "@finktech/transport": "1.0.0",
     "acorn": "^8.15.0",
     "acorn-walk": "^8.3.4",
     "ajv": "^8.17.1",

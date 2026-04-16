@@ -1,5 +1,5 @@
 {
-  "name": "mcp-verify-vscode",
+  "name": "@finktech/mcp-verify-vscode",
   "displayName": "MCP Verify",
   "description": "Enterprise-grade security validation for MCP servers",
   "version": "1.0.0",
@@ -400,8 +400,8 @@
     "webpack-cli": "^5.0.0"
   },
   "dependencies": {
-    "@mcp-verify/core": "1.0.0",
-    "@mcp-verify/shared": "1.0.0",
+    "@finktech/core": "1.0.0",
+    "@finktech/shared": "1.0.0",
     "shell-quote": "^1.8.1"
   }
 }

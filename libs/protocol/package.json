@@ -1,5 +1,5 @@
 {
-  "name": "@mcp-verify/protocol",
+  "name": "@finktech/protocol",
   "version": "1.0.0",
   "description": "MCP protocol definitions, types, and schemas",
   "main": "index.ts",

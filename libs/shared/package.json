@@ -1,5 +1,5 @@
 {
-  "name": "@mcp-verify/shared",
+  "name": "@finktech/shared",
   "version": "1.0.0",
   "description": "Shared utilities, logger, and types for mcp-verify",
   "main": "index.ts",
