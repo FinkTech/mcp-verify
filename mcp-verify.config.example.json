@@ -198,18 +198,6 @@
       "allowRemote": "Allow loading plugins from remote URLs (security risk)"
     }
   },
-  "telemetry": {
-    "enabled": false,
-    "anonymize": true,
-    "endpoint": "https://telemetry.mcp-verify.dev",
-    "interval": 86400000,
-    "_comments": {
-      "status": "🚧 Coming Soon - Opt-in Only",
-      "description": "Anonymous usage telemetry to improve mcp-verify",
-      "anonymize": "Strip all identifying information before sending",
-      "interval": "Telemetry report interval in milliseconds (24h default)"
-    }
-  },
   "exitCodes": {
     "success": 0,
     "validationFailed": 1,

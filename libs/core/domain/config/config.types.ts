@@ -359,20 +359,6 @@ export interface PluginsConfig {
 }
 
 /**
- * Telemetry configuration (Coming Soon - Opt-in only)
- */
-export interface TelemetryConfig {
-  /** Enable anonymous telemetry */
-  enabled: boolean;
-  /** Anonymize all data */
-  anonymize: boolean;
-  /** Telemetry endpoint */
-  endpoint: string;
-  /** Collection interval (ms) */
-  interval: number;
-}
-
-/**
  * Workspace and session configuration
  */
 export interface WorkspaceConfig {
@@ -448,9 +434,6 @@ export interface McpVerifyConfig {
 
   /** Plugin system settings (Coming Soon) */
   plugins: PluginsConfig;
-
-  /** Telemetry settings (Coming Soon - Opt-in only) */
-  telemetry: TelemetryConfig;
 
   /** Exit codes */
   exitCodes: ExitCodesConfig;
@@ -699,13 +682,6 @@ export const DEFAULT_CONFIG: McpVerifyConfig = {
     registry: [],
   },
 
-  telemetry: {
-    enabled: false,
-    anonymize: true,
-    endpoint: "https://telemetry.mcp-verify.dev",
-    interval: 86400000, // 24 hours
-  },
-
   exitCodes: {
     success: 0,
     validationFailed: 1,
@@ -928,15 +904,6 @@ const PluginsConfigSchema = z
   })
   .partial();
 
-const TelemetryConfigSchema = z
-  .object({
-    enabled: z.boolean(),
-    anonymize: z.boolean(),
-    endpoint: z.string().url(),
-    interval: z.number().positive(),
-  })
-  .partial();
-
 const ExitCodesConfigSchema = z
   .object({
     success: z.number(),
@@ -966,7 +933,6 @@ export const McpVerifyConfigSchema = z.object({
   ci: CiConfigSchema.optional(),
   disclaimers: DisclaimersConfigSchema.optional(),
   plugins: PluginsConfigSchema.optional(),
-  telemetry: TelemetryConfigSchema.optional(),
   exitCodes: ExitCodesConfigSchema.optional(),
 });
 

@@ -113,7 +113,7 @@ export interface FuzzingSession {
   abortReason?: string;
   fingerprint?: ServerFingerprint;
   disabledGenerators?: string[];
-  // NEW: feedback-loop telemetry
+  // NEW: feedback-loop statistics
   feedbackStats: FeedbackStats;
 }
 
@@ -227,7 +227,7 @@ export type PayloadCategoryValue =
  * matching strategy IDs, deduplicating before returning.
  */
 interface SelectionRule {
-  /** Human-readable label for debugging / telemetry */
+  /** Human-readable label for debugging / statistics */
   readonly label: string;
   /** Returns true when this rule should fire */
   readonly matches: (
@@ -561,7 +561,7 @@ export class MutationEngine {
    *      strategy IDs from rules at that priority level.
    *   4. Otherwise, collect the union of IDs from ALL matching rules.
    *   5. Resolve IDs → strategy instances (unknown IDs are silently skipped).
-   *   6. Emit a telemetry-friendly selection record for debugging.
+   *   6. Emit a debugging-friendly selection record for analytics.
    */
   private selectStrategies(
     category: string,
