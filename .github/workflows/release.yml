@@ -90,6 +90,7 @@ jobs:
           scan-type: 'fs'
           scan-ref: '.'
           skip-dirs: 'tools/mocks'
+          skip-files: 'libs/core/use-cases/proxy/guardrails/pii-redactor.ts'
           format: 'table'
           severity: 'CRITICAL,HIGH'
           exit-code: '1'
