@@ -1,6 +1,6 @@
 {
   "name": "@finktech/mcp-server",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MCP Server wrapper for mcp-verify - Expose validation capabilities as MCP tools",
   "main": "dist/index.js",
   "bin": {
@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.3",
-    "@finktech/core": "1.0.1"
+    "@finktech/core": "1.0.2"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",

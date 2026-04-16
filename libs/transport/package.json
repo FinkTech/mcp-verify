@@ -1,13 +1,13 @@
 {
   "name": "@finktech/transport",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Transport layer implementations (stdio, SSE, HTTP) for MCP communication",
   "main": "index.ts",
   "types": "index.ts",
   "private": true,
   "license": "AGPL-3.0",
   "dependencies": {
-    "@finktech/shared": "1.0.1"
+    "@finktech/shared": "1.0.2"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

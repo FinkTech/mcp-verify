@@ -1,6 +1,6 @@
 {
   "name": "@finktech/protocol",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MCP protocol definitions, types, and schemas",
   "main": "index.ts",
   "types": "index.ts",

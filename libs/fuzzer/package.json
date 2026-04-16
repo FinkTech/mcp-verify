@@ -1,14 +1,14 @@
 {
   "name": "@finktech/fuzzer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Advanced security fuzzer for MCP servers with prompt injection, schema confusion, and protocol attacks",
   "main": "index.ts",
   "types": "index.ts",
   "private": true,
   "license": "AGPL-3.0",
   "dependencies": {
-    "@finktech/core": "1.0.1",
-    "@finktech/shared": "1.0.1"
+    "@finktech/core": "1.0.2",
+    "@finktech/shared": "1.0.2"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
