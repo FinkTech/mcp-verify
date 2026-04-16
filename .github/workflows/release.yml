@@ -90,8 +90,7 @@ jobs:
           scan-type: 'fs'
           scan-ref: '.'
           skip-dirs: 'tools/mocks'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          format: 'table'
           severity: 'CRITICAL,HIGH'
           exit-code: '1'
 
