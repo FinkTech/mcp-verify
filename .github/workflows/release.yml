@@ -96,54 +96,54 @@ jobs:
           exit-code: '1'
 
   # Job 3: Build Release Artifacts
-    build:
-      name: Build Release Artifacts
-      runs-on: ${{ matrix.os }}
-      timeout-minutes: 15
-      needs: [validate, security-audit]
-      defaults:
-        run:
-          shell: bash
+  build:
+    name: Build Release Artifacts
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    needs: [validate, security-audit]
+    defaults:
+      run:
+        shell: bash
 
-      strategy:
-        matrix:
-          os: [ubuntu-latest, windows-latest, macos-latest]
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        - name: Setup Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: ${{ env.NODE_VERSION }}
-            cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
-        - name: Install dependencies
-          run: npm ci --prefer-offline --no-audit
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
 
-        - name: Build project
-          run: npm run build
+      - name: Build project
+        run: npm run build
 
-        - name: Package artifacts
-          run: |
-            mkdir -p artifacts
-            cp dist/* artifacts/ 2>/dev/null || true
-            cp package.json artifacts/
-            cp README.md artifacts/ 2>/dev/null || true
-            cp LICENSE artifacts/ 2>/dev/null || true
+      - name: Package artifacts
+        run: |
+          mkdir -p artifacts
+          cp dist/* artifacts/ 2>/dev/null || true
+          cp package.json artifacts/
+          cp README.md artifacts/ 2>/dev/null || true
+          cp LICENSE artifacts/ 2>/dev/null || true
 
-        - name: Create tarball
-          run: |
-            cd artifacts
-            tar -czf ../mcp-verify-${{ needs.validate.outputs.version }}-${{ runner.os }}.tar.gz *
+      - name: Create tarball
+        run: |
+          cd artifacts
+          tar -czf ../mcp-verify-${{ needs.validate.outputs.version }}-${{ runner.os }}.tar.gz *
 
-        - name: Upload artifacts
-          uses: actions/upload-artifact@v4
-          with:
-            name: release-${{ runner.os }}
-            path: mcp-verify-${{ needs.validate.outputs.version }}-${{ runner.os }}.tar.gz
-            retention-days: 7
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ runner.os }}
+          path: mcp-verify-${{ needs.validate.outputs.version }}-${{ runner.os }}.tar.gz
+          retention-days: 7
 
   # Job 4: Generate SBOM (Software Bill of Materials)
   sbom:
