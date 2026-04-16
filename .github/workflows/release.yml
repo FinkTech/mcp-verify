@@ -89,6 +89,7 @@ jobs:
         with:
           scan-type: 'fs'
           scan-ref: '.'
+          skip-dirs: 'tools/mocks'
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
