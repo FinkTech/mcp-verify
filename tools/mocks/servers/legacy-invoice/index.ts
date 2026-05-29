@@ -438,7 +438,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new Error(`Validation error: ${JSON.stringify(error.errors)}`);
+      throw new Error(`Validation error: ${JSON.stringify(error.issues)}`);
     }
     throw error;
   }

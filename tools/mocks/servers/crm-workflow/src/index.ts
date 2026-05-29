@@ -232,11 +232,11 @@ const CreateWorkflowSchema = z.object({
     }),
     z.object({
       eventName: z.string(),
-      filters: z.record(z.unknown()).optional(),
+      filters: z.record(z.string(),z.unknown()).optional(),
     }),
     z.object({
       templateUrl: z.string(), // ← VULN-E: SSRF vector, no URL validation
-      variables: z.record(z.string()).optional(),
+      variables: z.record(z.string(),z.string()).optional(),
     }),
   ]),
   notifyOnFailure: z.boolean().default(true),
@@ -247,7 +247,7 @@ const SyncPipelineSchema = z.object({
   source: z.enum(["salesforce", "hubspot", "pipedrive", "csv", "api"]),
   mode: z.enum(["incremental", "full"]).default("incremental"),
   since: z.string().datetime().optional(),
-  fieldMapping: z.record(z.string()).optional(),
+  fieldMapping: z.record(z.string(),z.string()).optional(),
   dryRun: z.boolean().default(false),
 });
 
@@ -281,7 +281,7 @@ const ExportReportSchema = z.object({
       to: z.string().datetime(),
     })
     .optional(),
-  filters: z.record(z.unknown()).optional(),
+  filters: z.record(z.string(),z.unknown()).optional(),
   reportTemplate: z.string().optional(), // ← VULN-E: chains with create_workflow.templateUrl
   includeMetadata: z.boolean().default(true),
   // VULN-M: x-legacy-compat disables server-side validation when true
@@ -290,7 +290,7 @@ const ExportReportSchema = z.object({
 
 const TriggerWebhookSchema = z.object({
   workflowId: z.string(),
-  payload: z.record(z.unknown()).optional(),
+  payload: z.record(z.string(),z.unknown()).optional(),
   secret: z.string().optional(),
   retryOnFailure: z.boolean().default(true),
   maxRetries: z.number().int().min(0).max(5).default(3),
@@ -310,7 +310,7 @@ const GetContactActivitySchema = z.object({
 const UpdateCustomFieldsSchema = z
   .object({
     contactId: z.string(),
-    fields: z.record(z.unknown()), // ← VULN-H: fully open record
+    fields: z.record(z.string(),z.unknown()), // ← VULN-H: fully open record
     overwriteExisting: z.boolean().default(false),
     validateSchema: z.boolean().default(true),
   })
@@ -1020,4 +1020,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 // ─── Start ────────────────────────────────────────────────────────────────────
 
 const transport = new StdioServerTransport();
-await server.connect(transport);
+
+async function start() {
+  await server.connect(transport);
+}
+
+start().catch((error) => {
+  console.error("Server error:", error);
+  process.exit(1);
+});
