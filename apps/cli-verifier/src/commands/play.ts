@@ -14,13 +14,13 @@
 import ora from "ora";
 import chalk from "chalk";
 import readline from "readline";
-import { ToolExecutor } from "@mcp-verify/core/use-cases/playground/tool-executor";
+import { ToolExecutor } from "@finktech/core/use-cases/playground/tool-executor";
 import {
   JsonObject,
   McpTool,
   McpPrompt,
-} from "@mcp-verify/core/domain/shared/common.types";
-import { ExternalEditor, t, getCurrentLanguage } from "@mcp-verify/shared";
+} from "@finktech/core/domain/shared/common.types";
+import { ExternalEditor, t, getCurrentLanguage } from "@finktech/shared";
 import {
   createTransport,
   detectTransportType,

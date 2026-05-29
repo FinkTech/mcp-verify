@@ -22,9 +22,9 @@ import { EnvironmentVars } from "../types/environment-vars";
 import { WorkspaceContext } from "../types/workspace-context";
 import { EnvironmentLoader } from "./environment-loader";
 import { createTransport } from "../../utils/transport-factory";
-import { MCPValidator } from "@mcp-verify/core/use-cases/validator/validator";
-import { HandshakeResult } from "@mcp-verify/core/domain/mcp-server/entities/validation.types";
-import { Logger } from "@mcp-verify/core/infrastructure/logging/logger";
+import { MCPValidator } from "@finktech/core/use-cases/validator/validator";
+import { HandshakeResult } from "@finktech/core/domain/mcp-server/entities/validation.types";
+import { Logger } from "@finktech/core/infrastructure/logging/logger";
 
 /**
  * Workspace health checker

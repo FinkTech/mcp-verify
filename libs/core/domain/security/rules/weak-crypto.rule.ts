@@ -22,7 +22,7 @@
  * @see https://cwe.mitre.org/data/definitions/327.html
  */
 
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 import { ISecurityRule } from "../rule.interface";
 import type {
   DiscoveryResult,

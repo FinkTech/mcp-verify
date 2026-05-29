@@ -1,4 +1,4 @@
-# @mcp-verify/core — Agent Context
+# @finktech/core — Agent Context
 
 **Mission**: Domain library for MCP security validation, quality analysis, and reporting. Clean architecture, framework-agnostic, 61 security rules.
 

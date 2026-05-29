@@ -13,7 +13,7 @@
  */
 
 import * as vscode from "vscode";
-import { SecurityFinding, Severity } from "@mcp-verify/core";
+import { SecurityFinding, Severity } from "@finktech/core";
 import { globalState, ScanResult } from "../state/global-state";
 
 type TreeItemType = "severity" | "rule" | "finding" | "empty";

@@ -24,8 +24,8 @@ import {
   SecurityFinding,
   QualityIssue,
   Report,
-} from "@mcp-verify/core";
-import { MarkdownReportGenerator } from "@mcp-verify/core/domain/reporting/markdown-generator";
+} from "@finktech/core";
+import { MarkdownReportGenerator } from "@finktech/core/domain/reporting/markdown-generator";
 import { formatForLLM } from "../utils/llm-formatter";
 import * as fs from "fs";
 import * as path from "path";

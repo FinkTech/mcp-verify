@@ -12,7 +12,7 @@
  */
 
 import chalk from "chalk";
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 
 export async function runExamplesAction() {
   console.log(chalk.bold("\n📚 " + t("examples_title") + "\n"));

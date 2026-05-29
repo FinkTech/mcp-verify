@@ -36,7 +36,7 @@ import type {
   SecurityFinding,
 } from "../../mcp-server/entities/validation.types";
 import type { McpTool } from "../../shared/common.types";
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 
 export class JailbreakAsServiceRule implements ISecurityRule {
   code = "SEC-055";

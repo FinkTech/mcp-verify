@@ -633,25 +633,25 @@ describe("Data Transformers", () => {
     it("should deduplicate identical findings", () => {
       const findings: SecurityFinding[] = [
         {
-          rule: "SEC-001",
+          ruleCode: "SEC-001",
           severity: "high",
           message: "SQL Injection",
           component: "db",
-          cwe: "CWE-89",
+          evidence: { cwe: "CWE-89", payload: "payload1" },
         },
         {
-          rule: "SEC-001",
+          ruleCode: "SEC-001",
           severity: "high",
           message: "SQL Injection",
           component: "db",
-          cwe: "CWE-89",
+          evidence: { cwe: "CWE-89", payload: "payload2" },
         },
         {
-          rule: "SEC-001",
+          ruleCode: "SEC-001",
           severity: "high",
           message: "SQL Injection",
           component: "db",
-          cwe: "CWE-89",
+          evidence: { cwe: "CWE-89", payload: "payload3" },
         },
       ];
 

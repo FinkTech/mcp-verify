@@ -12,7 +12,7 @@
  */
 
 import readline from "readline";
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 
 /**
  * Ask a question and get user input

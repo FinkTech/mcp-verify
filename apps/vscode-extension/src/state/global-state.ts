@@ -18,7 +18,7 @@ import {
   SecurityFinding,
   DiscoveryResult,
   HandshakeResult,
-} from "@mcp-verify/core";
+} from "@finktech/core";
 
 export interface ServerInfo {
   id: string;

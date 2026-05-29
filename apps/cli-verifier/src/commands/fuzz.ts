@@ -19,14 +19,14 @@ import {
   getCurrentLanguage,
   ReportingService,
   captureGitInfo,
-} from "@mcp-verify/shared";
+} from "@finktech/shared";
 import {
   generateDisclaimer,
   generateMetadata,
   JsonRpcRequest,
   JsonRpcNotification,
   ProtocolComplianceReport,
-} from "@mcp-verify/core";
+} from "@finktech/core";
 import {
   FuzzerEngine,
   FuzzTarget,
@@ -70,7 +70,7 @@ import {
   // Report utilities
   sessionToReport,
   sessionToSummary,
-} from "@mcp-verify/fuzzer";
+} from "@finktech/fuzzer";
 import {
   detectTransportType,
   createTransport,

@@ -18,14 +18,14 @@
 
 import path from "path";
 
-import { setLanguage } from "@mcp-verify/shared";
+import { setLanguage } from "@finktech/shared";
 import {
   ITransport,
   SecretScanner,
   HighConfidenceDetector,
   EntropyDetector,
   PrefixDetector,
-} from "@mcp-verify/core";
+} from "@finktech/core";
 import { createTransport } from "../../utils/transport-factory";
 
 import { PersistenceManager } from "./persistence";

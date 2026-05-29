@@ -12,8 +12,8 @@
  */
 
 import chalk from "chalk";
-import { t } from "@mcp-verify/shared";
-import { Report } from "@mcp-verify/core";
+import { t } from "@finktech/shared";
+import { Report } from "@finktech/core";
 
 /**
  * Display validation report summary in the terminal

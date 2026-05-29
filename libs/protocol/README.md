@@ -1,4 +1,4 @@
-# @mcp-verify/protocol — MCP Specification & Types
+# @finktech/protocol — MCP Specification & Types
 
 > **Transition Module**: Consolidating Model Context Protocol (MCP) definitions, JSON schemas, and TypeScript types.
 

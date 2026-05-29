@@ -25,9 +25,9 @@ import * as fs from "fs";
 import * as path from "path";
 import chalk from "chalk";
 import ora from "ora";
-import { t } from "@mcp-verify/shared";
-import { MaliciousConfigFileRule } from "@mcp-verify/core/domain/security/rules/malicious-config-file.rule";
-import type { SecurityFinding } from "@mcp-verify/core";
+import { t } from "@finktech/shared";
+import { MaliciousConfigFileRule } from "@finktech/core/domain/security/rules/malicious-config-file.rule";
+import type { SecurityFinding } from "@finktech/core";
 
 /**
  * Scan configuration file for malicious patterns

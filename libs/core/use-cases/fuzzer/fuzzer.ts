@@ -10,7 +10,7 @@ import {
   normalizeCommand,
   normalizeArguments,
   detectDangerousPatterns,
-} from "@mcp-verify/shared";
+} from "@finktech/shared";
 import type { ITransport } from "../../domain/transport";
 import type {
   DiscoveryResult,

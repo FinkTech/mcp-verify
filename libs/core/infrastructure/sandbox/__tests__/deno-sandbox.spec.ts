@@ -9,6 +9,22 @@ import { DenoSandbox } from "../deno-sandbox";
 import path from "path";
 
 describe("DenoSandbox", () => {
+  beforeEach(() => {
+    // Mock the environment check so unit tests pass even without Deno installed globally
+    jest.spyOn(DenoSandbox, 'checkEnvironment').mockReturnValue({ 
+      available: true, 
+      version: "1.0.0", 
+      versionCompatible: true,
+      tempWritable: true,
+      issues: [],
+      suggestions: []
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it("should wrap command with deno run", () => {
     const sandbox = new DenoSandbox();
     const [cmd, args] = sandbox.wrap("server.js", []);

@@ -22,9 +22,9 @@ import {
   translations,
   Language,
   type DiscoveryResult,
-} from "@mcp-verify/core";
-import { SmartFuzzer } from "@mcp-verify/core/use-cases/fuzzer/fuzzer";
-import type { McpTool } from "@mcp-verify/core/domain/shared/common.types";
+} from "@finktech/core";
+import { SmartFuzzer } from "@finktech/core/use-cases/fuzzer/fuzzer";
+import type { McpTool } from "@finktech/core/domain/shared/common.types";
 import { formatForLLM } from "../utils/llm-formatter.js";
 
 const logger = createScopedLogger("fuzzToolTool");

@@ -17,7 +17,7 @@ import path from "path";
 import os from "os";
 import chalk from "chalk";
 import inquirer from "inquirer";
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 
 export type DisclaimerType = "fuzz" | "stress" | "proxy" | "validate";
 

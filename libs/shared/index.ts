@@ -6,13 +6,13 @@
  * See LICENSE file in the project root for full license information.
  */
 /**
- * @mcp-verify/shared
+ * @finktech/shared
  *
  * Shared utilities, logger, types, and helpers for mcp-verify.
  *
  * @example
  * ```typescript
- * import { Logger, pathValidator, deepMerge } from '@mcp-verify/shared';
+ * import { Logger, pathValidator, deepMerge } from '@finktech/shared';
  * ```
  */
 

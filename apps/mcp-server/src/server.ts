@@ -20,7 +20,7 @@ import {
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 
-import { createScopedLogger, translations, Language } from "@mcp-verify/core";
+import { createScopedLogger, translations, Language } from "@finktech/core";
 import { validateServerTool } from "./tools/validate-server.js";
 import { scanSecurityTool } from "./tools/scan-security.js";
 import { analyzeQualityTool } from "./tools/analyze-quality.js";

@@ -13,7 +13,7 @@
 
 import fs from "fs";
 import chalk from "chalk";
-import { t, saveLanguagePreference } from "@mcp-verify/shared";
+import { t, saveLanguagePreference } from "@finktech/shared";
 import { ShellParser } from "../parser";
 import { PersistenceManager } from "../persistence";
 import type { Language } from "../types";

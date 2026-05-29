@@ -6,7 +6,7 @@
  * See LICENSE file in the project root for full license information.
  */
 /**
- * @mcp-verify/fuzzer
+ * @finktech/fuzzer
  *
  * Advanced security fuzzer for MCP servers.
  *
@@ -33,7 +33,7 @@
  *   PromptLeakDetector,
  *   JailbreakDetector,
  *   TimingDetector
- * } from '@mcp-verify/fuzzer';
+ * } from '@finktech/fuzzer';
  *
  * // Option 1: Auto-fingerprinting (recommended)
  * const engine = new FuzzerEngine({

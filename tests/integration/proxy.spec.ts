@@ -6,13 +6,13 @@
  * See LICENSE file in the project root for full license information.
  */
 import { describe, it, expect, beforeAll, afterAll, jest } from "@jest/globals";
-import { McpProxyServer } from "@mcp-verify/core/use-cases/proxy/proxy-server";
-import { SensitiveCommandBlocker, InputSanitizer } from "@mcp-verify/core";
+import { McpProxyServer } from "@finktech/core/use-cases/proxy/proxy-server";
+import { SensitiveCommandBlocker, InputSanitizer } from "@finktech/core";
 
 // Mock HttpTransport - use a shared mockSend that will be set in beforeAll
 let mockSend: jest.Mock;
 
-jest.mock("@mcp-verify/core/domain/transport", () => {
+jest.mock("@finktech/core/domain/transport", () => {
   return {
     HttpTransport: Object.assign(
       jest.fn().mockImplementation(() => ({

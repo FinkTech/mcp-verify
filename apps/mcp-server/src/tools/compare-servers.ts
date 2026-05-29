@@ -18,13 +18,13 @@
 
 import { promises as fs } from "fs";
 import * as path from "path";
-import { createScopedLogger, translations, Language } from "@mcp-verify/core";
+import { createScopedLogger, translations, Language } from "@finktech/core";
 import { validateServerTool } from "./validate-server.js";
 import {
   resolveServerByName,
   RawServerEntry,
 } from "../utils/config-discovery.js";
-import { ReportingService } from "@mcp-verify/shared";
+import { ReportingService } from "@finktech/shared";
 
 const logger = createScopedLogger("compareServersTool");
 const lang: Language = (process.env.MCP_VERIFY_LANG as Language) || "en";

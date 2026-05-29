@@ -5,7 +5,7 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 import type { ITransport } from "../../domain/transport";
 import { SecurityScanner } from "../../domain/security/security-scanner";
 import { SemanticAnalyzer } from "../../domain/quality/semantic-analyzer";

@@ -26,13 +26,13 @@ import { describe, it, expect, beforeAll, afterAll, jest } from "@jest/globals";
 import {
   McpProxyServer,
   ProxyAuditEvent,
-} from "@mcp-verify/core/use-cases/proxy/proxy-server";
-import { DEFAULT_CONFIG } from "@mcp-verify/core/domain/config/config.types";
+} from "@finktech/core/use-cases/proxy/proxy-server";
+import { DEFAULT_CONFIG } from "@finktech/core/domain/config/config.types";
 
 // Mock HttpTransport
 let mockSend: jest.Mock;
 
-jest.mock("@mcp-verify/core/domain/transport", () => {
+jest.mock("@finktech/core/domain/transport", () => {
   return {
     HttpTransport: Object.assign(
       jest.fn().mockImplementation(() => ({

@@ -21,9 +21,9 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-import type { Report } from "@mcp-verify/core/domain/mcp-server/entities/validation.types";
-import type { Language } from "@mcp-verify/core/domain/reporting/i18n";
-import type { BaselineComparison } from "@mcp-verify/core/domain/reporting/html-generator";
+import type { Report } from "@finktech/core/domain/mcp-server/entities/validation.types";
+import type { Language } from "@finktech/core/domain/reporting/i18n";
+import type { BaselineComparison } from "@finktech/core/domain/reporting/html-generator";
 
 // ---------------------------------------------------------------------------
 // Generator interface (used for lazy-loaded report generators)
@@ -430,28 +430,28 @@ export class ReportingService {
     if (!this.htmlGenerator) {
       try {
         const { HtmlReportGenerator } =
-          await import("@mcp-verify/core/domain/reporting/html-generator");
+          await import("@finktech/core/domain/reporting/html-generator");
         this.htmlGenerator = HtmlReportGenerator;
       } catch {}
     }
     if (!this.markdownGenerator) {
       try {
         const { MarkdownReportGenerator } =
-          await import("@mcp-verify/core/domain/reporting/markdown-generator");
+          await import("@finktech/core/domain/reporting/markdown-generator");
         this.markdownGenerator = MarkdownReportGenerator;
       } catch {}
     }
     if (!this.textGenerator) {
       try {
         const { TextReportGenerator } =
-          await import("@mcp-verify/core/domain/reporting/text-generator");
+          await import("@finktech/core/domain/reporting/text-generator");
         this.textGenerator = TextReportGenerator;
       } catch {}
     }
     if (!this.sarifGenerator) {
       try {
         const { SarifGenerator } =
-          await import("@mcp-verify/core/domain/reporting/sarif-generator");
+          await import("@finktech/core/domain/reporting/sarif-generator");
         this.sarifGenerator = SarifGenerator;
       } catch {}
     }

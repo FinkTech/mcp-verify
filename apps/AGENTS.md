@@ -37,7 +37,7 @@
 - `src/commands/*.ts` - 13 command handlers
 - `src/commands/interactive/` - 26 modular shell components
 
-**Core dependencies**: @mcp-verify/core, chalk, commander, ora, inquirer
+**Core dependencies**: @finktech/core, chalk, commander, ora, inquirer
 
 **Architecture**: Modular shell with persistent state, multi-context workspace, atomic file I/O.
 
@@ -64,7 +64,7 @@
 - `src/utils/llm-formatter.ts` - AI-optimized output formatting
 - `src/utils/config-discovery.ts` - Auto-detect MCP configs
 
-**Core dependencies**: @modelcontextprotocol/sdk, @mcp-verify/core
+**Core dependencies**: @modelcontextprotocol/sdk, @finktech/core
 
 **Architecture**: Stdio-based MCP server exposing validation as tools.
 
@@ -105,7 +105,7 @@
 - `src/providers/report-panel.ts` - HTML webview reports
 - `src/views/*.ts` - 4 tree view providers
 
-**Core dependencies**: vscode API, @mcp-verify/core
+**Core dependencies**: vscode API, @finktech/core
 
 **Architecture**: LSP-style diagnostics + webview reports + tree views.
 
@@ -150,7 +150,7 @@ cd apps/vscode-extension && npm run package  # Creates .vsix
 | Change report format  | **libs/core** (not apps)   | `libs/core/domain/reporting/`        |
 | Add i18n translation  | **libs/core** (not apps)   | `libs/core/domain/reporting/i18n.ts` |
 
-**Key insight**: Apps are thin wrappers around `@mcp-verify/core`. Most business logic lives in libs.
+**Key insight**: Apps are thin wrappers around `@finktech/core`. Most business logic lives in libs.
 
 ---
 
@@ -244,7 +244,7 @@ All apps use `libs/core/infrastructure/logging/logger.ts`:
 **Pattern**:
 
 ```typescript
-import { createScopedLogger } from "@mcp-verify/core";
+import { createScopedLogger } from "@finktech/core";
 const logger = createScopedLogger("my-feature");
 
 logger.info("Operation started");
@@ -260,7 +260,7 @@ All apps support internationalization via `libs/core/domain/reporting/i18n.ts`:
 
 - **30+ languages**: en, es, fr, de, ja, zh, pt, ru, etc.
 - **Environment variable**: `MCP_VERIFY_LANG=es`
-- **Usage**: `import { t } from '@mcp-verify/shared';`
+- **Usage**: `import { t } from '@finktech/shared';`
 - **Pattern**: `console.log(t('validation_complete'))` instead of hardcoded strings
 
 ---
@@ -301,7 +301,7 @@ npm test -- --coverage
 
 ### Cross-package imports failing
 
-- **Check**: Are you using `@mcp-verify/*` package names? (not relative paths)
+- **Check**: Are you using `@finktech/*` package names? (not relative paths)
 - **Check**: Are packages built? (`npm run build`)
 - **Fix**: Rebuild workspace from root: `npm run build`
 

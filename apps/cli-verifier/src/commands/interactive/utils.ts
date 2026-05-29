@@ -23,7 +23,7 @@ import fs from "fs";
 import path from "path";
 import chalk from "chalk";
 import { spawn } from "child_process";
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 import { PersistenceManager } from "./persistence";
 import type { ParseResult } from "./types";
 import type { ShellSession } from "./session";

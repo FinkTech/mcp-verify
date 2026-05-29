@@ -15,7 +15,7 @@
  * - Prioritized findings
  */
 
-import { Report, SecurityFinding } from "@mcp-verify/core";
+import { Report, SecurityFinding } from "@finktech/core";
 
 export interface LLMFriendlyOutput {
   // High-level status

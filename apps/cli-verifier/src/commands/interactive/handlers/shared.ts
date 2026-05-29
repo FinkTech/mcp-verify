@@ -21,7 +21,7 @@ import path from "path";
 import readline from "readline";
 import chalk from "chalk";
 import { spawnSync } from "child_process";
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 import { ShellParser } from "../parser";
 import type { ShellSession } from "../session";
 

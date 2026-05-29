@@ -639,8 +639,8 @@ const validator = new MCPValidator(mockTransport);
 
 ```typescript
 // Mock logger to avoid console noise in tests
-jest.mock("@mcp-verify/core", () => ({
-  ...jest.requireActual("@mcp-verify/core"),
+jest.mock("@finktech/core", () => ({
+  ...jest.requireActual("@finktech/core"),
   createScopedLogger: jest.fn(() => ({
     info: jest.fn(),
     warn: jest.fn(),
@@ -2693,7 +2693,7 @@ npm run build
 
 # Check module paths in jest.config.js
 moduleNameMapper: {
-  '^@mcp-verify/(.*)$': '<rootDir>/libs/$1'
+  '^@finktech/(.*)$': '<rootDir>/libs/$1'
 }
 ```
 

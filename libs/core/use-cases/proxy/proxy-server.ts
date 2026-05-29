@@ -19,7 +19,7 @@
 import { EventEmitter } from "node:events";
 import * as http from "http";
 import * as crypto from "crypto";
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 import {
   ITransport,
   HttpTransport,

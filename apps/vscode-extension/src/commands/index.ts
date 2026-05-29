@@ -26,7 +26,7 @@ import {
   McpTool,
   McpResource,
   McpPrompt,
-} from "@mcp-verify/core";
+} from "@finktech/core";
 
 import {
   globalState,
@@ -374,7 +374,7 @@ export async function runFuzzCommand(
           XssDetector,
           PromptLeakDetector,
           JailbreakDetector,
-        } = await import("@mcp-verify/fuzzer");
+        } = await import("@finktech/fuzzer");
 
         // Create FuzzTarget wrapper
         const fuzzTarget = {

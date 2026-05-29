@@ -12,7 +12,7 @@
  */
 
 import chalk from "chalk";
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 
 /**
  * Draw an ASCII histogram chart for response time distribution

@@ -20,7 +20,7 @@
  * @module libs/core/domain/security/rules/sql-injection.rule
  */
 
-import { t, compileRegexSafe, isSafePattern } from "@mcp-verify/shared";
+import { t, compileRegexSafe, isSafePattern } from "@finktech/shared";
 import { ISecurityRule } from "../rule.interface";
 import type {
   DiscoveryResult,

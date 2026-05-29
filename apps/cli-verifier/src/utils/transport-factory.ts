@@ -14,9 +14,9 @@
  * There is no separate SseTransport class - HttpTransport detects and uses SSE automatically.
  */
 
-import { HttpTransport, StdioTransport, ITransport } from "@mcp-verify/core";
-import { SmartLauncher, t } from "@mcp-verify/shared";
-import { DenoSandbox } from "@mcp-verify/core/infrastructure/sandbox/deno-sandbox";
+import { HttpTransport, StdioTransport, ITransport } from "@finktech/core";
+import { SmartLauncher, t } from "@finktech/shared";
+import { DenoSandbox } from "@finktech/core/infrastructure/sandbox/deno-sandbox";
 import chalk from "chalk";
 
 export interface TransportOptions {

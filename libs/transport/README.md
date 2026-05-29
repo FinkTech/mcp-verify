@@ -1,4 +1,4 @@
-# @mcp-verify/transport — Communication Layer
+# @finktech/transport — Communication Layer
 
 > **Transition Module**: Moving transport implementations from `core` to this dedicated package.
 
@@ -8,7 +8,7 @@ This library provides the communication bridge between `mcp-verify` and MCP serv
 
 ### Refactoring Status
 
-- [ ] Move `ITransport` from `@mcp-verify/core`
+- [ ] Move `ITransport` from `@finktech/core`
 - [ ] Move `StdioTransport`
 - [ ] Move `HttpTransport`
 - [ ] Move `SSETransport`

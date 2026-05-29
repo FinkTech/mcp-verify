@@ -13,7 +13,7 @@
  */
 
 import * as vscode from "vscode";
-import { translations, Language } from "@mcp-verify/core";
+import { translations, Language } from "@finktech/core";
 
 // State
 import { globalState } from "./state/global-state";

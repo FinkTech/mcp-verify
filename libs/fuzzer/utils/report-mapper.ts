@@ -28,7 +28,7 @@ import {
   SecurityReport,
   SecurityFinding,
   QualityReport,
-} from "@mcp-verify/core/domain/mcp-server/entities/validation.types";
+} from "@finktech/core/domain/mcp-server/entities/validation.types";
 
 /**
  * Options for report mapping

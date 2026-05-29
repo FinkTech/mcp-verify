@@ -1,4 +1,4 @@
-# @mcp-verify/shared — Agent Context
+# @finktech/shared — Agent Context
 
 **Mission**: Pure utilities kernel and security perimeter of the monorepo. All untrusted input passes through here before reaching `core` or the apps.
 
@@ -29,8 +29,8 @@ libs/shared/src/
 
 ```typescript
 // ❌ NEVER inside libs/shared/
-import { anything } from "@mcp-verify/core";
-import { anything } from "@mcp-verify/fuzzer";
+import { anything } from "@finktech/core";
+import { anything } from "@finktech/fuzzer";
 
 // ✅ ONLY external deps or internal relative imports
 import { z } from "zod";
@@ -53,7 +53,7 @@ import { pathValidator } from "../utils/path-validator";
 **Correct usage:**
 
 ```typescript
-import { pathValidator, urlValidator, regexSafe, t } from "@mcp-verify/shared";
+import { pathValidator, urlValidator, regexSafe, t } from "@finktech/shared";
 
 // Path
 const safe = pathValidator.validate(userInput, { allowedRoot: "/tmp/mcp" });
@@ -89,7 +89,7 @@ export * from "./utils/my-util";
 
 **3. Checklist before committing:**
 
-- [ ] Zero imports from `@mcp-verify/core` or `@mcp-verify/fuzzer`
+- [ ] Zero imports from `@finktech/core` or `@finktech/fuzzer`
 - [ ] External input validated with Zod + Tier-S guard if touching paths/URLs
 - [ ] UI strings use `t()`, no literals
 - [ ] Test in `libs/shared/src/__tests__/` with ≥ 95% coverage if security-related

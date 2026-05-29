@@ -8,8 +8,8 @@
 import path from "path";
 import fs from "fs";
 import { execSync } from "child_process";
-import { SandboxService } from "@mcp-verify/core/use-cases/sandbox/sandbox.service";
-import { SandboxOptions } from "@mcp-verify/core/use-cases/sandbox/types";
+import { SandboxService } from "@finktech/core/use-cases/sandbox/sandbox.service";
+import { SandboxOptions } from "@finktech/core/use-cases/sandbox/types";
 
 const TEMP_DIR = path.resolve(__dirname, "../temp_sandbox_service_test");
 

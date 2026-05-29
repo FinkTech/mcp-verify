@@ -12,7 +12,7 @@
  */
 
 import ora, { Ora } from "ora";
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 
 /**
  * Create a spinner for validation operations

@@ -9,7 +9,7 @@ import Ajv from "ajv";
 import type { ValidateFunction, ErrorObject, Options as AjvOptions } from "ajv";
 import addFormats from "ajv-formats";
 import localize from "ajv-i18n";
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 import { createScopedLogger } from "../../infrastructure/logging/logger";
 
 /**

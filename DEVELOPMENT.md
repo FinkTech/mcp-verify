@@ -1134,7 +1134,7 @@ node dist/mcp-verify.js proxy \
 
 ```typescript
 // In your test file
-import { SecurityGateway } from "@mcp-verify/core";
+import { SecurityGateway } from "@finktech/core";
 
 const gateway = new SecurityGateway({
   cacheEnabled: true,

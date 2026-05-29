@@ -1,4 +1,4 @@
-# @mcp-verify/core - Claude Code Context
+# @finktech/core - Claude Code Context
 
 > **For detailed technical documentation, see [AGENTS.md](./AGENTS.md)**
 

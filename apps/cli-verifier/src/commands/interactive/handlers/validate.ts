@@ -13,7 +13,7 @@
 
 import readline from "readline";
 import chalk from "chalk";
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 import { runValidationAction } from "../../validate";
 import { ShellParser } from "../parser";
 import type { ShellSession } from "../session";

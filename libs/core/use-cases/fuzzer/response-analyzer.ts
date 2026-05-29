@@ -21,7 +21,7 @@
  * @module libs/core/use-cases/fuzzer/response-analyzer
  */
 
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 import type { AttackPayload } from "./payloads";
 
 export interface AnalysisResult {

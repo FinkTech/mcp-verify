@@ -15,7 +15,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
-import { translations, Language } from "@mcp-verify/core";
+import { translations, Language } from "@finktech/core";
 
 /**
  * Get user language setting

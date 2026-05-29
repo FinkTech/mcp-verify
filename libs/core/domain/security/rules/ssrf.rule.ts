@@ -20,7 +20,7 @@
  * @module libs/core/domain/security/rules/ssrf.rule
  */
 
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 import { ISecurityRule } from "../rule.interface";
 import { translations } from "../../reporting/i18n";
 import type {

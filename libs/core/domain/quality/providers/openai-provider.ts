@@ -28,7 +28,7 @@
  */
 
 import OpenAI from "openai";
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 import type {
   ILLMProvider,
   LLMMessage,

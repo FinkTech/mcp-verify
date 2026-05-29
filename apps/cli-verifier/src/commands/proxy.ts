@@ -33,15 +33,15 @@ import {
   type SecurityAnalysisAuditEvent,
   type RateLimitBackoffAuditEvent,
   type PanicModeAuditEvent,
-} from "@mcp-verify/core/use-cases/proxy/proxy-server";
+} from "@finktech/core/use-cases/proxy/proxy-server";
 import {
   SensitiveCommandBlocker,
   PIIRedactor,
   RateLimiter,
   InputSanitizer,
   HttpsEnforcer,
-} from "@mcp-verify/core";
-import { t, getCurrentLanguage } from "@mcp-verify/shared";
+} from "@finktech/core";
+import { t, getCurrentLanguage } from "@finktech/shared";
 import { registerCleanup } from "../utils/cleanup-handlers";
 
 // ---------------------------------------------------------------------------

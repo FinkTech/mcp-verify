@@ -31,7 +31,7 @@
  * @module libs/core/infrastructure/config
  */
 
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 import { Logger, AuditEventType } from "../logging/logger";
 
 export interface SecurityConfig {

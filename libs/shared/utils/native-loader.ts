@@ -225,7 +225,7 @@ function loadFromSeaDir<T>(packageName: string, execDir: string): T | null {
  *
  * @example
  * ```ts
- * import { loadNativeAddon } from '@mcp-verify/core/native-loader';
+ * import { loadNativeAddon } from '@finktech/core/native-loader';
  * import type Keyring from '@napi-rs/keyring';
  *
  * const keyring = loadNativeAddon<typeof Keyring>('@napi-rs/keyring');

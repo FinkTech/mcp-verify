@@ -30,7 +30,7 @@
 import fs from "fs";
 import path from "path";
 import { ZodError } from "zod";
-import { deepMerge } from "@mcp-verify/shared";
+import { deepMerge } from "@finktech/shared";
 import type { McpVerifyConfig, PartialConfig } from "./config.types";
 import { DEFAULT_CONFIG, validateConfig, ENV_MAPPING } from "./config.types";
 

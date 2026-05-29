@@ -12,7 +12,7 @@
  */
 
 import chalk from "chalk";
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 
 // Version hardcoded for bundle compatibility
 const packageJson = { version: "1.0.0" };

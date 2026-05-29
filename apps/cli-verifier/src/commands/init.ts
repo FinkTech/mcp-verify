@@ -14,8 +14,8 @@
 import chalk from "chalk";
 import fs from "fs";
 import path from "path";
-import { DEFAULT_CONFIG } from "@mcp-verify/core";
-import { t } from "@mcp-verify/shared";
+import { DEFAULT_CONFIG } from "@finktech/core";
+import { t } from "@finktech/shared";
 
 export async function runInitAction() {
   const configPath = path.join(process.cwd(), "mcp-verify.config.json");

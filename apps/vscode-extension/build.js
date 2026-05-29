@@ -3,7 +3,7 @@
  *
  * Empaqueta la extensión en un único dist/extension.js sin depender de
  * esbuild-plugin-tsconfig-paths ni ningún plugin externo.
- * Resuelve las rutas del monorepo (@mcp-verify/*) con un plugin propio.
+ * Resuelve las rutas del monorepo (@finktech/*) con un plugin propio.
  */
 
 const { build } = require('esbuild');
@@ -21,11 +21,11 @@ const MONOREPO_ROOT = path.resolve(__dirname, '..', '..');
  * Si el entry point de algún paquete es distinto (ej. sin /src/), ajustarlo acá.
  */
 const MONOREPO_PACKAGES = {
-  '@mcp-verify/core':      path.join(MONOREPO_ROOT, 'libs', 'core',      'src', 'index.ts'),
-  '@mcp-verify/shared':    path.join(MONOREPO_ROOT, 'libs', 'shared',    'src', 'index.ts'),
-  '@mcp-verify/transport': path.join(MONOREPO_ROOT, 'libs', 'transport', 'src', 'index.ts'),
-  '@mcp-verify/protocol':  path.join(MONOREPO_ROOT, 'libs', 'protocol',  'src', 'index.ts'),
-  '@mcp-verify/fuzzer':    path.join(MONOREPO_ROOT, 'libs', 'fuzzer',    'src', 'index.ts'),
+  '@finktech/core':      path.join(MONOREPO_ROOT, 'libs', 'core',      'src', 'index.ts'),
+  '@finktech/shared':    path.join(MONOREPO_ROOT, 'libs', 'shared',    'src', 'index.ts'),
+  '@finktech/transport': path.join(MONOREPO_ROOT, 'libs', 'transport', 'src', 'index.ts'),
+  '@finktech/protocol':  path.join(MONOREPO_ROOT, 'libs', 'protocol',  'src', 'index.ts'),
+  '@finktech/fuzzer':    path.join(MONOREPO_ROOT, 'libs', 'fuzzer',    'src', 'index.ts'),
 };
 
 /**
@@ -56,14 +56,14 @@ function resolvePackagePath(pkg, primary) {
 }
 
 /**
- * Plugin esbuild: intercepta imports de @mcp-verify/* y los redirige
+ * Plugin esbuild: intercepta imports de @finktech/* y los redirige
  * al archivo TypeScript real dentro del monorepo.
  * No depende de ningún paquete externo.
  */
 const resolveMonorepoPlugin = {
   name: 'resolve-monorepo',
   setup(build) {
-    // Captura exacto: '@mcp-verify/core' y también '@mcp-verify/core/algo'
+    // Captura exacto: '@finktech/core' y también '@finktech/core/algo'
     build.onResolve({ filter: /^@mcp-verify\// }, (args) => {
       // Buscar la entrada más larga que coincida como prefijo
       const exactMatch = MONOREPO_PACKAGES[args.path];
@@ -71,7 +71,7 @@ const resolveMonorepoPlugin = {
         return { path: resolvePackagePath(args.path, exactMatch) };
       }
 
-      // Subpaths: '@mcp-verify/core/utils/foo' → libs/core/src/utils/foo.ts
+      // Subpaths: '@finktech/core/utils/foo' → libs/core/src/utils/foo.ts
       for (const [pkg, entry] of Object.entries(MONOREPO_PACKAGES)) {
         if (args.path.startsWith(pkg + '/')) {
           const subPath = args.path.slice(pkg.length + 1); // 'utils/foo'

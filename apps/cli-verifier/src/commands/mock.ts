@@ -12,8 +12,8 @@
  */
 
 import chalk from "chalk";
-import { MockServer } from "@mcp-verify/core/use-cases/mock/mock-server";
-import { t } from "@mcp-verify/shared";
+import { MockServer } from "@finktech/core/use-cases/mock/mock-server";
+import { t } from "@finktech/shared";
 import { registerCleanup } from "../utils/cleanup-handlers";
 
 export async function runMockAction(options: Record<string, unknown>) {

@@ -14,8 +14,8 @@
 import readline from "readline";
 import chalk from "chalk";
 import { spawn } from "child_process";
-import { t } from "@mcp-verify/shared";
-import { ASCII_ART } from "@mcp-verify/core/domain/reporting/assets";
+import { t } from "@finktech/shared";
+import { ASCII_ART } from "@finktech/core/domain/reporting/assets";
 
 // Version hardcoded for bundle compatibility
 const packageJson = { version: "1.0.0" };

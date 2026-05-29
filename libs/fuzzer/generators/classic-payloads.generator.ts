@@ -36,7 +36,7 @@ import {
   getAllPayloads,
   getPayloadsByType,
   getPayloadsBySeverity,
-} from "@mcp-verify/core/use-cases/fuzzer/payloads";
+} from "@finktech/core/use-cases/fuzzer/payloads";
 
 /** Available classic payload categories */
 export type ClassicPayloadCategory = keyof typeof ATTACK_PAYLOADS;

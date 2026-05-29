@@ -20,7 +20,7 @@
  * @module libs/core/use-cases/proxy/guardrails/https-enforcer
  */
 
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 import type { IGuardrail, InterceptResult } from "../proxy.types";
 import type { JsonValue } from "../../../domain/shared/common.types";
 

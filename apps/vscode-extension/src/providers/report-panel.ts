@@ -6,7 +6,7 @@
  * See LICENSE file in the project root for full license information.
  */
 import * as vscode from "vscode";
-import { HtmlReportGenerator, Report, Language } from "@mcp-verify/core";
+import { HtmlReportGenerator, Report, Language } from "@finktech/core";
 
 /**
  * Manages the WebView panel for displaying MCP validation reports.

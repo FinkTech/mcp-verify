@@ -70,7 +70,7 @@ mcp-verify/
 | Validation | Zod schemas                        |
 | LLM        | @anthropic-ai/sdk, openai, ollama  |
 
-**Security invariants**: Zod on all external input · path traversal protection via `@mcp-verify/shared` · timeout 2–120s · secret redaction in logs.
+**Security invariants**: Zod on all external input · path traversal protection via `@finktech/shared` · timeout 2–120s · secret redaction in logs.
 
 ---
 
@@ -93,14 +93,14 @@ LLM keys are optional but required for semantic analysis features.
 
 ```typescript
 // Cross-package → always use package names
-import { MCPValidator } from "@mcp-verify/core";
-import { t } from "@mcp-verify/shared";
+import { MCPValidator } from "@finktech/core";
+import { t } from "@finktech/shared";
 
 // Within a package → relative imports only
 import { ISecurityRule } from "../rules/rule.interface";
 
 // Types → import type
-import type { ValidationResult } from "@mcp-verify/core";
+import type { ValidationResult } from "@finktech/core";
 ```
 
 ---

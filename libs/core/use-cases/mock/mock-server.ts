@@ -7,7 +7,7 @@
  */
 import * as http from "http";
 import * as url from "url";
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 import { createScopedLogger } from "../../infrastructure/logging/logger";
 
 export class MockServer {

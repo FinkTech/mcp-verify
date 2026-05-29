@@ -24,20 +24,20 @@ import {
   translations,
   Language,
   DiagnosticRunner,
-} from "@mcp-verify/core";
+} from "@finktech/core";
 import {
   NodeRuntimeCheck,
   GitInstallationCheck,
   PythonRuntimeCheck,
   DenoRuntimeCheck,
-} from "@mcp-verify/core/infrastructure/diagnostics/checks/environment-checks";
-import { MCPValidator } from "@mcp-verify/core/use-cases/validator/validator";
+} from "@finktech/core/infrastructure/diagnostics/checks/environment-checks";
+import { MCPValidator } from "@finktech/core/use-cases/validator/validator";
 import {
   discoverConfigs,
   RawServerEntry,
   ConfigSource,
 } from "../utils/config-discovery.js";
-import { StdioTransport } from "@mcp-verify/core";
+import { StdioTransport } from "@finktech/core";
 // Fix: Import from cli-verifier utils which is accessible in this monorepo build context
 import { createTransport } from "../../../cli-verifier/src/utils/transport-factory";
 import path from "node:path";

@@ -13,8 +13,8 @@
 
 import ora from "ora";
 import chalk from "chalk";
-import { StressTester } from "@mcp-verify/core/use-cases/stress-tester/stress-tester";
-import { t, getCurrentLanguage } from "@mcp-verify/shared";
+import { StressTester } from "@finktech/core/use-cases/stress-tester/stress-tester";
+import { t, getCurrentLanguage } from "@finktech/shared";
 import { drawAsciiChart } from "../ui/charts";
 import { detectTransportType } from "../utils/transport-factory";
 import { configureLogging } from "../utils/logging-helper";

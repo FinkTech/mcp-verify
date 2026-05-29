@@ -24,8 +24,8 @@ import {
   StdioTransport,
   translations,
   Language,
-} from "@mcp-verify/core";
-import type { McpTool } from "@mcp-verify/core/domain/shared/common.types";
+} from "@finktech/core";
+import type { McpTool } from "@finktech/core/domain/shared/common.types";
 import { formatForLLM } from "../utils/llm-formatter.js";
 
 const logger = createScopedLogger("inspectSemanticsTool");
@@ -574,7 +574,7 @@ Perform a strict security analysis and return ONLY valid JSON matching this stru
 
 /**
  * Execute LLM analysis with configured provider
- * Uses LLMSemanticAnalyzer from @mcp-verify/core to eliminate code duplication
+ * Uses LLMSemanticAnalyzer from @finktech/core to eliminate code duplication
  */
 async function executeLLMAnalysis(
   prompt: string,
@@ -586,7 +586,7 @@ async function executeLLMAnalysis(
   try {
     // Import LLMSemanticAnalyzer which handles all provider logic
     const { LLMSemanticAnalyzer } =
-      await import("@mcp-verify/core/domain/quality/llm-semantic-analyzer");
+      await import("@finktech/core/domain/quality/llm-semantic-analyzer");
 
     // Create analyzer instance
     const analyzer = new LLMSemanticAnalyzer();

@@ -33,7 +33,7 @@
  * @module libs/core/domain/quality/providers/ollama-provider
  */
 
-import { t, getUserAgent } from "@mcp-verify/shared";
+import { t, getUserAgent } from "@finktech/shared";
 import type {
   ILLMProvider,
   LLMMessage,

@@ -21,9 +21,9 @@ import {
   t,
   detectLanguage,
   setLanguage,
-} from "@mcp-verify/shared";
-import { Logger as InfrastructureLogger } from "@mcp-verify/core";
-import { ASCII_ART } from "@mcp-verify/core/domain/reporting/assets";
+} from "@finktech/shared";
+import { Logger as InfrastructureLogger } from "@finktech/core";
+import { ASCII_ART } from "@finktech/core/domain/reporting/assets";
 
 // Import package.json for version info
 import * as packageJson from "../../../../package.json";

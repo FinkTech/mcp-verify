@@ -14,7 +14,7 @@
 import readline from "readline";
 import chalk from "chalk";
 import { McpFuzzTarget } from "../../fuzz";
-import { Fingerprinter } from "@mcp-verify/fuzzer";
+import { Fingerprinter } from "@finktech/fuzzer";
 import type { ShellSession } from "../session";
 import { resolveTarget } from "./shared";
 

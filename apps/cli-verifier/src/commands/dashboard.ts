@@ -7,13 +7,13 @@
  */
 import http from "http";
 import chalk from "chalk";
-import { translations, Language, ITransport } from "@mcp-verify/core";
-import { ToolExecutor } from "@mcp-verify/core/use-cases/playground/tool-executor";
+import { translations, Language, ITransport } from "@finktech/core";
+import { ToolExecutor } from "@finktech/core/use-cases/playground/tool-executor";
 import {
   JsonObject,
   McpTool,
-} from "@mcp-verify/core/domain/shared/common.types";
-import { t, getCurrentLanguage } from "@mcp-verify/shared";
+} from "@finktech/core/domain/shared/common.types";
+import { t, getCurrentLanguage } from "@finktech/shared";
 import { registerCleanup } from "../utils/cleanup-handlers";
 import {
   createTransport,

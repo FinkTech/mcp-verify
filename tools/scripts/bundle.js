@@ -21,17 +21,17 @@ if (!fs.existsSync(distDir)) {
 
 // ---------------------------------------------------------------------------
 // Workspace alias plugin
-// Maps @mcp-verify/* monorepo packages to their source paths on disk.
+// Maps @finktech/* monorepo packages to their source paths on disk.
 // ---------------------------------------------------------------------------
 const workspaceAliasPlugin = {
   name: "workspace-alias",
   setup(build) {
     const aliases = {
-      "@mcp-verify/core": path.join(rootDir, "libs/core"),
-      "@mcp-verify/shared": path.join(rootDir, "libs/shared"),
-      "@mcp-verify/transport": path.join(rootDir, "libs/transport"),
-      "@mcp-verify/protocol": path.join(rootDir, "libs/protocol"),
-      "@mcp-verify/fuzzer": path.join(rootDir, "libs/fuzzer"),
+      "@finktech/core": path.join(rootDir, "libs/core"),
+      "@finktech/shared": path.join(rootDir, "libs/shared"),
+      "@finktech/transport": path.join(rootDir, "libs/transport"),
+      "@finktech/protocol": path.join(rootDir, "libs/protocol"),
+      "@finktech/fuzzer": path.join(rootDir, "libs/fuzzer"),
     };
 
     build.onResolve({ filter: /^@mcp-verify\// }, (args) => {

@@ -11,18 +11,18 @@
  * Enterprise-grade security validation and testing tool for MCP servers.
  * Version: 1.0.0
  *
- * @module @mcp-verify/core
+ * @module @finktech/core
  *
  * @example
  * ```typescript
  * // Infrastructure layer
- * import { Logger, ErrorHandler, ConfigManager, HealthMonitor } from '@mcp-verify/core';
+ * import { Logger, ErrorHandler, ConfigManager, HealthMonitor } from '@finktech/core';
  *
  * // Domain layer
- * import { SecurityScanner, SemanticAnalyzer, BadgeGenerator } from '@mcp-verify/core';
+ * import { SecurityScanner, SemanticAnalyzer, BadgeGenerator } from '@finktech/core';
  *
  * // Use case layer
- * import { MCPValidator } from '@mcp-verify/core';
+ * import { MCPValidator } from '@finktech/core';
  * ```
  */
 

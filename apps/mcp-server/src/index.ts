@@ -27,7 +27,7 @@
  */
 
 import { startServer } from "./server";
-import { createScopedLogger } from "@mcp-verify/core";
+import { createScopedLogger } from "@finktech/core";
 
 const logger = createScopedLogger("Main");
 

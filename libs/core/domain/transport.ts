@@ -9,7 +9,7 @@ import { spawn } from "child_process";
 import type { ChildProcess } from "child_process";
 import { StringDecoder } from "string_decoder";
 import { parse as parseShellCommand } from "shell-quote";
-import { t, getUserAgent } from "@mcp-verify/shared";
+import { t, getUserAgent } from "@finktech/shared";
 import type { ISandbox } from "./sandbox/sandbox.interface";
 import type {
   JsonValue,

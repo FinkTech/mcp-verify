@@ -22,7 +22,7 @@
  * @module libs/core/use-cases/proxy/guardrails/pii-redactor
  */
 
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 import type { IGuardrail, InterceptResult } from "../proxy.types";
 import type {
   JsonValue,

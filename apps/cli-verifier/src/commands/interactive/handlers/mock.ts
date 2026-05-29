@@ -11,7 +11,7 @@
  * Extracted from interactive.ts - Section 10
  */
 
-import { getCurrentLanguage } from "@mcp-verify/shared";
+import { getCurrentLanguage } from "@finktech/shared";
 import { runMockAction } from "../../mock";
 import { ShellParser } from "../parser";
 import type { Language } from "../types";

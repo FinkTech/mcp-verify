@@ -25,8 +25,8 @@ import {
   StdioTransport,
   translations,
   Language,
-} from "@mcp-verify/core";
-import type { McpTool } from "@mcp-verify/core/domain/shared/common.types";
+} from "@finktech/core";
+import type { McpTool } from "@finktech/core/domain/shared/common.types";
 import { formatForLLM } from "../utils/llm-formatter.js";
 
 const logger = createScopedLogger("suggestSecureSchemaTool");

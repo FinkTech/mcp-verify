@@ -35,20 +35,20 @@ import path from "node:path";
 import dns from "node:dns";
 import net from "node:net";
 
-import { MCPValidator } from "@mcp-verify/core";
-import { DiagnosticRunner } from "@mcp-verify/core/infrastructure/diagnostics/diagnostic-runner";
+import { MCPValidator } from "@finktech/core";
+import { DiagnosticRunner } from "@finktech/core/infrastructure/diagnostics/diagnostic-runner";
 import {
   NodeRuntimeCheck,
   PythonRuntimeCheck,
   GitInstallationCheck,
   DenoRuntimeCheck,
-} from "@mcp-verify/core/infrastructure/diagnostics/checks/environment-checks";
+} from "@finktech/core/infrastructure/diagnostics/checks/environment-checks";
 import {
   t,
   getCurrentLanguage,
   ReportingService,
   ReportFormat,
-} from "@mcp-verify/shared";
+} from "@finktech/shared";
 import {
   createTransport,
   detectTransportType,

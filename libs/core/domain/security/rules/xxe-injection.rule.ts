@@ -21,7 +21,7 @@
  * @module libs/core/domain/security/rules/xxe-injection.rule
  */
 
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 import { ISecurityRule } from "../rule.interface";
 import type {
   DiscoveryResult,

@@ -5,8 +5,8 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import { MockServer } from "@mcp-verify/core/use-cases/mock/mock-server";
-import { MCPValidator, HttpTransport } from "@mcp-verify/core";
+import { MockServer } from "@finktech/core/use-cases/mock/mock-server";
+import { MCPValidator, HttpTransport } from "@finktech/core";
 
 describe("Validator Integration Test", () => {
   let server: MockServer;

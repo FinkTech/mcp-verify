@@ -7,6 +7,10 @@
     "libs/*",
     "apps/*"
   ],
+  "overrides": {
+    "fast-uri": ">=3.1.2",
+    "hono": ">=4.12.23"
+  },
   "main": "dist/mcp-verify.js",
   "types": "dist/index.d.ts",
   "bin": {
@@ -19,6 +23,9 @@
     "!dist/**/*.map",
     "!dist/.sea/**",
     "!dist/bin/**",
+    "!**/AGENTS.md",
+    "!**/claude.md",
+    "!demo-vhs/**",
     "LICENSE",
     "README.md",
     "CHANGELOG.md",

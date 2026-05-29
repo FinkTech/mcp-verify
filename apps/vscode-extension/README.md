@@ -68,12 +68,12 @@ npm run build
 # Open in VS Code and press F5 (Extension Development Host)
 ```
 
-### From Marketplace (Coming Soon)
+### From Marketplace
 
 1. Open VS Code
 2. Go to Extensions (`Ctrl+Shift+X`)
-3. Search for "MCP Verify"
-4. Click Install
+3. Search for **"MCP Verify"**
+4. Click **Install**
 
 ---
 

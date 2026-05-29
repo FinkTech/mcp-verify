@@ -29,11 +29,11 @@ import {
   ConfigLoader,
   enhancedReporter,
   Logger,
-} from "@mcp-verify/core";
-import { SmartFuzzer } from "@mcp-verify/core/use-cases/fuzzer/fuzzer";
-import { DenoSandbox } from "@mcp-verify/core/infrastructure/sandbox/deno-sandbox";
-import { BaselineManager } from "@mcp-verify/core/domain/baseline/baseline-manager";
-import { SarifGenerator } from "@mcp-verify/core/domain/reporting/sarif-generator";
+} from "@finktech/core";
+import { SmartFuzzer } from "@finktech/core/use-cases/fuzzer/fuzzer";
+import { DenoSandbox } from "@finktech/core/infrastructure/sandbox/deno-sandbox";
+import { BaselineManager } from "@finktech/core/domain/baseline/baseline-manager";
+import { SarifGenerator } from "@finktech/core/domain/reporting/sarif-generator";
 import {
   t,
   setLanguage,
@@ -41,7 +41,7 @@ import {
   ReportingService,
   ReportFormat,
   captureGitInfo,
-} from "@mcp-verify/shared";
+} from "@finktech/shared";
 import {
   createTransport,
   detectTransportType,
@@ -54,7 +54,7 @@ import {
   createLogger,
   PathValidator,
   URLValidator,
-} from "@mcp-verify/shared";
+} from "@finktech/shared";
 
 /**
  * Simple word wrap utility that preserves indentation for terminal output.

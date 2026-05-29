@@ -11,8 +11,8 @@
  * Utility to configure logging levels across the application
  */
 
-import { Logger as AppLogger, LogLevel } from "@mcp-verify/shared";
-import { Logger as InfrastructureLogger } from "@mcp-verify/core";
+import { Logger as AppLogger, LogLevel } from "@finktech/shared";
+import { Logger as InfrastructureLogger } from "@finktech/core";
 
 const logger = AppLogger.getInstance();
 

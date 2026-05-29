@@ -94,7 +94,7 @@ interactive/
 - `./types` (WorkspaceSession)
 - `../types/workspace-context` (WorkspaceContexts, LegacyWorkspaceSession)
 - `../managers/migration` (migrateSessionFile)
-- `@mcp-verify/core` (ConfigLoader)
+- `@finktech/core` (ConfigLoader)
 
 ---
 
@@ -125,8 +125,8 @@ interactive/
 - `../managers/environment-loader` (EnvironmentLoader)
 - `../managers/migration` (detectSessionVersion)
 - `../profiles/security-profiles` (SECURITY_PROFILES, getSecurityProfile)
-- `@mcp-verify/shared` (setLanguage)
-- `@mcp-verify/core` (createTransport, ITransport)
+- `@finktech/shared` (setLanguage)
+- `@finktech/core` (createTransport, ITransport)
 
 ---
 
@@ -167,7 +167,7 @@ interactive/
 - `./session` (ShellSession)
 - `./persistence` (PersistenceManager)
 - `./completer` (PRIMARY_COMMANDS)
-- `@mcp-verify/shared` (t)
+- `@finktech/shared` (t)
 
 ### 7. router.ts
 

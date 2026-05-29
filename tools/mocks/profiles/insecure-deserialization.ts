@@ -3,7 +3,7 @@
  * This profile contains a tool with a parameter that accepts an arbitrary object,
  * which should be flagged by the InsecureDeserializationRule.
  */
-import type { DiscoveryResult } from "@mcp-verify/core";
+import type { DiscoveryResult } from "@finktech/core";
 
 export const discovery: DiscoveryResult = {
   serverInfo: {

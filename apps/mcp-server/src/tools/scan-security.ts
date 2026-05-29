@@ -23,9 +23,9 @@ import {
   translations,
   Language,
   Report,
-} from "@mcp-verify/core";
+} from "@finktech/core";
 import { formatForLLM } from "../utils/llm-formatter.js";
-import { ReportingService } from "@mcp-verify/shared";
+import { ReportingService } from "@finktech/shared";
 
 const logger = createScopedLogger("scanSecurityTool");
 const lang: Language = (process.env.MCP_VERIFY_LANG as Language) || "en";

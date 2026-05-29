@@ -14,7 +14,7 @@
  * 3. Buffer cleanup after errors
  */
 
-import { StdioTransport } from "@mcp-verify/core";
+import { StdioTransport } from "@finktech/core";
 import { spawn, ChildProcess } from "child_process";
 import path from "path";
 import { writeFileSync, mkdirSync } from "fs";

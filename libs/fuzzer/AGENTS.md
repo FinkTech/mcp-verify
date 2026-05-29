@@ -1,4 +1,4 @@
-# @mcp-verify/fuzzer — Agent Context
+# @finktech/fuzzer — Agent Context
 
 **Mission**: Intelligent payload fuzzing engine with feedback loops. Generates, mutates, and detects vulnerabilities in MCP tool responses.
 

@@ -5,7 +5,7 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
  * See LICENSE file in the project root for full license information.
  */
-import { SafeJSStaticAnalyzer } from "@mcp-verify/core/use-cases/sandbox/static-analyzer";
+import { SafeJSStaticAnalyzer } from "@finktech/core/use-cases/sandbox/static-analyzer";
 
 describe("SafeJSStaticAnalyzer", () => {
   let analyzer: SafeJSStaticAnalyzer;

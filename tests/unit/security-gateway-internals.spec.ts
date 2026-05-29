@@ -24,11 +24,11 @@ import {
   afterEach,
   jest,
 } from "@jest/globals";
-import { McpProxyServer } from "@mcp-verify/core/use-cases/proxy/proxy-server";
-import { DEFAULT_CONFIG } from "@mcp-verify/core/domain/config/config.types";
+import { McpProxyServer } from "@finktech/core/use-cases/proxy/proxy-server";
+import { DEFAULT_CONFIG } from "@finktech/core/domain/config/config.types";
 
 // Mock transports
-jest.mock("@mcp-verify/core/domain/transport", () => {
+jest.mock("@finktech/core/domain/transport", () => {
   return {
     HttpTransport: {
       create: jest.fn<any>().mockReturnValue({

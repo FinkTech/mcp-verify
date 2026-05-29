@@ -605,7 +605,7 @@ import {
   PromptLeakDetector,
   JailbreakDetector,
   TimingDetector,
-} from "@mcp-verify/fuzzer";
+} from "@finktech/fuzzer";
 
 const engine = new FuzzerEngine({
   generators: [new PromptInjectionGenerator(), new ClassicPayloadGenerator()],
@@ -634,7 +634,7 @@ const session = await engine.fuzz(target, "tool-name");
 
 **File**: `libs/core/use-cases/fuzzer/fuzzer.ts`
 
-**Purpose**: Basic chaos testing (deprecated, use `@mcp-verify/fuzzer` for new features)
+**Purpose**: Basic chaos testing (deprecated, use `@finktech/fuzzer` for new features)
 
 **Edit when**:
 

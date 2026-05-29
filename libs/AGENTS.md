@@ -262,9 +262,9 @@ libs/shared/  (ZERO dependencies, most stable)
 
 ```typescript
 // ✅ CORRECT
-import { MCPValidator } from "@mcp-verify/core";
-import { t, setLanguage } from "@mcp-verify/shared";
-import { FuzzerEngine } from "@mcp-verify/fuzzer";
+import { MCPValidator } from "@finktech/core";
+import { t, setLanguage } from "@finktech/shared";
+import { FuzzerEngine } from "@finktech/fuzzer";
 ```
 
 **Within libs** (use relative imports):
@@ -279,7 +279,7 @@ import { Logger } from "../../infrastructure/logging/logger";
 
 ```typescript
 // ✅ CORRECT
-import type { ValidationResult } from "@mcp-verify/core";
+import type { ValidationResult } from "@finktech/core";
 import type { ServerContext } from "../security/types";
 ```
 
@@ -291,7 +291,7 @@ export * from "./security";
 export * from "./reporting";
 
 // Usage
-import { SecurityScanner, EnhancedReporter } from "@mcp-verify/core/domain";
+import { SecurityScanner, EnhancedReporter } from "@finktech/core/domain";
 ```
 
 ---
@@ -325,11 +325,11 @@ npm test -- --coverage
 
 ### Cross-package imports not working
 
-- **Check**: Are you using `@mcp-verify/*` package names? (not relative paths)
+- **Check**: Are you using `@finktech/*` package names? (not relative paths)
 - **Check**: Did you run `npm install` in monorepo root?
 - **Check**: Is package exported in `libs/*/package.json`?
 - **Fix**: Rebuild workspace: `npm run build`
-- **Debug**: Check `node_modules/@mcp-verify/` symlinks
+- **Debug**: Check `node_modules/@finktech/` symlinks
 
 ### Circular dependency detected
 

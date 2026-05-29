@@ -25,7 +25,7 @@
  */
 
 import Anthropic from "@anthropic-ai/sdk";
-import { t } from "@mcp-verify/shared";
+import { t } from "@finktech/shared";
 import type {
   ILLMProvider,
   LLMMessage,

@@ -134,7 +134,14 @@ flowchart LR
 
 ## 📦 Installation
 
-### Method 1: From Source (Recommended) ✅
+### Method 1: From NPM (Recommended) ✅
+
+```bash
+npm install -g mcp-verify
+mcp-verify validate "node server.js"
+```
+
+### Method 2: From Source ✅
 
 ```bash
 git clone https://github.com/FinkTech/mcp-verify.git
@@ -147,13 +154,6 @@ node dist/mcp-verify.js validate "node server.js"
 
 # Or create alias (Linux/macOS)
 alias mcp-verify="node $(pwd)/dist/mcp-verify.js"
-```
-
-### Method 2: NPM Package ✅
-
-```bash
-npm install -g mcp-verify
-mcp-verify validate "node server.js"
 ```
 
 ### Method 3: Standalone Binary ✅

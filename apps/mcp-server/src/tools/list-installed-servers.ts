@@ -20,7 +20,7 @@
  * controls each server name.
  */
 
-import { createScopedLogger, translations, Language } from "@mcp-verify/core";
+import { createScopedLogger, translations, Language } from "@finktech/core";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";

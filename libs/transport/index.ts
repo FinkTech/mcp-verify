@@ -6,17 +6,17 @@
  * See LICENSE file in the project root for full license information.
  */
 /**
- * @mcp-verify/transport
+ * @finktech/transport
  *
  * Transport layer implementations for MCP communication.
  * Supports STDIO, SSE, and HTTP transports.
  *
- * NOTE: Transport implementations are currently in @mcp-verify/core.
+ * NOTE: Transport implementations are currently in @finktech/core.
  * This package will be populated during the refactoring phase.
  *
  * @example
  * ```typescript
- * import { StdioTransport, SSETransport } from '@mcp-verify/transport';
+ * import { StdioTransport, SSETransport } from '@finktech/transport';
  * ```
  */
 

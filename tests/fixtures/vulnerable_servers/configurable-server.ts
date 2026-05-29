@@ -1527,7 +1527,9 @@ function handleMessage(message: JsonRpcRequest): JsonRpcResponse {
       };
 
     case "tools/call":
-      const { name, arguments: args } = params;
+      const callParams = (params || {}) as { name?: string; arguments?: Record<string, unknown> };
+      const name = callParams.name;
+      const args = callParams.arguments;
 
       // Simulate vulnerable responses
       if (name === "execute_sql") {

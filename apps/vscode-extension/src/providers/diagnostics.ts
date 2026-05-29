@@ -6,7 +6,7 @@
  * See LICENSE file in the project root for full license information.
  */
 import * as vscode from "vscode";
-import { SecurityReport, SecurityFinding, Severity } from "@mcp-verify/core";
+import { SecurityReport, SecurityFinding, Severity } from "@finktech/core";
 
 /**
  * Maps core security findings to VSCode diagnostics.

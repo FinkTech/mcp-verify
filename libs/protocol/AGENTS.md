@@ -1,4 +1,4 @@
-# @mcp-verify/protocol — Agent Context
+# @finktech/protocol — Agent Context
 
 **Mission**: Single source of truth for MCP protocol schemas and types. Ensuring cross-version compatibility and strict spec adherence.
 
@@ -7,7 +7,7 @@
 ## 🏗️ Refactoring Notice (v1.0)
 
 > **CRITICAL**: This module is currently in **TRANSITION**.
-> Types and schemas are currently duplicated or primary in `@mcp-verify/core` to prevent build breakage during refactor.
+> Types and schemas are currently duplicated or primary in `@finktech/core` to prevent build breakage during refactor.
 
 - **Current Location**: `libs/core/domain/mcp-server/entities/validation.types.ts`
 - **Future Home**: This directory (`libs/protocol/v1/`)

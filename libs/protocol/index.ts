@@ -6,16 +6,16 @@
  * See LICENSE file in the project root for full license information.
  */
 /**
- * @mcp-verify/protocol
+ * @finktech/protocol
  *
  * MCP protocol definitions, types, and JSON schemas.
  *
- * NOTE: Protocol types are currently in @mcp-verify/core.
+ * NOTE: Protocol types are currently in @finktech/core.
  * This package will be populated during the refactoring phase.
  *
  * @example
  * ```typescript
- * import { MCPMessage, MCPRequest, MCPResponse } from '@mcp-verify/protocol';
+ * import { MCPMessage, MCPRequest, MCPResponse } from '@finktech/protocol';
  * ```
  */
 

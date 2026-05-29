@@ -246,7 +246,7 @@ All tools follow this structure:
 
 ```typescript
 // 1. Import dependencies
-import { MCPValidator, createScopedLogger } from "@mcp-verify/core";
+import { MCPValidator, createScopedLogger } from "@finktech/core";
 import { formatForLLM } from "../utils/llm-formatter.js";
 
 // 2. Setup logger + i18n

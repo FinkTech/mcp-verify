@@ -8,8 +8,8 @@
 import path from "path";
 import fs from "fs";
 import { execSync } from "child_process";
-import { DenoRunner } from "@mcp-verify/core/use-cases/sandbox/deno-runner";
-import { SandboxOptions } from "@mcp-verify/core/use-cases/sandbox/types";
+import { DenoRunner } from "@finktech/core/use-cases/sandbox/deno-runner";
+import { SandboxOptions } from "@finktech/core/use-cases/sandbox/types";
 
 const FIXTURES_DIR = path.resolve(__dirname, "../fixtures/sandbox");
 const TEMP_DIR = path.resolve(__dirname, "../temp_sandbox_test");

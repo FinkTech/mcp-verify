@@ -21,7 +21,7 @@ import os from "os";
 import path from "path";
 import readline from "readline";
 
-import { ConfigLoader } from "@mcp-verify/core";
+import { ConfigLoader } from "@finktech/core";
 import {
   WorkspaceSession,
   WorkspaceContexts,
