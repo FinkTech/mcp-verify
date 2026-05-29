@@ -61,7 +61,7 @@ const SchemaLevel8 = z.object({
 });
 const SchemaLevel7 = z.object({
   config: SchemaLevel8,
-  flags: z.record(z.string(),z.boolean()),
+  flags: z.record(z.string(), z.boolean()),
 });
 const SchemaLevel6 = z.object({
   settings: SchemaLevel7,
@@ -81,7 +81,7 @@ const SchemaLevel3 = z.object({
 });
 const SchemaLevel2 = z.object({
   request: SchemaLevel3,
-  metadata: z.union([z.record(z.string(),z.string()), z.null()]),
+  metadata: z.union([z.record(z.string(), z.string()), z.null()]),
 });
 
 // [MARKER-002] Top-level schema with z.lazy() self-reference — the pathological case.
