@@ -278,7 +278,6 @@ jobs:
             cd mcp-verify
             node dist/mcp-verify.js validate \
               "node ../server.js" \
-
 ```
 
 ### With LLM in CI/CD

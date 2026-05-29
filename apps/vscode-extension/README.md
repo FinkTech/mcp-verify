@@ -538,4 +538,3 @@ AGPL-3.0 - See [LICENSE](../../LICENSE)
 **Made by [FinkTech](https://github.com/FinkTech)**
 
 hello.finksystems@gmail.com
-

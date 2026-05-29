@@ -222,7 +222,10 @@ export class LLMSemanticAnalyzer {
       return provider;
     } catch (error: unknown) {
       throw new Error(
-        t("llm_init_failed", { provider: providerName, error: (error as Error).message }),
+        t("llm_init_failed", {
+          provider: providerName,
+          error: (error as Error).message,
+        }),
       );
     }
   }
@@ -374,7 +377,10 @@ export class LLMSemanticAnalyzer {
 
       const errorMessage = (error as Error).message;
 
-      if (errorMessage.includes("authentication") || errorMessage.includes("401")) {
+      if (
+        errorMessage.includes("authentication") ||
+        errorMessage.includes("401")
+      ) {
         return {
           enabled: false,
           findings: [],

@@ -53,7 +53,11 @@ export class HomoglyphSpoofingRule implements ISecurityRule {
    * substitutes for ASCII letters. We flag them when mixed with ASCII
    * in identifiers that humans or LLMs use to identify servers/tools.
    */
-  private readonly CONFUSABLE_BLOCKS: { start: number; end: number; name: string }[] = [
+  private readonly CONFUSABLE_BLOCKS: {
+    start: number;
+    end: number;
+    name: string;
+  }[] = [
     { start: 0x0400, end: 0x04ff, name: "Cyrillic" },
     { start: 0x0370, end: 0x03ff, name: "Greek" },
     { start: 0x0250, end: 0x02af, name: "IPA Extensions" },
@@ -155,7 +159,12 @@ export class HomoglyphSpoofingRule implements ISecurityRule {
     if (!value) return null;
 
     let hasAsciiLetters = false;
-    const confusableChars: { char: string; codepoint: number; blockName: string; index: number }[] = [];
+    const confusableChars: {
+      char: string;
+      codepoint: number;
+      blockName: string;
+      index: number;
+    }[] = [];
 
     for (let i = 0; i < value.length; i++) {
       const cp = value.codePointAt(i) ?? 0;
@@ -188,7 +197,10 @@ export class HomoglyphSpoofingRule implements ISecurityRule {
 
     const blocks = [...new Set(confusableChars.map((c) => c.blockName))];
     const positions = confusableChars
-      .map((c) => `'${c.char}' (U+${c.codepoint.toString(16).toUpperCase().padStart(4, "0")} ${c.blockName}) at pos ${c.index}`)
+      .map(
+        (c) =>
+          `'${c.char}' (U+${c.codepoint.toString(16).toUpperCase().padStart(4, "0")} ${c.blockName}) at pos ${c.index}`,
+      )
       .join("; ");
 
     return { blocks, positions };

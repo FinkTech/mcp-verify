@@ -205,7 +205,9 @@ export class OllamaProvider implements ILLMProvider {
         throw new Error(t("ollama_timeout", { timeout }));
       }
 
-      throw new Error(t("ollama_api_error", { error: (error as Error).message }));
+      throw new Error(
+        t("ollama_api_error", { error: (error as Error).message }),
+      );
     }
   }
 

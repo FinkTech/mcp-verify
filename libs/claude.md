@@ -32,4 +32,3 @@ See [AGENTS.md](./AGENTS.md) for complete architecture, dependency rules, common
 ---
 
 **Last Updated**: 2026-03-26
-

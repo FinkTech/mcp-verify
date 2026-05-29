@@ -184,14 +184,17 @@ function renderAuditEvent(event: ProxyAuditEvent): void {
     // ── Security analysis completed ─────────────────────────────────────────
     case "security-analysis": {
       const e = event as SecurityAnalysisAuditEvent;
-      const status = e.result === "blocked" ? chalk.red("BLOCKED") : chalk.green("PASSED");
+      const status =
+        e.result === "blocked" ? chalk.red("BLOCKED") : chalk.green("PASSED");
       console.log(
         `${time} ${chalk.bold.magenta("🔒 " + t("security_analysis"))} ` +
           `${chalk.white(e.method)} [Layer ${e.layer}] -> ${status} ${chalk.gray(`(${e.latencyMs}ms)`)}`,
       );
       if (e.findings && e.findings.length > 0) {
         e.findings.forEach((f) => {
-          console.log(`       ${chalk.yellow("⚠")} ${chalk.yellow(f.ruleCode)}: ${f.message}`);
+          console.log(
+            `       ${chalk.yellow("⚠")} ${chalk.yellow(f.ruleCode)}: ${f.message}`,
+          );
         });
       }
       break;

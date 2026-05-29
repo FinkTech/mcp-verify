@@ -479,4 +479,3 @@ npx @modelcontextprotocol/inspector node dist/index.js
 ---
 
 **Last Updated**: 2026-04-08
-

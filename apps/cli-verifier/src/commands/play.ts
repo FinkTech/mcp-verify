@@ -149,15 +149,13 @@ export async function runPlaygroundAction(
         const promptData = item.data as McpPrompt;
         const args = promptData.arguments || [];
         schema = {
-          properties: args
-            .filter(isValidPromptArgument)
-            .reduce(
-              (acc: Record<string, unknown>, arg) => ({
-                ...acc,
-                [arg.name]: arg,
-              }),
-              {},
-            ),
+          properties: args.filter(isValidPromptArgument).reduce(
+            (acc: Record<string, unknown>, arg) => ({
+              ...acc,
+              [arg.name]: arg,
+            }),
+            {},
+          ),
         };
       }
 

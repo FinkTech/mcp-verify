@@ -36,7 +36,11 @@ import type {
   DiscoveryResult,
   SecurityFinding,
 } from "../../mcp-server/entities/validation.types";
-import type { McpTool, McpResource, McpPrompt } from "../../shared/common.types";
+import type {
+  McpTool,
+  McpResource,
+  McpPrompt,
+} from "../../shared/common.types";
 import { t } from "@finktech/shared";
 
 export class PromptInjectionViaToolsRule implements ISecurityRule {
@@ -221,7 +225,11 @@ export class PromptInjectionViaToolsRule implements ISecurityRule {
       for (const { param, snippet } of this.checkDefaultValueInjections(tool)) {
         findings.push({
           severity: this.severity,
-          message: t("sec_024_default_injection", { toolName: tool.name, param, snippet }),
+          message: t("sec_024_default_injection", {
+            toolName: tool.name,
+            param,
+            snippet,
+          }),
           component: `tool:${tool.name}`,
           ruleCode: this.code,
           remediation: t("sec_024_default_recommendation"),
@@ -233,7 +241,11 @@ export class PromptInjectionViaToolsRule implements ISecurityRule {
       for (const { field, snippet } of this.checkAnnotationInjections(tool)) {
         findings.push({
           severity: this.severity,
-          message: t("sec_024_annotation_injection", { toolName: tool.name, field, snippet }),
+          message: t("sec_024_annotation_injection", {
+            toolName: tool.name,
+            field,
+            snippet,
+          }),
           component: `tool:${tool.name}`,
           ruleCode: this.code,
           remediation: t("sec_024_annotation_recommendation"),
@@ -447,7 +459,8 @@ export class PromptInjectionViaToolsRule implements ISecurityRule {
   ): { field: string; snippet: string }[] {
     const results: { field: string; snippet: string }[] = [];
 
-    const annotations = (tool as unknown as Record<string, unknown>).annotations;
+    const annotations = (tool as unknown as Record<string, unknown>)
+      .annotations;
     if (!annotations || typeof annotations !== "object") return results;
 
     for (const [key, value] of Object.entries(
@@ -470,6 +483,10 @@ export class PromptInjectionViaToolsRule implements ISecurityRule {
     if (idx === -1) return text.slice(0, 80) + "…";
     const start = Math.max(0, idx - 10);
     const end = Math.min(text.length, idx + 100);
-    return (start > 0 ? "…" : "") + text.slice(start, end) + (end < text.length ? "…" : "");
+    return (
+      (start > 0 ? "…" : "") +
+      text.slice(start, end) +
+      (end < text.length ? "…" : "")
+    );
   }
 }

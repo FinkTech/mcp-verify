@@ -64,7 +64,7 @@ mcp-verify/
 | Area       | Stack                              |
 | ---------- | ---------------------------------- |
 | Runtime    | Node.js 20+, TypeScript 5.x strict |
-| Monorepo   | npm workspaces                    |
+| Monorepo   | npm workspaces                     |
 | CLI/UI     | chalk, ora, inquirer, blessed      |
 | Testing    | Jest + ts-jest                     |
 | Validation | Zod schemas                        |

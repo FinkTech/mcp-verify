@@ -9,13 +9,6 @@
     "rootDir": "src",
     "strict": true
   },
-  "include": [
-    "src/**/*",
-    "../../libs/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    ".vscode-test",
-    "dist"
-  ]
+  "include": ["src/**/*", "../../libs/**/*"],
+  "exclude": ["node_modules", ".vscode-test", "dist"]
 }

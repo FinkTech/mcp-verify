@@ -540,17 +540,17 @@ block-beta
 <details>
 <summary><h3>🤖 Block A: OWASP LLM Top 10 in MCP Context (SEC-022 to SEC-030)</h3></summary>
 
-| Rule    | Severity | Description                            | OWASP LLM |
-| ------- | -------- | -------------------------------------- | --------- |
-| SEC-022 | High     | Excessive Agency                       | LLM01     |
-| SEC-023 | High     | Prompt Injection via Tools             | LLM01     |
-| SEC-024 | Critical | Prompt Injection via Tool Inputs       | LLM01     |
-| SEC-025 | High     | Supply Chain Tool Dependencies         | LLM03     |
-| SEC-026 | Medium   | Sensitive Data in Tool Responses       | LLM06     |
-| SEC-027 | Medium   | Training Data Poisoning                | LLM03     |
-| SEC-028 | Medium   | Model DoS via Tools                    | LLM04     |
-| SEC-029 | Medium   | Insecure Plugin Design                 | LLM07     |
-| SEC-030 | Medium   | Excessive Data Disclosure              | LLM06     |
+| Rule    | Severity | Description                      | OWASP LLM |
+| ------- | -------- | -------------------------------- | --------- |
+| SEC-022 | High     | Excessive Agency                 | LLM01     |
+| SEC-023 | High     | Prompt Injection via Tools       | LLM01     |
+| SEC-024 | Critical | Prompt Injection via Tool Inputs | LLM01     |
+| SEC-025 | High     | Supply Chain Tool Dependencies   | LLM03     |
+| SEC-026 | Medium   | Sensitive Data in Tool Responses | LLM06     |
+| SEC-027 | Medium   | Training Data Poisoning          | LLM03     |
+| SEC-028 | Medium   | Model DoS via Tools              | LLM04     |
+| SEC-029 | Medium   | Insecure Plugin Design           | LLM07     |
+| SEC-030 | Medium   | Excessive Data Disclosure        | LLM06     |
 
 </details>
 
@@ -627,14 +627,14 @@ The Smart Fuzzer is an **intelligent payload generation engine** that learns fro
 
 ### Key Features
 
-| Feature                        | Description                                                                                                                             |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| **Feedback Loop**              | Analyzes responses for anomalies (timing, crashes, errors) and generates mutations                                                      |
-| **12 Mutation Strategies**     | SQL depth, null-byte injection, unicode bypass, timing probes, buffer stress, quote variation, etc.                                     |
-| **Automatic Fingerprinting**   | Detects server language/framework and disables irrelevant generators (saves 40-60% time)                                                |
-| **9 Payload Generators**       | Prompt injection, SQL/XSS/CMD injection, JWT attacks, prototype pollution, JSON-RPC violations, schema confusion, path traversal        |
-| **10 Vulnerability Detectors** | Timing, error disclosure, XSS, prompt leaks, jailbreaks, path traversal, weak IDs, info disclosure, protocol violations, etc.           |
-| **Baseline Calibration**       | Establishes clean timing/size baselines before anomaly detection                                                                        |
+| Feature                        | Description                                                                                                                      |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Feedback Loop**              | Analyzes responses for anomalies (timing, crashes, errors) and generates mutations                                               |
+| **12 Mutation Strategies**     | SQL depth, null-byte injection, unicode bypass, timing probes, buffer stress, quote variation, etc.                              |
+| **Automatic Fingerprinting**   | Detects server language/framework and disables irrelevant generators (saves 40-60% time)                                         |
+| **9 Payload Generators**       | Prompt injection, SQL/XSS/CMD injection, JWT attacks, prototype pollution, JSON-RPC violations, schema confusion, path traversal |
+| **10 Vulnerability Detectors** | Timing, error disclosure, XSS, prompt leaks, jailbreaks, path traversal, weak IDs, info disclosure, protocol violations, etc.    |
+| **Baseline Calibration**       | Establishes clean timing/size baselines before anomaly detection                                                                 |
 
 ### How It Works
 
@@ -993,12 +993,12 @@ mcp-verify validate "node server.js" --llm openai:gpt-4o-mini
 
 mcp-verify generates multiple report formats:
 
-| Format       | Purpose                    | Location                                   |
-| ------------ | -------------------------- | ------------------------------------------ |
-| **JSON**     | CI/CD, programmatic access | `./reports/YYYY-MM-DD/validate/json/`      |
-| **HTML**     | Human-readable dashboard   | `./reports/YYYY-MM-DD/validate/html/`      |
-| **Markdown** | Documentation, README      | `./reports/YYYY-MM-DD/validate/markdown/`  |
-| **SARIF**    | GitHub Code Scanning       | `./reports/YYYY-MM-DD/validate/sarif/`     |
+| Format       | Purpose                    | Location                                  |
+| ------------ | -------------------------- | ----------------------------------------- |
+| **JSON**     | CI/CD, programmatic access | `./reports/YYYY-MM-DD/validate/json/`     |
+| **HTML**     | Human-readable dashboard   | `./reports/YYYY-MM-DD/validate/html/`     |
+| **Markdown** | Documentation, README      | `./reports/YYYY-MM-DD/validate/markdown/` |
+| **SARIF**    | GitHub Code Scanning       | `./reports/YYYY-MM-DD/validate/sarif/`    |
 
 **Example HTML Report**:
 

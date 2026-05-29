@@ -1747,4 +1747,3 @@ For questions, open a GitHub issue: https://github.com/FinkTech/mcp-verify/issue
 
 **Last Updated**: 2026-04-08
 **Version**: 1.0.0
-

@@ -691,4 +691,3 @@ test("Validator orchestrates workflow", async () => {
 3. Ask in [GitHub Discussions](https://github.com/FinkTech/mcp-verify/discussions)
 
 **General rule**: If it's a business rule → domain/. If it's I/O → infrastructure/. If it's orchestration → use-cases/.
-

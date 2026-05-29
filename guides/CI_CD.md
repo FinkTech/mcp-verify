@@ -1328,4 +1328,3 @@ permissions:
 - [Examples](./EXAMPLES.md) - CLI usage examples
 - [LLM Setup](./LLM_SETUP.md) - Configure LLM providers
 - [Security Scoring](../SECURITY_SCORING.md) - Understand scores
-

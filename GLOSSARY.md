@@ -409,4 +409,3 @@ A **Real Vulnerability** is a genuine security weakness in code that can be expl
 **Project Version**: v1.0.0
 
 For suggestions or corrections to this glossary, open an issue in the GitHub repository.
-

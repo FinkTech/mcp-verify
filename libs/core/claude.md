@@ -20,4 +20,3 @@ See [AGENTS.md](./AGENTS.md) for complete architecture, security rules catalog, 
 ---
 
 **Last Updated**: 2026-03-26
-

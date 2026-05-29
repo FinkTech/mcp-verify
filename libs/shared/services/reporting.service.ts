@@ -30,7 +30,11 @@ import type { BaselineComparison } from "@finktech/core/domain/reporting/html-ge
 // ---------------------------------------------------------------------------
 
 interface ReportGenerator {
-  generate(report: Report, lang: Language, baseline?: BaselineComparison): string;
+  generate(
+    report: Report,
+    lang: Language,
+    baseline?: BaselineComparison,
+  ): string;
 }
 
 // ---------------------------------------------------------------------------
@@ -219,7 +223,10 @@ export class ReportingService {
         fs.writeFileSync(p, content);
         result.paths.markdown = p;
       } catch (e: unknown) {
-        result.errors.push({ format: "markdown", message: (e as Error).message });
+        result.errors.push({
+          format: "markdown",
+          message: (e as Error).message,
+        });
       }
     }
 
@@ -261,7 +268,10 @@ export class ReportingService {
           fs.writeFileSync(p, content);
           result.paths.sarif = p;
         } catch (e: unknown) {
-          result.errors.push({ format: "sarif", message: (e as Error).message });
+          result.errors.push({
+            format: "sarif",
+            message: (e as Error).message,
+          });
         }
       }
     }

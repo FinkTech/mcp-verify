@@ -161,7 +161,10 @@ function calculatePermissionScore(
  * Deep merges two objects with proper handling of nested properties
  * Ensures configuration updates are applied correctly
  */
-function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
+function deepMerge(
+  target: Record<string, unknown>,
+  source: Record<string, unknown>,
+): Record<string, unknown> {
   const output = { ...target };
 
   if (isObject(target) && isObject(source)) {

@@ -529,4 +529,3 @@ A: Not yet. This feature is planned for a future release.
 - [Security Scoring](../SECURITY_SCORING.md) - How scoring works
 - [CI/CD Integration](./CI_CD.md) - GitHub Actions, GitLab CI
 - [Contributing](../CONTRIBUTING.md) - Development guide
-

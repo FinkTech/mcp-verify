@@ -1527,7 +1527,10 @@ function handleMessage(message: JsonRpcRequest): JsonRpcResponse {
       };
 
     case "tools/call":
-      const callParams = (params || {}) as { name?: string; arguments?: Record<string, unknown> };
+      const callParams = (params || {}) as {
+        name?: string;
+        arguments?: Record<string, unknown>;
+      };
       const name = callParams.name;
       const args = callParams.arguments;
 

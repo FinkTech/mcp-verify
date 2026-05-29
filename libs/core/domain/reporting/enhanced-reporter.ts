@@ -1100,13 +1100,11 @@ export class EnhancedReporter {
       criticalEvents,
       securityEvents,
       eventsByType,
-      timeline: auditTrail
-        .slice(-20)
-        .map((e) => ({
-          timestamp: e.timestamp,
-          event: e.eventType,
-          severity: e.severity,
-        })),
+      timeline: auditTrail.slice(-20).map((e) => ({
+        timestamp: e.timestamp,
+        event: e.eventType,
+        severity: e.severity,
+      })),
       complianceStatus: {
         auditTrailComplete: true,
         retentionCompliant: true,

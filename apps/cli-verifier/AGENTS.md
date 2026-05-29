@@ -473,4 +473,3 @@ describe("ShellParser", () => {
 ---
 
 **Last Updated**: 2026-04-08
-

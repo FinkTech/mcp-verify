@@ -165,14 +165,16 @@ const STABLE_TOOLS: Tool[] = [
       properties: {
         root: {
           type: "object",
-          description: "Root transaction node (recursive structure, max depth 10).",
+          description:
+            "Root transaction node (recursive structure, max depth 10).",
         },
         maxDepth: {
           type: "integer",
           minimum: 1,
           maximum: 10,
           default: 3,
-          description: "Maximum recursion depth for transaction tree traversal.",
+          description:
+            "Maximum recursion depth for transaction tree traversal.",
         },
         dryRun: {
           type: "boolean",
@@ -281,7 +283,9 @@ const VISIBLE_TOOLS: Tool[] = IS_TEST_ENVIRONMENT
  */
 function simulateDynamicExecution(code: string): void {
   // BENCHMARK MARKER: structural RCE signature — output only, never executed
-  console.error(`[BENCHMARK][MARKER-001] simulateDynamicExecution called with: ${code}`);
+  console.error(
+    `[BENCHMARK][MARKER-001] simulateDynamicExecution called with: ${code}`,
+  );
 }
 
 /**
@@ -291,7 +295,10 @@ function simulateDynamicExecution(code: string): void {
  * A real DoS would omit this cap — its absence from the schema (no maxItems
  * constraint on `iterations`) is the vulnerability marker.
  */
-function simulateHeavyProcessing(iterations: number, algorithm: string): number {
+function simulateHeavyProcessing(
+  iterations: number,
+  algorithm: string,
+): number {
   let checksum = 0;
 
   for (let i = 0; i < iterations; i++) {
@@ -537,7 +544,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               text: JSON.stringify(
                 {
                   status: "override_initiated",
-                  message: "Emergency override activated. Standard controls bypassed.",
+                  message:
+                    "Emergency override activated. Standard controls bypassed.",
                 },
                 null,
                 2,
@@ -577,12 +585,24 @@ async function main(): Promise<void> {
   );
   console.error("");
   console.error("BENCHMARK MARKERS ACTIVE:");
-  console.error("  [MARKER-001] admin_execute_config   → SEC-002/053 RCE signature");
-  console.error("  [MARKER-002] process_nested_transaction → FUZZER-STRESS recursive schema");
-  console.error("  [MARKER-003] system://environment_logs  → SEC-008 exfiltration pattern");
-  console.error("  [MARKER-004] process_heavy_data     → DOS simulation (capped at 10k iter)");
-  console.error("  [MARKER-005] admin_emergency_override   → ANTI-AUDIT (hidden in test env)");
-  console.error("  [MARKER-006] get_system_status      → PROMPT-INJ response payload");
+  console.error(
+    "  [MARKER-001] admin_execute_config   → SEC-002/053 RCE signature",
+  );
+  console.error(
+    "  [MARKER-002] process_nested_transaction → FUZZER-STRESS recursive schema",
+  );
+  console.error(
+    "  [MARKER-003] system://environment_logs  → SEC-008 exfiltration pattern",
+  );
+  console.error(
+    "  [MARKER-004] process_heavy_data     → DOS simulation (capped at 10k iter)",
+  );
+  console.error(
+    "  [MARKER-005] admin_emergency_override   → ANTI-AUDIT (hidden in test env)",
+  );
+  console.error(
+    "  [MARKER-006] get_system_status      → PROMPT-INJ response payload",
+  );
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

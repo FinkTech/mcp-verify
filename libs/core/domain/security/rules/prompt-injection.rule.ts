@@ -187,7 +187,11 @@ function analyzeTextForRisk(text: string): KeywordMatch | null {
   // Check generic text keywords — only exact-word matches to avoid
   // flagging params like "request_body" → "body", "task_id" → "task"
   for (const kw of GENERIC_TEXT_KEYWORDS) {
-    if (lower === kw || lower.startsWith(kw + "_") || lower.endsWith("_" + kw)) {
+    if (
+      lower === kw ||
+      lower.startsWith(kw + "_") ||
+      lower.endsWith("_" + kw)
+    ) {
       return { category: "generic", keyword: kw, riskLevel: "medium" };
     }
   }
@@ -263,7 +267,10 @@ export class PromptInjectionRule implements ISecurityRule {
         typeof schema === "object" &&
         !Array.isArray(schema) &&
         typeof (schema as Record<string, unknown>).properties === "object"
-          ? ((schema as Record<string, unknown>).properties as Record<string, unknown>)
+          ? ((schema as Record<string, unknown>).properties as Record<
+              string,
+              unknown
+            >)
           : null;
 
       // Track if any schema param is a URL — needed for chain detection
@@ -285,7 +292,10 @@ export class PromptInjectionRule implements ISecurityRule {
 
           if (!match) continue;
 
-          const { severity, isIndirect } = this.calculateRiskSeverity(match, toolMatch);
+          const { severity, isIndirect } = this.calculateRiskSeverity(
+            match,
+            toolMatch,
+          );
 
           // Collect all missing constraints for this param
           const missingConstraints: string[] = [];
@@ -300,7 +310,9 @@ export class PromptInjectionRule implements ISecurityRule {
             const rec = this.getRecommendedPattern(match.category, isIndirect);
             missingConstraints.push(`pattern — suggested: ${rec.description}`);
           } else if (this.isWeakPattern(String(config.pattern))) {
-            missingConstraints.push(`stronger pattern (current pattern is too permissive)`);
+            missingConstraints.push(
+              `stronger pattern (current pattern is too permissive)`,
+            );
           }
 
           if (missingConstraints.length === 0) continue;
@@ -334,11 +346,13 @@ export class PromptInjectionRule implements ISecurityRule {
       // NLP processing in the tool description. Without both signals, a tool
       // named "read_contact" with "url" in a param would fire as critical.
       if (hasUrlParam && this.hasNLPProcessing(tool)) {
-        findings.push(this.createIndirectInjectionChainFinding(tool, {
-          category: "indirect",
-          keyword: "url",
-          riskLevel: "critical",
-        }));
+        findings.push(
+          this.createIndirectInjectionChainFinding(tool, {
+            category: "indirect",
+            keyword: "url",
+            riskLevel: "critical",
+          }),
+        );
       }
     }
 
@@ -512,15 +526,15 @@ export class PromptInjectionRule implements ISecurityRule {
    */
   private isWeakPattern(pattern: string): boolean {
     const weakPatterns = [
-      /^\.\*$/,           // .*
-      /^\.\+$/,           // .+
-      /^\.\{0,\}$/,       // .{0,}
-      /^\[\^]\*$/,        // [^]*
-      /^\[\\s\\S]\*$/,    // [\s\S]*
-      /^\(\.\*\)\*$/,     // (.*)*
-      /^\^\.\*\$$/,       // ^.*$
+      /^\.\*$/, // .*
+      /^\.\+$/, // .+
+      /^\.\{0,\}$/, // .{0,}
+      /^\[\^]\*$/, // [^]*
+      /^\[\\s\\S]\*$/, // [\s\S]*
+      /^\(\.\*\)\*$/, // (.*)*
+      /^\^\.\*\$$/, // ^.*$
       /^\^\[\\s\\S]\*\$$/, // ^[\s\S]*$
-      /^\\s\*\\S\+/,      // \s*\S+ (too permissive)
+      /^\\s\*\\S\+/, // \s*\S+ (too permissive)
     ];
     return weakPatterns.some((wp) => wp.test(pattern));
   }
@@ -554,7 +568,15 @@ export class PromptInjectionRule implements ISecurityRule {
    * - Any other unvalidated argument → low
    */
   private analyzePrompts(
-    prompts: Array<{ name: string; description?: string; arguments?: Array<{ name: string; description?: string; required?: boolean }> }>,
+    prompts: Array<{
+      name: string;
+      description?: string;
+      arguments?: Array<{
+        name: string;
+        description?: string;
+        required?: boolean;
+      }>;
+    }>,
   ): SecurityFinding[] {
     const findings: SecurityFinding[] = [];
 
@@ -568,7 +590,8 @@ export class PromptInjectionRule implements ISecurityRule {
       const lowRiskArgs: string[] = [];
 
       for (const arg of args) {
-        const match = analyzeTextForRisk(arg.name) ??
+        const match =
+          analyzeTextForRisk(arg.name) ??
           (arg.description ? analyzeTextForRisk(arg.description) : null);
 
         if (!match) {
@@ -587,7 +610,9 @@ export class PromptInjectionRule implements ISecurityRule {
         findings.push({
           ruleCode: this.code,
           severity: "high",
-          message: t("finding_prompt_injection_prompt_args", { prompt: prompt.name }),
+          message: t("finding_prompt_injection_prompt_args", {
+            prompt: prompt.name,
+          }),
           component: `prompt:${prompt.name}`,
           evidence: {
             promptName: prompt.name,
@@ -598,12 +623,20 @@ export class PromptInjectionRule implements ISecurityRule {
         });
       }
 
-      if (mediumRiskArgs.length > 0 || (highRiskArgs.length === 0 && lowRiskArgs.length > 0)) {
-        const allOtherArgs = [...mediumRiskArgs, ...(highRiskArgs.length > 0 ? [] : lowRiskArgs)];
+      if (
+        mediumRiskArgs.length > 0 ||
+        (highRiskArgs.length === 0 && lowRiskArgs.length > 0)
+      ) {
+        const allOtherArgs = [
+          ...mediumRiskArgs,
+          ...(highRiskArgs.length > 0 ? [] : lowRiskArgs),
+        ];
         findings.push({
           ruleCode: this.code,
           severity: mediumRiskArgs.length > 0 ? "medium" : "low",
-          message: t("finding_prompt_injection_prompt_args", { prompt: prompt.name }),
+          message: t("finding_prompt_injection_prompt_args", {
+            prompt: prompt.name,
+          }),
           component: `prompt:${prompt.name}`,
           evidence: {
             promptName: prompt.name,
